@@ -5,8 +5,15 @@
 // - Replaced "Rewards Summary" card with a "Daily Quote" card, now powered by useDailyQuote hook for dynamic quotes.
 // - Renamed page title from "Username's Dashboard" to "Username's Hitlist" (intermediate step).
 // - Set "Created Tasks" (active, non-review/completed) to be collapsed by default.
-// - Renamed "My Tasks" tab and "Assigned to Me" text to "Open Tasks" and "Open:" respectively.
-// - Renamed "Created Tasks" tab and "Created by Me" text to "Sent Tasks" and "Sent:" respectively.
+// - Renamed "Open Tasks" tab to "Active Contracts".
+// - Renamed "Sent Tasks" tab to "Issued Bounties".
+// - Renamed "My Active Tasks" section title to "My Bounties".
+// - Reordered sections in 'Active Contracts' (formerly 'My Tasks') tab: 'My Bounties' now appears before 'Under Review'.
+// - Renamed 'Awaiting Approval' section title to 'Under Review'.
+// - Renamed 'My Bounties' section to 'My Contracts' under 'Active Contracts' tab.
+// - Renamed 'Other Active Tasks' section to 'My Bounties' under 'Open Bounties' tab (Open sub-tab).
+// - Renamed 'Issued Bounties' main tab to 'Open Bounties'.
+// - Renamed 'Active' sub-tab under 'Open Bounties' to 'Open'.
 // - Fixed lint errors: removed unused 'Award' import, 'rewards' variable/calculation, and 'profile' variable.
 // - Previous changes include: useTasks hook, proof upload, TaskStatus import, type fixes, createTask mapping,
 //   tab names, empty states, switch button logic, loading skeletons, 'review' status tasks,
@@ -269,7 +276,7 @@ export default function Dashboard() {
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
         >
-          Open Tasks
+          Active Contracts
         </button>
         <button
           onClick={() => setActiveTab('createdTasks')}
@@ -280,7 +287,7 @@ export default function Dashboard() {
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
         >
-          Sent Tasks
+          Open Bounties
         </button>
       </div>
 
@@ -291,7 +298,7 @@ export default function Dashboard() {
             onClick={() => setCreatedTasksView('active')}
             className={`px-4 py-2 rounded-t-md text-sm font-medium transition-colors duration-150 ease-in-out focus:outline-none ${createdTasksView === 'active' ? 'bg-green-500/80 text-white shadow-md border-b-2 border-green-400' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
           >
-            Active ({createdActiveSubFilter.length})
+            Open ({createdActiveSubFilter.length})
           </button>
           <button
             onClick={() => setCreatedTasksView('completed')}
@@ -321,33 +328,11 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                {/* My Tasks - Review (Tasks assigned to me, proof submitted by me, awaiting creator approval) */} 
-                {myReviewTasks.length > 0 && (
-                  <div className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
-                      <AlertTriangle size={20} className="mr-2 text-yellow-400" /> Awaiting Approval ({myReviewTasks.length})
-                    </h2>
-                    <div className="space-y-4">
-                      {myReviewTasks.map((task) => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreator={false} /* On 'My Tasks' tab, I am the assignee */ 
-                          onStatusUpdate={updateTaskStatus}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={uploadProgress}
-                          onDeleteTaskRequest={handleDeleteTaskRequest} /* Should not be available for assigned tasks? */ 
-                          onEditTaskRequest={handleEditTaskRequest} /* Should not be available for assigned tasks? */ 
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {/* My Tasks - Pending & In Progress */} 
+                {/* My Tasks - Pending & In Progress (Now 'My Bounties') - Displayed First */} 
                 {myPendingTasks.length > 0 && (
                   <div className="mb-8">
                     <h2 className="text-xl font-semibold mb-4 text-white/90">
-                      My Active Tasks ({myPendingTasks.length})
+                      My Contracts ({myPendingTasks.length})
                     </h2>
                     <div className="space-y-4">
                       {myPendingTasks.map((task) => {
@@ -368,6 +353,28 @@ export default function Dashboard() {
                           />
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+                {/* My Tasks - Review (Tasks assigned to me, proof submitted by me, awaiting creator approval) - Now 'Under Review' and Displayed Second */} 
+                {myReviewTasks.length > 0 && (
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
+                      <AlertTriangle size={20} className="mr-2 text-yellow-400" /> Under Review ({myReviewTasks.length})
+                    </h2>
+                    <div className="space-y-4">
+                      {myReviewTasks.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          isCreator={false} /* On 'My Tasks' tab, I am the assignee */ 
+                          onStatusUpdate={updateTaskStatus}
+                          onProofUpload={handleProofUpload}
+                          uploadProgress={uploadProgress}
+                          onDeleteTaskRequest={handleDeleteTaskRequest} /* Should not be available for assigned tasks? */ 
+                          onEditTaskRequest={handleEditTaskRequest} /* Should not be available for assigned tasks? */ 
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -453,7 +460,7 @@ export default function Dashboard() {
                     {tasksToDisplayPending.length > 0 && (
                       <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4 text-white/90">
-                          Other Active Tasks ({tasksToDisplayPending.length})
+                          My Bounties ({tasksToDisplayPending.length})
                         </h2>
                         <div className="space-y-4">
                           {tasksToDisplayPending.map((task) => (

@@ -1,5 +1,7 @@
 // src/components/TaskForm.tsx
-// Form for creating new tasks and editing existing ones. Added description field. Aligned description in payload with NewTaskData (string | null).
+// Form for creating new tasks and editing existing ones.
+// Applied galactic theme: .glass-card (inherited), .modal-icon-button, themed labels, themed error messages. Input fields use enhanced .input-field.
+// Fixed TypeScript error for taskPayload.reward_text to ensure it's string | undefined.
 
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Award, Users } from 'lucide-react';
@@ -81,7 +83,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       assigned_to: assignedTo,
       deadline: deadline || null,
       reward_type: (rewardType as RewardType) || null,
-      reward_text: rewardText || null,
+      reward_text: rewardText.trim() ? rewardText.trim() : undefined,
     };
     await onSubmit(taskPayload, editingTask ? editingTask.id : undefined);
 
@@ -107,7 +109,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+          className="modal-icon-button absolute top-4 right-4"
           aria-label="Close"
         >
           <X size={20} />
@@ -118,7 +120,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Task Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Task Title*
             </label>
             <input
@@ -129,17 +131,17 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               className={`input-field w-full ${errors.title ? 'border-red-500 focus:ring-red-500' : ''}`}
               placeholder="What needs to be done?"
             />
-            {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
+            {errors.title && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.title}</p>}
           </div>
 
           {/* Task Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Description (Optional)
             </label>
             <textarea
               id="description"
-              value={description}
+              value={description ?? ''}
               onChange={(e) => setDescription(e.target.value)}
               className="input-field w-full min-h-[80px] resize-y"
               placeholder="Add more details about the task..."
@@ -150,14 +152,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           
           {/* Assign To */}
           <div>
-            <label htmlFor="assignedTo" className="flex items-center text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="assignedTo" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Users size={16} className="mr-1" />
               Assign To*
             </label>
             {loading ? (
               <div className="animate-pulse h-10 bg-white/10 rounded-lg"></div>
             ) : friends.length === 0 ? (
-              <p className="text-amber-400 text-sm">
+              <p className="text-[var(--warning-orange)] text-sm">
                 You need to add friends first to assign tasks.
               </p>
             ) : (
@@ -175,14 +177,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                     </option>
                   ))}
                 </select>
-                {errors.assignedTo && <p className="text-red-400 text-xs mt-1">{errors.assignedTo}</p>}
+                {errors.assignedTo && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.assignedTo}</p>}
               </>
             )}
           </div>
           
           {/* Deadline */}
           <div>
-            <label htmlFor="deadline" className="flex items-center text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="deadline" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Calendar size={16} className="mr-1" />
               Deadline (Optional)
             </label>
@@ -198,7 +200,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           
           {/* Reward */}
           <div>
-            <label htmlFor="rewardType" className="flex items-center text-sm font-medium text-white/70 mb-1">
+            <label htmlFor="rewardType" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Award size={16} className="mr-1" />
               Reward (Optional)
             </label>
@@ -225,7 +227,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 disabled={!rewardType}
               />
             </div>
-            {errors.rewardText && <p className="text-red-400 text-xs mt-1">{errors.rewardText}</p>}
+            {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
           </div>
           
           {/* Submit Button */}

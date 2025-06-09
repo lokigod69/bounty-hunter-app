@@ -1,46 +1,470 @@
+/* src/index.css */
+/* Added Mandalorian theme CSS custom properties for colors and fonts. */
+/* Updated body default background, text color, and font-family. */
+/* Added .galactic-title, .bounty-text, and .holographic-accent typography classes. */
+/* Added subtle grid overlay background pattern to body. */
+/* Added CSS custom property --secondary-bg-rgb. Added keyframe animations pulse-border-galactic and scan-line-card. Added .bounty-card-galactic styles with holographic bounty poster look including glowing pulsing borders, vertical scan line animation, hover effects, .bounty-header for "BOUNTY" text, and status indicator bar styles for complete, urgent, and active states. */
+/* Updated .bounty-card-galactic::before scan line to be subtly visible by default and increased .bounty-header font size and padding. */
+/* Added .bounty-header.review (yellow) and .bounty-header.completed (green) for dynamic header colors. */
+/* Added styles for modal components (dashed borders, icon buttons, progress bars). */
+/* Added .btn-danger-galactic for themed danger/confirmation buttons. */
+/* Enhanced .input-field for holographic form elements and styled select options. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@keyframes pulse-border-galactic {
+  0%, 100% {
+    box-shadow: 
+      0 0 6px rgba(var(--accent-blue-rgb), 0.3),
+      inset 0 0 4px rgba(var(--accent-blue-rgb), 0.2);
+    border-color: rgba(var(--accent-blue-rgb), 0.5);
+  }
+  50% {
+    box-shadow: 
+      0 0 12px rgba(var(--accent-blue-rgb), 0.5),
+      inset 0 0 8px rgba(var(--accent-blue-rgb), 0.3);
+    border-color: rgba(var(--accent-blue-rgb), 0.8);
+  }
+}
+
+@keyframes scan-line-card {
+  0% {
+    transform: translateY(-105%) scaleY(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(105%) scaleY(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateX(-105%) scaleX(0.7);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(105%) scaleX(0.7);
+    opacity: 0;
+  }
+}
+
 :root {
   color-scheme: dark;
+
+  /* Mandalorian Theme Variables */
+  /* Primary Colors */
+  --primary-bg: #0a0e1a;
+  --secondary-bg: #1a1f3a;
+  --accent-blue: #00d4ff;
+  --accent-blue-rgb: 0, 212, 255; /* RGB version for use in rgba() */
+  --metallic-silver: #c0c5ce;
+  --metallic-silver-rgb: 192, 197, 206;
+  --accent-cyan: #64ffda;
+  --accent-cyan-rgb: 100, 255, 218;
+  --warning-orange: #ff6b35; /* For urgent bounties */
+  --warning-orange-rgb: 255, 107, 53;
+  --secondary-bg-rgb: 26, 31, 58;
+
+  /* Typography Colors */
+  --text-primary: var(--metallic-silver);
+  --text-secondary: #8892b0; /* Darker Metallic Silver */
+  --text-accent: var(--accent-blue);
+  --text-header: var(--accent-cyan);
+
+  /* Font Families */
+  --font-headers: 'Orbitron', 'Courier New', monospace;
+  --font-body: 'Rajdhani', 'Segoe UI', sans-serif;
+  --font-accent: 'Courier New', monospace;
 }
 
 body {
-  @apply bg-indigo-950 text-white min-h-screen;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--primary-bg);
+  background-image: 
+    linear-gradient(rgba(var(--accent-blue-rgb, 0, 212, 255), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-blue-rgb, 0, 212, 255), 0.03) 1px, transparent 1px);
+  background-size: 20px 20px; /* Adjust size of the grid */
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  @apply min-h-screen; /* Retain min-h-screen from original Tailwind utility */
 }
 
 @layer components {
   .glass-card {
-    @apply rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 shadow-lg;
+    @apply rounded-2xl backdrop-blur-md transition-all duration-300 ease-in-out;
+    background-color: rgba(var(--accent-blue-rgb), 0.07);
+    border: 1px solid rgba(var(--accent-blue-rgb), 0.4);
+    box-shadow: 
+      0 0 10px rgba(var(--accent-blue-rgb), 0.15),
+      inset 0 0 6px rgba(var(--accent-blue-rgb), 0.1);
+  }
+
+  .glass-card:hover {
+    background-color: rgba(var(--accent-blue-rgb), 0.1);
+    border-color: rgba(var(--accent-blue-rgb), 0.6);
+    box-shadow: 
+      0 0 15px rgba(var(--accent-blue-rgb), 0.3),
+      inset 0 0 8px rgba(var(--accent-blue-rgb), 0.15);
   }
   
   .btn-primary {
-    @apply px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 
-      text-white font-medium shadow-md hover:shadow-lg transition-all duration-300
-      hover:scale-105 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50;
+    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
+    background-color: rgba(var(--accent-blue-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-blue-rgb), 0.4);
+    color: var(--accent-cyan);
+    text-shadow: 0 0 5px rgba(var(--accent-cyan-rgb, 100, 255, 218), 0.7); /* Added --accent-cyan-rgb */
+    box-shadow: inset 0 0 5px rgba(var(--accent-blue-rgb), 0.2);
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .btn-primary:hover, .btn-primary:focus {
+    background-color: rgba(var(--accent-blue-rgb), 0.25);
+    border-color: var(--accent-blue);
+    color: var(--accent-cyan);
+    box-shadow: 
+      0 0 8px var(--accent-blue),
+      0 0 15px rgba(var(--accent-blue-rgb), 0.7),
+      inset 0 0 8px rgba(var(--accent-blue-rgb), 0.3);
+    transform: scale(1.03); /* Subtle scale */
+  }
+
+  .btn-primary:hover::before {
+    animation: scan-line 2s linear infinite;
+    opacity: 0.8;
+  }
+
+  .btn-primary:active {
+    background-color: rgba(var(--accent-blue-rgb), 0.3);
+    box-shadow: 
+      0 0 5px var(--accent-blue),
+      inset 0 0 10px rgba(var(--accent-blue-rgb), 0.5);
+    transform: scale(0.98);
   }
   
   .btn-secondary {
-    @apply px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm
-      text-white font-medium shadow-md hover:bg-white/30 transition-all duration-300
-      focus:ring-2 focus:ring-white/50;
+    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
+    background-color: rgba(var(--metallic-silver-rgb), 0.1);
+    border: 1px solid rgba(var(--metallic-silver-rgb), 0.3);
+    color: var(--text-secondary);
+    box-shadow: inset 0 0 5px rgba(var(--metallic-silver-rgb), 0.1);
+  }
+
+  .btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(var(--metallic-silver-rgb), 0.7), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .btn-secondary:hover, .btn-secondary:focus {
+    background-color: rgba(var(--metallic-silver-rgb), 0.15);
+    border-color: rgba(var(--metallic-silver-rgb), 0.6);
+    color: var(--text-primary);
+    box-shadow: 
+      0 0 8px rgba(var(--metallic-silver-rgb), 0.3),
+      0 0 15px rgba(var(--metallic-silver-rgb), 0.2),
+      inset 0 0 8px rgba(var(--metallic-silver-rgb), 0.2);
+    transform: scale(1.03);
+  }
+
+  .btn-secondary:hover::before {
+    animation: scan-line 2.5s linear infinite; /* Slightly slower for secondary */
+    opacity: 0.7;
+  }
+
+  .btn-secondary:active {
+    background-color: rgba(var(--metallic-silver-rgb), 0.2);
+    box-shadow: 
+      0 0 5px rgba(var(--metallic-silver-rgb), 0.2),
+      inset 0 0 10px rgba(var(--metallic-silver-rgb), 0.3);
+    transform: scale(0.98);
   }
   
   .input-field {
-    @apply px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20
-      text-white placeholder:text-white/50 focus:outline-none focus:ring-2 
-      focus:ring-teal-500 focus:border-transparent transition-all duration-300;
+    @apply px-4 py-2 rounded-lg backdrop-blur-sm transition-all duration-300;
+    background-color: rgba(var(--accent-blue-rgb), 0.05); /* Subtle background */
+    border: 1px solid rgba(var(--accent-blue-rgb), 0.3);
+    color: var(--text-primary);
   }
 
-  /* Ensure dropdown options are readable in dark theme */
-  .input-field option {
-    @apply text-black bg-white;
-    /* Note: background-color on options is not consistently supported across all browsers, 
-       but text-color usually is. Setting text-black should make it readable on default light dropdowns. */
+  .input-field::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
   }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background-color: rgba(var(--accent-blue-rgb), 0.1);
+    box-shadow: 
+      0 0 0 1px var(--accent-blue), /* Inner sharper ring */
+      0 0 8px rgba(var(--accent-blue-rgb), 0.4); /* Outer glow */
+  }
+
+  /* Specific styling for select to try and theme the arrow and options */
+  select.input-field {
+    appearance: none; /* Remove default arrow for more control if adding custom one */
+    /* If keeping default arrow, this helps it pick up text color in some browsers */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c0c5ce'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25em;
+    padding-right: 2.5rem; /* Make space for custom arrow */
+  }
+
+  /* Styling for options within the select dropdown */
+  .input-field option {
+    background-color: var(--secondary-bg); /* Dark background for dropdown list */
+    color: var(--text-primary);
+  }
+
+  .input-field option:hover {
+    background-color: rgba(var(--accent-blue-rgb), 0.2);
+    color: var(--accent-cyan);
+  }
+
+  /* Date input - trying to make the calendar icon match the theme */
+  input[type="date"].input-field::-webkit-calendar-picker-indicator {
+    filter: invert(60%) sepia(100%) saturate(500%) hue-rotate(180deg) brightness(100%) contrast(90%); /* Attempt to color it blue/cyan-ish */
+  }
+
+  /* Galactic Navigation Item Styles */
+  .nav-item-galactic {
+    @apply relative px-3 py-2 rounded-lg transition-all duration-300 ease-in-out;
+    border: 1px solid rgba(var(--metallic-silver-rgb, 192, 197, 206), 0.3); /* Corrected rgba usage */
+    color: var(--text-secondary);
+    /* For pseudo-elements if needed */
+  }
+
+  .nav-item-galactic:hover {
+    color: var(--text-primary);
+    border-color: rgba(var(--metallic-silver-rgb, 192, 197, 206), 0.7);
+    box-shadow: 0 0 8px rgba(var(--accent-blue-rgb, 0, 212, 255), 0.3);
+  }
+
+  .nav-item-galactic-active {
+    color: var(--text-accent);
+    border-color: var(--accent-blue);
+    background-color: rgba(var(--accent-blue-rgb, 0, 212, 255), 0.1);
+    box-shadow: 
+      0 0 5px var(--accent-blue),
+      0 0 10px rgba(var(--accent-blue-rgb, 0, 212, 255), 0.7),
+      inset 0 0 3px rgba(var(--accent-blue-rgb, 0, 212, 255), 0.5);
+  }
+
+  /* Holographic Dashed Border for Upload Areas */
+  .holographic-dashed-border {
+    @apply rounded-xl p-8 text-center cursor-pointer transition-colors duration-300 ease-in-out;
+    border-style: dashed;
+    border-width: 2px;
+    border-color: rgba(var(--accent-blue-rgb), 0.4);
+  }
+
+  .holographic-dashed-border:hover {
+    border-color: var(--accent-blue);
+    /* Optional: add a subtle glow on hover if desired */
+    /* box-shadow: 0 0 8px rgba(var(--accent-blue-rgb), 0.2); */
+  }
+
+  /* Modal Icon Buttons (e.g., close, replace) */
+  .modal-icon-button {
+    @apply p-1 rounded-full transition-colors duration-200 ease-in-out;
+    background-color: rgba(var(--accent-blue-rgb), 0.1);
+    color: rgba(var(--metallic-silver-rgb), 0.7);
+  }
+
+  .modal-icon-button:hover {
+    background-color: rgba(var(--accent-blue-rgb), 0.2);
+    color: var(--metallic-silver);
+  }
+
+  /* Progress Bar Track for Galactic Theme */
+  .progress-bar-track-galactic {
+    @apply h-2 rounded-full overflow-hidden;
+    background-color: rgba(var(--accent-blue-rgb), 0.15);
+  }
+
+  /* Galactic Danger Button */
+  .btn-danger-galactic {
+    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
+    background-color: rgba(var(--warning-orange-rgb), 0.15);
+    border: 1px solid rgba(var(--warning-orange-rgb), 0.4);
+    color: var(--warning-orange);
+    text-shadow: 0 0 5px rgba(var(--warning-orange-rgb), 0.5);
+    box-shadow: inset 0 0 5px rgba(var(--warning-orange-rgb), 0.2);
+  }
+
+  .btn-danger-galactic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--warning-orange), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .btn-danger-galactic:hover, .btn-danger-galactic:focus {
+    background-color: rgba(var(--warning-orange-rgb), 0.25);
+    border-color: var(--warning-orange);
+    color: var(--warning-orange);
+    box-shadow: 
+      0 0 8px var(--warning-orange),
+      0 0 15px rgba(var(--warning-orange-rgb), 0.7),
+      inset 0 0 8px rgba(var(--warning-orange-rgb), 0.3);
+    transform: scale(1.03);
+  }
+
+  .btn-danger-galactic:hover::before {
+    animation: scan-line 2s linear infinite;
+    opacity: 0.8;
+  }
+
+  .btn-danger-galactic:active {
+    background-color: rgba(var(--warning-orange-rgb), 0.3);
+    box-shadow: 
+      0 0 5px var(--warning-orange),
+      inset 0 0 10px rgba(var(--warning-orange-rgb), 0.5);
+    transform: scale(0.98);
+  }
+}
+
+  /* Galactic Bounty Card Styles */
+  .bounty-card-galactic {
+    @apply relative rounded-xl p-5 transition-all duration-300 ease-in-out overflow-hidden;
+    background-color: rgba(var(--secondary-bg-rgb), 0.4); /* Darker base than glass-card */
+    border: 2px solid rgba(var(--accent-blue-rgb), 0.5);
+    animation: pulse-border-galactic 3s infinite ease-in-out;
+    box-shadow: 
+      0 0 10px rgba(var(--accent-blue-rgb), 0.2), /* Base glow */
+      inset 0 0 8px rgba(var(--secondary-bg-rgb), 0.5); /* Inner shadow for depth */
+  }
+
+  .bounty-card-galactic::before { /* Scan line effect */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px; /* Vertical scan line */
+    height: 100%;
+    background: linear-gradient(
+      to bottom, 
+      transparent 0%, 
+      rgba(var(--accent-cyan-rgb), 0.7) 50%, 
+      transparent 100%
+    );
+    animation: scan-line-card 4s linear infinite; /* Slower for cards */
+    opacity: 0.25; /* Subtly visible by default */
+    z-index: 1;
+  }
+
+  .bounty-card-galactic:hover::before {
+    opacity: 0.75; /* Make scan line more visible on hover */
+    animation-duration: 2.5s; /* Speed up scan line on hover */
+  }
+
+  .bounty-card-galactic:hover {
+    border-color: var(--accent-blue);
+    background-color: rgba(var(--secondary-bg-rgb), 0.5);
+    box-shadow: 
+      0 0 20px rgba(var(--accent-blue-rgb), 0.5), /* Intensified glow */
+      0 0 10px rgba(var(--accent-cyan-rgb), 0.3), /* Accent glow */
+      inset 0 0 10px rgba(var(--secondary-bg-rgb), 0.6);
+    transform: translateY(-3px) scale(1.01); /* Slight lift and scale */
+  }
+
+  .bounty-header {
+    @apply absolute top-0 left-0 right-0 py-3 px-2 text-center text-xl font-bold tracking-wider z-10;
+    font-family: var(--font-headers); /* Orbitron */
+    color: var(--warning-orange);
+    background: linear-gradient(to bottom, rgba(var(--secondary-bg-rgb), 0.85) 0%, rgba(var(--secondary-bg-rgb), 0.6) 70%, transparent 100%); /* Slightly stronger gradient */
+    text-shadow: 0 0 5px rgba(var(--warning-orange-rgb), 0.7);
+    border-bottom: 1px solid rgba(var(--warning-orange-rgb), 0.4); /* Slightly stronger border */
+  }
+
+  .bounty-header.review {
+    color: var(--warning-yellow, #facc15); /* Defaults to Tailwind yellow-400 if --warning-yellow not set */
+    text-shadow: 0 0 5px rgba(var(--warning-yellow-rgb, 250, 204, 21), 0.7);
+    border-bottom-color: rgba(var(--warning-yellow-rgb, 250, 204, 21), 0.4);
+  }
+
+  .bounty-header.completed {
+    color: var(--success-green, #4ade80); /* Defaults to Tailwind green-400 if --success-green not set */
+    text-shadow: 0 0 5px rgba(var(--success-green-rgb, 74, 222, 128), 0.7);
+    border-bottom-color: rgba(var(--success-green-rgb, 74, 222, 128), 0.4);
+  }
+  
+  /* Status Indicator Bar */
+  .status-indicator-bar {
+    @apply absolute bottom-0 left-0 w-full h-1 transition-colors duration-300;
+    background-color: rgba(var(--metallic-silver-rgb), 0.3); /* Default/inactive */
+  }
+
+  .status-indicator-bar.complete {
+    background-color: rgba(var(--accent-cyan-rgb), 0.7); /* Greenish-cyan for complete */
+    box-shadow: 0 0 5px rgba(var(--accent-cyan-rgb), 0.5);
+  }
+
+  .status-indicator-bar.urgent {
+    background-color: rgba(var(--warning-orange-rgb), 0.7);
+    box-shadow: 0 0 5px rgba(var(--warning-orange-rgb), 0.5);
+  }
+
+  .status-indicator-bar.active {
+    background-color: rgba(var(--accent-blue-rgb), 0.7);
+    box-shadow: 0 0 5px rgba(var(--accent-blue-rgb), 0.5);
+  }
+
+/* Mandalorian Typography Classes */
+.galactic-title {
+  font-family: var(--font-headers);
+  color: var(--text-header);
+  /* Add other title styling like font-weight, letter-spacing etc. as needed */
+  @apply text-4xl font-bold tracking-wider; /* Example Tailwind utilities */
+}
+
+.bounty-text {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  @apply text-base; /* Example Tailwind utilities */
+}
+
+.holographic-accent {
+  font-family: var(--font-accent);
+  color: var(--accent-cyan);
+  @apply text-sm; /* Example Tailwind utilities */
 }
 
 .gradient-text {

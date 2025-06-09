@@ -1,8 +1,10 @@
 // src/components/ProofModal.tsx
 // Modal for uploading proof of task completion
+// Applied galactic theme styles to various modal elements.
+// Addressed lint errors: removed unused import, used error variable, added aria-labels.
 
 import React, { useState, useRef } from 'react';
-import { X, Upload, Image, FileVideo, AlertCircle } from 'lucide-react';
+import { X, Upload, FileVideo, AlertCircle } from 'lucide-react';
 
 interface ProofModalProps {
   onClose: () => void;
@@ -74,6 +76,7 @@ export default function ProofModal({
     try {
       await onSubmit(file);
     } catch (err) {
+      console.error('File upload error:', err);
       setError('Failed to upload file. Please try again.');
       setUploading(false);
     }
@@ -110,8 +113,9 @@ export default function ProofModal({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+          className="modal-icon-button absolute top-4 right-4"
           disabled={uploading}
+          aria-label="Close modal"
         >
           <X size={20} />
         </button>
@@ -121,7 +125,7 @@ export default function ProofModal({
         {/* File Upload Area */}
         {!preview ? (
           <div
-            className="border-2 border-dashed border-white/30 rounded-xl p-8 text-center cursor-pointer hover:border-teal-400 transition-colors"
+            className="holographic-dashed-border"
             onClick={() => fileInputRef.current?.click()}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -138,6 +142,7 @@ export default function ProofModal({
               className="hidden"
               accept="image/*,video/*"
               disabled={uploading}
+              aria-label="File upload"
             />
             <button className="btn-secondary text-sm py-1 px-3">
               Browse Files
@@ -168,7 +173,8 @@ export default function ProofModal({
                   setFile(null);
                   setPreview(null);
                 }}
-                className="absolute top-2 right-2 p-1 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                className="modal-icon-button absolute top-2 right-2"
+                aria-label="Remove selected file"
               >
                 <X size={18} />
               </button>
@@ -191,7 +197,7 @@ export default function ProofModal({
               <span>Uploading...</span>
               <span>{Math.round(uploadProgress)}%</span>
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="progress-bar-track-galactic">
               <div
                 className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}

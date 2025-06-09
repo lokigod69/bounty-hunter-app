@@ -1,6 +1,7 @@
 // src/components/ConfirmDeleteModal.tsx
 // A reusable modal component for confirming destructive actions.
 // Used for confirming task deletion.
+// Applied galactic theme: .glass-card (inherited), .modal-icon-button, themed text, .btn-danger-galactic.
 
 import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
@@ -41,13 +42,13 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           <button
             onClick={onClose}
             disabled={isConfirming}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="modal-icon-button"
             aria-label="Close modal"
           >
             <X size={24} />
           </button>
         </div>
-        <p className="text-gray-300 mb-6">{message}</p>
+        <p className="text-[var(--text-secondary)] mb-6">{message}</p>
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
@@ -59,7 +60,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           <button
             onClick={onConfirm}
             disabled={isConfirming}
-            className={`btn btn-danger btn-sm ${isConfirming ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`btn-danger-galactic btn-sm ${isConfirming ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isConfirming ? 'Deleting...' : confirmText}
           </button>

@@ -3,6 +3,7 @@
 // Changed desktop user menu to click-to-toggle for better UX.
 // Integrated useClickOutside hook to close desktop user menu on outside click.
 // Changed main app logo icon from Bell to DollarSign.
+// Applied new galactic theme styling to navigation items.
 
 import { useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -79,10 +80,10 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors ${
+                className={`nav-item-galactic flex items-center space-x-1 ${
                   location.pathname === item.path
-                    ? 'text-teal-400 bg-white/10'
-                    : 'text-white/80 hover:text-white hover:bg-white/5'
+                    ? 'nav-item-galactic-active'
+                    : ''
                 }`}
               >
                 {item.icon}
@@ -168,10 +169,10 @@ export default function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
+                  className={`nav-item-galactic flex items-center space-x-3 px-4 py-3 rounded-xl ${
                     location.pathname === item.path
-                      ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 text-teal-400'
-                      : 'hover:bg-white/5'
+                      ? 'nav-item-galactic-active'
+                      : ''
                   }`}
                   onClick={closeMobileMenu}
                 >

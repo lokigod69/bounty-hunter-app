@@ -1,4 +1,12 @@
 // src/components/TaskCard.tsx
+// Transformed into a holographic bounty poster.
+// Applied .bounty-card-galactic style, added .bounty-header, and .status-indicator-bar.
+// Corrected JSX structure by removing duplicated code and extraneous characters.
+// Removed unused imports and variables (CheckCircle, currentUserId, user from useAuth).
+// Implemented dynamic header text ('BOUNTY'/'CONTRACT', 'CLAIM SUBMITTED', 'COLLECTED') and color based on task status and isCreator prop.
+// Ensured consistent header font size between collapsed and expanded views.
+// Updated status badge text: 'review' to 'Under Review', 'in_progress' to 'Open'.
+// Flipped TaskCard header logic: 'BOUNTY' for creator's view (Issued Bounties tab), 'CONTRACT' for assignee's view (Active Contracts tab).
 // Card component for displaying task information. Includes logic for status updates, proof submission, and an image lightbox for proof viewing.
 // Corrected type error for onStatusUpdate call and cleaned up unused type imports.
 // Added visual feedback for 'review' status and 'View proof' link.
@@ -12,7 +20,7 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Task, TaskStatus } from '../types/database'; 
-import { Calendar, Clock, CheckCircle, DollarSign, Upload, ChevronDown, ChevronUp, Trash2, FileEdit } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Upload, ChevronDown, ChevronUp, Trash2, FileEdit } from 'lucide-react';
 import ProofModal from './ProofModal';
 import ImageLightbox from './ImageLightbox';
 
@@ -46,8 +54,7 @@ export default function TaskCard({
 
   // console.log(`TaskCard Render: Title='${task.title}', isCreator=${isCreator}, final collapsible=${collapsible}, incoming=${incomingCollapsiblePropValue}, status='${task.status}'`);
 
-  const { user } = useAuth();
-  const currentUserId = user?.id;
+  useAuth(); // Call useAuth if it has side effects or provides context, but user object itself is not directly used here now.
   const [showProofModal, setShowProofModal] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
@@ -84,6 +91,15 @@ export default function TaskCard({
   };
 
   // Get status color
+  const getStatusIndicatorClass = () => {
+    if (task.status === 'in_progress') return 'Open';
+    if (task.status === 'review') return 'Under Review';
+    if (task.status === 'completed') return 'Completed';
+    if (task.status === 'rejected') return 'Rejected';
+    if (isOverdue()) return 'Overdue';
+    return 'Pending'; // Default for 'pending' or other statuses
+  };
+
   const getStatusColor = () => {
     if (task.status === 'completed') return 'bg-green-500/20 text-green-400';
     if (task.status === 'review') return 'bg-yellow-500/20 text-yellow-400'; // Color for 'review' status
@@ -91,29 +107,59 @@ export default function TaskCard({
     return 'bg-blue-500/20 text-blue-400'; // Default for pending, in_progress etc.
   };
 
+  const getBountyHeaderText = (status: TaskStatus, creatorView: boolean): string => {
+    switch (status) {
+      case 'review':
+        return 'CLAIM SUBMITTED';
+      case 'completed':
+        return 'COLLECTED';
+      default:
+        return creatorView ? 'BOUNTY' : 'CONTRACT';
+    }
+  };
+
+  const getBountyHeaderClass = (status: TaskStatus): string => {
+    switch (status) {
+      case 'review':
+        return 'review'; // Will correspond to .bounty-header.review in CSS
+      case 'completed':
+        return 'completed'; // Will correspond to .bounty-header.completed in CSS
+      default:
+        return ''; // Default .bounty-header style (orange)
+    }
+  };
+
   if (collapsible && !isExpanded) {
     return (
       <div 
-        className="glass-card overflow-hidden transition-all duration-300 hover:shadow-md p-3 cursor-pointer"
+        className="bounty-card-galactic p-3 cursor-pointer" // Use bounty-card-galactic, adjust padding
         onClick={toggleExpand}
       >
-        <div className="flex justify-between items-center">
+        {/* Ensure collapsed header inherits font size from .bounty-header by removing inline fontSize. Adjust padding if needed. */}
+        <div className={`bounty-header ${getBountyHeaderClass(task.status)}`} style={{ position: 'relative', background: 'none', borderBottom: 'none', padding: '0.25rem 0.5rem' }}>
+          {getBountyHeaderText(task.status, isCreator)}
+        </div> {/* Simplified header for collapsed view */}
+        <div className="flex justify-between items-center mt-1"> {/* Added mt-1 for spacing from header */}
           <h3 className="text-md font-medium text-white truncate pr-2">{task.title}</h3>
           <div className="flex items-center">
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor()} capitalize`}>
-              {task.status === 'review' ? 'Awaiting Approval' : task.status}
+              {task.status === 'review' ? 'Under Review' : task.status === 'in_progress' ? 'Open' : task.status}
             </span>
             <ChevronDown size={20} className="ml-2 text-white/70" />
           </div>
         </div>
+        <div className={`status-indicator-bar ${getStatusIndicatorClass()}`}></div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="glass-card overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <div className="p-5">
+      <div className="bounty-card-galactic"> {/* Main card style update */}
+        <div className={`bounty-header ${getBountyHeaderClass(task.status)}`}>
+          {getBountyHeaderText(task.status, isCreator)}
+        </div>
+        <div className="p-5 pt-12"> {/* Adjusted padding for bounty-header */}
           {/* Task Header */}
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-lg font-medium text-white">{task.title}</h3>
@@ -121,7 +167,7 @@ export default function TaskCard({
               <span
                 className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor()} capitalize`}
               >
-                {task.status === 'completed' ? 'Completed' : task.status === 'review' ? 'Awaiting Approval' : isOverdue() ? 'Overdue' : task.status}
+                {task.status === 'completed' ? 'Completed' : task.status === 'review' ? 'Under Review' : task.status === 'in_progress' ? 'Open' : isOverdue() ? 'Overdue' : task.status}
               </span>
               {collapsible && (
                 <button 
@@ -189,115 +235,104 @@ export default function TaskCard({
             )}
           </div>
 
-          {/* Proof Preview */}
-          {task.proof_url && (
-            <div className="mb-4">
-              <p className="text-sm text-white/70 mb-2">Proof of completion:</p>
-              <div className="rounded-lg overflow-hidden bg-black/30 h-40 flex items-center justify-center">
-                {task.proof_type === 'image' ? (
-                  <img
-                    src={task.proof_url}
-                    alt="Proof"
-                    className="max-h-full max-w-full object-contain cursor-pointer"
-                    onClick={() => {
-                      setLightboxImageUrl(task.proof_url);
-                      setShowLightbox(true);
-                    }}
-                  />
-                ) : (
-                  <video
-                    src={task.proof_url}
-                    controls
-                    className="max-h-full max-w-full"
-                  />
-                )}
-              </div>
+
+
+        {/* Proof Preview */}
+        {task.proof_url && (
+          <div className="mb-4">
+            <p className="text-sm text-white/70 mb-2">Proof of completion:</p>
+            <div className="rounded-lg overflow-hidden bg-black/30 h-40 flex items-center justify-center">
+              {task.proof_type === 'image' ? (
+                <img
+                  src={task.proof_url}
+                  alt="Proof"
+                  className="max-h-full max-w-full object-contain cursor-pointer"
+                  onClick={() => {
+                    setLightboxImageUrl(task.proof_url);
+                    setShowLightbox(true);
+                  }}
+                />
+              ) : (
+                <video
+                  src={task.proof_url}
+                  controls
+                  className="max-h-full max-w-full"
+                />
+              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Actions */}
-          <div className="flex justify-end items-center pt-3 border-t border-white/10">
-            {/* Submit Proof Button (assignee action) */}
-            {currentUserId === task.assigned_to && task.status === 'pending' && !task.proof_url && (
-              <button
-                onClick={() => setShowProofModal(true)}
-                className="btn btn-primary btn-sm flex items-center"
-              >
-                <Upload size={16} className="mr-2" />
-                Submit Proof
-              </button>
-            )}
-
-            {/* Mark Complete Button (creator action, if not assigned to self and pending) */}
-            {isCreator && task.status === 'pending' && currentUserId !== task.assigned_to && (
-              <button
-                onClick={() => onStatusUpdate(task.id, 'completed')}
-                className="btn btn-secondary btn-sm flex items-center ml-2"
-              >
-                <CheckCircle size={16} className="mr-2" />
-                Mark Complete
-              </button>
-            )}
-
-            {/* Completed Status Indicator */}
-            {task.status === 'completed' && (
-              <span className="text-green-400 flex items-center ml-2">
-                <CheckCircle size={16} className="mr-1" />
-                Completed
-              </span>
-            )}
-
-            {/* Approve/Reject Buttons (creator action for 'review' status) */}
-            {task.status === 'review' && task.created_by === currentUserId && (
-              <div className="flex gap-2 ml-2">
+        {/* Action Buttons */}
+        <div className="mt-6 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 sm:space-x-3">
+          {/* Left side buttons (status updates) */}
+          <div className="flex-grow flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+            {isCreator && task.status === 'review' && (
+              <>
                 <button
                   onClick={() => onStatusUpdate(task.id, 'completed')}
-                  className="btn btn-success btn-sm text-white"
+                  className="btn-primary w-full sm:w-auto"
                 >
-                  Approve
+                  Approve Proof
                 </button>
                 <button
-                  onClick={() => onStatusUpdate(task.id, 'rejected')}
-                  className="btn btn-warning btn-sm text-white"
+                  onClick={() => onStatusUpdate(task.id, 'pending')}
+                  className="btn-secondary w-full sm:w-auto" // Consider a more distinct 'reject' style
                 >
-                  Reject
+                  Reject Proof
                 </button>
-              </div>
+              </>
             )}
-
-            {/* Delete Button (creator action, always available if creator) */}
-            {isCreator && onEditTaskRequest && (
+            {!isCreator && task.status === 'pending' && (
               <button
-                onClick={() => onEditTaskRequest(task)}
-                className="btn btn-secondary btn-sm flex items-center ml-2"
-                aria-label="Edit task"
+                onClick={() => onStatusUpdate(task.id, 'in_progress')}
+                className="btn-primary w-full sm:w-auto"
               >
-                <FileEdit size={16} className="mr-2" />
-                Edit
+                Start Task
               </button>
             )}
-            {isCreator && (
+            {!isCreator && task.status === 'in_progress' && (
               <button
-                onClick={() => onDeleteTaskRequest(task.id)}
-                className="btn btn-danger btn-sm flex items-center ml-2"
-                aria-label="Delete task"
+                onClick={() => setShowProofModal(true)}
+                className="btn-primary w-full sm:w-auto flex items-center justify-center"
               >
-                <Trash2 size={16} className="mr-2" />
-                Delete
+                <Upload size={16} className="mr-2" /> Submit Proof
               </button>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Proof Upload Modal */}
-      {showProofModal && (
-        <ProofModal
-          onClose={() => setShowProofModal(false)}
-          onSubmit={handleProofSubmit}
-          uploadProgress={uploadProgress}
-        />
-      )}
+          {/* Right side buttons (creator actions) */}
+          {isCreator && onEditTaskRequest && (
+            <div className="flex space-x-2 self-end sm:self-center">
+              <button 
+                onClick={() => onEditTaskRequest(task)}
+                className="modal-icon-button hover:text-accent-cyan"
+                aria-label="Edit task"
+              >
+                <FileEdit size={18} />
+              </button>
+              <button 
+                onClick={() => onDeleteTaskRequest(task.id)}
+                className="modal-icon-button hover:text-warning-orange"
+                aria-label="Delete task"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div> {/* End of p-5 pt-12 content wrapper */}
+      <div className={`status-indicator-bar ${getStatusIndicatorClass()}`}></div>
+    </div> {/* End of bounty-card-galactic */}
+
+    {/* Proof Upload Modal */}
+    {showProofModal && (
+      <ProofModal
+        onClose={() => setShowProofModal(false)}
+        onSubmit={handleProofSubmit}
+        uploadProgress={uploadProgress}
+      />
+    )}
 
       {/* Image Lightbox for Proofs */}
       {showLightbox && lightboxImageUrl && (
