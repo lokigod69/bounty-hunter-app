@@ -1,6 +1,6 @@
 // src/App.tsx
 // Main application component, sets up routing.
-// Corrected routing for ProfileEdit page to be under protected Layout.
+// Corrected routing for ProfileEdit. Added routes for DailyContractsPage and MarketplacePage.
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -11,6 +11,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Friends from './pages/Friends';
 import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
+import DailyContractsPage from './pages/DailyContractsPage'; // Phase 8: Import DailyContractsPage
+import MarketplacePage from './pages/MarketplacePage'; // Phase 8: Import MarketplacePage
 import { useAuth } from './hooks/useAuth';
 
 // Protected route component
@@ -46,6 +48,8 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="friends" element={<Friends />} />
             <Route path="profile/edit" element={<ProfileEdit />} />
+            <Route path="daily-contracts" element={<DailyContractsPage />} /> {/* Phase 8: Route for Daily Contracts */}
+            <Route path="marketplace" element={<MarketplacePage />} /> {/* Phase 8: Route for Marketplace */}
             {/* Add other protected routes here */}
           </Route>
           {/* Fallback for any other route, could be a 404 page */}

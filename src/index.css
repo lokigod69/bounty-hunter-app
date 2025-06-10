@@ -1,18 +1,121 @@
 /* src/index.css */
-/* Added Mandalorian theme CSS custom properties for colors and fonts. */
-/* Updated body default background, text color, and font-family. */
-/* Added .galactic-title, .bounty-text, and .holographic-accent typography classes. */
-/* Added subtle grid overlay background pattern to body. */
-/* Added CSS custom property --secondary-bg-rgb. Added keyframe animations pulse-border-galactic and scan-line-card. Added .bounty-card-galactic styles with holographic bounty poster look including glowing pulsing borders, vertical scan line animation, hover effects, .bounty-header for "BOUNTY" text, and status indicator bar styles for complete, urgent, and active states. */
-/* Updated .bounty-card-galactic::before scan line to be subtly visible by default and increased .bounty-header font size and padding. */
-/* Added .bounty-header.review (yellow) and .bounty-header.completed (green) for dynamic header colors. */
-/* Added styles for modal components (dashed borders, icon buttons, progress bars). */
-/* Added .btn-danger-galactic for themed danger/confirmation buttons. */
-/* Enhanced .input-field for holographic form elements and styled select options. */
+/* Main CSS file for global styles and Tailwind directives. */
+/* Added Google Fonts: Orbitron and Rajdhani. */
+/* Added base holographic text and border styles. */
+/* Added .glass-card styling. */
+/* Added .btn-primary, .btn-secondary, .btn-danger styles with holographic effects. */
+/* Added .nav-item-galactic and .nav-item-galactic-active for navigation. */
+/* Added .gradient-text for specific header/logo text. */
+/* Added .input-holographic for form inputs. */
+/* Added .checkbox-holographic for custom checkboxes. */
+/* Added .switch-holographic for toggle switches. */
+/* Added .tab-holographic for tab navigation. */
+/* Added .badge-holographic for status badges. */
+/* Added .tooltip-holographic for tooltips. */
+/* Added .modal-holographic for modal dialogs. */
+/* Added .progress-bar-holographic for progress bars. */
+/* Added .loader-holographic for loading spinners. */
+/* Added .alert-holographic for alert messages. */
+/* Added .table-holographic for table styling. */
+/* Added .link-holographic for general links. */
+/* Added .dropdown-holographic for dropdown menus. */
+/* Added .card-holographic for generic cards if needed. */
+/* Added .sidebar-holographic for potential sidebar elements. */
+/* Added .footer-holographic for footer styling. */
+/* Phase 4: Added subtle starfield background. */
+/* Phase 6 Part A.1: Added styles for TaskCard state differentiation (Active, Claimed, Completed). */
+/* Phase 6 Part A: Added holographic scan/sheen hover effect for bounty cards. */
+/* Phase 6 Part A: Added .text-glow-cyan-md utility for typography hierarchy. */
+/* Phase 6 Part B: Updated body background to radial-gradient for starfield, keeping pseudo-element stars. */
+/* Phase 6 Part B: Added styles and animation for laser cursor trail. */
+/* Phase 6 Part B: Fixed and updated laser pulse animation for button clicks (Fix 1). */
+/* Phase 6 Part B: Enhanced cursor trail with initial offset and z-index (Fix 1 - Round 2 / Fix 3). */
+/* Phase 6 Part B: Repositioned 'CREDITS TRANSFERRED' stamp to top-right (Fix 2 - Round 2). */
+/* Phase 7 (Critical Fix): Increased z-index and ensured opacity for 'CREDITS TRANSFERRED' stamp. */
+/* Phase 8: Added shining credit badge and coin spin animations. */
+/* Phase 9A: Updated card header styling to emphasize task title. */
+/* Phase 10: Redesigned task cards with a "Route 66 Motel Sign" style. */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes pulse-cyan-border {
+  0%, 100% {
+    border-color: rgba(var(--accent-cyan-rgb), 0.7);
+    box-shadow: 
+      0 0 5px rgba(var(--accent-cyan-rgb), 0.3),
+      0 0 10px rgba(var(--accent-cyan-rgb), 0.2),
+      inset 0 0 3px rgba(var(--accent-cyan-rgb), 0.2);
+  }
+  50% {
+    border-color: rgba(var(--accent-cyan-rgb), 1);
+    box-shadow: 
+      0 0 10px rgba(var(--accent-cyan-rgb), 0.5),
+      0 0 20px rgba(var(--accent-cyan-rgb), 0.3),
+      inset 0 0 5px rgba(var(--accent-cyan-rgb), 0.3);
+  }
+}
+
+@keyframes amber-holographic-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 8px rgba(var(--accent-amber-rgb), 0.4),
+      0 0 15px rgba(var(--accent-amber-rgb), 0.3),
+      inset 0 0 6px rgba(var(--accent-amber-rgb), 0.2);
+    border-color: rgba(var(--accent-amber-rgb), 0.6);
+  }
+  50% {
+    box-shadow: 
+      0 0 15px rgba(var(--accent-amber-rgb), 0.6),
+      0 0 30px rgba(var(--accent-amber-rgb), 0.4),
+      inset 0 0 10px rgba(var(--accent-amber-rgb), 0.3);
+    border-color: rgba(var(--accent-amber-rgb), 1);
+  }
+}
+
+@keyframes amber-scanning-beam {
+  0% {
+    transform: translateY(-100%) scaleY(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(100%) scaleY(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes holographic-sheen-scan {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes green-success-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 8px rgba(var(--accent-green-success-rgb), 0.5),
+      0 0 15px rgba(var(--accent-green-success-rgb), 0.3),
+      inset 0 0 6px rgba(var(--accent-green-success-rgb), 0.2);
+    border-color: rgba(var(--accent-green-success-rgb), 0.7);
+  }
+  50% {
+    box-shadow: 
+      0 0 15px rgba(var(--accent-green-success-rgb), 0.7),
+      0 0 30px rgba(var(--accent-green-success-rgb), 0.5),
+      inset 0 0 10px rgba(var(--accent-green-success-rgb), 0.3);
+    border-color: rgba(var(--accent-green-success-rgb), 1);
+  }
+}
 
 @keyframes pulse-border-galactic {
   0%, 100% {
@@ -44,6 +147,157 @@
     transform: translateY(105%) scaleY(0.8);
     opacity: 0;
   }
+}
+
+@keyframes laser-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out-trail {
+  0% {
+    opacity: 1;
+    transform: scale(1) translate(-5px, -5px); /* Added initial offset for Fix 3 */
+    box-shadow: 0 0 5px var(--accent-cyan), 0 0 10px var(--accent-cyan);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) translate(10px, -10px); /* Example: shrink and drift */
+    box-shadow: 0 0 2px var(--accent-cyan), 0 0 5px var(--accent-cyan);
+  }
+}
+
+@keyframes shine-sweep {
+  0% {
+    transform: rotate(45deg) translateX(-100%);
+  }
+  100% {
+    transform: rotate(45deg) translateX(100%);
+  }
+}
+
+/* Coin spin animation */
+.coin-icon {
+  display: inline-block;
+  animation: coin-spin 4s linear infinite;
+}
+
+@keyframes coin-spin {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+/* Phase 9A: Card Redesign & Marketplace Foundation */
+.task-header-grid {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  position: relative;
+  z-index: 5;
+}
+
+.card-type-section {
+  width: 100%;
+}
+
+.card-type-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.card-content-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+}
+
+.content-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.icon-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.task-title {
+  font-size: 20px !important; /* Make this the visual focus */
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  line-height: 1.2;
+}
+
+.task-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  align-items: center;
+  padding-left: 34px; /* Align with title, assuming icon is 24px + 10px gap */
+}
+
+.task-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 4px; /* Align with title */
+}
+
+.expand-icon {
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.3s ease-in-out;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.reward-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(var(--accent-amber-rgb), 0.15);
+  color: rgba(var(--accent-amber-rgb), 0.9);
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(var(--accent-amber-rgb), 0.3);
+}
+
+.reward-badge span {
+  line-height: 1;
+}
+
+/* Ensure chevron icon styling is consistent if needed */
+.task-card-header .chevron {
+  transition: transform 0.3s ease-in-out;
+}
+
+.task-card-header .chevron.expanded {
+  transform: rotate(180deg);
 }
 
 @keyframes scan-line {
@@ -80,6 +334,12 @@
   --warning-orange-rgb: 255, 107, 53;
   --secondary-bg-rgb: 26, 31, 58;
 
+  /* Phase 6: Card State Colors */
+  --accent-amber: #ffc107;
+  --accent-amber-rgb: 255, 193, 7;
+  --accent-green-success: #00ffcc; /* Brighter holographic green */
+  --accent-green-success-rgb: 0, 255, 204;
+
   /* Typography Colors */
   --text-primary: var(--metallic-silver);
   --text-secondary: #8892b0; /* Darker Metallic Silver */
@@ -92,15 +352,218 @@
   --font-accent: 'Courier New', monospace;
 }
 
+/* Route 66 Motel Sign Task Card Redesign */
+/* Task Card Container - Grid Layout */
+.task-card-container {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 50, 80, 0.3);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.task-card-container:hover {
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+/* Vertical Sidebar for Type */
+.task-type-vertical {
+  background: linear-gradient(135deg, 
+    rgba(255, 107, 107, 0.3), 
+    rgba(255, 107, 107, 0.1)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  position: relative;
+}
+
+/* Gradient line separator */
+.task-type-vertical::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 2px;
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(255, 107, 107, 0.8), 
+    transparent
+  );
+}
+
+/* Stacked Letters Container */
+.vertical-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Individual Letters */
+.vertical-text .letter {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ff6b6b;
+  text-transform: uppercase;
+  text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+  line-height: 1;
+  font-family: var(--font-headers);
+}
+
+/* Credit Contract Variant */
+.task-type-vertical.credit-type {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.3), 
+    rgba(255, 215, 0, 0.1)
+  );
+}
+
+.task-type-vertical.credit-type::after {
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(255, 215, 0, 0.8), 
+    transparent
+  );
+}
+
+.task-type-vertical.credit-type .letter {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+}
+
+/* Main Content Area */
+.task-card-content {
+  padding: 16px 20px;
+}
+
+/* Header Row Layout */
+.task-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-info {
+  flex: 1;
+  min-width: 0; /* Prevents text overflow issues */
+}
+
+.task-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expand-toggle {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.expand-toggle.expanded {
+  transform: rotate(180deg);
+}
+
 body {
-  background-color: var(--primary-bg);
-  background-image: 
-    linear-gradient(rgba(var(--accent-blue-rgb, 0, 212, 255), 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--accent-blue-rgb, 0, 212, 255), 0.03) 1px, transparent 1px);
-  background-size: 20px 20px; /* Adjust size of the grid */
+  /* background-color: var(--primary-bg); -- Replaced by radial-gradient */
+  background-image: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+  /* The linear-gradient grid lines are removed in favor of the radial gradient */
+  /* background-size: 20px 20px; -- Not needed for radial gradient as much, but can be kept if desired for other layers */
   color: var(--text-primary);
   font-family: var(--font-body);
   @apply min-h-screen; /* Retain min-h-screen from original Tailwind utility */
+  /* Ensure the pseudo-elements for stars are still positioned correctly */
+  position: relative; /* Needed if pseudo-elements are absolutely positioned relative to body */
+  overflow-x: hidden; /* Prevent horizontal scroll if stars go too wide */
+}
+
+@layer components {
+  .cursor-trail-particle {
+    position: fixed;
+    pointer-events: none; /* So it doesn't interfere with mouse events */
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--accent-cyan);
+    box-shadow: 0 0 5px var(--accent-cyan), 0 0 10px var(--accent-cyan), 0 0 15px var(--accent-cyan);
+    opacity: 0;
+    animation: fade-out-trail 0.5s linear forwards;
+    z-index: 1 !important; /* Behind most elements - Fix 1 Round 2 */
+    /* Adjust transform-origin if particles should emanate from a specific point relative to cursor */
+  }
+}
+
+@layer utilities {
+  .text-glow-cyan-md {
+    text-shadow: 
+      0 0 5px rgba(var(--accent-cyan-rgb), 0.5),
+      0 0 10px rgba(var(--accent-cyan-rgb), 0.3);
+  }
+  /* Add other glow intensities if needed e.g. .text-glow-cyan-lg */
+
+  /* Shining coin effect */
+  .credit-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+
+  .credit-badge::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 70%
+    );
+    transform: rotate(45deg) translateX(-100%);
+    animation: shine-sweep 3s infinite;
+  }
 }
 
 @layer components {
@@ -122,7 +585,8 @@ body {
   }
   
   .btn-primary {
-    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
+    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out; /* overflow-hidden removed */
+    overflow: visible; /* Added for ::after pseudo-element visibility */
     background-color: rgba(var(--accent-blue-rgb), 0.15);
     border: 1px solid rgba(var(--accent-blue-rgb), 0.4);
     color: var(--accent-cyan);
@@ -156,6 +620,23 @@ body {
   .btn-primary:hover::before {
     animation: scan-line 2s linear infinite;
     opacity: 0.8;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.8), transparent);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .btn-primary:active::after {
+    animation: laser-pulse 0.3s ease-out;
   }
 
   .btn-primary:active {
@@ -362,6 +843,93 @@ body {
 }
 
   /* Galactic Bounty Card Styles */
+
+  .bounty-card-galactic:hover::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit; /* Match parent's border-radius, which is rounded-xl */
+    background: linear-gradient(
+      45deg, 
+      transparent 20%,
+      rgba(var(--accent-cyan-rgb), 0.7) 50%,
+      transparent 80%
+    );
+    background-size: 300% 100%; /* Make background wider than element to allow for position animation */
+    animation: holographic-sheen-scan 2s linear infinite;
+    z-index: 0; /* Behind card content but visible */
+    pointer-events: none; /* Allow clicks to pass through to the card */
+  }
+
+
+  .bounty-card-active {
+    animation: pulse-cyan-border 2s infinite ease-in-out;
+    border-width: 2px; /* Ensure border is visible for animation */
+  }
+
+  .bounty-card-claimed {
+    animation: amber-holographic-glow 2.5s infinite ease-in-out;
+    border-width: 2px; /* Ensure border is visible for animation */
+  }
+
+  .bounty-card-claimed::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 5%; /* Start slightly inset */
+    width: 90%; /* Don't span full width */
+    height: 100%;
+    background: linear-gradient(to bottom, 
+      rgba(var(--accent-amber-rgb), 0) 0%,
+      rgba(var(--accent-amber-rgb), 0.3) 10%,
+      rgba(var(--accent-amber-rgb), 0.5) 50%,
+      rgba(var(--accent-amber-rgb), 0.3) 90%,
+      rgba(var(--accent-amber-rgb), 0) 100%
+    );
+    border-radius: inherit; /* Match parent's border-radius */
+    pointer-events: none;
+    animation: amber-scanning-beam 3s linear infinite;
+    z-index: 1; /* Ensure it's above the card background but below content */
+  }
+
+  .bounty-card-completed-state {
+    animation: green-success-glow 2s infinite ease-in-out;
+    border-width: 2px; /* Ensure border is visible for animation */
+  }
+
+  .bounty-card-completed-state::after {
+    content: 'CREDITS TRANSFERRED';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: rgba(var(--success-green-rgb), 0.85);
+    color: var(--primary-bg);
+    font-family: var(--font-headers);
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 3px;
+    transform: rotate(12deg) scale(0.8);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    z-index: 10; /* Ensure stamp is on top */
+    opacity: 1; /* Ensure full visibility */
+    letter-spacing: 0.5px;
+  }
+
+  /* Ensure card content is above the claimed scanning beam */
+  .bounty-card-galactic > *:not(.bounty-header):not(::before):not(::after) {
+    position: relative;
+    z-index: 2;
+  }
+  .bounty-card-galactic .bounty-header {
+    position: relative; /* Ensure header is also above pseudo-elements if needed */
+    z-index: 3; /* Higher z-index for header */
+  }
+
   .bounty-card-galactic {
     @apply relative rounded-xl p-5 transition-all duration-300 ease-in-out overflow-hidden;
     background-color: rgba(var(--secondary-bg-rgb), 0.4); /* Darker base than glass-card */
@@ -452,7 +1020,282 @@ body {
   font-family: var(--font-headers);
   color: var(--text-header);
   /* Add other title styling like font-weight, letter-spacing etc. as needed */
-  @apply text-4xl font-bold tracking-wider; /* Example Tailwind utilities */
+}
+
+/* === PHASE 12: FINAL POLISH === */
+
+/* Laser Divider Box */
+.laser-divider-box {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 20, 40, 0.8);
+  overflow: hidden;
+  box-shadow: 
+    inset 0 0 20px rgba(0, 255, 255, 0.2),
+    0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+/* Bouncing laser beams */
+.laser-beam {
+  position: absolute;
+  width: 2px; /* Thinner for a sharper look */
+  height: 100%;
+  /* Dynamic color application using CSS custom property */
+  background: linear-gradient(to bottom, 
+    transparent, 
+    var(--laser-color, rgba(0, 255, 255, 0.8)), /* Default to cyan if var not set */
+    transparent
+  );
+  box-shadow: 0 0 10px var(--laser-color, rgba(0, 255, 255, 0.5)); /* Default to cyan if var not set */
+  opacity: 0.7;
+}
+
+.laser-beam-1 {
+  animation: bounce-1 2.5s linear infinite;
+}
+
+.laser-beam-2 {
+  animation: bounce-2 3s linear infinite;
+  animation-delay: 0.5s;
+}
+
+.laser-beam-3 {
+  animation: bounce-3 2s linear infinite;
+  animation-delay: 1s;
+}
+
+/* Vertical laser beam */
+
+/* === EPIC LASER BOX BREAKOUT FEATURE === */
+
+/* Visual feedback when approaching threshold */
+.laser-divider-box.ready-to-break {
+  animation: warning-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% { 
+    border-color: rgba(0, 255, 255, 0.3); /* Default border color */
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2), 
+                0 0 30px rgba(0, 255, 255, 0.1), 
+                inset 0 0 15px rgba(0, 255, 255, 0.1); /* Default box shadow */
+  }
+  50% { 
+    border-color: rgba(255, 0, 0, 0.8); /* Red warning */
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.2), 
+                0 0 30px rgba(255, 0, 0, 0.1), 
+                inset 0 0 15px rgba(255, 0, 0, 0.1), /* Inner red glow */
+                0 0 40px rgba(255, 0, 0, 0.6); /* Outer red glow */
+  }
+}
+
+/* When breaking out starts */
+.laser-divider-box.breaking-out {
+  overflow: visible !important; /* Allow lasers to escape */
+  animation: box-dissolve 2s ease-out forwards;
+  /* Ensure existing animations on .laser-beam are overridden or stopped if necessary */
+}
+
+/* Lasers escaping animation */
+.breaking-out .laser-beam {
+  /* Override existing bounce animations. 
+     The 'forwards' will keep it at its final state (off-screen, opacity 0) */
+  animation: escape-to-infinity 2s ease-out forwards !important; 
+}
+
+@keyframes escape-to-infinity {
+  0% {
+    /* Current position and opacity is implicitly taken from its state before this animation starts */
+    opacity: 0.7; /* Or whatever its current opacity is */
+    transform: scale(1); /* Ensure it starts at normal scale */
+  }
+  100% {
+    /* Use CSS variables passed from JS for random direction */
+    /* Multiplying by vh/vw makes them fly further based on viewport size */
+    top: calc(var(--random-y) * 100vh) !important; 
+    left: calc(var(--random-x) * 100vw) !important;
+    opacity: 0;
+    transform: scale(2); /* Lasers expand as they fly off */
+  }
+}
+
+@keyframes box-dissolve {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    border-color: rgba(0, 255, 255, 0.3); /* Start with normal border */
+  }
+  50% {
+    border-color: rgba(255, 0, 0, 0.8); /* Transition to red */
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.6), 
+                0 0 70px rgba(255, 0, 0, 0.4), 
+                inset 0 0 25px rgba(255, 0, 0, 0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5); /* Box expands as it dissolves */
+    border-color: transparent;
+    box-shadow: 0 0 100px rgba(255, 0, 0, 0.8), 
+                0 0 150px rgba(255, 0, 0, 0.6), 
+                inset 0 0 50px rgba(255, 0, 0, 0.4);
+  }
+}
+
+/* Vertical laser beam */
+.vertical-laser {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    transparent,
+    #00ffff 20%,
+    #00ffff 80%,
+    transparent
+  );
+  animation: vertical-flow 2s ease-in-out infinite;
+}
+
+/* Bouncing animations */
+@keyframes bounce-1 {
+  0% { top: 0; left: 10%; transform: rotate(45deg); }
+  25% { top: 80%; left: 80%; transform: rotate(135deg); }
+  50% { top: 20%; left: 90%; transform: rotate(225deg); }
+  75% { top: 90%; left: 20%; transform: rotate(315deg); }
+  100% { top: 0; left: 10%; transform: rotate(45deg); }
+}
+
+@keyframes bounce-2 {
+  0% { top: 80%; left: 20%; transform: rotate(-30deg); }
+  33% { top: 10%; left: 70%; transform: rotate(60deg); }
+  66% { top: 70%; left: 80%; transform: rotate(150deg); }
+  100% { top: 80%; left: 20%; transform: rotate(-30deg); }
+}
+
+@keyframes bounce-3 {
+  0% { top: 50%; left: 0; transform: rotate(0deg); }
+  25% { top: 10%; left: 60%; transform: rotate(90deg); }
+  50% { top: 80%; left: 50%; transform: rotate(180deg); }
+  75% { top: 30%; left: 10%; transform: rotate(270deg); }
+  100% { top: 50%; left: 0; transform: rotate(360deg); }
+}
+
+@keyframes vertical-flow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scaleY(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1);
+  }
+}
+
+/* === MOBILE & TABLET OPTIMIZATIONS === */
+
+@media (max-width: 767px) {
+  /* Hide desktop headers and laser box */
+  .desktop-header-section {
+    display: none;
+  }
+  
+  .laser-divider-box {
+    display: none;
+  }
+  
+  /* Mobile tab styling */
+  .mobile-tab-container button {
+    min-height: 48px; /* Proper tap target */
+    font-size: 14px;
+    /* Ensure Tailwind's rounded-lg is not overridden if it provides a larger radius */
+  }
+
+  .mobile-tab-container .flex-1 {
+    /* Ensure main section toggles have good tap height */
+    min-height: 48px;
+  }
+
+  .mobile-tab-container .overflow-x-auto button {
+    /* Specific styling for scrollable sub-tabs if needed */
+    padding-left: 0.75rem; /* 12px */
+    padding-right: 0.75rem; /* 12px */
+    padding-top: 0.5rem; /* 8px */
+    padding-bottom: 0.5rem; /* 8px */
+    font-size: 0.875rem; /* 14px */
+  }
+  
+  /* Horizontal scroll for sub-tabs styling */
+  .mobile-tab-container .overflow-x-auto {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+  }
+  .mobile-tab-container .overflow-x-auto::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+  }
+  
+  /* Task cards full width adjustments */
+  /* Assuming TaskCard.tsx's root div has a class that can be targeted or we target globally */
+  /* If TaskCard's root is '.task-card', then: */
+  /* .task-card { grid-template-columns: 60px 1fr !important; } */
+  /* This might be better handled with responsive classes directly in TaskCard.tsx */
+  
+  .task-type-vertical {
+    width: 60px; /* Smaller sidebar on mobile */
+  }
+
+  .task-type-vertical .letter {
+    font-size: 14px; /* Smaller letters for BOUNTY */
+    /* Potentially adjust letter spacing or rotation if needed */
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Slightly smaller laser box */
+  .laser-divider-box {
+    width: 60px;
+    height: 60px;
+  }
+  
+  /* Smaller tab text for desktop tabs when on tablet */
+  .tab-button { /* This class was added to desktop tab buttons in Dashboard.tsx */
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+
+/* Green variant for completed/passed tasks */
+.task-type-vertical.completed-type {
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.3),    /* Green instead of red */
+    rgba(34, 197, 94, 0.1)
+  );
+}
+
+.task-type-vertical.completed-type::after {
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(34, 197, 94, 0.8),     /* Green glow */
+    transparent
+  );
+}
+
+.task-type-vertical.completed-type .letter {
+  color: #22c55e;               /* Green text */
+  text-shadow: 0 0 15px rgba(34, 197, 94, 0.7);
+}
+
+.galactic-subtitle {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  @apply text-base; /* Example Tailwind utilities */
 }
 
 .bounty-text {

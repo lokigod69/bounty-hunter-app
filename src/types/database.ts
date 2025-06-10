@@ -7,6 +7,8 @@
 // Expanded ProofType to include 'document' and 'link'.
 // Modified NewTaskData to include reward_type and use reward_text (string) for reward value/description.
 // Changed NewTaskData.description to string | null.
+// Phase 6 (Credit System UI): Updated RewardType to 'credit' (singular) and added 'text'.
+// Phase 9A: Added 'profiles' to Task type for joined data.
 
 export type Json =
   | string
@@ -121,9 +123,11 @@ export interface Database {
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Friendship = Database['public']['Tables']['friendships']['Row'];
-export type Task = Database['public']['Tables']['tasks']['Row'];
+export type Task = Database['public']['Tables']['tasks']['Row'] & {
+  profiles: Pick<Profile, 'id' | 'display_name' | 'email'> | null;
+};
 
-export type RewardType = 'credits' | 'items' | 'other';
+export type RewardType = 'credit' | 'text' | 'items' | 'other';
 // Ensure TaskStatus is defined correctly
 export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'rejected';
 export type ProofType = 'image' | 'video' | 'link' | 'document'; // Added 'link' and 'document'

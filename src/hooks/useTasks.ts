@@ -4,6 +4,7 @@
 // Corrected Supabase client import path, type imports, fixed toast.warn, updated createTask, removed 'creator' field, changed to named export, derives assigned/createdTasks, simplified fetchTasks query, fixed lint errors (unused var, useCallback deps), updated uploadProof signature, refactored error handling with getErrorMessage utility (now more type-safe).
 // Applied user-requested cast for 'completed' status comparison.
 // Replaced 'username' with 'display_name' in profile queries.
+// Phase 9A: Updated task fetching to join with profiles table for assignee's name.
 // Added deleteTask and updateTask functions with optimistic UI updates, proof file deletion (for delete), and robust error handling.
 // Updated updateTaskStatus: if task is rejected, set status to 'pending' and clear proof_url.
 
@@ -63,21 +64,30 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     setError(null);
     const currentUserId = user.id;
 
-    try {
+        try {
+      const taskQueryString = `
+        *,
+        profiles:profiles!assigned_to (
+          id,
+          display_name,
+          email
+        )
+      `;
+
       // Simplified queries
       const { data: createdByMe, error: createdError } = await client
         .from('tasks')
-        .select('*')
+        .select(taskQueryString)
         .eq('created_by', currentUserId);
 
       const { data: assignedToMe, error: assignedError } = await client
         .from('tasks')
-        .select('*')
+        .select(taskQueryString)
         .eq('assigned_to', currentUserId);
 
       const { data: unassignedPending, error: unassignedError } = await client
         .from('tasks')
-        .select('*')
+        .select(taskQueryString)
         .is('assigned_to', null)
         .eq('status', 'pending');
 
@@ -236,7 +246,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       deadline: newTaskData.deadline || null,
       proof_url: null,
       proof_type: null,
-      completed_at: null
+      completed_at: null,
+      profiles: null
     };
 
     setTasks((prevTasks) => [optimisticTask, ...prevTasks]);

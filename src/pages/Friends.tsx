@@ -1,6 +1,8 @@
 // src/pages/Friends.tsx
 // Friends management page.
 // Changes:
+// - Updated page title to 'GUILD ROSTER' (Phase 5A, Step 3).
+// - Updated terminology: 'My Friends' to 'Guild Members', 'Add a Friend' to 'Recruit Member', 'Send Request' to 'Send Invitation' (Phase 5B, Step 4).
 // - Corrected prop name to `isConfirming` for ConfirmDeleteModal.
 // - Removed unused 'Search' icon import.
 // - Added functionality to cancel pending sent friend requests with a confirmation modal.
@@ -87,14 +89,14 @@ export default function Friends() {
     <div className="max-w-4xl mx-auto">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold gradient-text">Friends</h1>
+        <h1 className="text-3xl font-bold gradient-text">GUILD ROSTER</h1>
       </div>
 
       {/* Add Friend Form */}
       <div className="glass-card p-5 mb-6">
         <h2 className="flex items-center text-lg font-medium mb-4">
           <UserPlus size={20} className="mr-2 text-teal-400" />
-          Add a Friend
+          Recruit Member
         </h2>
         <form onSubmit={handleSendRequest} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -110,7 +112,7 @@ export default function Friends() {
             />
           </div>
           <button type="submit" className="btn-primary whitespace-nowrap">
-            Send Request
+            Send Invitation
           </button>
         </form>
         
@@ -140,7 +142,7 @@ export default function Friends() {
           onClick={() => setActiveTab('friends')}
         >
           <Users size={16} className="inline mr-1" />
-          My Friends
+          Guild Members
           {friends.length > 0 && (
             <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
               {friends.length}

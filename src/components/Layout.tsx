@@ -4,12 +4,18 @@
 // Integrated useClickOutside hook to close desktop user menu on outside click.
 // Changed main app logo icon from Bell to DollarSign.
 // Applied new galactic theme styling to navigation items.
+// Added 'NEW CONTRACT' button to the header navigation area with cyan holographic style.
+// Phase 6 Part B: Added CursorTrail component for laser cursor effect.
+// Phase 8: Integrated UserCredits display widget. Added 'Daily Contracts' and 'Marketplace' to navigation.
 
 import { useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, Menu, X, Home, Users, DollarSign, UserCog } from 'lucide-react'; // Added UserCog, replaced Bell with DollarSign
+import { LogOut, Menu, X, Home, Users, UserCog, Plus, Briefcase, ShoppingCart, Sparkles } from 'lucide-react'; // Added Briefcase, ShoppingCart, Sparkles // Added UserCog, Plus, removed DollarSign
+import logo from '../assets/logo5.png'; // Added logo
 import useClickOutside from '../hooks/useClickOutside';
+import CursorTrail from './CursorTrail'; // Import the new component
+import UserCredits from './UserCredits'; // Phase 8: Import UserCredits widget
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth();
@@ -17,6 +23,7 @@ export default function Layout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
+  const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
@@ -50,6 +57,8 @@ export default function Layout() {
   // Navigation items
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
+    { name: 'Daily Contracts', path: '/daily-contracts', icon: <Briefcase size={20} /> },
+    { name: 'Marketplace', path: '/marketplace', icon: <ShoppingCart size={20} /> },
     { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
   ];
 
@@ -63,14 +72,17 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
       <header className="glass-card bg-indigo-900/50 border-b border-white/10 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-teal-500 to-cyan-500 p-2 rounded-lg">
-              <DollarSign size={24} className="text-white" />
-            </div>
+            <img 
+              src={logo} 
+              alt="Bounty Hunter Logo" 
+              className="h-10 w-10"
+            />
             <h1 className="text-xl font-bold gradient-text">Bounty Hunter</h1>
           </Link>
 
@@ -94,6 +106,34 @@ export default function Layout() {
 
           {/* User Profile & Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            <UserCredits />
+            {/* New Contract Button */}
+            <Link
+              to="/"
+              state={{ openNewContractForm: true }}
+              className="btn-primary flex items-center"
+            >
+              <Plus size={18} className="mr-2" />
+              NEW CONTRACT
+            </Link>
+
+            {/* Cursor Trail Toggle Button */}
+            <div className="relative group">
+              <button
+                onClick={() => setIsCursorTrailEnabled(!isCursorTrailEnabled)}
+                className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+                aria-label="Toggle cursor trail"
+              >
+                <Sparkles 
+                  size={20} 
+                  className={isCursorTrailEnabled ? 'text-cyan-400 animate-pulse' : 'text-gray-500'} 
+                />
+              </button>
+              <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                Toggle Cursor Trail
+              </div>
+            </div>
+
             <div className="relative"> {/* Removed 'group' class */} 
               <div onClick={toggleUserMenu} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
