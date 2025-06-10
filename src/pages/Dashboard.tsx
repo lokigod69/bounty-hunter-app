@@ -551,10 +551,10 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'myTasks' && activeContractTab === 'my'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-red-600/20'
             }`}
           >
-            My Contracts ({myPendingTasks.length})
+            Contracts ({myPendingTasks.length})
           </button>
           
           <button 
@@ -565,10 +565,10 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'myTasks' && activeContractTab === 'verifying'
               ? 'bg-amber-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-amber-600/20'
             }`}
           >
-            Verifying ({myReviewTasks.length})
+            Review ({myReviewTasks.length})
           </button>
           
           <button 
@@ -579,7 +579,7 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'myTasks' && activeContractTab === 'completed'
               ? 'bg-green-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-green-600/20'
             }`}
           >
             Completed ({myCompletedTasks.length})
@@ -596,10 +596,10 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'createdTasks' && createdTasksView === 'active'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-red-600/20'
             }`}
           >
-            Active ({createdActiveSubFilter.length})
+            Bounties ({createdActiveSubFilter.length})
           </button>
           
           <button 
@@ -610,10 +610,10 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'createdTasks' && createdTasksView === 'review'
               ? 'bg-amber-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-amber-600/20'
             }`}
           >
-            Review ({createdReviewTasks.length})
+            Verify ({createdReviewTasks.length})
           </button>
 
           <button 
@@ -624,7 +624,7 @@ return (
             className={`tab-button px-4 py-2 rounded ${ 
               activeTab === 'createdTasks' && createdTasksView === 'completed'
               ? 'bg-green-600 text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-green-600/20'
             }`}
           >
             Passed ({createdCompletedSubFilter.length})
@@ -668,7 +668,7 @@ return (
                 {myPendingTasks.length > 0 ? (
                   <div className="mb-8">
                     <h2 className="text-xl font-semibold mb-4 text-white/90">
-                      My Contracts ({myPendingTasks.length})
+                      Contracts ({myPendingTasks.length})
                     </h2>
                     <div className="space-y-4">
                       {myPendingTasks.map((task) => (
@@ -702,7 +702,7 @@ return (
                 {myReviewTasks.length > 0 ? (
                   <div className="mb-8">
                     <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
-                      <AlertTriangle size={20} className="mr-2 text-yellow-400" /> Verifying ({myReviewTasks.length})
+                      <AlertTriangle size={20} className="mr-2 text-yellow-400" /> Review ({myReviewTasks.length})
                     </h2>
                     <div className="space-y-4">
                       {myReviewTasks.map((task) => (
@@ -723,8 +723,8 @@ return (
                 ) : (
                   <div className="text-center py-10 glass-card-secondary">
                     <AlertTriangle size={32} className="mx-auto mb-3 text-yellow-400" />
-                    <h3 className="text-lg font-semibold text-white/90">No Contracts to Verify</h3>
-                    <p className="text-sm text-white/70">There are no contracts awaiting your verification.</p>
+                    <h3 className="text-lg font-semibold text-white/90">No Contracts to Review</h3>
+                    <p className="text-sm text-white/70">There are no contracts awaiting your review.</p>
                   </div>
                 )}
               </>
@@ -826,8 +826,8 @@ return (
               </div>
             ) : (
               <div>
-                <h2 className="text-xl font-semibold mb-4">
-                  Awaiting Your Review ({createdReviewTasks.length})
+                <h2 className="text-xl font-semibold mb-4 text-white/90">
+                  Awaiting Your Verification ({createdReviewTasks.length})
                 </h2>
                 <div className="space-y-4">
                   {createdReviewTasks.map(task => (
