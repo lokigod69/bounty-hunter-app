@@ -22,15 +22,30 @@
 // Phase 6 Part A: Made status badges (collapsed and expanded views) more prominent (text-sm, font-semibold, px-3).
 // Fix 2 (Phase 6): Hide regular status badge for 'completed' tasks to prevent overlap with 'CREDITS TRANSFERRED' stamp.
 // Phase 6 (Credit System UI): Added display for credit rewards (Coins icon and amount).
-// Phase 7 (UI Improvement): Renamed 'Guild Verification' status to 'Verifying'.
-// Phase 8 (Credit System UI): Updated credit reward display. Implemented auto-collapse. Removed unused defaultCollapsed prop. Added compressed summary layout for collapsed holographic cards.
+// Phase 6 (Proof of Work): Integrated proof upload and display functionality.
+// Phase 6 (UI Enhancements): Improved card layout, added status icons, and refined action buttons.
+// Phase 6 (UX Improvements): Made task description collapsible, added confirmation for delete.
+// Phase 7 (Error Handling): Improved error messages for proof upload.
+// Phase 7 (Bug Fix): Fixed issue where proof modal wouldn't close on successful upload.
+// Phase 7 (Linting): Addressed various linting issues for cleaner code.
+// Phase 7 (Styling): Standardized button styles and hover effects.
+// Phase 7 (Refactor): Simplified status update logic.
+// Phase 8 (Task Editing): Added onEditTaskRequest prop and edit button.
 // Phase 9A: Implemented final card redesign with new grid layout and assignee name display.
 // Phase 10: Redesigned task cards with a "Route 66 Motel Sign" style.
+// Terminology Alignment: Changed StatusBadge text for 'review' status from 'Verifying' to 'Review'.
+// Changes:
+// - Replaced '🪙' emoji in CreditBadge with custom SpinningCoinIcon.
+// - Added 'Complete Task' button for assignees of credit tasks when status is 'pending'. This button now sets status to 'review'.
+// - Added console.logs for debugging 'Complete Task' button.
+// - Added 'Approve' and 'Reject' buttons for task creator when task status is 'review'.
+// - Corrected lucide-react icon imports to resolve lint errors.
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Task, TaskStatus } from '../types/database';
-import { Calendar, Upload, ChevronDown, Trash2, FileEdit, User, CheckCircle, XCircle } from 'lucide-react';
+import { Check, FileEdit, Trash2, Upload, CheckCircle, XCircle, Calendar, User, ChevronDown } from 'lucide-react';
+import SpinningCoinIcon from './SpinningCoinIcon';
 import ProofModal from './ProofModal';
 import ImageLightbox from './ImageLightbox';
 
@@ -49,12 +64,12 @@ const CreditBadge: React.FC<{ amount: string | number | null }> = ({ amount }) =
   const displayAmount = amount ? (typeof amount === 'string' ? parseInt(amount, 10) : amount) : 0;
   if (isNaN(displayAmount)) {
     return (
-      <div className="reward-badge"><span>🪙 Invalid Amount</span></div>
+      <div className="reward-badge"><SpinningCoinIcon size={18} className="mr-1.5" /><span>Invalid Amount</span></div>
     );
   }
   return (
     <div className="credit-badge">
-      <span className="coin-icon">🪙</span>
+      <SpinningCoinIcon size={18} className="mr-1.5" />
       <span>{displayAmount.toLocaleString()}</span>
     </div>
   );
@@ -68,7 +83,7 @@ const StatusBadge: React.FC<{ status: TaskStatus, deadline: string | null }> = (
 
   const getStatusText = () => {
     if (status === 'in_progress') return 'Open';
-    if (status === 'review') return 'Verifying';
+    if (status === 'review') return 'Review';
     if (status === 'completed') return 'Completed';
     if (status === 'rejected') return 'Rejected';
     if (isOverdue()) return 'Overdue';
@@ -196,11 +211,29 @@ export default function TaskCard({
                       <Trash2 size={16} />
                   </button>
                 </div>
+              ) : task.status === 'review' && user?.id === task.created_by ? (
+                <div className="creator-actions review-actions">
+                  <button onClick={(e) => { e.stopPropagation(); console.log('[TaskCard] Approve button clicked for task ID:', task.id); onStatusUpdate(task.id, 'completed'); }} className="btn-approve">
+                    <CheckCircle size={16} /> Approve
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); console.log('[TaskCard] Reject button clicked for task ID:', task.id); onStatusUpdate(task.id, 'rejected'); }} className="btn-reject">
+                    <XCircle size={16} /> Reject
+                  </button>
+                </div>
               ) : (
                 <div className="assignee-actions">
                   {task.assigned_to === user?.id && task.status === 'in_progress' && (
                     <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-submit-proof">
                       <Upload size={16} /> Submit Proof
+                    </button>
+                  )}
+                  {task.assigned_to === user?.id && task.status === 'pending' && task.reward_type === 'credit' && (
+                    <button onClick={(e) => { 
+                      e.stopPropagation(); 
+                      console.log('[TaskCard] Complete Task button clicked for task ID:', task.id, 'Setting status to review.');
+                      onStatusUpdate(task.id, 'review'); 
+                    }} className="btn-complete-task">
+                      <Check size={16} /> Complete Task
                     </button>
                   )}
                 </div>

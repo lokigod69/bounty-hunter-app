@@ -1,4 +1,16 @@
 /* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.complete-button {
+  transition: all 0.3s ease;
+}
+
+.complete-button:active {
+  transform: scale(0.95);
+}
+
 /* Main CSS file for global styles and Tailwind directives. */
 /* Added Google Fonts: Orbitron and Rajdhani. */
 /* Added base holographic text and border styles. */
@@ -36,9 +48,12 @@
 /* Phase 9A: Updated card header styling to emphasize task title. */
 /* Phase 10: Redesigned task cards with a "Route 66 Motel Sign" style. */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+
+.dynamic-width-progress {
+  width: var(--progress-width, 0%); /* Default to 0% if variable not set */
+  transition: width 0.5s ease-in-out; /* Keep the transition */
+}
 
 @keyframes pulse-cyan-border {
   0%, 100% {

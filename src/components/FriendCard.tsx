@@ -1,9 +1,10 @@
 // src/components/FriendCard.tsx
 // Card component for displaying friend information.
 // Changes:
+// - Updated card styling to use consistent Tailwind glassmorphism (bg-gray-800/50, backdrop-blur, border, p-6, hover:border-gray-600).
 // - Removed unused 'React' import.
-// - Added a delete (Trash2) icon button for pending sent friend requests.
-// - Added `onCancelSentRequest` prop to handle the deletion logic.
+// - Added delete (Trash2) icon button for pending sent friend requests.
+// - Added `onCancelSentRequest` prop for deletion logic.
 
 import { Profile } from '../types/database';
 import { CheckCircle, X, UserX, UserCheck, Trash2 } from 'lucide-react'; // Added Trash2
@@ -42,7 +43,7 @@ export default function FriendCard({
   };
 
   return (
-    <div className="glass-card flex items-center p-4 transition-all duration-300 hover:shadow-lg">
+    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all flex items-center duration-300">
       {/* Avatar */}
       <div className="mr-4">
         {profile.avatar_url ? (

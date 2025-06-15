@@ -6,7 +6,7 @@
 // Applied new galactic theme styling to navigation items.
 // Added 'NEW CONTRACT' button to the header navigation area with cyan holographic style.
 // Phase 6 Part B: Added CursorTrail component for laser cursor effect.
-// Phase 8: Integrated UserCredits display widget. Added 'Daily Contracts' and 'Marketplace' to navigation.
+// Phase 8: Integrated UserCredits display widget. Added 'Daily Contracts', 'Bounty Store', and 'My Bounties' to navigation.
 
 import { useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -58,7 +58,8 @@ export default function Layout() {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
     { name: 'Daily Contracts', path: '/daily-contracts', icon: <Briefcase size={20} /> },
-    { name: 'Marketplace', path: '/marketplace', icon: <ShoppingCart size={20} /> },
+    { name: 'Bounty Store', path: '/bounty-store', icon: <ShoppingCart size={20} /> },
+    { name: 'My Bounties', path: '/my-bounties', icon: <Sparkles size={20} /> },
     { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
   ];
 

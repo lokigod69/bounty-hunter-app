@@ -1,6 +1,8 @@
 // src/App.tsx
 // Main application component, sets up routing.
-// Corrected routing for ProfileEdit. Added routes for DailyContractsPage and MarketplacePage.
+// Corrected routing for ProfileEdit. Added routes for DailyContractsPage.
+// Renamed MarketplacePage to BountyStorePage and updated its route.
+// Added route for MyCollectedBountiesPage.
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -12,7 +14,8 @@ import Dashboard from './pages/Dashboard';
 import Friends from './pages/Friends';
 import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
 import DailyContractsPage from './pages/DailyContractsPage'; // Phase 8: Import DailyContractsPage
-import MarketplacePage from './pages/MarketplacePage'; // Phase 8: Import MarketplacePage
+import BountyStorePage from './pages/BountyStorePage'; // Renamed from MarketplacePage
+import MyCollectedBountiesPage from './pages/MyCollectedBountiesPage'; // Import MyCollectedBountiesPage
 import { useAuth } from './hooks/useAuth';
 
 // Protected route component
@@ -49,7 +52,8 @@ export default function App() {
             <Route path="friends" element={<Friends />} />
             <Route path="profile/edit" element={<ProfileEdit />} />
             <Route path="daily-contracts" element={<DailyContractsPage />} /> {/* Phase 8: Route for Daily Contracts */}
-            <Route path="marketplace" element={<MarketplacePage />} /> {/* Phase 8: Route for Marketplace */}
+            <Route path="bounty-store" element={<BountyStorePage />} /> {/* Renamed from marketplace */}
+            <Route path="my-bounties" element={<MyCollectedBountiesPage />} />
             {/* Add other protected routes here */}
           </Route>
           {/* Fallback for any other route, could be a 404 page */}

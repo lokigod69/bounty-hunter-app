@@ -7,6 +7,8 @@
 // Phase 9A: Updated task fetching to join with profiles table for assignee's name.
 // Added deleteTask and updateTask functions with optimistic UI updates, proof file deletion (for delete), and robust error handling.
 // Updated updateTaskStatus: if task is rejected, set status to 'pending' and clear proof_url.
+// Calls increment_user_credits RPC when a credit task is marked as 'completed'.
+// Added extensive console.logs for debugging updateTaskStatus flow.
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
@@ -294,6 +296,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
   };
 
   const updateTaskStatus = async (taskId: string, requestedStatus: TaskStatus): Promise<boolean> => {
+    console.log('[useTasks] updateTaskStatus called. TaskID:', taskId, 'RequestedStatus:', requestedStatus);
     if (!currentUserId) {
       toast.error('Authentication error.');
       return false;
@@ -331,6 +334,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       // If neither of the above, completed_at remains as is (e.g. pending -> review, completed_at was null and stays null)
     }
 
+    console.log('[useTasks] updateTaskStatus: Updates object for DB:', updates);
+
     // Optimistic UI update
     const updatedOptimisticTask = {
       ...originalTask,
@@ -339,28 +344,59 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedOptimisticTask : t)));
 
     try {
-      const { data: updatedTask, error: updateError } = await client
+      const { data: updatedTaskResult, error: updateError } = await client
         .from('tasks')
-        .update(updates) // Use the prepared updates object
+        .update(updates)
         .eq('id', taskId)
         .select(`
-            *,
-            assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url),
-            creator:profiles!tasks_created_by_fkey(display_name, avatar_url)
+          *,
+          profiles:profiles!assigned_to ( id, display_name, email ),
+          creator_profile:profiles!created_by ( id, display_name, email )
         `)
         .single();
 
-      if (updateError) throw updateError;
-      if (!updatedTask) throw new Error('Task status update returned no data.');
+      if (updateError) {
+        console.error('[useTasks] updateTaskStatus: Error updating task status in DB:', updateError);
+        throw updateError;
+      }
+      if (!updatedTaskResult) {
+        console.error('[useTasks] updateTaskStatus: Task status update returned no data.');
+        throw new Error('Task status update returned no data.');
+      }
+      console.log('[useTasks] updateTaskStatus: Successfully updated task status in DB. Result:', updatedTaskResult);
+
+      // Award credits if task is completed and is a credit task
+      if (requestedStatus === 'completed' && originalTask.reward_type === 'credit' && originalTask.assigned_to) {
+        console.log('[useTasks] updateTaskStatus: Attempting to award credits. Task original reward_text:', originalTask.reward_text, 'Assigned to:', originalTask.assigned_to);
+        const creditAmount = parseInt(originalTask.reward_text || '0', 10);
+        if (creditAmount > 0) {
+          console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditAmount);
+          const { error: creditError } = await client.rpc('increment_user_credits', {
+            user_id_param: originalTask.assigned_to,
+            amount_param: creditAmount,
+          });
+          if (creditError) {
+            console.error('[useTasks] updateTaskStatus: Error calling increment_user_credits RPC:', creditError);
+            toast.error(`Task completed, but failed to award credits: ${getErrorMessage(creditError)}`, { duration: 5000 });
+            // Note: Task status is already updated. Consider if further rollback is needed here.
+          } else {
+            console.log('[useTasks] updateTaskStatus: Successfully called increment_user_credits RPC.');
+            toast.success(`${creditAmount} credits awarded to ${updatedTaskResult.profiles?.display_name || 'assignee'}!`, { id: `creditAward-${taskId}`, duration: 4000 });
+          }
+        } else {
+          console.log('[useTasks] updateTaskStatus: Credit amount is 0 or invalid, not calling increment_user_credits. Amount:', creditAmount);
+        }
+      }
 
       // Update local state with the actual returned task to ensure consistency
-      setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedTask : t)));
+      setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedTaskResult : t)));
       toast.success('Task status updated!', { id: toastId });
       return true;
     } catch (e) {
       const errorMessage = getErrorMessage(e);
       setError(errorMessage); // Assuming setError is defined in the hook's scope
       toast.error(`Error updating status: ${errorMessage}`, { id: toastId });
+      console.error('[useTasks] updateTaskStatus: Catch block error:', errorMessage);
       // Rollback optimistic update
       setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? originalTask : t)));
       return false;

@@ -1,6 +1,7 @@
 // src/pages/Login.tsx
 // Login page with magic link authentication
 // Added client-side email normalization (trim and toLowerCase) in handleLogin.
+// Fixed redirect path in Navigate component from "/\" to "/".
 
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -16,7 +17,7 @@ export default function Login() {
 
   // Redirect to dashboard if already logged in
   if (user && !authLoading) {
-    return <Navigate to="/\" replace />;
+    return <Navigate to="/" replace />;
   }
 
   const handleLogin = async (e: React.FormEvent) => {

@@ -24,6 +24,9 @@
 //   collapsible completed tasks, task deletion/editing, sub-tabs for created tasks.
 // Phase 7 (UI Improvement): Renamed 'Guild Verification' to 'Verifying'. Implemented 'My Contracts' & 'Verifying' sub-tabs. Removed duplicated helpers. Comprehensively restored 'createdTasks' tab structure, stats cards, and modals. Fixed all outstanding JSX parsing errors and ensured correct component layout. This resolves issues from previous incomplete/corrupted edits. Added missing function closing brace, icon/modal imports, state variables. Corrected daily quote hook usage, ConfirmDeleteModal props, and task setter calls in handlers. Removed unused TaskStatus import. Removed unused taskToDeleteId state, fixed task list var in handleDeleteTaskRequest, added toast import, typed 't' param, and simplified dailyQuote display. Removed unused editingTask state and replaced its remaining usages.
 // Phase 8: Updated error display for useTasks hook. Removed defaultCollapsed prop from TaskCard instances as it's no longer used.
+// Mobile Terminology Alignment: Changed 'MY TASKS' to 'ACTIVE CONTRACTS', 'My Tasks' tab to 'Active Contracts', 'My Contracts' sub-tab to 'Contracts', and 'Verifying' sub-tab to 'Review' for mobile view consistency.
+// Card Styling: Standardized stats cards to use Tailwind glassmorphism (bg-gray-800/50, backdrop-blur, border, p-6, hover:border-gray-600).
+// Linting Note: The inline style around line ~420 for setting CSS custom properties (`--laser-color`, `--random-x`, `--random-y`) is a deliberate and necessary choice. It allows dynamic JavaScript values to be passed to CSS for animations defined in `index.css`. This is a standard React pattern for such dynamic styling requirements.
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -276,7 +279,7 @@ export default function Dashboard() {
 
         {/* Skeleton for Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="glass-card p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
             <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
             <div className="space-y-2">
               <div className="h-4 bg-slate-700 rounded w-4/5"></div>
@@ -284,7 +287,7 @@ export default function Dashboard() {
               <div className="h-4 bg-slate-700 rounded w-4/5"></div>
             </div>
           </div>
-          <div className="glass-card p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
             <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
             <div className="space-y-2">
               <div className="h-4 bg-slate-700 rounded w-4/5"></div>
@@ -313,7 +316,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-6">
-        <div className="glass-card p-6 text-center">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all text-center">
           <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
           <h3 className="text-lg font-semibold mb-2 text-red-400">A Problem Occurred</h3>
           <p className="text-white/70 mb-4">
@@ -337,7 +340,7 @@ export default function Dashboard() {
 
       {/* Skeleton for Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="glass-card p-6">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
           <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
           <div className="space-y-2">
             <div className="h-4 bg-slate-700 rounded w-4/5"></div>
@@ -345,7 +348,7 @@ export default function Dashboard() {
             <div className="h-4 bg-slate-700 rounded w-4/5"></div>
           </div>
         </div>
-        <div className="glass-card p-6">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
           <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
           <div className="space-y-2">
             <div className="h-4 bg-slate-700 rounded w-4/5"></div>
@@ -374,7 +377,7 @@ export default function Dashboard() {
 if (error) {
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <div className="glass-card p-6 text-center">
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all text-center">
         <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
         <h3 className="text-lg font-semibold mb-2 text-red-400">An Error Occurred</h3>
         {dailyQuote ? (
@@ -392,7 +395,7 @@ return (
     {/* Mobile header - simpler */}
     {isMobile && (
       <h1 className="text-2xl font-bold text-center text-teal-400 mb-6">
-        {mobileActiveSection === 'contracts' ? 'MY TASKS' : 'OPEN BOUNTIES'}
+        {mobileActiveSection === 'contracts' ? 'ACTIVE CONTRACTS' : 'OPEN BOUNTIES'}
       </h1>
     )}
 
@@ -415,11 +418,14 @@ return (
                 key={laser.id}
                 className={`laser-beam laser-beam-${(index % 3) + 1}`} // Cycle through 3 existing animation styles
                 style={{
+                  // This inline style is necessary for dynamically setting CSS custom properties.
+                  // These properties (--laser-color, --random-x, --random-y) are used by
+                  // animations and styles defined in src/index.css to control the appearance
+                  // and behavior of the laser beams. This is a standard React pattern.
                   '--laser-color': laser.color,
                   '--random-x': laser.randomX,
                   '--random-y': laser.randomY,
-                  animationDelay: `${index * 0.05}s`, // Stagger breakout slightly for visual appeal
-                } as React.CSSProperties}
+                } as React.CSSProperties} 
               />
             ))}
             {/* Static vertical laser can be added here if desired, or removed if dynamic beams replace it fully */}
@@ -453,7 +459,7 @@ return (
                 : 'bg-gray-700 text-gray-400'
             }`}
           >
-            My Tasks
+            Active Contracts
           </button>
           <button
             onClick={() => setMobileActiveSection('bounties')}
@@ -479,7 +485,7 @@ return (
                   : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                 }`}
               >
-                My Contracts ({myPendingTasks.length})
+                Contracts ({myPendingTasks.length})
               </button>
               <button 
                 onClick={() => { setActiveTab('myTasks'); setActiveContractTab('verifying'); }}
@@ -489,7 +495,7 @@ return (
                   : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                 }`}
               >
-                Verifying ({myReviewTasks.length})
+                Review ({myReviewTasks.length})
               </button>
               <button 
                 onClick={() => { setActiveTab('myTasks'); setActiveContractTab('completed'); }}
@@ -898,7 +904,7 @@ return (
       </div>
 
       {/* Task Stats Card */}
-      <div className="glass-card p-6">
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
         <h3 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
           <DatabaseZap size={24} className="mr-3 text-purple-400" /> Contract Ledger
         </h3>
