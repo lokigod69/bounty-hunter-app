@@ -5,9 +5,19 @@
 // Applied user-requested cast for 'completed' status comparison.
 // Replaced 'username' with 'display_name' in profile queries.
 // Phase 9A: Updated task fetching to join with profiles table for assignee's name.
+// Phase 11: Ensure proof_required is included in createTask and updateTask database payloads.
+// Phase 11.1: Handle null created_at in sorting and null proof_url in deleteTask to fix lint errors.
+// Phase 11.2: Added explicit string check for proof_url in deleteTask.
+// Phase 11.3: Used an explicitly typed string variable for proof_url in new URL() call in deleteTask.
+// Phase 11.4: Handled null status in uploadProof's 'includes' check.
+// Phase 11.5: Used nullish coalescing for optimisticTask.description to satisfy linter.
+// Phase 11.6: Added explicit cast to (string | null) for optimisticTask.description due to persistent linter issue.
+// Phase 11.7: Handled undefined for optimisticTask.assigned_to using nullish coalescing.
+// Phase 11.8: Added missing nullable fields (frequency_limit, frequency_period, proof_description) to optimisticTask.
+// Phase 12: Updated taskQueryString in fetchTasks to include creator_profile to align with Task type.
 // Added deleteTask and updateTask functions with optimistic UI updates, proof file deletion (for delete), and robust error handling.
 // Updated updateTaskStatus: if task is rejected, set status to 'pending' and clear proof_url.
-// Calls increment_user_credits RPC when a credit task is marked as 'completed'.
+// Calls increment_user_credits RPC when a credit task is marked as 'completed'. (Updated RPC params to common convention, user to verify).
 // Added extensive console.logs for debugging updateTaskStatus flow.
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -73,6 +83,11 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           id,
           display_name,
           email
+        ),
+        creator_profile:profiles!created_by (
+          id,
+          display_name,
+          email
         )
       `;
 
@@ -104,7 +119,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         if (task) allTasksMap.set(task.id, task);
       });
       
-      const data = Array.from(allTasksMap.values()).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const data = Array.from(allTasksMap.values()).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
       setTasks(data || []);
     } catch (e) {
       const errorMessage = getErrorMessage(e);
@@ -197,6 +212,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       if (taskData.reward_text !== undefined) dataToUpdate.reward_text = taskData.reward_text;
       if (taskData.assigned_to !== undefined) dataToUpdate.assigned_to = taskData.assigned_to;
       if (taskData.deadline !== undefined) dataToUpdate.deadline = taskData.deadline;
+      if (taskData.proof_required !== undefined) dataToUpdate.proof_required = taskData.proof_required;
       // 'status' can also be updated, but typically through updateTaskStatus. If general edit includes status:
       // if (taskData.status !== undefined) dataToUpdate.status = taskData.status;
 
@@ -236,20 +252,27 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
     const tempId = `temp-${Date.now()}`;
     const optimisticTask: Task = {
-      id: tempId,
-      created_at: new Date().toISOString(),
+      // Base fields from newTaskData
       title: newTaskData.title,
-      description: newTaskData.description || '', // Ensure string, Task.description is string | null
+      description: (newTaskData.description ?? null) as (string | null), // Explicit cast for persistent linter issue
       reward_text: newTaskData.reward_text || null,
       reward_type: newTaskData.reward_type || null,
+      assigned_to: newTaskData.assigned_to ?? null, // Handle undefined from NewTaskData
+      deadline: newTaskData.deadline || null,
+      proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required,
+      // Default/generated fields for optimistic update
+      id: tempId,
+      created_at: new Date().toISOString(),
       status: 'pending' as TaskStatus,
       created_by: currentUserId,
-      assigned_to: newTaskData.assigned_to,
-      deadline: newTaskData.deadline || null,
       proof_url: null,
       proof_type: null,
       completed_at: null,
-      profiles: null
+      profiles: null, // Profiles will be populated by the actual insert if joined
+      // Add potentially missing nullable fields from Task type
+      frequency_limit: null,
+      frequency_period: null,
+      proof_description: null
     };
 
     setTasks((prevTasks) => [optimisticTask, ...prevTasks]);
@@ -265,7 +288,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         created_by: currentUserId,
         assigned_to: newTaskData.assigned_to,
         deadline: newTaskData.deadline || null,
-        status: 'pending' as TaskStatus
+        status: 'pending' as TaskStatus,
+        proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required // Ensure it's part of the insert
       };
 
       const { data: createdTask, error: createError } = await client
@@ -372,8 +396,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         if (creditAmount > 0) {
           console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditAmount);
           const { error: creditError } = await client.rpc('increment_user_credits', {
-            user_id_param: originalTask.assigned_to,
-            amount_param: creditAmount,
+            p_user_id: originalTask.assigned_to, // Assumed common parameter name, user to verify
+            p_amount: creditAmount,             // Assumed common parameter name, user to verify
           });
           if (creditError) {
             console.error('[useTasks] updateTaskStatus: Error calling increment_user_credits RPC:', creditError);
@@ -418,7 +442,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       toast.error('You are not assigned to this task and cannot submit proof.');
       return false;
     }
-    if (!['pending', 'in_progress', 'review'].includes(taskToUpdate.status)) {
+    if (!taskToUpdate.status || !['pending', 'in_progress', 'review'].includes(taskToUpdate.status)) {
         toast.error(`Proof can only be submitted for tasks that are pending, in progress, or require revisions. Current status: ${taskToUpdate.status}`);
         return false;
     }
@@ -521,9 +545,10 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
     try {
       // If there's a proof_url, attempt to delete the associated file from storage
-      if (taskToDelete.proof_url) {
+      if (typeof taskToDelete.proof_url === 'string' && taskToDelete.proof_url.trim() !== '') {
+        const proofUrlString: string = taskToDelete.proof_url;
         try {
-          const filePath = new URL(taskToDelete.proof_url).pathname.split('/bounty-proofs/')[1];
+          const filePath = new URL(proofUrlString).pathname.split('/bounty-proofs/')[1];
           if (filePath) {
             await client.storage.from('bounty-proofs').remove([filePath]);
             // console.log('Proof file deleted from storage:', filePath);

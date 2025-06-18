@@ -1,10 +1,10 @@
-// supabase/functions/notify-bounty-creator/index.ts
-// Edge function to notify a bounty creator when their bounty is collected.
+// supabase/functions/notify-reward-creator/index.ts
+// Edge function to notify a reward creator when their reward is purchased from the store.
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-console.log('Notify Bounty Creator Edge Function starting up');
+console.log('Notify Reward Creator Edge Function starting up');
 
 // Basic email sending function (placeholder - replace with actual implementation)
 // This might use Supabase's built-in emailer if possible for transactional, or a third-party service.
@@ -64,24 +64,24 @@ serve(async (req) => {
     // For reading user emails, service_role might be necessary.
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    const { bounty_id, collector_id } = await req.json();
+    const { reward_id, collector_id } = await req.json();
 
-    if (!bounty_id || !collector_id) {
-      return new Response(JSON.stringify({ error: 'Missing bounty_id or collector_id' }), {
+    if (!reward_id || !collector_id) {
+      return new Response(JSON.stringify({ error: 'Missing reward_id or collector_id' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // 1. Fetch bounty details to get creator_id and bounty_name
-    const { data: bountyData, error: bountyError } = await supabaseAdmin
-      .from('bounties')
+    // 1. Fetch reward details to get creator_id and reward_name
+    const { data: rewardData, error: rewardError } = await supabaseAdmin
+      .from('rewards_store')
       .select('name, creator_id')
-      .eq('id', bounty_id)
+      .eq('id', reward_id)
       .single();
 
-    if (bountyError || !bountyData) {
-      throw new Error(`Bounty not found or error fetching bounty: ${bountyError?.message}`);
+    if (rewardError || !rewardData) {
+      throw new Error(`Reward not found or error fetching reward: ${rewardError?.message}`);
     }
 
     // 2. Fetch creator's email from auth.users table
@@ -90,7 +90,7 @@ serve(async (req) => {
     const { data: creatorUserData, error: creatorUserError } = await supabaseAdmin
       .from('profiles') // Assuming a 'profiles' table linked to auth.users by 'id'
       .select('email, username') // And that it contains an 'email' and 'username' field
-      .eq('id', bountyData.creator_id)
+      .eq('id', rewardData.creator_id)
       .single();
 
     if (creatorUserError || !creatorUserData || !creatorUserData.email) {
@@ -111,13 +111,13 @@ serve(async (req) => {
     const collectorName = collectorProfileData?.username || 'An adventurous user';
 
     // 4. Construct and send email
-    const emailSubject = `🎉 Your Bounty "${bountyData.name}" has been collected!`;
+    const emailSubject = `🎉 Your Reward "${rewardData.name}" has been purchased!`;
     const emailBody = `
-      <p>Hi ${creatorUserData.username || 'Bounty Creator'},</p>
-      <p>Great news! Your bounty, <strong>${bountyData.name}</strong>, was just collected by <strong>${collectorName}</strong>.</p>
-      <p>Keep creating amazing bounties!</p>
+      <p>Hi ${creatorUserData.username || 'Reward Creator'},</p>
+      <p>Great news! Your reward, <strong>${rewardData.name}</strong>, was just purchased by <strong>${collectorName}</strong>.</p>
+      <p>Keep offering amazing rewards!</p>
       <p>Best,</p>
-      <p>The Bounty Hunter Team</p>
+      <p>The Rewards Store Team</p>
     `;
 
     await sendEmail(creatorUserData.email, emailSubject, emailBody);
@@ -143,27 +143,27 @@ Supabase CLI commands for local development and deployment:
 3. Start local Supabase services (if not already running for other backend dev):
    `supabase start`
 4. Serve the function locally:
-   `supabase functions serve notify-bounty-creator --no-verify-jwt --env-file ./supabase/.env.local`
+   `supabase functions serve notify-reward-creator --no-verify-jwt --env-file ./supabase/.env.local`
    (Create .env.local with SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY if using Resend)
 5. Test invocation (e.g., using curl or Postman):
-   curl -i --location --request POST 'http://localhost:54321/functions/v1/notify-bounty-creator' \
+   curl -i --location --request POST 'http://localhost:54321/functions/v1/notify-reward-creator' \
    --header 'Authorization: Bearer YOUR_SUPABASE_ANON_KEY' \
    --header 'Content-Type: application/json' \
    --data '{
-     "bounty_id": "your-bounty-uuid",
+     "reward_id": "your-reward-uuid",
      "collector_id": "collector-user-uuid"
    }'
 6. Deploy the function:
-   `supabase functions deploy notify-bounty-creator --no-verify-jwt`
+   `supabase functions deploy notify-reward-creator --no-verify-jwt`
 
 Invocation from RPC (purchase_bounty):
 
   -- Inside your plpgsql function, after successful purchase:
   PERFORM net.http_post(
-      url := supabase_url || '/functions/v1/notify-bounty-creator',
+      url := supabase_url || '/functions/v1/notify-reward-creator',
       headers := '{"Authorization": "Bearer " || supabase_anon_key, "Content-Type": "application/json"}',
       body := jsonb_build_object(
-          'bounty_id', p_bounty_id::text, 
+          'reward_id', p_reward_id::text, 
           'collector_id', p_collector_id::text
       )
   );
@@ -176,5 +176,5 @@ Invocation from RPC (purchase_bounty):
   -- However, Supabase is adding more direct plpgsql to edge function invocation methods. 
   -- The most robust way from PL/pgSQL might be to use `supabase.functions.invoke` if you were writing JS/TS logic that calls the RPC.
   -- For now, let's assume the RPC `purchase_bounty` will be updated to call this function. 
-  -- The direct invocation from JS client is: `await supabase.functions.invoke('notify-bounty-creator', { body: { bounty_id, collector_id } })`
+  -- The direct invocation from JS client is: `await supabase.functions.invoke('notify-reward-creator', { body: { reward_id, collector_id } })`
 */

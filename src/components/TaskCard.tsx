@@ -1,268 +1,366 @@
 // src/components/TaskCard.tsx
-// Transformed into a holographic bounty poster.
-// Applied .bounty-card-galactic style, added .bounty-header, and .status-indicator-bar.
-// Corrected JSX structure by removing duplicated code and extraneous characters.
-// Removed unused imports and variables (CheckCircle, currentUserId, user from useAuth).
-// Implemented dynamic header text ('BOUNTY'/'CONTRACT', 'CLAIM SUBMITTED', 'COLLECTED') and color based on task status and isCreator prop.
-// Ensured consistent header font size between collapsed and expanded views.
-// Updated status badge text: 'review' to 'Under Review', 'in_progress' to 'Open'.
-// Flipped TaskCard header logic: 'BOUNTY' for creator's view (Issued Bounties tab), 'CONTRACT' for assignee's view (Active Contracts tab).
-// Card component for displaying task information. Includes logic for status updates, proof submission, and an image lightbox for proof viewing.
-// Corrected type error for onStatusUpdate call and cleaned up unused type imports.
-// Added visual feedback for 'review' status and 'View proof' link.
-// Added Approve/Reject buttons for creators and updated onStatusUpdate prop to accept full TaskStatus.
-// Added collapsible functionality for a more compact display of completed tasks.
-// Changed reward icon from Award to DollarSign.
-// Added delete and edit buttons for task creators, and corresponding request props.
-// Added display for task description.
-// Fixed placeholder text bug and updated status badge for 'review' to 'Awaiting Approval' (yellow).
-// Phase 5B: Updated terminology for bounty/contract status and proof submission.
-// Phase 6 Part A.1: Added card state differentiation (CSS classes and icons) for active, claimed, and completed statuses.
-// Phase 6 Part A: Updated task titles for better typography hierarchy (text-2xl, font-bold, text-glow-cyan-md).
-// Phase 6 Part A: Made status badges (collapsed and expanded views) more prominent (text-sm, font-semibold, px-3).
-// Fix 2 (Phase 6): Hide regular status badge for 'completed' tasks to prevent overlap with 'CREDITS TRANSFERRED' stamp.
-// Phase 6 (Credit System UI): Added display for credit rewards (Coins icon and amount).
-// Phase 6 (Proof of Work): Integrated proof upload and display functionality.
-// Phase 6 (UI Enhancements): Improved card layout, added status icons, and refined action buttons.
-// Phase 6 (UX Improvements): Made task description collapsible, added confirmation for delete.
-// Phase 7 (Error Handling): Improved error messages for proof upload.
-// Phase 7 (Bug Fix): Fixed issue where proof modal wouldn't close on successful upload.
-// Phase 7 (Linting): Addressed various linting issues for cleaner code.
-// Phase 7 (Styling): Standardized button styles and hover effects.
-// Phase 7 (Refactor): Simplified status update logic.
-// Phase 8 (Task Editing): Added onEditTaskRequest prop and edit button.
-// Phase 9A: Implemented final card redesign with new grid layout and assignee name display.
-// Phase 10: Redesigned task cards with a "Route 66 Motel Sign" style.
-// Terminology Alignment: Changed StatusBadge text for 'review' status from 'Verifying' to 'Review'.
-// Changes:
-// - Replaced '🪙' emoji in CreditBadge with custom SpinningCoinIcon.
-// - Added 'Complete Task' button for assignees of credit tasks when status is 'pending'. This button now sets status to 'review'.
-// - Added console.logs for debugging 'Complete Task' button.
-// - Added 'Approve' and 'Reject' buttons for task creator when task status is 'review'.
-// - Corrected lucide-react icon imports to resolve lint errors.
+// REFACTOR: Implemented modal-based expansion system to fix layout bugs.
+// Expanded card now renders as a fixed-position overlay, separate from grid/flex flow.
+// Click collapsed card to open modal, click backdrop or 'Close' button to dismiss.
+// FONT FIX: Applied Futura font (via inline styles) to card titles, descriptions, and status text.
+// CRITICAL FIX: Uses React Portal (createPortal) for ImageLightbox.
+// UI REFINEMENT: Consolidated status display at the bottom of the expanded card modal.
+// DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Task, TaskStatus } from '../types/database';
-import { Check, FileEdit, Trash2, Upload, CheckCircle, XCircle, Calendar, User, ChevronDown } from 'lucide-react';
-import SpinningCoinIcon from './SpinningCoinIcon';
+import { FileEdit, Trash2, CheckCircle, ShieldCheck, Clock, Coins, FileVideo } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import ProofModal from './ProofModal';
 import ImageLightbox from './ImageLightbox';
+import { createPortal } from 'react-dom';
 
-interface TaskCardProps {
-  task: Task;
-  isCreator: boolean;
-  onStatusUpdate: (taskId: string, status: TaskStatus) => void;
-  onProofUpload: (file: File, taskId: string) => Promise<string | null>;
-  onDeleteTaskRequest: (taskId: string) => void;
-  onEditTaskRequest?: (task: Task) => void;
-  uploadProgress: number;
-  collapsible?: boolean;
+interface ProfileLite {
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
-const CreditBadge: React.FC<{ amount: string | number | null }> = ({ amount }) => {
-  const displayAmount = amount ? (typeof amount === 'string' ? parseInt(amount, 10) : amount) : 0;
-  if (isNaN(displayAmount)) {
-    return (
-      <div className="reward-badge"><SpinningCoinIcon size={18} className="mr-1.5" /><span>Invalid Amount</span></div>
-    );
+interface TaskWithDetails extends Task {
+  creator: ProfileLite | null;
+  assignee: ProfileLite | null;
+}
+
+interface TaskCardProps {
+  task: TaskWithDetails;
+  isCreatorView: boolean;
+  onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void;
+  onProofUpload: (file: File, taskId: string) => Promise<string | null>;
+  onDeleteTaskRequest: (taskId: string) => void;
+  onEditTaskRequest?: (task: TaskWithDetails) => void;
+  onApprove?: (taskId: string) => void;
+  onReject?: (taskId: string) => void;
+  uploadProgress: number;
+  currentUserCredits?: number;
+}
+
+const CountdownTimer: React.FC<{ deadline: string | null }> = ({ deadline }) => {
+  const calculateTimeLeft = () => {
+    if (!deadline) return null;
+    const difference = +new Date(deadline) - +new Date();
+    let timeLeft: { days?: number; hours?: number; minutes?: number; seconds?: number } = {};
+    if (difference > 0) {
+      timeLeft = {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+      };
+    }
+    return timeLeft;
+  };
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  useEffect(() => {
+    if (!deadline) return;
+    const timer = setTimeout(() => setTimeLeft(calculateTimeLeft()), 1000 * 60);
+    return () => clearTimeout(timer);
+  });
+  if (!timeLeft || Object.keys(timeLeft).length === 0) {
+    return <span className="text-xs text-red-400">Past Deadline</span>;
   }
   return (
-    <div className="credit-badge">
-      <SpinningCoinIcon size={18} className="mr-1.5" />
-      <span>{displayAmount.toLocaleString()}</span>
-    </div>
-  );
-};
-
-const StatusBadge: React.FC<{ status: TaskStatus, deadline: string | null }> = ({ status, deadline }) => {
-  const isOverdue = () => {
-    if (!deadline) return false;
-    return new Date(deadline) < new Date() && status === 'pending';
-  };
-
-  const getStatusText = () => {
-    if (status === 'in_progress') return 'Open';
-    if (status === 'review') return 'Review';
-    if (status === 'completed') return 'Completed';
-    if (status === 'rejected') return 'Rejected';
-    if (isOverdue()) return 'Overdue';
-    return 'Pending';
-  };
-
-  const getStatusColorClass = () => {
-    if (status === 'completed') return 'bg-green-500/20 text-green-400';
-    if (status === 'review') return 'bg-yellow-500/20 text-yellow-400';
-    if (status === 'rejected' || isOverdue()) return 'bg-red-500/20 text-red-400';
-    return 'bg-blue-500/20 text-blue-400';
-  };
-
-  return (
-    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColorClass()} capitalize`}>
-      {getStatusText()}
+    <span className="text-xs text-slate-400 flex items-center">
+      <Clock size={14} className="mr-1" />
+      {timeLeft.days !== undefined && timeLeft.days > 0 && `${timeLeft.days}d `}
+      {timeLeft.hours !== undefined && timeLeft.hours > 0 && `${timeLeft.hours}h `}
+      {`${timeLeft.minutes}m left`}
     </span>
   );
 };
 
-export default function TaskCard({
+const TaskCard: React.FC<TaskCardProps> = ({
   task,
-  isCreator,
+  isCreatorView,
   onStatusUpdate,
   onProofUpload,
   onDeleteTaskRequest,
   onEditTaskRequest,
+  onApprove,
+  onReject,
   uploadProgress,
-  collapsible: incomingCollapsiblePropValue = false,
-}: TaskCardProps) {
+  currentUserCredits,
+}) => {
   const { user } = useAuth();
   const [showProofModal, setShowProofModal] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const collapsible = !isCreator ? true : incomingCollapsiblePropValue;
-  const [isExpanded, setIsExpanded] = useState(!collapsible);
-
-  useEffect(() => {
-    if (collapsible) {
-      setIsExpanded(false);
-    } else {
-      setIsExpanded(true);
+  const getProofUrl = (path: string | null): string => {
+    if (!path) return '/placeholder-image.png';
+    try {
+      return supabase.storage.from('bounty-proofs').getPublicUrl(path).data.publicUrl;
+    } catch (error) {
+      console.error('Error getting public proof URL:', error);
+      return '/placeholder-image.png';
     }
-  }, [task.id, collapsible]);
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const handleProofSubmit = async (file: File) => {
-    await onProofUpload(file, task.id);
-    setShowProofModal(false);
+  const { id, title, description, assigned_to, created_by, deadline, reward_type, reward_text, status, proof_required, proof_url, creator, assignee } = task;
+
+  const actorName = isCreatorView ? (assignee?.display_name || 'N/A') : (creator?.display_name || 'N/A');
+  const fromName = creator?.display_name || 'Unknown';
+
+  const handleAction = async (newStatus: TaskStatus) => {
+    setActionLoading(true);
+    try {
+      const rewardAmount = reward_type === 'credit' && reward_text ? parseInt(reward_text, 10) : undefined;
+      await onStatusUpdate(id, newStatus, currentUserCredits, rewardAmount);
+    } catch (e) {
+      console.error("Action failed", e);
+    }
+    setActionLoading(false);
   };
+
+  const renderActionButtonsInModal = () => {
+    if (status === 'completed') {
+      return <div className="flex items-center text-green-500"><CheckCircle size={20} className="mr-2" />Completed</div>;
+    }
+    if (!isCreatorView && assigned_to === user?.id) {
+      if ((status === 'pending' || status === 'in_progress')) {
+        if (proof_required) {
+          return <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-primary w-full py-3 text-md" disabled={actionLoading}>{actionLoading ? 'Submitting...' : 'Submit Proof'}</button>;
+        }
+        return <button onClick={(e) => { e.stopPropagation(); handleAction('review'); }} className="btn-primary w-full py-3 text-md" disabled={actionLoading}>{actionLoading ? 'Completing...' : 'Complete Task'}</button>;
+      }
+    }
+    if (isCreatorView && created_by === user?.id) {
+      if (status === 'review') return null; // Approve/Reject are in their own section
+      if (status === 'pending' || status === 'in_progress' || status === 'rejected') {
+        return (
+          <div className="flex gap-2 w-full">
+            {onEditTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onEditTaskRequest) onEditTaskRequest(task); }} className="btn-secondary flex-1 py-2 text-sm"><FileEdit size={16} className="mr-1"/> Edit</button>}
+            <button onClick={(e) => { e.stopPropagation(); onDeleteTaskRequest(id); }} className="btn-danger flex-1 py-2 text-sm"><Trash2 size={16} className="mr-1"/> Delete</button>
+          </div>
+        );
+      }
+    }
+    return null;
+  };
+
+  const collapsedCardBgColor = status === 'pending'
+    ? 'bg-red-500/10 border-red-500/50 hover:border-red-400'
+    : status === 'review'
+    ? 'bg-yellow-500/10 border-yellow-500/50 hover:border-yellow-400'
+    : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
+
+  const modalBgColor = status === 'pending'
+    ? 'bg-red-900/90 border-2 border-red-500'
+    : status === 'review'
+    ? 'bg-yellow-900/90 border-2 border-yellow-500'
+    : status === 'completed'
+    ? 'bg-green-900/90 border-2 border-green-500'
+    : 'bg-slate-800 border border-slate-700'; // Fallback
+
+  const titleColorClass = status === 'pending'
+    ? 'text-red-700 dark:text-red-600'
+    : status === 'review'
+    ? 'text-yellow-700 dark:text-yellow-600'
+    : 'text-green-700 dark:text-green-600';
 
   return (
-    <div className="task-card-container">
-      <div className={`task-type-vertical ${
-        task.reward_type === 'credit' ? 'credit-type' : 
-        task.status === 'completed' ? 'completed-type' : ''
-      }`}>
-        <div className="vertical-text">
-          {(task.reward_type === 'credit' ? 'CREDIT' : 'BOUNTY')
-            .split('')
-            .map((letter, index) => (
-              <span key={index} className="letter">{letter}</span>
-            ))}
-        </div>
+    <>
+      {/* Collapsed Card Preview */}
+      <div
+        onClick={() => setIsExpanded(true)}
+        className={`task-card relative border-2 rounded-lg cursor-pointer transition-all duration-300 ease-in-out
+          ${isExpanded ? 'invisible opacity-0 scale-95' : 'visible opacity-100 scale-100'}
+          ${collapsedCardBgColor}
+          p-4 min-h-[80px] flex flex-col items-center justify-center text-center group hover:shadow-lg`}
+      >
+        <h3 
+          className={`collapsed-title text-lg font-bold text-center w-full px-2 overflow-hidden ${titleColorClass}`}
+          title={title} 
+        >
+          <span className="block truncate">
+            {title}
+          </span>
+        </h3>
       </div>
 
-      <div className="task-card-content">
-        <div className="task-header-row">
-          <div className="task-info">
-            <h3 className="task-title">{task.title}</h3>
-            <div className="task-meta">
-              <span className="meta-item">
-                <Calendar size={14} />
-                {formatDate(task.deadline)}
-              </span>
-              <span className="meta-item">
-                <User size={14} />
-                {task.profiles?.display_name || 'Unknown User'}
-              </span>
+      {/* Expanded Card Modal */}
+      {isExpanded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setIsExpanded(false)}
+          />
+
+          {/* Modal Content */}
+          <div
+            className={`relative z-[51] w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] overflow-y-auto flex flex-col animate-slideUp ${modalBgColor}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="mb-4 pb-4 border-b border-slate-700/50">
+              <h3 className="text-xl font-bold text-slate-100 break-words max-w-full overflow-hidden" title={title}>
+                {title}
+              </h3>
+              <p className="text-sm text-slate-400 mt-1">
+                {isCreatorView ? `To: ${actorName}` : `From: ${fromName}`}
+              </p>
             </div>
-          </div>
-          <div className="task-actions">
-            <StatusBadge status={task.status} deadline={task.deadline} />
-            {task.reward_type === 'credit' && (
-              <CreditBadge amount={task.reward_text} />
-            )}
-            <button
-              aria-label={isExpanded ? 'Collapse task details' : 'Expand task details'}
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="expand-toggle-btn"
-            >
-              <ChevronDown
-                className={`expand-toggle ${isExpanded ? 'expanded' : ''}`}
-              />
-            </button>
-          </div>
+
+            {/* Body */}
+            <div className="space-y-4 mb-6 flex-grow">
+              <div className="max-h-[300px] overflow-y-auto pr-2">
+                <p className="text-sm text-slate-300 whitespace-pre-wrap break-words" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {description || 'No description provided.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="flex flex-col space-y-1">
+                  <span className="text-slate-500 block">Reward:</span>
+                  {reward_text ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {reward_type === 'credit' ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-700 text-slate-200 text-xs">
+                          <Coins size={14} className="mr-1 text-amber-400" /> 
+                          <span>{reward_text} Credits</span>
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-200 text-xs break-all max-w-full">
+                          {reward_text}
+                        </span>
+                      )}
+                    </div>
+                  ) : <span className="text-slate-400">N/A</span>}
+                </div>
+                <div>
+                  <span className="text-slate-500 block mb-1">Proof:</span>
+                  {proof_required ? (
+                    <span className="px-3 py-1 rounded-full bg-blue-600/30 text-blue-300 text-xs flex items-center w-fit">
+                      <ShieldCheck size={14} className="mr-1.5" />
+                      Required
+                    </span>
+                  ) : <span className="text-slate-400">Not Required</span>}
+                </div>
+                <div>
+                  <span className="text-slate-500 block mb-1">Deadline:</span>
+                  {deadline ? <CountdownTimer deadline={deadline} /> : <span className="text-slate-400">No Deadline</span>}
+                </div>
+                 <div>
+                  <span className="text-slate-500 block mb-1">Status:</span>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full 
+                      ${status === 'pending' ? 'bg-red-500' : status === 'review' ? 'bg-yellow-500 animate-pulse' : status === 'completed' ? 'bg-green-500' : 'bg-slate-500'}`} 
+                    />
+                    <span className="text-sm font-medium text-slate-300 task-status-text capitalize" style={{ fontFamily: "'MandaloreRough', 'Mandalore', sans-serif" }}>
+                      {status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'Overdue' : 'OPEN') :
+                       status.replace('_', ' ')) : 'Unknown Status'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Review Section for Creator */}
+              {isCreatorView && status === 'review' && (
+                <div className="mt-4 p-4 rounded-lg bg-slate-700/50 border border-slate-600">
+                  <p className="text-sm text-slate-300 mb-2 font-semibold">Proof submitted by <span className="text-teal-400">{actorName}</span>:</p>
+                  {(() => {
+                    const proofDisplayUrl = getProofUrl(proof_url);
+                    if (task.proof_type === 'video') {
+                      return (
+                        <div className="w-full h-32 flex flex-col items-center justify-center text-sm text-slate-400 bg-slate-900/50 rounded-md mb-3">
+                          <FileVideo size={32} className="mb-2 text-teal-400" />
+                          <span>Video proof submitted. Consider adding a link if available.</span>
+                        </div>
+                      );
+                    } else if (proofDisplayUrl && proofDisplayUrl !== '/placeholder-image.png') {
+                      return (
+                        <img
+                          src={proofDisplayUrl}
+                          alt="Proof thumbnail"
+                          className="w-full max-h-60 object-contain rounded-md mb-3 cursor-pointer hover:opacity-80 transition-opacity bg-slate-900/50 p-1"
+                          onClick={(e) => { e.stopPropagation(); setLightboxImageUrl(proofDisplayUrl); setShowLightbox(true); }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.png'; }}
+                        />
+                      );
+                    } else {
+                      return <div className="w-full h-20 flex items-center justify-center text-sm text-slate-500 bg-slate-900/50 rounded-md mb-3">No proof image provided or URL is invalid.</div>;
+                    }
+                  })()}
+                  <div className="flex gap-3 w-full mt-3">
+                    {onApprove && <button onClick={(e) => { e.stopPropagation(); onApprove(id); }} className="btn-success flex-1 py-2 text-sm" disabled={actionLoading}>{actionLoading ? 'Approving...' : 'Approve'}</button>}
+                    {onReject && <button onClick={(e) => { e.stopPropagation(); onReject(id); }} className="btn-danger flex-1 py-2 text-sm" disabled={actionLoading}>{actionLoading ? 'Rejecting...' : 'Reject'}</button>}
+                  </div>
+                </div>
+              )}
+
+              {/* View Proof link for Assignee (if proof submitted) */}
+              {!isCreatorView && proof_url && (status === 'review' || status === 'completed' || status === 'rejected') && (
+                <div className="mt-4 p-4 rounded-lg bg-slate-700/50 border border-slate-600">
+                  <p className="text-sm text-slate-300 mb-2 font-semibold">Your Submitted Proof:</p>
+                   {(() => {
+                    const proofDisplayUrl = getProofUrl(proof_url);
+                    if (task.proof_type === 'video') {
+                      return (
+                        <div className="w-full h-32 flex flex-col items-center justify-center text-sm text-slate-400 bg-slate-900/50 rounded-md">
+                          <FileVideo size={32} className="mb-2 text-teal-400" />
+                          <span>Video proof submitted.</span>
+                        </div>
+                      );
+                    } else if (proofDisplayUrl && proofDisplayUrl !== '/placeholder-image.png') {
+                      return (
+                        <img
+                          src={proofDisplayUrl}
+                          alt="Your proof thumbnail"
+                          className="w-full max-h-60 object-contain rounded-md cursor-pointer hover:opacity-80 transition-opacity bg-slate-900/50 p-1"
+                          onClick={(e) => { e.stopPropagation(); setLightboxImageUrl(proofDisplayUrl); setShowLightbox(true); }}
+                           onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.png'; }}
+                        />
+                      );
+                    } else {
+                      return <div className="w-full h-20 flex items-center justify-center text-sm text-slate-500 bg-slate-900/50 rounded-md">No proof image available or URL is invalid.</div>;
+                    }
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="mt-auto pt-4 border-t border-slate-700 space-y-3">
+              {renderActionButtonsInModal()}
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="w-full text-sm text-slate-400 hover:text-slate-200 py-2 px-4 rounded-md border border-slate-600 hover:border-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                Close
+              </button>
+            </div>
+          </div> 
         </div>
+      )}
 
-        {isExpanded && (
-          <div className="task-details-content pt-4 mt-4 border-t border-cyan-300/20">
-            <p className="task-description text-sm text-slate-300 mb-4">{task.description || 'No description provided.'}</p>
-            <div className="task-footer-actions flex justify-between items-center">
-              {isCreator ? (
-                <div className="creator-actions flex items-center gap-2">
-                  {task.status === 'review' && (
-                    <>
-                      <button onClick={(e) => { e.stopPropagation(); onStatusUpdate(task.id, 'completed'); }} className="btn-approve">
-                        <CheckCircle size={16} /> Approve
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); onStatusUpdate(task.id, 'rejected'); }} className="btn-reject">
-                        <XCircle size={16} /> Reject
-                      </button>
-                    </>
-                  )}
-                  <button aria-label="Edit task" onClick={(e) => { e.stopPropagation(); onEditTaskRequest?.(task); }} className="btn-edit">
-                      <FileEdit size={16} />
-                  </button>
-                  <button aria-label="Delete task" onClick={(e) => { e.stopPropagation(); onDeleteTaskRequest(task.id); }} className="btn-delete">
-                      <Trash2 size={16} />
-                  </button>
-                </div>
-              ) : task.status === 'review' && user?.id === task.created_by ? (
-                <div className="creator-actions review-actions">
-                  <button onClick={(e) => { e.stopPropagation(); console.log('[TaskCard] Approve button clicked for task ID:', task.id); onStatusUpdate(task.id, 'completed'); }} className="btn-approve">
-                    <CheckCircle size={16} /> Approve
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); console.log('[TaskCard] Reject button clicked for task ID:', task.id); onStatusUpdate(task.id, 'rejected'); }} className="btn-reject">
-                    <XCircle size={16} /> Reject
-                  </button>
-                </div>
-              ) : (
-                <div className="assignee-actions">
-                  {task.assigned_to === user?.id && task.status === 'in_progress' && (
-                    <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-submit-proof">
-                      <Upload size={16} /> Submit Proof
-                    </button>
-                  )}
-                  {task.assigned_to === user?.id && task.status === 'pending' && task.reward_type === 'credit' && (
-                    <button onClick={(e) => { 
-                      e.stopPropagation(); 
-                      console.log('[TaskCard] Complete Task button clicked for task ID:', task.id, 'Setting status to review.');
-                      onStatusUpdate(task.id, 'review'); 
-                    }} className="btn-complete-task">
-                      <Check size={16} /> Complete Task
-                    </button>
-                  )}
-                </div>
-              )}
-              {task.status === 'review' && task.proof_url && (
-                <a href="#" onClick={(e) => { e.stopPropagation(); setLightboxImageUrl(task.proof_url); setShowLightbox(true); }} className="link-view-proof">
-                  View proof
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
+      {/* Proof Submission Modal (Portal) */}
       {showProofModal && (
         <ProofModal
           onClose={() => setShowProofModal(false)}
-          onSubmit={handleProofSubmit}
+          onSubmit={async (file) => {
+            setActionLoading(true);
+            await onProofUpload(file, id);
+            setActionLoading(false);
+            setShowProofModal(false);
+          }}
           uploadProgress={uploadProgress}
         />
       )}
 
-      {showLightbox && lightboxImageUrl && (
-        <ImageLightbox
-          src={lightboxImageUrl}
-          alt="Proof of completion"
-          onClose={() => setShowLightbox(false)}
-        />
-      )}
-    </div>
+      {/* Image Lightbox (Portal) */}
+      {showLightbox && lightboxImageUrl &&
+        createPortal(
+          <ImageLightbox src={lightboxImageUrl as string} alt="Proof of completion" onClose={() => setShowLightbox(false)} />,
+          document.body
+        )}
+    </>
   );
 }
+
+export default TaskCard;

@@ -1,6 +1,7 @@
 // src/pages/ProfileEdit.tsx
 // Page for users to edit their profile (display name and avatar)
 // Removed direct fetchProfile call. Removed manual updated_at (handled by DB trigger).
+// Renamed local loading state to isSubmitting to avoid conflict with authLoading.
 
 import { useState, useEffect, ChangeEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -8,11 +9,11 @@ import { supabase } from '../lib/supabase';
 import { UserCircle, Edit3, UploadCloud, AlertCircle } from 'lucide-react';
 
 export default function ProfileEdit() {
-  const { user, profile } = useAuth(); // Removed fetchProfile
+  const { user, profile, loading: authLoading } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -42,7 +43,7 @@ export default function ProfileEdit() {
     e.preventDefault();
     if (!user) return;
 
-    setLoading(true);
+    setIsSubmitting(true);
     setError(null);
     setSuccess(null);
 
@@ -85,11 +86,11 @@ export default function ProfileEdit() {
       console.error('Error updating profile:', err);
       setError((err as Error).message || 'An unknown error occurred.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (!profile) {
+  if (authLoading) {
     return (
       <div className="max-w-lg mx-auto glass-card p-8 text-center">
         Loading profile...
@@ -139,14 +140,14 @@ export default function ProfileEdit() {
             id="displayName"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="input-field w-full"
+            className="input-field w-full text-white"
             placeholder="Your public display name"
           />
         </div>
 
         {/* Submit Button */} 
-        <button type="submit" className="btn-primary w-full" disabled={loading}>
-          {loading ? 'Saving...' : 'Save Changes'}
+        <button type="submit" className="btn-primary w-full" disabled={isSubmitting || authLoading}>
+          {isSubmitting ? 'Saving...' : 'Save Changes'}
         </button>
 
         {/* Status Messages */} 

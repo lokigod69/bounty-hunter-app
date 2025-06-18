@@ -6,6 +6,9 @@
 // Phase 6 (Credit System UI): Added Contract Type selector, conditional reward inputs, removed redundant rewardType state, and removed unused RewardType import.
 // Phase 7 (Critical Fix): Ensured modal closes only on successful task submission in handleSubmit.
 // Phase 8 (Backend Ready): Updated error handling in handleSubmit to use toast.error with error.message. Refined error typing in catch block.
+// Phase 9 (Proof Required): Added 'proof_required' checkbox and associated logic.
+// Phase 10 (Issued Page Refresh): Added isSubmitting state for loading indicator on submit button.
+// Styling Update: Applied requested styling to credit dropdown, including bg-gray-800 for options (browser compatibility may vary).
 
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Award, Users } from 'lucide-react';
@@ -28,7 +31,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const [deadline, setDeadline] = useState('');
   const [contractType, setContractType] = useState<'bounty' | 'credit'>('bounty'); // New state for contract type
   const [rewardText, setRewardText] = useState(''); // For bounty description or credit amount
+  const [proofRequired, setProofRequired] = useState(false); // New state for proof requirement
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Set default assignee if there's only one friend
@@ -53,6 +58,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         setRewardText(editingTask.reward_text || '');
         // editingTask.reward_type will be used by the payload logic if it's not 'credit'
       }
+      setProofRequired(editingTask.proof_required || false);
     } else {
       // Reset form for creation mode or if editingTask is cleared
       setTitle('');
@@ -61,6 +67,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       setDeadline('');
       setContractType('bounty'); // Default to bounty for new tasks
       setRewardText('');
+      setProofRequired(false); // Reset proof required for new tasks
     }
   }, [editingTask, friends]);
 
@@ -99,7 +106,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       deadline: deadline || null,
       reward_type: contractType === 'credit' ? 'credit' : 'text', // Explicitly set 'text' for bounty, 'credit' for credit
       reward_text: rewardText.trim() ? rewardText.trim() : (contractType === 'credit' ? '0' : undefined), // Ensure credit has a value, bounty can be undefined
+      proof_required: proofRequired, // Add proof_required to payload
     };
+    setIsSubmitting(true);
     try {
       await onSubmit(taskPayload, editingTask ? editingTask.id : undefined);
       onClose(); // Only close if onSubmit was successful
@@ -112,6 +121,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       toast.error(errorMessage);
       // Optionally, set a form-level error message here to display to the user
       // setErrors(prev => ({ ...prev, form: 'Submission failed. Please try again.' }));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -268,21 +279,38 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 onChange={(e) => setRewardText(e.target.value)}
                 className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
               >
-                <option value="1">1 Credit - Quick task</option>
-                <option value="2">2 Credits - Small chore</option>
-                <option value="3">3 Credits - Medium task</option>
-                <option value="5">5 Credits - Large task</option>
-                <option value="10">10 Credits - Major task</option>
+                {/* Note: Styling <option> tags with background colors has limited cross-browser support. The select box itself is styled. */}
+                <option className="bg-gray-800 text-white" value="1">1 Credit - Quick task</option>
+                <option className="bg-gray-800 text-white" value="2">2 Credits - Small chore</option>
+                <option className="bg-gray-800 text-white" value="3">3 Credits - Medium task</option>
+                <option className="bg-gray-800 text-white" value="5">5 Credits - Large task</option>
+                <option className="bg-gray-800 text-white" value="10">10 Credits - Major task</option>
               </select>
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
             </div>
           )}
-          {/* Submit Button */}
-          <div className="pt-2">
-            <button type="submit" className="btn-primary w-full">
-              {editingTask ? 'Save Changes' : 'Create Contract'}
-            </button>
+
+          {/* Proof Required Checkbox */}
+          <div className="flex items-center">
+            <input
+              id="proofRequired"
+              type="checkbox"
+              checked={proofRequired}
+              onChange={(e) => setProofRequired(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
+            />
+            <label htmlFor="proofRequired" className="text-sm text-[var(--text-secondary)]">
+              Proof Required?
+            </label>
           </div>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (editingTask ? 'Saving...' : 'Creating...') : (editingTask ? 'Save Changes' : 'Create Contract')}
+          </button>
         </form>
       </div>
     </div>

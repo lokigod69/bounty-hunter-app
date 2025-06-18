@@ -1,4 +1,6 @@
 // src/components/Layout.tsx
+// Added 'app-title' class to header text for MandaloreTitle font styling.
+// Removed unused 'Gift' import.
 // Main layout component with navigation, app name changed to 'Bounty Hunter'.
 // Changed desktop user menu to click-to-toggle for better UX.
 // Integrated useClickOutside hook to close desktop user menu on outside click.
@@ -6,12 +8,17 @@
 // Applied new galactic theme styling to navigation items.
 // Added 'NEW CONTRACT' button to the header navigation area with cyan holographic style.
 // Phase 6 Part B: Added CursorTrail component for laser cursor effect.
-// Phase 8: Integrated UserCredits display widget. Added 'Daily Contracts', 'Bounty Store', and 'My Bounties' to navigation.
+// Phase 8: Integrated UserCredits display widget. Added 'Bounty Store', and 'My Bounties' to navigation. Removed 'Daily Contracts' and associated icon import.
+// Added scroll effect to header, disabled when mobile menu is open.
+// Added 'NEW CONTRACT' button to the mobile navigation menu.
+// Added 'Issued' navigation link. Updated 'NEW CONTRACT' button to point to '/issued'.
+// Added 'Rewards' placeholder navigation link.
+// Renamed 'Dashboard' navigation label to 'Contracts'.
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, Menu, X, Home, Users, UserCog, Plus, Briefcase, ShoppingCart, Sparkles } from 'lucide-react'; // Added Briefcase, ShoppingCart, Sparkles // Added UserCog, Plus, removed DollarSign
+import { LogOut, Menu, X, Home, Users, UserCog, Plus, ShoppingCart, Sparkles, Send } from 'lucide-react'; // Added ShoppingCart, Sparkles, Send // Added UserCog, Plus, removed DollarSign, removed Briefcase, removed Gift
 import logo from '../assets/logo5.png'; // Added logo
 import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; // Import the new component
@@ -24,6 +31,7 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
@@ -48,6 +56,14 @@ export default function Layout() {
   };
 
   // Close user menu when clicking outside
+    useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useClickOutside(userMenuRef, () => {
     if (userMenuOpen) {
       closeUserMenu();
@@ -56,10 +72,10 @@ export default function Layout() {
 
   // Navigation items
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
-    { name: 'Daily Contracts', path: '/daily-contracts', icon: <Briefcase size={20} /> },
-    { name: 'Bounty Store', path: '/bounty-store', icon: <ShoppingCart size={20} /> },
-    { name: 'My Bounties', path: '/my-bounties', icon: <Sparkles size={20} /> },
+    { name: 'Contracts', path: '/', icon: <Home size={20} /> },
+    { name: 'Issued', path: '/issued', icon: <Send size={20} /> },
+    { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> }, // Corrected path to rewards-store
+    { name: 'My Rewards', path: '/my-rewards', icon: <Sparkles size={20} /> }, // Corrected path and name to my-rewards
     { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
   ];
 
@@ -75,7 +91,8 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
-      <header className="glass-card bg-indigo-900/50 border-b border-white/10 sticky top-0 z-50">
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled && !mobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
+
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
@@ -84,7 +101,7 @@ export default function Layout() {
               alt="Bounty Hunter Logo" 
               className="h-10 w-10"
             />
-            <h1 className="text-xl font-bold gradient-text">Bounty Hunter</h1>
+            <span className="app-title text-2xl font-bold text-white">BOUNTY HUNTER</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -110,7 +127,7 @@ export default function Layout() {
             <UserCredits />
             {/* New Contract Button */}
             <Link
-              to="/"
+              to="/issued"
               state={{ openNewContractForm: true }}
               className="btn-primary flex items-center"
             >
@@ -187,6 +204,17 @@ export default function Layout() {
       {mobileMenuOpen && (
         <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg">
           <div className="container mx-auto px-4 py-6 flex flex-col h-full">
+            {/* New Contract Button for Mobile */}
+            <Link
+              to="/issued"
+              state={{ openNewContractForm: true }}
+              onClick={closeMobileMenu}
+              className="btn-primary flex items-center justify-center mb-6"
+            >
+              <Plus size={20} className="mr-2" />
+              NEW CONTRACT
+            </Link>
+
             {/* User Profile */}
             <div className="flex items-center space-x-3 p-4 mb-6 glass-card">
               <div className="w-12 h-12 rounded-full overflow-hidden">

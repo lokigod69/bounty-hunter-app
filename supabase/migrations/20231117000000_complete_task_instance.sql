@@ -2,7 +2,7 @@
 -- This migration creates the RPC for completing a recurring task instance.
 -- It handles two cases:
 -- 1. If proof is not required, it marks the task as 'completed' and awards credits immediately.
--- 2. If proof is required, it sets the status to 'review' and stores the proof description.
+-- 2. If proof is required, it validates that proof is provided, sets the status to 'review', and stores the proof description.
 
 CREATE OR REPLACE FUNCTION complete_task_instance(instance_id_param UUID, user_id_param UUID, proof_description_param TEXT DEFAULT NULL)
 RETURNS TABLE (j JSONB) AS $$
@@ -39,6 +39,12 @@ BEGIN
     RETURN QUERY SELECT jsonb_build_object('success', TRUE, 'message', 'Task completed and credits awarded.');
   -- Case 2: Proof is required
   ELSE
+    -- Enforce proof submission if required
+    IF proof_description_param IS NULL OR TRIM(proof_description_param) = '' THEN
+      RETURN QUERY SELECT jsonb_build_object('success', FALSE, 'message', 'Proof is required for this task and was not provided.');
+      RETURN;
+    END IF;
+
     UPDATE public.recurring_task_instances
     SET status = 'review', proof_description = proof_description_param
     WHERE id = instance_id_param;

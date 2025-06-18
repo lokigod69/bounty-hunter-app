@@ -1,143 +1,52 @@
 // src/pages/Dashboard.tsx
-// Main dashboard component to display user tasks and related information.
-// Changes:
-// - Removed floating "Bounties" page title and central purple "+" button (Phase 5A, Step 1).
-// - Added 'NEW CONTRACT' button handling (Phase 5A, Step 2).
-// - Added 'ACTIVE CONTRACTS' contextual page header (Phase 5A, Step 3).
-// - Changed main page title to "Bounties" (before removal).
-// - Replaced "Rewards Summary" card with a "Hunter's Creed" card (formerly "Daily Quote"), now powered by useDailyQuote hook for dynamic quotes (Phase 5B, Step 4). Corrected variable name and accessed .text property for display.
-// Phase 5B (cont.): Corrected title in error block. Changed 'Under Review' to 'Guild Verification'. Updated stats card titles ('Hunter's Creed', 'Contract Status') and delete confirmation modal text.
-// - Renamed page title from "Username's Dashboard" to "Username's Hitlist" (intermediate step).
-// - Set "Created Tasks" (active, non-review/completed) to be collapsed by default.
-// - Renamed "Open Tasks" tab to "Active Contracts".
-// - Renamed "Sent Tasks" tab to "Issued Bounties".
-// - Renamed "My Active Tasks" section title to "My Bounties".
-// - Reordered sections in 'Active Contracts' (formerly 'My Tasks') tab: 'My Bounties' now appears before 'Under Review'.
-// - Renamed 'Awaiting Approval' section title to 'Under Review'.
-// - Renamed 'My Bounties' section to 'My Contracts' under 'Active Contracts' tab.
-// - Renamed 'Other Active Tasks' section to 'My Bounties' under 'Open Bounties' tab (Open sub-tab).
-// - Renamed 'Issued Bounties' main tab to 'Open Bounties'.
-// - Renamed 'Active' sub-tab under 'Open Bounties' to 'Open'.
-// - Fixed lint errors: removed unused 'Award' import, 'rewards' variable/calculation, and 'profile' variable.
-// - Previous changes include: useTasks hook, proof upload, TaskStatus import, type fixes, createTask mapping,
-//   tab names, empty states, switch button logic, loading skeletons, 'review' status tasks,
-//   collapsible completed tasks, task deletion/editing, sub-tabs for created tasks.
-// Phase 7 (UI Improvement): Renamed 'Guild Verification' to 'Verifying'. Implemented 'My Contracts' & 'Verifying' sub-tabs. Removed duplicated helpers. Comprehensively restored 'createdTasks' tab structure, stats cards, and modals. Fixed all outstanding JSX parsing errors and ensured correct component layout. This resolves issues from previous incomplete/corrupted edits. Added missing function closing brace, icon/modal imports, state variables. Corrected daily quote hook usage, ConfirmDeleteModal props, and task setter calls in handlers. Removed unused TaskStatus import. Removed unused taskToDeleteId state, fixed task list var in handleDeleteTaskRequest, added toast import, typed 't' param, and simplified dailyQuote display. Removed unused editingTask state and replaced its remaining usages.
-// Phase 8: Updated error display for useTasks hook. Removed defaultCollapsed prop from TaskCard instances as it's no longer used.
-// Mobile Terminology Alignment: Changed 'MY TASKS' to 'ACTIVE CONTRACTS', 'My Tasks' tab to 'Active Contracts', 'My Contracts' sub-tab to 'Contracts', and 'Verifying' sub-tab to 'Review' for mobile view consistency.
-// Card Styling: Standardized stats cards to use Tailwind glassmorphism (bg-gray-800/50, backdrop-blur, border, p-6, hover:border-gray-600).
-// Linting Note: The inline style around line ~420 for setting CSS custom properties (`--laser-color`, `--random-x`, `--random-y`) is a deliberate and necessary choice. It allows dynamic JavaScript values to be passed to CSS for animations defined in `index.css`. This is a standard React pattern for such dynamic styling requirements.
+// Refactored Dashboard to "My Contracts" view.
+// - Displays only contracts ASSIGNED TO the current user.
+// - Removes legacy tabbed UI and multi-view logic.
+// - Uses `useAssignedContracts` hook for data fetching.
+// - Sorts contracts by status: pending (top), review (middle), completed (bottom).
+// - TaskCard interactions (status updates, proof uploads, deletions) are effectively DISABLED
+//   as `useAssignedContracts` hook (v1) only returns read-only data.
+//   Handler functions are provided to TaskCard to satisfy prop requirements but will be no-ops.
+// - Lint fixes applied for hasOwnProperty, error message access, unused parameter warnings, and dailyQuote property access.
+// - Renamed 'Action Needed' status to 'OPEN' in the summary card.
+// - Removed unused 'user' variable.
+// - Implemented handleStatusUpdate to update task status in Supabase (now skips 'review' for non-proof tasks).
+// - Implemented handleProofUpload to upload proof to Supabase Storage (bucket name corrected to 'bounty-proofs') and update task, now including proof_type detection (image/video).
+// - Updated summary card icons: 'OPEN' uses ScrollText (red), 'In Review' uses Clock (yellow).
+// - Redesigned summary cards to a minimalist icon-based flex layout.
+// - Removed unused FileText import.
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { useTasks } from '../hooks/useTasks';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth'; // Added for user context
+import { supabase } from '../lib/supabase'; // Added for Supabase client
+import { useAssignedContracts } from '../hooks/useAssignedContracts'; // Renamed from useTasks
 import TaskCard from '../components/TaskCard';
-import TaskForm from '../components/TaskForm';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TaskCardSkeleton from '../components/TaskCardSkeleton';
-import { Plus, ChevronLeft, Clock, AlertTriangle, CheckCircle, ScrollText, DatabaseZap } from 'lucide-react';
-import { useDailyQuote } from '../hooks/useDailyQuote'; // Added Daily Quote Hook
+import { Clock, AlertTriangle, CheckCircle, ScrollText, DatabaseZap } from 'lucide-react';
+import { useDailyQuote } from '../hooks/useDailyQuote';
 import { toast } from 'react-hot-toast';
-import type { Task, ProofType, NewTaskData } from '../types/database';
-
-
+import type { Task, TaskStatus } from '../types/database'; // Added TaskStatus
 
 export default function Dashboard() {
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-  const { user } = useAuth();
+  const { user } = useAuth(); // Get current user
   const {
-    assignedTasks,
-    createdTasks,
+    contracts: assignedContracts, // Renamed from tasks
     loading,
     error,
-    uploadProgress,
-    createTask,
-    updateTaskStatus,
-    uploadProof,
-    deleteTask,
-    updateTask,
-  } = useTasks(user);
+    refetch: refetchAssignedContracts, // Assuming refetch function is provided by the hook
+  } = useAssignedContracts();
 
-  const [activeTab, setActiveTab] = useState<'myTasks' | 'createdTasks'>('myTasks');
-  const [showTaskForm, setShowTaskForm] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
-  const [createdTasksView, setCreatedTasksView] = useState<'active' | 'review' | 'completed'>('active');
-  const [activeContractTab, setActiveContractTab] = useState<'my' | 'verifying' | 'completed'>('my'); // New state for sub-tabs in Active Contracts
-  const [mobileActiveSection, setMobileActiveSection] = useState<'contracts' | 'bounties'>('contracts');
-  const [isMobile, setIsMobile] = useState(false);
-  const [laserBeams, setLaserBeams] = useState<Array<{id: number, color: string, randomX: number, randomY: number}>>([]);
-  const [boxDestroyed, setBoxDestroyed] = useState(false);
-  const [breakoutThreshold] = useState(Math.floor(Math.random() * 16) + 5); // 5-20, for future use in Phase 2
-  const dailyQuote = useDailyQuote(); // Hook returns Quote | null directly
-
-  const laserColors = ['#00ffff', '#ff0000', '#ffff00', '#00ff00']; // cyan, red, yellow, green
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const triggerBreakout = (currentBeamCount: number) => {
-    if (currentBeamCount < breakoutThreshold || boxDestroyed) return;
-
-    const box = document.querySelector('.laser-divider-container');
-    if (box) {
-      box.classList.add('breaking-out');
-    }
-    
-    setTimeout(() => {
-      setBoxDestroyed(true);
-    }, 2000); // Duration of escape + dissolve animations
-  };
-
-  const handleLaserBoxClick = () => {
-    if (boxDestroyed) return;
-
-    // If we are already at the threshold, the next click triggers the breakout immediately.
-    if (laserBeams.length >= breakoutThreshold) {
-      triggerBreakout(laserBeams.length);
-      return;
-    }
-
-    const colorIndex = laserBeams.length % laserColors.length;
-    const newLaser = {
-      id: Date.now() + Math.random(),
-      color: laserColors[colorIndex],
-      randomX: (Math.random() - 0.5) * 2,
-      randomY: (Math.random() - 0.5) * 2,
-    };
-
-    const newBeams = [...laserBeams, newLaser];
-    setLaserBeams(newBeams);
-
-    // Check if the new laser meets or exceeds the threshold
-    if (newBeams.length >= breakoutThreshold) {
-      // Use a short timeout to allow the final laser to render before starting the breakout
-      setTimeout(() => triggerBreakout(newBeams.length), 100);
-    }
-  };
-
-  useEffect(() => {
-    if (location.state?.openNewContractForm) {
-      setShowTaskForm(true);
-      // Clear the state to prevent re-opening on refresh or back navigation
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
+  const dailyQuote = useDailyQuote();
 
   const handleDeleteTaskRequest = (taskId: string) => {
-    const task = assignedTasks.find((t: Task) => t.id === taskId) || createdTasks.find((t: Task) => t.id === taskId);
+    const task = assignedContracts.find((t: Task) => t.id === taskId);
     if (task) {
       setTaskToDelete(task);
-      setIsDeleteModalOpen(true);
+      setIsDeleteModalOpen(true); // Modal will show, but confirm action is disabled.
     } else {
       console.error('Task not found for deletion:', taskId);
       toast.error('Could not find task to delete.');
@@ -146,164 +55,149 @@ export default function Dashboard() {
 
   const handleCloseDeleteModal = () => {
     setIsDeleteModalOpen(false);
-    setTaskToDelete(null); // Clear the task object
-    setIsDeleting(false); // Reset deleting state when modal closes
+    setTaskToDelete(null);
+    setIsDeleting(false);
   };
 
   const handleConfirmDeleteTask = async () => {
-    if (taskToDelete && taskToDelete.id) {
-      setIsDeleting(true);
-      await deleteTask(taskToDelete.id);
-      handleCloseDeleteModal();
-    }
+    console.warn('handleConfirmDeleteTask called, but deleteTask is not available from useAssignedContracts.');
+    toast.error('Delete functionality is currently disabled.');
   };
-
-
-  const handleEditTaskRequest = (task: Task) => {
-    setTaskToEdit(task);
-    setIsEditFormOpen(true);
-    setShowTaskForm(false); // Ensure create form is not also open
-  };
-
-  const handleCloseEditForm = () => {
-    setIsEditFormOpen(false);
-    setTaskToEdit(null);
-  };
-
-  const handleFormSubmit = async (taskData: NewTaskData, taskId?: string) => {
-    if (!user?.id) return;
-
-    if (taskId && taskToEdit) { // Editing existing task
-      await updateTask(taskId, taskData);
-    } else { // Creating new task
-      await createTask(taskData);
-    }
-    setShowTaskForm(false);
-    handleCloseEditForm();
-  };
-
-  // const activeTasks = activeTab === 'myTasks' ? assignedTasks : createdTasks; // No longer needed, specific empty states per tab/sub-tab
-  // For "My Tasks" tab
-  const myPendingTasks = assignedTasks.filter((task: Task) => task.status === 'pending' || task.status === 'in_progress');
-  const myReviewTasks = assignedTasks.filter((task: Task) => task.status === 'review');
-  const myCompletedTasks = assignedTasks.filter((task: Task) => task.status === 'completed');
-
-  // For "Created Tasks" tab - these will be further filtered by createdTasksView
-  const createdActiveSubFilter = createdTasks.filter((task: Task) => task.status === 'pending' || task.status === 'in_progress');
-  const createdReviewTasks = createdTasks.filter(task => task.status === 'review');
-  const createdCompletedSubFilter = createdTasks.filter((task: Task) => task.status === 'completed');
-
-  // Determine tasks to display based on activeTab and createdTasksView
-  const tasksToDisplayPending = activeTab === 'myTasks' ? myPendingTasks : (createdTasksView === 'active' ? createdActiveSubFilter.filter(t => t.status === 'pending' || t.status === 'in_progress') : []);
-  const tasksToDisplayCompleted = activeTab === 'myTasks' ? myCompletedTasks : (createdTasksView === 'completed' ? createdCompletedSubFilter : []);
 
   const handleProofUpload = async (file: File, taskId: string): Promise<string | null> => {
+    if (!user) {
+      toast.error('You must be logged in to upload proof.');
+      return null;
+    }
     try {
-      let proofType: ProofType = 'document'; // Default proof type
+      // Upload to Supabase Storage
+      const fileName = `proofs/${taskId}/${Date.now()}_${file.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('bounty-proofs') // Corrected bucket name
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Determine proof_type based on file MIME type
+      let proofType: 'image' | 'video' | null = null;
       if (file.type.startsWith('image/')) {
         proofType = 'image';
       } else if (file.type.startsWith('video/')) {
         proofType = 'video';
+      } else {
+        // Fallback or error handling for unknown types if necessary
+        // For now, we'll allow null if not image/video, or default to image
+        // console.warn(`Unknown proof file type: ${file.type}. Defaulting to 'image'.`);
+        // proofType = 'image'; // Or handle as an error/allow null
+        // For this implementation, let's default to image if type is not explicitly video
+        // to maintain previous behavior for non-standard image types not caught by 'image/*'
+        // but if it's not video, we'll treat it as an image for display purposes.
+        // A more robust solution might involve more specific MIME type checks or server-side validation.
+        proofType = file.type.startsWith('video/') ? 'video' : 'image'; 
       }
-      // Add more specific types if needed, e.g., for 'link'
 
-      const result = await uploadProof({ taskId, file, proofType });
-      return result === false ? null : result; // Convert false to null
-    } catch (e) {
-      console.error("Failed to upload proof in Dashboard:", e);
+      // Update task with proof URL, proof_type, and set status to 'review'
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({
+          proof_url: uploadData.path,
+          status: 'review' as TaskStatus,
+          proof_type: proofType,
+        })
+        .eq('id', taskId)
+        .eq('assigned_to', user.id); // Security: only assigned user can submit proof
+
+      if (updateError) throw updateError;
+
+      toast.success('Proof uploaded successfully and task is now in review.');
+      if (refetchAssignedContracts) refetchAssignedContracts();
+      return uploadData.path;
+    } catch (error: unknown) {
+      console.error('Proof upload failed:', error);
+      let message = 'Failed to upload proof.';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
       return null;
     }
   };
-  
-  const getEmptyStateIcon = () => {
-    if (activeTab === 'myTasks') {
-      return <CheckCircle size={32} className="text-teal-400" />;
+
+  const handleStatusUpdate = async (taskId: string, status: TaskStatus) => {
+    if (!user) {
+      toast.error('You must be logged in to update status.');
+      return;
     }
-    return <Plus size={32} className="text-purple-400" />;
-  };
-  
-  const getEmptyStateTitle = () => {
-    return activeTab === 'myTasks' ? 'All caught up!' : 'No tasks created yet';
+    try {
+      // First get the task to check if proof is required
+      const { data: task, error: fetchError } = await supabase
+        .from('tasks')
+        .select('proof_required')
+        .eq('id', taskId)
+        .eq('assigned_to', user.id) // Ensure we are only fetching tasks assigned to the user
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!task) {
+        toast.error('Task not found or not assigned to you.');
+        return;
+      }
+
+      // If no proof required and trying to complete (which TaskCard sends as 'review'), go straight to completed
+      const finalStatus = (!task.proof_required && status === 'review')
+        ? 'completed' as TaskStatus
+        : status;
+
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ status: finalStatus })
+        .eq('id', taskId)
+        .eq('assigned_to', user.id); // Double check assignment on update
+
+      if (updateError) throw updateError;
+
+      toast.success(finalStatus === 'completed' ? 'Task completed!' : 'Status updated');
+      if (refetchAssignedContracts) refetchAssignedContracts(); // Refresh the list
+    } catch (error: unknown) {
+      console.error('Status update failed:', error);
+      let message = 'Failed to update status.';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
+    }
   };
 
-  const getEmptyStateMessage = () => {
-    if (activeTab === 'myTasks') {
-      return "You don't have any tasks assigned to you yet.";
-    }
-    return "These are open tasks you've assigned to others. Create one now!";
-  };
-
-  const getEmptyStatePrimaryAction = () => {
-    if (activeTab === 'myTasks') {
-      return (
-        <button
-          onClick={() => setActiveTab('createdTasks')}
-          className="tab-button"
-        >
-          Created Tasks ({createdTasks.length})
-        </button>
-      );
-    }
-    return (
-      <button
-        onClick={() => setShowTaskForm(true)}
-        className="btn-primary mt-4 inline-flex items-center"
-      >
-        <Plus size={18} className="mr-2" /> Create a Task
-      </button>
-    );
-  };
-
-  const getEmptyStateSecondaryAction = () => {
-    if (activeTab === 'createdTasks') {
-      return (
-        <button
-          onClick={() => setActiveTab('myTasks')}
-          className="btn-secondary mt-4 ml-2 inline-flex items-center"
-        >
-          <ChevronLeft size={18} className="mr-2" /> Switch to My Tasks
-        </button>
-      );
-    }
-    return null;
-  };
+  // Sort assigned contracts by status
+  const sortedAssignedContracts = [...assignedContracts].sort((a, b) => {
+    const order: Record<string, number> = {
+      pending: 0,
+      in_progress: 0, // Treat in_progress same as pending for sorting
+      review: 1,
+      completed: 2,
+      rejected: 0, // Treat rejected same as pending
+      overdue: 0, // Treat overdue same as pending
+    };
+    // Handle null or undefined status as 'pending'
+    const statusA = a.status || 'pending';
+    const statusB = b.status || 'pending';
+    return order[statusA] - order[statusB];
+  });
 
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-6 animate-pulse">
-        {/* Skeleton for Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <div className="h-9 bg-slate-700 rounded w-1/2 sm:w-1/3"></div> {/* Title placeholder */}
-          <div className="h-10 bg-slate-700 rounded w-full sm:w-auto sm:px-16"></div> {/* Button placeholder */}
-        </div>
-
-        {/* Skeleton for Stats Cards */}
+        <div className="h-9 bg-slate-700 rounded w-1/2 sm:w-1/3 mb-6"></div> {/* Title placeholder */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
-            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-              <div className="h-4 bg-slate-700 rounded w-3/5"></div>
-              <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-            </div>
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
+            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div>
+            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
           </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
-            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-              <div className="h-4 bg-slate-700 rounded w-3/5"></div>
-              <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-            </div>
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
+            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div>
+            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
           </div>
         </div>
-
-        {/* Skeleton for Tab Controls */}
-        <div className="flex border-b border-white/10 mb-6">
-          <div className="h-10 bg-slate-700 rounded-t-lg w-28 mr-1"></div>
-          <div className="h-10 bg-slate-700 rounded-t-lg w-28"></div>
-        </div>
-
-        {/* Skeleton for Task List */}
         <div className="space-y-4">
           <TaskCardSkeleton />
           <TaskCardSkeleton />
@@ -316,627 +210,101 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-6">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all text-center">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 text-center">
           <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
           <h3 className="text-lg font-semibold mb-2 text-red-400">A Problem Occurred</h3>
           <p className="text-white/70 mb-4">
-            {typeof error === 'string' ? error : 'An unexpected error occurred while loading data.'}
+            {typeof error === 'string' ? error : 'An unexpected error occurred while loading your contracts.'}
           </p>
-          <p className="mt-3 text-sm text-red-400/80">Please try refreshing the page. If the issue persists, the system might be experiencing difficulties.</p>
+          <p className="mt-3 text-sm text-red-400/80">Please try refreshing the page.</p>
         </div>
       </div>
     );
   }
 
-  // The main loading check is below. The error check above handles critical data loading errors from useTasks.
-  if (loading) {
-  return (
-    <div className="container mx-auto p-4 md:p-6 min-h-screen text-white">
-      {/* Skeleton for Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <div className="h-9 bg-slate-700 rounded w-1/2 sm:w-1/3"></div> {/* Title placeholder */}
-        <div className="h-10 bg-slate-700 rounded w-full sm:w-auto sm:px-16"></div> {/* Button placeholder */}
-      </div>
+  const pendingCount = assignedContracts.filter((t: Task) => t.status === 'pending' || t.status === 'in_progress' || t.status === 'rejected' || t.status === 'overdue' || !t.status).length;
+  const reviewCount = assignedContracts.filter((t: Task) => t.status === 'review').length;
+  const completedCount = assignedContracts.filter((t: Task) => t.status === 'completed').length;
 
-      {/* Skeleton for Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
-          <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
-          <div className="space-y-2">
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-            <div className="h-4 bg-slate-700 rounded w-3/5"></div>
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-          </div>
-        </div>
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
-          <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div> {/* Card Title */}
-          <div className="space-y-2">
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-            <div className="h-4 bg-slate-700 rounded w-3/5"></div>
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Skeleton for Tab Controls */}
-      <div className="flex border-b border-white/10 mb-6">
-        <div className="h-10 bg-slate-700 rounded-t-lg w-28 mr-1"></div>
-        <div className="h-10 bg-slate-700 rounded-t-lg w-28"></div>
-      </div>
-
-      {/* Skeleton for Task List */}
-      <div className="space-y-4">
-        <TaskCardSkeleton />
-        <TaskCardSkeleton />
-        <TaskCardSkeleton />
-      </div>
-    </div>
-  );
-}
-
-if (error) {
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all text-center">
-        <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
-        <h3 className="text-lg font-semibold mb-2 text-red-400">An Error Occurred</h3>
-        {dailyQuote ? (
-          <p className="text-white/70 mb-4">{dailyQuote.text}</p>
-        ) : (
-          <p className="text-white/70 mb-4">{error}</p>
-        )}
+      <h1 className="text-3xl font-bold text-teal-400 mb-8">My Contracts</h1>
+
+      {/* New Minimalist Stats Icons */}
+      <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
+        {/* Open/Pending */}
+        <div className="text-center flex flex-col items-center">
+          <div className="text-red-400 mb-2">
+            <ScrollText size={32} /> {/* Using ScrollText as per previous Dashboard preference */}
+          </div>
+          <div className="text-3xl font-bold text-slate-100">{pendingCount}</div>
+          <div className="text-xs text-slate-400">Open</div>
+        </div>
+        
+        {/* In Review */}
+        <div className="text-center flex flex-col items-center">
+          <div className="text-yellow-400 mb-2">
+            <Clock size={32} />
+          </div>
+          <div className="text-3xl font-bold text-slate-100">{reviewCount}</div>
+          <div className="text-xs text-slate-400">Review</div>
+        </div>
+        
+        {/* Completed */}
+        <div className="text-center flex flex-col items-center">
+          <div className="text-green-400 mb-2">
+            <CheckCircle size={32} />
+          </div>
+          <div className="text-3xl font-bold text-slate-100">{completedCount}</div>
+          <div className="text-xs text-slate-400">Done</div>
+        </div>
       </div>
+
+      {/* Assigned Contracts List */}
+      {sortedAssignedContracts.length === 0 && !loading && (
+        <div className="text-center py-10 bg-gray-800/30 rounded-lg">
+          <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+          <h3 className="text-xl font-semibold text-white/90">No Contracts Assigned</h3>
+          <p className="text-white/70">You currently have no active contracts. Check back later!</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sortedAssignedContracts.map(task => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            isCreatorView={false} // This is "My Contracts" (assigned to me)
+            onStatusUpdate={handleStatusUpdate}
+            onProofUpload={handleProofUpload}
+            uploadProgress={0} // Pass default value as prop is mandatory
+            onDeleteTaskRequest={handleDeleteTaskRequest}
+          />
+        ))}
+      </div>
+
+      {isDeleteModalOpen && taskToDelete && (
+        <ConfirmDeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDeleteTask}
+          title="Confirm Deletion"
+          message={`Are you sure you want to delete the contract "${taskToDelete.title || 'this task'}"? This action cannot be undone.`}
+          isConfirming={isDeleting} // Ensure this prop matches the modal's expected prop name
+        />
+      )}
+
+      {/* Hunter's Creed Card */}
+      {dailyQuote && (
+        <div className="mt-8 mb-8 p-6 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-gray-600 transition-all">
+          <div className="flex items-center text-purple-400 mb-2">
+            <ScrollText size={20} className="mr-2" />
+            <h3 className="text-lg font-semibold">Hunter's Creed</h3>
+          </div>
+          <p className="text-white/80 italic">"{dailyQuote.text}"</p>
+          {dailyQuote.author && <p className="text-sm text-white/60 mt-1 text-right">- {dailyQuote.author}</p>}
+        </div>
+      )}
     </div>
   );
-}
-
-return (
-  <div className="max-w-4xl mx-auto p-4 md:p-6">
-    {/* Mobile header - simpler */}
-    {isMobile && (
-      <h1 className="text-2xl font-bold text-center text-teal-400 mb-6">
-        {mobileActiveSection === 'contracts' ? 'ACTIVE CONTRACTS' : 'OPEN BOUNTIES'}
-      </h1>
-    )}
-
-    {/* Desktop headers with laser - only show on desktop */}
-    {!isMobile && (
-      <div className="desktop-header-section flex justify-between items-center relative mb-8">
-        {/* Left Header */}
-        <h1 className="text-3xl font-bold text-teal-400 uppercase tracking-wider">
-          Active Contracts
-        </h1>
-        
-        {/* Enhanced Laser Divider Box */}
-        {!boxDestroyed && (
-          <div 
-            className={`laser-divider-box ${laserBeams.length >= breakoutThreshold && !boxDestroyed ? 'ready-to-break' : ''}`}
-            onClick={handleLaserBoxClick} // Make it clickable
-          >
-            {laserBeams.map((laser, index) => (
-              <div 
-                key={laser.id}
-                className={`laser-beam laser-beam-${(index % 3) + 1}`} // Cycle through 3 existing animation styles
-                style={{
-                  // This inline style is necessary for dynamically setting CSS custom properties.
-                  // These properties (--laser-color, --random-x, --random-y) are used by
-                  // animations and styles defined in src/index.css to control the appearance
-                  // and behavior of the laser beams. This is a standard React pattern.
-                  '--laser-color': laser.color,
-                  '--random-x': laser.randomX,
-                  '--random-y': laser.randomY,
-                } as React.CSSProperties} 
-              />
-            ))}
-            {/* Static vertical laser can be added here if desired, or removed if dynamic beams replace it fully */}
-            {laserBeams.length === 0 && (
-              <>
-                {/* Show placeholder/initial lasers if no dynamic ones yet, or a central static one */}
-                {/* For now, let's keep the original vertical laser if no dynamic beams exist */}
-                <div className="vertical-laser"></div>
-              </>
-            )}
-          </div>
-        )}
-        
-        {/* Right Header */}
-        <h1 className="text-3xl font-bold text-teal-400 uppercase tracking-wider">
-          Open Bounties
-        </h1>
-      </div>
-    )}
-
-    {/* Tabs */} 
-    {isMobile ? (
-      <div className="mobile-tab-container mb-4">
-        {/* Main Section Toggles */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setMobileActiveSection('contracts')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
-              mobileActiveSection === 'contracts'
-                ? 'bg-teal-600 text-white'
-                : 'bg-gray-700 text-gray-400'
-            }`}
-          >
-            Active Contracts
-          </button>
-          <button
-            onClick={() => setMobileActiveSection('bounties')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
-              mobileActiveSection === 'bounties'
-                ? 'bg-teal-600 text-white'
-                : 'bg-gray-700 text-gray-400'
-            }`}
-          >
-            Open Bounties
-          </button>
-        </div>
-
-        {/* Sub-tabs for active section */} 
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2"> {/* Added pb-2 for scrollbar visibility if it appears */}
-          {mobileActiveSection === 'contracts' ? (
-            <>
-              <button 
-                onClick={() => { setActiveTab('myTasks'); setActiveContractTab('my'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'myTasks' && activeContractTab === 'my'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Contracts ({myPendingTasks.length})
-              </button>
-              <button 
-                onClick={() => { setActiveTab('myTasks'); setActiveContractTab('verifying'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'myTasks' && activeContractTab === 'verifying'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Review ({myReviewTasks.length})
-              </button>
-              <button 
-                onClick={() => { setActiveTab('myTasks'); setActiveContractTab('completed'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'myTasks' && activeContractTab === 'completed'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Completed ({myCompletedTasks.length})
-              </button>
-            </>
-          ) : (
-            <>
-              <button 
-                onClick={() => { setActiveTab('createdTasks'); setCreatedTasksView('active'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'createdTasks' && createdTasksView === 'active'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Active ({createdActiveSubFilter.length})
-              </button>
-              <button 
-                onClick={() => { setActiveTab('createdTasks'); setCreatedTasksView('review'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'createdTasks' && createdTasksView === 'review'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Review ({createdReviewTasks.length})
-              </button>
-              <button 
-                onClick={() => { setActiveTab('createdTasks'); setCreatedTasksView('completed'); }}
-                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                  activeTab === 'createdTasks' && createdTasksView === 'completed'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                Passed ({createdCompletedSubFilter.length})
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    ) : (
-      // Desktop Layout - Keep existing 6-tab layout
-      <div className="flex justify-between mb-6">
-        {/* Active Contracts tabs (left aligned) */}
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              setActiveTab('myTasks');
-              setActiveContractTab('my');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'myTasks' && activeContractTab === 'my'
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-red-600/20'
-            }`}
-          >
-            Contracts ({myPendingTasks.length})
-          </button>
-          
-          <button 
-            onClick={() => {
-              setActiveTab('myTasks');
-              setActiveContractTab('verifying');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'myTasks' && activeContractTab === 'verifying'
-              ? 'bg-amber-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-amber-600/20'
-            }`}
-          >
-            Review ({myReviewTasks.length})
-          </button>
-          
-          <button 
-            onClick={() => {
-              setActiveTab('myTasks');
-              setActiveContractTab('completed');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'myTasks' && activeContractTab === 'completed'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-green-600/20'
-            }`}
-          >
-            Completed ({myCompletedTasks.length})
-          </button>
-        </div>
-        
-        {/* Open Bounties tabs (right aligned) */}
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              setActiveTab('createdTasks');
-              setCreatedTasksView('active');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'createdTasks' && createdTasksView === 'active'
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-red-600/20'
-            }`}
-          >
-            Bounties ({createdActiveSubFilter.length})
-          </button>
-          
-          <button 
-            onClick={() => {
-              setActiveTab('createdTasks');
-              setCreatedTasksView('review');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'createdTasks' && createdTasksView === 'review'
-              ? 'bg-amber-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-amber-600/20'
-            }`}
-          >
-            Verify ({createdReviewTasks.length})
-          </button>
-
-          <button 
-            onClick={() => {
-              setActiveTab('createdTasks');
-              setCreatedTasksView('completed');
-            }}
-            className={`tab-button px-4 py-2 rounded ${ 
-              activeTab === 'createdTasks' && createdTasksView === 'completed'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-700 text-gray-400 transition-colors duration-300 hover:bg-green-600/20'
-            }`}
-          >
-            Passed ({createdCompletedSubFilter.length})
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* Sub-tabs for Created Tasks (Now handled by unified nav bar) */}
-    {activeTab === 'createdTasks' && (
-      <>
-      </>
-    )}
-
-    {/* Active Contracts (My Tasks) Tab Content */}
-    {activeTab === 'myTasks' && (
-      <>
-        
-
-        {/* General Empty State for 'Active Contracts' tab if ALL (pending, review, AND completed) are empty */}
-        {myPendingTasks.length === 0 && myReviewTasks.length === 0 && myCompletedTasks.length === 0 && (
-          <div className="glass-card p-8 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 mb-6">
-              {getEmptyStateIcon()} 
-            </div>
-            <h3 className="text-2xl font-semibold mb-2 text-white/90">{getEmptyStateTitle()}</h3>
-            <p className="text-white/70 mb-6 max-w-md mx-auto">{getEmptyStateMessage()}</p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
-              {getEmptyStatePrimaryAction()}
-              {getEmptyStateSecondaryAction()}
-            </div>
-          </div>
-        )}
-
-        {/* Conditionally render sub-tab content OR completed tasks if not all empty */}
-        {(myPendingTasks.length > 0 || myReviewTasks.length > 0 || myCompletedTasks.length > 0) && (
-          <>
-            {/* Content for 'my' sub-tab */}
-            {activeContractTab === 'my' && (
-              <>
-                {myPendingTasks.length > 0 ? (
-                  <div className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 text-white/90">
-                      Contracts ({myPendingTasks.length})
-                    </h2>
-                    <div className="space-y-4">
-                      {myPendingTasks.map((task) => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreator={false}
-                          onStatusUpdate={updateTaskStatus}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={uploadProgress}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          onEditTaskRequest={handleEditTaskRequest}
-                          collapsible={true}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-10 glass-card-secondary">
-                    <Clock size={32} className="mx-auto mb-3 text-teal-400" />
-                    <h3 className="text-lg font-semibold text-white/90">No Active Contracts</h3>
-                    <p className="text-sm text-white/70">You don't have any contracts currently in progress.</p>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Content for 'verifying' sub-tab */}
-            {activeContractTab === 'verifying' && (
-              <>
-                {myReviewTasks.length > 0 ? (
-                  <div className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
-                      <AlertTriangle size={20} className="mr-2 text-yellow-400" /> Review ({myReviewTasks.length})
-                    </h2>
-                    <div className="space-y-4">
-                      {myReviewTasks.map((task) => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreator={false}
-                          onStatusUpdate={updateTaskStatus}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={uploadProgress}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          onEditTaskRequest={handleEditTaskRequest}
-                          collapsible={true}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-10 glass-card-secondary">
-                    <AlertTriangle size={32} className="mx-auto mb-3 text-yellow-400" />
-                    <h3 className="text-lg font-semibold text-white/90">No Contracts to Review</h3>
-                    <p className="text-sm text-white/70">There are no contracts awaiting your review.</p>
-                  </div>
-                )}
-              </>
-            )}
-
-            {activeContractTab === 'completed' && (
-              <>
-                {myCompletedTasks.length > 0 ? (
-                  <div className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 text-white/90">
-                      Completed Contracts ({myCompletedTasks.length})
-                    </h2>
-                    <div className="space-y-4">
-                      {myCompletedTasks.map(task => (
-                        <TaskCard 
-                          key={task.id} 
-                          task={task} 
-                          isCreator={false}
-                          onStatusUpdate={updateTaskStatus}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={uploadProgress}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          onEditTaskRequest={handleEditTaskRequest}
-                          collapsible={true}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-10 glass-card-secondary">
-                    <CheckCircle size={32} className="mx-auto mb-3 text-green-400" />
-                    <h3 className="text-lg font-semibold text-white/90">No Completed Contracts</h3>
-                    <p className="text-sm text-white/70">You haven't completed any contracts yet.</p>
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </>
-    )}
-
-    {/* === CREATED TASKS TAB === */}
-    {activeTab === 'createdTasks' && (
-      <>
-        {createdTasks.length === 0 && (
-          // Overall empty state for 'Created Tasks' if no tasks created at all
-          <div className="glass-card p-8 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 mb-6">
-              {getEmptyStateIcon()}
-            </div>
-            <h3 className="text-2xl font-semibold mb-2 text-white/90">{getEmptyStateTitle()}</h3>
-            <p className="text-white/70 mb-6 max-w-md mx-auto">{getEmptyStateMessage()}</p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
-              {getEmptyStatePrimaryAction()}
-              {getEmptyStateSecondaryAction()}
-            </div>
-          </div>
-        )}
-        {createdTasks.length > 0 && createdTasksView === 'active' && (
-          <>
-            {tasksToDisplayPending.length === 0 ? (
-              <div className="glass-card p-8 text-center">
-                <CheckCircle size={32} className="text-teal-400 mx-auto" />
-                <h2 className="text-xl font-semibold mt-4 mb-2 text-white/90">No Active Bounties</h2>
-                <p className="text-white/70 mb-4">You have no bounties that are currently active.</p>
-              </div>
-            ) : (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4 text-white/90">
-                  My Bounties ({tasksToDisplayPending.length})
-                </h2>
-                <div className="space-y-4">
-                  {tasksToDisplayPending.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreator={true}
-                      onStatusUpdate={updateTaskStatus}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={uploadProgress}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      onEditTaskRequest={handleEditTaskRequest}
-                      collapsible={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        {createdTasksView === 'review' && (
-          <>
-            {createdReviewTasks.length === 0 ? (
-              <div className="glass-card p-8 text-center">
-                <CheckCircle size={32} className="text-yellow-400 mx-auto" />
-                <h2 className="text-xl font-semibold mt-4 mb-2 text-white/90">Nothing to Review</h2>
-                <p className="text-white/70 mb-4">No submissions are awaiting your review.</p>
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-white/90">
-                  Awaiting Your Verification ({createdReviewTasks.length})
-                </h2>
-                <div className="space-y-4">
-                  {createdReviewTasks.map(task => (
-                    <TaskCard 
-                      key={task.id} 
-                      task={task}
-                      isCreator={true}
-                      onStatusUpdate={updateTaskStatus}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={uploadProgress}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      onEditTaskRequest={handleEditTaskRequest}
-                      collapsible={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        {createdTasks.length > 0 && createdTasksView === 'completed' && (
-          <>
-            {tasksToDisplayCompleted.length === 0 ? (
-              <div className="glass-card p-8 text-center">
-                <CheckCircle size={32} className="text-green-400 mx-auto" />
-                <h2 className="text-xl font-semibold mt-4 mb-2 text-white/90">No Passed Contracts</h2>
-                <p className="text-white/70 mb-4">No bounties you created have been completed and passed.</p>
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-white/90">
-                  Passed Contracts ({tasksToDisplayCompleted.length})
-                </h2>
-                <div className="space-y-4">
-                  {tasksToDisplayCompleted.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreator={true}
-                      onStatusUpdate={updateTaskStatus}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={uploadProgress}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      onEditTaskRequest={handleEditTaskRequest}
-                      collapsible={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </>
-    )}
-
-    {/* Stats Cards - Relocated */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 mb-8">
-      {/* Daily Quote Card */}
-      <div className="glass-card p-6 bg-sky-600/10">
-        <h3 className="flex items-center text-xl font-semibold mb-4 text-white/90">
-          <ScrollText size={24} className="mr-3 text-sky-400" /> Hunter's Creed
-        </h3>
-        {dailyQuote ? (
-          <p className="text-slate-300 italic">"{dailyQuote.text}" - {dailyQuote.author}</p>
-        ) : (
-          <p className="text-slate-500 italic">No creed for today... (or still loading)</p>
-        )}
-      </div>
-
-      {/* Task Stats Card */}
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all">
-        <h3 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
-          <DatabaseZap size={24} className="mr-3 text-purple-400" /> Contract Ledger
-        </h3>
-        <div className="space-y-3 text-white/80">
-          <p className="flex justify-between items-center">Active Contracts: <span className="font-bold text-orange-400 text-lg">{myPendingTasks.length}</span></p>
-          <p className="flex justify-between items-center">Awaiting Verification: <span className="font-bold text-yellow-400 text-lg">{myReviewTasks.length}</span></p>
-          <p className="flex justify-between items-center">Completed Contracts: <span className="font-bold text-teal-400 text-lg">{myCompletedTasks.length}</span></p>
-          <hr className="border-white/10 my-3" />
-          <p className="flex justify-between items-center">Bounties Posted: <span className="font-bold text-indigo-400 text-lg">{createdTasks.length}</span></p>
-        </div>
-      </div>
-    </div>
-
-    {(showTaskForm || isEditFormOpen) && user && (
-      <TaskForm
-        userId={user.id}
-        onSubmit={handleFormSubmit}
-        onClose={isEditFormOpen ? handleCloseEditForm : () => setShowTaskForm(false)}
-        editingTask={isEditFormOpen ? taskToEdit : undefined}
-      />
-    )}
-
-    {isDeleteModalOpen && taskToDelete && (
-      <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDeleteTask}
-        title="Confirm Deletion"
-        message={`Are you sure you want to delete the contract "${taskToDelete.title}"? This action cannot be undone.`}
-        isConfirming={isDeleting} // Pass isDeleting to isConfirming prop
-      />
-    )}
-  </div>
-);
 }

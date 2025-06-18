@@ -1,7 +1,95 @@
 /* src/index.css */
+/* Implemented Font System Option A (Revised): Mandalore (local) for headers/badges, Futura/Poppins (Google Fonts) for titles/body. Corrected @import order. Added specific styles for app title, card titles. Status text now targeted by '.task-status-text' class. */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- FONT SYSTEM OPTION A (REVISED) START --- */
+
+@font-face {
+  font-family: 'Mandalore';
+  src: url('/fonts/mandalore/mandalore.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MandaloreRough';
+  src: url('/fonts/mandalore/mandalorerough.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MandaloreTitle';
+  src: url('/fonts/mandalore/mandaloretitle.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Howdybun';
+  src: url('/fonts/howdybun/Howdybun.otf') format('opentype'),
+       url('/fonts/howdybun/Howdybun.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Apply Custom Fonts */
+
+/* App Title - MORE SPACING */
+.app-title,
+header h1 {
+  font-family: 'MandaloreTitle', 'Mandalore', 'Bebas Neue';
+  letter-spacing: 0.3em; /* Wide spacing like Star Wars */
+  text-transform: uppercase;
+}
+
+/* General Headers (fallback if .app-title or header h1 isn't used) */
+.gradient-text,
+h1 {
+  font-family: 'Mandalore', 'Bebas Neue';
+}
+
+/* Target the collapsed card title specifically */
+.task-card h3,
+div[class*="border rounded-lg"] h3,
+.collapsed-title {
+  font-family: 'Howdybun', 'Bebas Neue' !important;
+  font-weight: normal !important;
+  text-shadow: 
+    1px 1px 0 rgba(0,0,0,0.5),
+    -1px -1px 0 rgba(0,0,0,0.5),
+    1px -1px 0 rgba(0,0,0,0.5),
+    -1px 1px 0 rgba(0,0,0,0.5);
+
+}
+
+/* Body Text */
+body,
+p,
+.text-sm {
+  font-family: 'Poppins', 'Inter', 'Bebas Neue'; /* Futura Medium equivalent */
+  font-weight: 500; /* Explicitly medium */
+}
+
+/* Status text in cards */
+.status-badge, /* Original class for dedicated badge elements */
+.task-status-text /* New class for status text within cards */ {
+  font-family: 'MandaloreRough', 'Mandalore', 'Bebas Neue';
+}
+/* --- FONT SYSTEM OPTION A (REVISED) END --- */
+
+@layer components {
+  .input-field {
+    @apply bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 outline-none transition;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
 
 .complete-button {
   transition: all 0.3s ease;
@@ -47,6 +135,7 @@
 /* Phase 8: Added shining credit badge and coin spin animations. */
 /* Phase 9A: Updated card header styling to emphasize task title. */
 /* Phase 10: Redesigned task cards with a "Route 66 Motel Sign" style. */
+/* Added .input-field for improved visibility on dark backgrounds. */
 
 
 
@@ -519,7 +608,7 @@ body {
   font-family: var(--font-body);
   @apply min-h-screen; /* Retain min-h-screen from original Tailwind utility */
   /* Ensure the pseudo-elements for stars are still positioned correctly */
-  position: relative; /* Needed if pseudo-elements are absolutely positioned relative to body */
+  /* position: relative; /* Needed if pseudo-elements are absolutely positioned relative to body */ /* Temporarily commented out to fix modal z-index. Starfield may need adjustment. */
   overflow-x: hidden; /* Prevent horizontal scroll if stars go too wide */
 }
 

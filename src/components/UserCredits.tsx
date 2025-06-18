@@ -2,8 +2,10 @@
 // Phase 8: Credit System UI - User Credits Display Widget for Header
 // Fetches and displays the current user's actual credit balance from Supabase.
 // Fixed lint errors for catch block type and potential null in toLocaleString.
+// Phase 12.1: Added real-time subscription to user_credits table for automatic balance updates.
 // Changes:
 // - Replaced '🪙' emoji with custom SpinningCoinIcon.
+// - Added logic to initialize user_credits record with 0 balance if not found for an authenticated user, using upsert to prevent conflicts.
 
 import React, { useEffect, useState } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
@@ -36,9 +38,60 @@ const useUserCredits = () => {
           .single();
 
         if (dbError) {
-          console.error('Error fetching user credits:', dbError);
-          setError('Failed to load credits.');
-          setCredits(0); // Show 0 on error
+          // Check if the error is because the user_credits record doesn't exist (e.g., Supabase code PGRST116)
+          // Or if data is null when .single() is used and no row is found.
+          if (dbError.code === 'PGRST116' || (dbError.message.includes('JSON object requested, multiple (or no) rows returned') && !data)) { 
+            console.log('No user_credits record found for user, attempting to create one.');
+            try {
+              // Use upsert to prevent conflict if record already exists
+              const { error: upsertError } = await supabase
+                .from('user_credits')
+                .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
+
+              if (upsertError) {
+                console.error('Error upserting user_credits record:', upsertError);
+                setError('Failed to initialize credits.');
+                setCredits(0);
+              } else {
+                console.log('Successfully ensured user_credits record exists (initialized with 0 balance if new).');
+                setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
+              }
+            } catch (initError: unknown) {
+              let initMessage = 'An unexpected error occurred during credit initialization.';
+              if (initError instanceof Error) initMessage = initError.message;
+              console.error('Exception upserting user_credits record:', initError);
+              setError(initMessage);
+              setCredits(0);
+            }
+          } else {
+            console.error('Error fetching user credits:', dbError);
+            setError('Failed to load credits.');
+            setCredits(0); // Show 0 on other errors
+          }
+        } else if (data === null) {
+            // This case handles when .single() returns null (no record) without an explicit PGRST116 error
+            console.log('No user_credits record found (data is null), attempting to create one.');
+            try {
+              // Use upsert to prevent conflict if record already exists
+              const { error: upsertError } = await supabase
+                .from('user_credits')
+                .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
+
+              if (upsertError) {
+                console.error('Error upserting user_credits record:', upsertError);
+                setError('Failed to initialize credits.');
+                setCredits(0);
+              } else {
+                console.log('Successfully ensured user_credits record exists (initialized with 0 balance if new).');
+                setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
+              }
+            } catch (initError: unknown) {
+              let initMessage = 'An unexpected error occurred during credit initialization.';
+              if (initError instanceof Error) initMessage = initError.message;
+              console.error('Exception upserting user_credits record:', initError);
+              setError(initMessage);
+              setCredits(0);
+            }
         } else {
           setCredits(data?.balance || 0);
         }
@@ -55,6 +108,31 @@ const useUserCredits = () => {
     };
 
     fetchCredits();
+
+    // Set up real-time subscription for credit changes
+    if (user) {
+      const channel = supabase
+        .channel(`user_credits_changes_${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_credits',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('User credits changed:', payload);
+            fetchCredits(); // Re-fetch credits when a change is detected
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscription on component unmount
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user, supabase]);
 
   return { credits, loading, error };

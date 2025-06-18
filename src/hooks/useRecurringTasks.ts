@@ -1,23 +1,32 @@
 // src/hooks/useRecurringTasks.ts
 // This hook manages fetching and manipulating recurring task templates and their instances.
 // Changes:
+// - FIX: Corrected Supabase query to use a standard join (`recurring_task_templates(*)`) instead of an inner join.
+//   The `!inner` syntax was failing, but a standard join will work as the data relationships are valid.
+//   This fixes a critical bug where the 'Assigned to Me' section showed generic data.
+// - Added fetching for `completedInstancesThisWeek` assigned to the current user.
+// - Refactored instance generation from weekly batch to single daily instance creation.
+//   - Replaced `generateWeeklyInstances` with `generateSingleInstanceForToday`.
+//   - Added `ensureTodaysInstancesAreGenerated` to check and create daily tasks on demand.
+//   - Updated `createTemplate` to call the new single-instance generation logic.
+// - In `fetchTemplatesAndInstances`, corrected the query for `taskInstances` (pending/in-progress) to filter by `assigned_to: user.id`.
 // - Explicitly added 'proof_required' to NewRecurringTemplateData type.
 // - Modified completeTaskInstance to handle proof_description, validate proof requirement, and call awardCredits.
 // - Renamed addTemplate to createTemplate, added detailed error logging, instance generation call, error toasts, and improved type handling for new templates.
-// - Implemented generateWeeklyInstances to create 7 daily instances for a template for the current week.
-// - Fixed lint errors: cast 'err' to 'Error' in setError, corrected import path for dateUtils, and improved type safety for fetched/created templates.
 // - Corrected type assertion for templateDetails in completeTaskInstance.
 // - Removed direct selection of 'credit_value' from 'recurring_task_instances' in 'completeTaskInstance' as it's fetched from the joined template.
 // - Typed 'updateData' in 'updateTemplate' as 'Partial<RecurringTemplate>' to resolve 'any' type lint error.
-// - Removed logic attempting to set 'assignee_id' in 'updateTemplate' as 'recurring_templates' table schema does not support it directly.
-// - Removed 'initial_assignee_id' from destructuring in 'updateTemplate' to prevent unused variable error.
-
+// - Updated type imports to use app-specific-types.ts for Profile, RecurringTemplate, TaskInstance.
+// - In `completeTaskInstance`, cast RPC result to `unknown` then to `CompleteTaskInstanceResult` for safer type assertion.
+// - Enhanced error logging for instance insertion failures.
+// - Removed erroneous call to refetchAssignedInstances; data refetch handled by page components.
+// - Removed unused 'getStartOfWeek' import and added null check for 'template.frequency_counter'.;
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
-import { TaskInstance, RecurringTemplate, Profile } from '../types/database';
+import { Profile, RecurringTemplate, TaskInstance, CompleteTaskInstanceResult } from '../types/app-specific-types'; // Updated import path
 import toast from 'react-hot-toast';
-import { getStartOfWeek } from '../utils/dateUtils';
+import { getStartOfWeek } from '../utils/dateUtils'; // Re-added for completed tasks filtering
 
 // Enhanced type that includes task instances and the assignee's profile
 export type RecurringTemplateWithInstances = RecurringTemplate & {
@@ -47,6 +56,7 @@ export default function useRecurringTasks() {
   const { user } = useAuth();
   const [templates, setTemplates] = useState<RecurringTemplateWithInstances[]>([]);
   const [taskInstances, setTaskInstances] = useState<TaskInstanceWithTemplate[]>([]);
+  const [completedInstancesThisWeek, setCompletedInstancesThisWeek] = useState<TaskInstanceWithTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -64,20 +74,38 @@ export default function useRecurringTasks() {
 
       if (templateError) throw templateError;
 
-      // Fetch daily task instances created from these templates
+      // Fetch daily task instances ASSIGNED TO THE CURRENT USER
       const { data: instanceData, error: instanceError } = await supabase
         .from('recurring_task_instances')
         .select(`
           *,
           recurring_task_templates(*)
         `)
-        .in('template_id', templateData.map(t => t.id))
+        .eq('assigned_to', user.id) // <-- THE FIX: Only get instances assigned to me.
         .order('scheduled_date', { ascending: true });
 
       if (instanceError) throw instanceError;
 
       setTemplates(templateData || []);
       setTaskInstances(instanceData || []);
+
+      // Fetch completed instances for the current user for this week
+      const today = new Date();
+      const startOfWeekDate = getStartOfWeek(today);
+      const { data: completedData, error: completedError } = await supabase
+        .from('recurring_task_instances')
+        .select('*, recurring_task_templates(*)') // Ensure template data is joined
+        .eq('assigned_to', user.id)
+        .in('status', ['completed', 'review'])
+        .gte('completed_at', startOfWeekDate.toISOString())
+        .order('completed_at', { ascending: false });
+
+      if (completedError) {
+        console.error('[useRecurringTasks] Error fetching completed instances:', completedError);
+        // Don't throw, allow other data to load
+      } else {
+        setCompletedInstancesThisWeek(completedData || []);
+      }
     } catch (err) {
       setError(err as Error);
       toast.error('Failed to fetch recurring contracts.');
@@ -125,16 +153,10 @@ export default function useRecurringTasks() {
 
       // Generate instances after successful creation
       if (data && data.id) {
-        // IMPORTANT: generateWeeklyInstances is assumed to exist elsewhere or will be implemented.
-        // If it's async and can fail, consider its error handling too.
-        try {
-          await generateWeeklyInstances(data.id);
-        } catch (instanceError) {
-          console.error('Failed to generate weekly instances:', instanceError);
-          toast.error('Template created, but failed to generate weekly instances. Please check logs.');
-          // Decide if this error should propagate or be handled (e.g., template created but instances failed)
-          // For now, log and continue, as template creation itself was successful.
-        }
+        console.log('[useRecurringTasks] New template created:', data);
+        console.log('[useRecurringTasks] Attempting to generate single instance for today for template ID:', data.id);
+        await generateSingleInstanceForToday(data.id);
+        console.log('[useRecurringTasks] Finished generateSingleInstanceForToday call for template ID:', data.id);
       }
       
       // Update local state
@@ -161,73 +183,96 @@ export default function useRecurringTasks() {
     }
   };
 
-  const generateWeeklyInstances = async (templateId: string) => {
-    if (!supabase) {
-      console.error('Supabase client not available for generating weekly instances.');
-      toast.error('Failed to initialize instance generation: Supabase client missing.');
-      return;
-    }
+  const generateSingleInstanceForToday = async (templateId: string) => {
+    console.log('[useRecurringTasks] generateSingleInstanceForToday called for templateId:', templateId);
 
-    // 1. Fetch the template details
-    const { data: template, error: templateError } = await supabase
+    // Fetch the template directly to ensure fresh data
+    const { data: template, error: fetchError } = await supabase
       .from('recurring_task_templates')
       .select('*')
       .eq('id', templateId)
       .single();
 
-    if (templateError || !template) {
-      console.error('Error fetching template for instance generation:', templateError);
-      toast.error(`Failed to generate instances: Could not fetch template (ID: ${templateId}).`);
+    if (fetchError || !template) {
+      console.error(`[useRecurringTasks] Error fetching template ${templateId} for instance generation:`, fetchError);
+      toast.error(`Failed to generate instance: Could not fetch template details (ID: ${templateId}).`);
       return;
     }
 
+    // 1. Check if template is active
+    if (!template.is_active) {
+      console.log(`[useRecurringTasks] Template ${templateId} is inactive. Skipping instance generation.`);
+      return;
+    }
+
+    // 2. Check if assignee exists
     if (!template.assignee_id) {
-      console.warn(`Template ${templateId} has no assignee. Instances will not be assigned.`);
-      // Depending on requirements, you might want to stop or allow unassigned instances.
-      // For now, we'll create them unassigned if assignee_id is null.
+      console.warn(`[useRecurringTasks] Template ${templateId} has no assignee_id. Skipping instance generation.`);
+      return;
     }
 
-    // 2. Determine the current week's start date (Sunday)
+    // 3. Check weekly quota (frequency_counter vs frequency_limit)
+    // Note: We assume the counter is reset weekly by another process. This check prevents over-generation within the week.
+    if ((template.frequency_counter ?? 0) >= template.frequency_limit) {
+        console.log(`[useRecurringTasks] Weekly quota reached for template ${templateId}. Skipping instance generation.`);
+        return;
+    }
+
+    // 4. Check if an instance for today already exists
     const today = new Date();
-    const startOfWeek = getStartOfWeek(today);
-    const instancesToCreate = [];
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset*60*1000));
+    const todayString = localToday.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // 3. Generate 7 daily instances for the current week
-    // Consider template.frequency_limit if it's meant to cap weekly instances.
-    // For now, assume 7 daily instances are always created if template is active.
-    const numberOfInstancesToCreate = template.frequency_limit && template.frequency_limit < 7 ? template.frequency_limit : 7;
+    const { data: existingInstance, error: existingInstanceError } = await supabase
+        .from('recurring_task_instances')
+        .select('id')
+        .eq('template_id', templateId)
+        .eq('scheduled_date', todayString)
+        .maybeSingle();
 
-    for (let i = 0; i < numberOfInstancesToCreate; i++) {
-      const scheduledDate = new Date(startOfWeek);
-      scheduledDate.setDate(startOfWeek.getDate() + i);
-
-      const instancePayload = {
-        template_id: template.id,
-        assigned_to: template.assignee_id, // Can be null if template has no assignee
-        status: 'pending',
-        scheduled_date: scheduledDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
-        credit_value: template.credit_value,
-        // title and description are typically joined from the template, not stored on instance
-      };
-      instancesToCreate.push(instancePayload);
+    if (existingInstanceError) {
+        console.error(`[useRecurringTasks] Error checking for existing instance:`, existingInstanceError);
+        toast.error('Could not verify existing tasks. Please try again.');
+        return;
     }
 
-    // 4. Batch insert these instances
-    if (instancesToCreate.length > 0) {
-      const { error: insertError } = await supabase
-        .from('recurring_task_instances')
-        .insert(instancesToCreate);
+    if (existingInstance) {
+        console.log(`[useRecurringTasks] Instance for template ${templateId} already exists for today (${todayString}). Skipping.`);
+        return;
+    }
 
-      if (insertError) {
-        console.error('Error batch inserting weekly instances:', insertError);
-        toast.error('Failed to create some or all daily instances for the new contract.');
-      } else {
-        toast.success(`${instancesToCreate.length} daily instances scheduled for the week.`);
-        // Optionally, refetch instances or update local state here if needed immediately
-        // For now, DailyContractsPage refetches templates (which include instances) when modal closes.
-      }
+    // 5. All checks passed, create a single instance for today
+    const instancePayload = {
+      template_id: template.id,
+      assigned_to: String(template.assignee_id),
+      status: 'pending' as const,
+      scheduled_date: todayString,
+      credit_value: template.credit_value,
+      proof_required: template.proof_required,
+    };
+
+    console.log('[useRecurringTasks] Attempting to insert single instance:', JSON.stringify(instancePayload, null, 2));
+
+    const { data: insertedData, error: insertError } = await supabase
+      .from('recurring_task_instances')
+      .insert(instancePayload)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('[useRecurringTasks] Error generating single instance. Full error object:', JSON.stringify(insertError, null, 2));
+      toast.error(`Failed to schedule task: ${insertError.message}`);
     } else {
-      console.log('No instances to create for template:', templateId);
+      console.log(`[useRecurringTasks] Single instance created for template ${templateId}. Inserted data:`, insertedData);
+      // Manually add the new instance to the local state to update the UI immediately
+      if (insertedData) {
+          const newInstanceWithTemplate: TaskInstanceWithTemplate = {
+              ...(insertedData as TaskInstance),
+              recurring_task_templates: template,
+          };
+          setTaskInstances(prev => [...prev, newInstanceWithTemplate]);
+      }
     }
   };
 
@@ -271,6 +316,37 @@ export default function useRecurringTasks() {
     }
   };
 
+  const ensureTodaysInstancesAreGenerated = async () => {
+    if (!user) return;
+    console.log('[useRecurringTasks] Ensuring today\'s instances are generated...');
+
+    // Fetch all active templates assigned to the current user
+    const { data: assignedTemplates, error } = await supabase
+      .from('recurring_task_templates')
+      .select('*')
+      .eq('assignee_id', user.id)
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Error fetching assigned templates for instance generation:', error);
+      toast.error('Could not check for new daily tasks.');
+      return;
+    }
+
+    if (!assignedTemplates || assignedTemplates.length === 0) {
+      console.log('[useRecurringTasks] No active, assigned templates found for user. Nothing to generate.');
+      return;
+    }
+
+    // For each template, try to generate an instance for today.
+    // The generation function itself contains the logic to prevent duplicates.
+    await Promise.all(assignedTemplates.map(t => generateSingleInstanceForToday(t.id)));
+
+    // Refetch all data to ensure UI is consistent after potential creations
+    await fetchTemplatesAndInstances();
+    console.log('[useRecurringTasks] Finished ensuring today\'s instances.');
+  };
+
   const completeTaskInstance = async (instanceId: string, proofDescription?: string) => {
     if (!user) {
       toast.error('You must be logged in to complete a task.');
@@ -290,7 +366,7 @@ export default function useRecurringTasks() {
     }
 
     // The RPC returns an array with a single JSONB object
-    const result = data?.[0]?.j;
+    const result = data?.[0]?.j as unknown as CompleteTaskInstanceResult | undefined;
 
     if (!result || !result.success) {
       const message = result?.message || 'An unknown error occurred.';
@@ -310,6 +386,7 @@ export default function useRecurringTasks() {
   return {
     templates,
     taskInstances,
+    completedInstancesThisWeek,
     loading,
     error,
     createTemplate,
@@ -317,7 +394,8 @@ export default function useRecurringTasks() {
     deleteTemplate,
     toggleTemplateActive,
     completeTaskInstance,
-    generateWeeklyInstances,
+    generateSingleInstanceForToday, // Kept for direct use if needed
+    ensureTodaysInstancesAreGenerated, // New orchestrator function
     refetch: fetchTemplatesAndInstances,
   };
 }

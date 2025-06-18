@@ -2,6 +2,7 @@
 // Modal for uploading proof of task completion
 // Applied galactic theme styles to various modal elements.
 // Addressed lint errors: removed unused import, used error variable, added aria-labels.
+// Increased z-index to ensure modal appears above other content (z-[9999] for overlay, z-[10000] for modal).
 
 import React, { useState, useRef } from 'react';
 import { X, Upload, FileVideo, AlertCircle } from 'lucide-react';
@@ -108,8 +109,12 @@ export default function ProofModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass-card w-full max-w-md p-6 relative animate-fade-in">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center"> {/* Increased z-index for overlay */}
+      {/* Dark backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Modal content - now properly centered */}
+      <div className="relative z-[10000] bg-gray-900/95 backdrop-blur-md border border-cyan-500/30 rounded-lg p-6 max-w-md w-full mx-4"> {/* Added z-index for modal content */}
         {/* Close button */}
         <button
           onClick={onClose}
@@ -120,7 +125,7 @@ export default function ProofModal({
           <X size={20} />
         </button>
         
-        <h2 className="text-xl font-semibold mb-5 gradient-text">Upload Proof of Completion</h2>
+        <h3 className="text-xl font-bold mb-4 text-white">Upload Proof</h3>
         
         {/* File Upload Area */}
         {!preview ? (
@@ -199,8 +204,7 @@ export default function ProofModal({
             </div>
             <div className="progress-bar-track-galactic">
               <div
-                className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
+                className={`h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-300 w-[${uploadProgress}%]`}
               ></div>
             </div>
           </div>
