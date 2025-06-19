@@ -7,7 +7,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { Friendship, Profile } from '../types/database'; // Removed FriendshipStatus
+import { Database } from '../types/database'; // Removed FriendshipStatus
+
+// Define type aliases locally
+type Friendship = Database['public']['Tables']['friendships']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface FriendWithProfile extends Friendship {
   friend: Profile;
@@ -104,9 +108,17 @@ export function useFriends(userId: string | undefined) {
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
-    } catch (error) {
-      setError((error as Error).message);
-      console.error('Error fetching friendships:', error);
+    } catch (e) { // Changed 'error' to 'e' for clarity
+      let errorMessage: string | null = null;
+      if (e instanceof Error) {
+        errorMessage = e.message;
+      } else if (typeof e === 'string') {
+        errorMessage = e;
+      } else {
+        errorMessage = 'An unexpected error occurred while fetching friendships.';
+      }
+      setError(errorMessage);
+      console.error('Error fetching friendships:', e); // Log the original error object
     } finally {
       setLoading(false);
     }
@@ -152,9 +164,12 @@ export function useFriends(userId: string | undefined) {
         .single();
 
       if (error) throw error;
+      if (userId) {
+        await fetchFriendships(userId); // Re-fetch friendships to update UI
+      }
       return data;
     } catch (error) {
-      setError((error as Error).message);
+      setError((error as Error).message ?? null);
       console.error('Error sending friend request:', error);
       return null;
     } finally {
@@ -191,7 +206,7 @@ export function useFriends(userId: string | undefined) {
         return null;
       }
     } catch (error) {
-      setError((error as Error).message);
+      setError((error as Error).message ?? null);
       console.error('Error responding to friend request:', error);
       return null;
     } finally {
@@ -222,7 +237,7 @@ export function useFriends(userId: string | undefined) {
       await fetchFriendships(userId);
       return true;
     } catch (error) {
-      setError((error as Error).message);
+      setError((error as Error).message ?? null);
       console.error('Error cancelling sent friend request:', error);
       return false;
     } finally {
@@ -243,7 +258,7 @@ export function useFriends(userId: string | undefined) {
       if (error) throw error;
       return true;
     } catch (error) {
-      setError((error as Error).message);
+      setError((error as Error).message ?? null);
       console.error('Error removing friend:', error);
       return false;
     } finally {
