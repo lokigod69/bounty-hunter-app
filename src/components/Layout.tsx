@@ -50,6 +50,19 @@ export default function Layout() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
+  // Effect to control body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = ''; // Or 'auto'
+    }
+    // Cleanup function to restore scroll when component unmounts or menu closes
+    return () => {
+      document.body.style.overflow = ''; // Or 'auto'
+    };
+  }, [mobileMenuOpen]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
@@ -240,7 +253,7 @@ export default function Layout() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+        <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg overflow-y-auto">
           <div className="container mx-auto px-4 py-6 flex flex-col h-full">
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
