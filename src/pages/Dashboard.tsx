@@ -132,7 +132,7 @@ export default function Dashboard() {
       // First get the task to check if proof is required
       const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('proof_required')
+        .select('proof_required, reward_type, reward_text')
         .eq('id', taskId)
         .eq('assigned_to', user.id) // Ensure we are only fetching tasks assigned to the user
         .single();
@@ -158,6 +158,9 @@ export default function Dashboard() {
 
       toast.success(finalStatus === 'completed' ? 'Task completed!' : 'Status updated');
       if (refetchAssignedContracts) refetchAssignedContracts(); // Refresh the list
+
+    // Credit awarding is now handled by the backend trigger 'award_credits_on_completion'
+    // when a task's status is updated to 'completed'.
     } catch (error: unknown) {
       console.error('Status update failed:', error);
       let message = 'Failed to update status.';

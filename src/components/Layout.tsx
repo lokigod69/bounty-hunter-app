@@ -24,7 +24,6 @@ import logo from '../assets/logo5.png'; // Added logo
 import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; // Import the new component
 import UserCredits from './UserCredits'; // Phase 8: Import UserCredits widget
-import { Coins } from 'lucide-react'; // Added Coins icon
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth();
@@ -226,12 +225,12 @@ export default function Layout() {
           <div className="container mx-auto px-4 py-6 flex flex-col h-full">
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
-                  <div className="px-4 py-3 mb-4 border-b border-slate-700/50 rounded-lg glass-card">
-                    <div className="flex items-center justify-center text-xl font-bold text-amber-300">
-                      <Coins size={32} className="mr-3 text-amber-400 animate-spin-slow" /> {/* Slightly larger, slower spin */}
-                      <span>{profile.credits ?? 0} Credits</span>
+                  <>
+                    {/* Credits Display - Uses UserCredits component for live updates */}
+                    <div className="px-4 py-3 mb-4 flex justify-center items-center text-xl font-bold text-amber-300">
+                      <UserCredits />
                     </div>
-                  </div>
+                  </>
                 )}
 
             {/* New Contract Button for Mobile */}

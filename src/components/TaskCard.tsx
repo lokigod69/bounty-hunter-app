@@ -91,6 +91,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  useEffect(() => {
+    // Prevent body from scrolling when the modal is open
+    if (isExpanded) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup function to re-enable scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isExpanded]);
+
   const getProofUrl = (path: string | null): string => {
     if (!path) return '/placeholder-image.png';
     try {
@@ -194,11 +207,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
           {/* Modal Content */}
           <div
-            className={`relative z-[51] w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] overflow-y-auto flex flex-col animate-slideUp ${modalBgColor}`}
+            className={`relative z-[51] w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col animate-slideUp ${modalBgColor}`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="mb-4 pb-4 border-b border-slate-700/50">
+            {/* Header - Non-scrollable */}
+            <div className="mb-4 pb-4 border-b border-slate-700/50 flex-shrink-0">
               <h3 className="text-xl font-bold text-slate-100 break-words max-w-full overflow-hidden" title={title}>
                 {title}
               </h3>
@@ -207,13 +220,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </p>
             </div>
 
-            {/* Body */}
-            <div className="space-y-4 mb-6 flex-grow overflow-y-auto">
-              <div className="max-h-[300px] overflow-y-auto pr-2">
-                <p className="text-sm text-slate-300 whitespace-pre-wrap break-words" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  {description || 'No description provided.'}
-                </p>
-              </div>
+            {/* Body - This is now the main scrollable area */}
+            <div className="flex-1 space-y-4 mb-6 overflow-y-auto pr-2">
+              <p className="text-sm text-slate-300 whitespace-pre-wrap break-words" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {description || 'No description provided.'}
+              </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="flex flex-col space-y-1">

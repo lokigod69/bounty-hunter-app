@@ -24,6 +24,14 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
+  useEffect(() => {
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    // Re-enable scroll when modal is closed
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []); // Empty dependency array ensures this runs only on mount and unmount
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state
@@ -136,16 +144,28 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   // For now, it's superseded by the new contractType logic.
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[90vh]">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="modal-icon-button absolute top-3 right-3 p-2"
-          aria-label="Close"
-        >
-          <X size={28} />
-        </button>
+    <div 
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => { // Click outside to dismiss
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      {/* Close button - moved to overlay for fixed positioning */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300 z-[51] p-1.5 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors"
+        aria-label="Close"
+      >
+        <X size={24} />
+      </button>
+
+      <div 
+        className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()} // Prevent clicks on modal content from closing modal
+      >
+        {/* Original close button removed from here */}
         
         <h2 className="text-xl font-semibold mb-5 gradient-text">{editingTask ? 'Edit Contract' : 'Create New Contract'}</h2>
         

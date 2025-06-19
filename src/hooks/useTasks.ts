@@ -272,7 +272,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       // Add potentially missing nullable fields from Task type
       frequency_limit: null,
       frequency_period: null,
-      proof_description: null
+      proof_description: null,
+      recurring_task_template_id: null // Added to satisfy Task type, though actual DB table doesn't have this
     };
 
     setTasks((prevTasks) => [optimisticTask, ...prevTasks]);
@@ -396,8 +397,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         if (creditAmount > 0) {
           console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditAmount);
           const { error: creditError } = await client.rpc('increment_user_credits', {
-            p_user_id: originalTask.assigned_to, // Assumed common parameter name, user to verify
-            p_amount: creditAmount,             // Assumed common parameter name, user to verify
+            user_id_param: originalTask.assigned_to,
+            amount_param: creditAmount,
           });
           if (creditError) {
             console.error('[useTasks] updateTaskStatus: Error calling increment_user_credits RPC:', creditError);
