@@ -18,7 +18,7 @@
 // - Redesigned summary cards to a minimalist icon-based flex layout.
 
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
@@ -34,6 +34,7 @@ export default function IssuedPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
   const location = useLocation();
+  const navigate = useNavigate();
   const {
     contracts: issuedContracts, // Assuming hook returns 'contracts'
     loading,
@@ -238,6 +239,7 @@ export default function IssuedPage() {
 
       await refetchIssuedContracts(); // Refresh the list
       toast.success('Contract created successfully!'); // Show success toast
+      navigate('/issued'); // Navigate to the issued page
     } catch (error: unknown) {
       // Log the full error details as requested
       console.error('Full Supabase error:', error);

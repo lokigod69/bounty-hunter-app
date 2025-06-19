@@ -137,14 +137,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass-card w-full max-w-md p-6 relative animate-fade-in">
+      <div className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[90vh]">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="modal-icon-button absolute top-4 right-4"
+          className="modal-icon-button absolute top-3 right-3 p-2"
           aria-label="Close"
         >
-          <X size={20} />
+          <X size={28} />
         </button>
         
         <h2 className="text-xl font-semibold mb-5 gradient-text">{editingTask ? 'Edit Contract' : 'Create New Contract'}</h2>

@@ -208,7 +208,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </div>
 
             {/* Body */}
-            <div className="space-y-4 mb-6 flex-grow">
+            <div className="space-y-4 mb-6 flex-grow overflow-y-auto">
               <div className="max-h-[300px] overflow-y-auto pr-2">
                 <p className="text-sm text-slate-300 whitespace-pre-wrap break-words" style={{ fontFamily: "'Poppins', sans-serif" }}>
                   {description || 'No description provided.'}
