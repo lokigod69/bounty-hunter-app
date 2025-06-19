@@ -6,14 +6,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
-import { Task } from '../types/database';
+import { Database } from '../types/database';
 
-interface ProfileLite {
+// Define BaseTask directly from the Database type for clarity and correctness
+type BaseTask = Database['public']['Tables']['tasks']['Row'];
+
+export interface ProfileLite {
   display_name: string | null;
   avatar_url: string | null;
 }
 
-interface IssuedContract extends Task {
+export interface IssuedContract extends BaseTask {
   creator: ProfileLite | null;
   assignee: ProfileLite | null;
   // assignee_credits?: number; // Temporarily removed as direct join is not possible

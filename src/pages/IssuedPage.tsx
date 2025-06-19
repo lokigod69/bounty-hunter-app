@@ -26,8 +26,27 @@ import TaskCard from '../components/TaskCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TaskForm from '../components/TaskForm';
 import { toast } from 'react-hot-toast';
-import type { Task, TaskStatus, NewTaskData } from '../types/database'; // Added NewTaskData
-import { Clock, AlertTriangle, CheckCircle, DatabaseZap, ListChecks } from 'lucide-react'; // Added ListChecks for new summary cards, removed ScrollText
+// Types imported from hooks or defined locally
+import type { IssuedContract } from '../hooks/useIssuedContracts';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars --- Used for type assertion in TaskCard prop
+import type { AssignedContract } from '../hooks/useAssignedContracts'; // For TaskCard compatibility
+
+// Define TaskStatus locally based on known statuses
+export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
+
+// Define NewTaskData based on the fields required for creating a new task
+// This should align with what TaskForm expects and what supabase insert needs for 'tasks'
+export interface NewTaskData {
+  title: string;
+  description: string | null;
+  reward_text?: string; // Optional, can be undefined
+  status: TaskStatus; // Ensure this is 'pending' on creation
+  created_by: string;
+  assigned_to?: string | null; // Optional
+  deadline?: string | null; // Optional
+  // Add other fields as necessary from tasks.Insert, e.g., proof_required, proof_type etc.
+}
+import { Clock, AlertTriangle, CheckCircle, DatabaseZap } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
 import { useDailyQuote } from '../hooks/useDailyQuote';
 
 export default function IssuedPage() {
@@ -42,16 +61,16 @@ export default function IssuedPage() {
     refetch: refetchIssuedContracts, // Added refetch
   } = useIssuedContracts();
 
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [selectedContract, setSelectedContract] = useState<IssuedContract | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // Enabled for delete functionality
   const dailyQuote = useDailyQuote();
   const [showNewContractForm, setShowNewContractForm] = useState(!!location.state?.openNewContractForm);
 
   const handleDeleteTaskRequest = (taskId: string) => {
-    const task = issuedContracts.find((t: Task) => t.id === taskId);
+    const task = issuedContracts.find((t: IssuedContract) => t.id === taskId);
     if (task) {
-      setTaskToDelete(task);
+      setSelectedContract(task);
       setIsDeleteModalOpen(true);
     } else {
       toast.error('Task not found.');
@@ -60,11 +79,11 @@ export default function IssuedPage() {
 
   const handleCloseDeleteModal = () => {
     setIsDeleteModalOpen(false);
-    setTaskToDelete(null);
+    setSelectedContract(null);
   };
 
   const handleConfirmDeleteTask = async () => {
-    if (!taskToDelete || !user) {
+    if (!selectedContract || !user) {
       toast.error('No task selected or user not found.');
       handleCloseDeleteModal();
       return;
@@ -75,13 +94,13 @@ export default function IssuedPage() {
       const { error: deleteError } = await supabase
         .from('tasks')
         .delete()
-        .match({ id: taskToDelete.id, created_by: user.id });
+        .match({ id: selectedContract.id, created_by: user.id });
 
       if (deleteError) {
         throw deleteError;
       }
 
-      toast.success(`Contract "${taskToDelete.title}" deleted successfully.`);
+      toast.success(`Contract "${selectedContract.title}" deleted successfully.`);
       await refetchIssuedContracts(); // Refresh the list
     } catch (error: unknown) {
       console.error('Failed to delete contract:', error);
@@ -155,7 +174,8 @@ export default function IssuedPage() {
     } catch (error: unknown) {
       console.error('Failed to approve contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
-        toast.error(`Approval failed: ${(error as { message: string }).message}`);
+        const supabaseError = error as { message: string; code?: string; details?: string };
+        toast.error(`Approval failed: ${(supabaseError as { message: string }).message}`);
       } else {
         toast.error('Approval failed due to an unknown error.');
       }
@@ -185,7 +205,8 @@ export default function IssuedPage() {
     } catch (error: unknown) {
       console.error('Failed to reject contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
-        toast.error(`Rejection failed: ${(error as { message: string }).message}`);
+        const supabaseError = error as { message: string; code?: string; details?: string };
+        toast.error(`Rejection failed: ${(supabaseError as { message: string }).message}`);
       } else {
         toast.error('Rejection failed due to an unknown error.');
       }
@@ -193,13 +214,18 @@ export default function IssuedPage() {
   };
 
   // Sort issued contracts by status
-  const sortedIssuedContracts = [...(issuedContracts || [])].sort((a, b) => {
-    const order = { pending: 0, review: 1, completed: 2 } as const;
-    // Handle potential null or undefined status if data is not clean
-    const statusA = a.status && Object.prototype.hasOwnProperty.call(order, a.status) ? a.status : 'pending'; 
-    const statusB = b.status && Object.prototype.hasOwnProperty.call(order, b.status) ? b.status : 'pending';
-    return order[statusA as keyof typeof order] - order[statusB as keyof typeof order];
-  });
+  const [sortedIssuedContracts, setSortedIssuedContracts] = useState<IssuedContract[]>([]);
+
+  useEffect(() => {
+    const sortedContracts = [...(issuedContracts || [])].sort((a, b) => {
+      const order = { pending: 0, review: 1, completed: 2 } as const;
+      // Handle potential null or undefined status if data is not clean
+      const statusA = a.status && Object.prototype.hasOwnProperty.call(order, a.status) ? a.status : 'pending'; 
+      const statusB = b.status && Object.prototype.hasOwnProperty.call(order, b.status) ? b.status : 'pending';
+      return order[statusA as keyof typeof order] - order[statusB as keyof typeof order];
+    });
+    setSortedIssuedContracts(sortedContracts);
+  }, [issuedContracts]);
 
   useEffect(() => {
     if (location.state?.openNewContractForm) {
@@ -306,13 +332,13 @@ export default function IssuedPage() {
 
       {/* New Minimalist Stats Icons for Issued Page */}
       <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
-        {/* Total Issued */}
+        {/* Pending Contracts */}
         <div className="text-center flex flex-col items-center">
-          <div className="text-red-400 mb-2">
-            <ListChecks size={32} />
+          <div className="text-orange-400 mb-2"> {/* Changed to orange for Pending, kept icon */} 
+            <AlertTriangle size={32} /> {/* Changed icon to AlertTriangle for Pending */} 
           </div>
-          <div className="text-3xl font-bold text-slate-100">{sortedIssuedContracts.length}</div>
-          <div className="text-xs text-slate-400">Issued</div>
+          <div className="text-3xl font-bold text-slate-100">{stats.pending}</div>
+          <div className="text-xs text-slate-400">Pending</div>
         </div>
         
         {/* Pending / In Review */}
@@ -363,7 +389,7 @@ export default function IssuedPage() {
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDeleteTask}
         title="Confirm Delete Contract"
-        message={`Are you sure you want to delete the contract "${taskToDelete?.title || ''}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
         isConfirming={isDeleting} // Enabled for delete functionality
       />
     </div>

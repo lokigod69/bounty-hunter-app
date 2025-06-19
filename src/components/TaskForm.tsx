@@ -14,22 +14,47 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
-import { Task, NewTaskData } from '../types/database';
+import { Database } from '../types/database';
+import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
+
+// Define BaseTask from the Database type
+type BaseTask = Database['public']['Tables']['tasks']['Row'];
+
+// Alias Task to BaseTask for usage within this component
+export type Task = BaseTask;
+
+// Define NewTaskData based on the fields required for creating a new task
+// This should align with what supabase insert needs for 'tasks'
+// and the payload constructed in handleSubmit
+export interface NewTaskData {
+  title: string;
+  description: string | null;
+  assigned_to: string | null;
+  deadline: string | null;
+  reward_type: string; // 'credit' or 'text'
+  reward_text?: string; // For bounty description or credit amount (stringified number)
+  proof_required?: boolean;
+  status: TaskStatus; // Should be 'pending' on creation
+  created_by: string; // Added, as it's usually required
+  // Add other fields from tasks.Insert as necessary
+}
 
 interface TaskFormProps {
   userId: string;
   onClose: () => void;
-  onSubmit: (taskData: NewTaskData, taskId?: string) => Promise<void>;
-  editingTask?: Task | null;
+  onSubmit: (taskData: NewTaskData, taskId?: string) => Promise<void>; // NewTaskData is now locally defined
+  editingTask?: Task | null; // Task is now locally defined as BaseTask
 }
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   useEffect(() => {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     // Re-enable scroll when modal is closed
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, []); // Empty dependency array ensures this runs only on mount and unmount
   const { friends, loading } = useFriends(userId);
@@ -108,6 +133,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     }
     
     const taskPayload: NewTaskData = {
+      created_by: userId, // Add created_by to the payload
+      status: 'pending' as TaskStatus, // Ensure status is set to pending
       title,
       description: description.trim() || null, // Use description state, allowing null for empty
       assigned_to: assignedTo,
@@ -145,7 +172,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-hidden"
       onClick={(e) => { // Click outside to dismiss
         if (e.target === e.currentTarget) {
           onClose();

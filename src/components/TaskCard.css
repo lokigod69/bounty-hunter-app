@@ -5,3 +5,7 @@
 }
 
 /* Add other styles from TaskCard.tsx here as needed */
+
+.font-mandalore {
+  font-family: 'MandaloreRough', 'Mandalore', sans-serif;
+}

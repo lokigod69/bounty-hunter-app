@@ -325,7 +325,7 @@ const renderActionButtonsInModal = () => {
                     <div className={`w-3 h-3 rounded-full 
                       ${status === 'pending' ? 'bg-red-500' : status === 'review' ? 'bg-yellow-500 animate-pulse' : status === 'completed' ? 'bg-green-500' : 'bg-slate-500'}`} 
                     />
-                    <span className="text-sm font-medium text-slate-300 task-status-text capitalize" style={{ fontFamily: "'MandaloreRough', 'Mandalore', sans-serif" }}>
+                    <span className="text-sm font-medium text-slate-300 task-status-text capitalize font-mandalore">
                       {status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'Overdue' : 'OPEN') :
                        status.replace('_', ' ')) : 'Unknown Status'}
                     </span>
