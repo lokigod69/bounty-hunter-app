@@ -172,7 +172,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-hidden"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 pt-16 px-4 pb-4 overflow-hidden touch-none"
       onClick={(e) => { // Click outside to dismiss
         if (e.target === e.currentTarget) {
           onClose();
@@ -189,7 +189,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       </button>
 
       <div 
-        className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[90vh]"
+        className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[85vh]"
         onClick={(e) => e.stopPropagation()} // Prevent clicks on modal content from closing modal
       >
         {/* Original close button removed from here */}
@@ -222,9 +222,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               id="description"
               value={description ?? ''}
               onChange={(e) => setDescription(e.target.value)}
-              className="input-field w-full min-h-[80px] resize-y"
+              className="input-field w-full min-h-[60px] resize-none"
               placeholder="Add more details about the task..."
-              rows={3}
+              rows={2}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${target.scrollHeight}px`;
+              }}
             />
             {/* No error message for description as it's optional */}
           </div>
