@@ -13,6 +13,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Friends from './pages/Friends';
+import ArchivePage from './pages/ArchivePage';
 import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
 import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyStorePage
 import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed from MyCollectedBountiesPage
@@ -51,6 +52,7 @@ export default function App() {
             {/* Routes below are protected and use the Layout component */}
             <Route index element={<Dashboard />} />
             <Route path="friends" element={<Friends />} />
+            <Route path="archive" element={<ArchivePage />} />
             <Route path="profile/edit" element={<ProfileEdit />} />
             <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
             <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}

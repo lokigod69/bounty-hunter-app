@@ -5,14 +5,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
-import { Task } from '../types/database';
+import { Database } from '../types/database';
 
-interface ProfileLite {
+// Define BaseTask directly from the Database type for clarity and correctness
+type BaseTask = Database['public']['Tables']['tasks']['Row'];
+
+export interface ProfileLite {
   display_name: string | null;
   avatar_url: string | null;
 }
 
-interface AssignedContract extends Task {
+export interface AssignedContract extends BaseTask {
   creator: ProfileLite | null;
   assignee: ProfileLite | null;
   // user_credits?: number; // Temporarily removed as direct join is not possible
@@ -40,7 +43,8 @@ export function useAssignedContracts() {
           creator:profiles!tasks_created_by_fkey(display_name, avatar_url),
           assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url)
         `)
-        .eq('assigned_to', user.id);
+        .eq('assigned_to', user.id)
+        .eq('is_archived', false);
 
       if (dbError) {
         console.error('Error fetching assigned contracts:', dbError);

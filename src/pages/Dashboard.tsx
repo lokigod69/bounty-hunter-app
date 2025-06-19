@@ -282,6 +282,7 @@ export default function Dashboard() {
             onProofUpload={handleProofUpload}
             uploadProgress={0} // Pass default value as prop is mandatory
             onDeleteTaskRequest={handleDeleteTaskRequest}
+            refetchTasks={refetchAssignedContracts}
           />
         ))}
       </div>

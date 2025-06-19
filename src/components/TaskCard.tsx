@@ -9,30 +9,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Task, TaskStatus } from '../types/database';
-import { FileEdit, Trash2, CheckCircle, ShieldCheck, Clock, Coins, FileVideo } from 'lucide-react';
+
+// Define Task-related types from the generated Database types
+// Assuming TaskStatus is a string enum from the DB, but defining as string for safety
+type TaskStatus = string;
+import { FileEdit, Trash2, CheckCircle, ShieldCheck, Clock, Coins, FileVideo, Archive } from 'lucide-react';
+import { AssignedContract } from '../hooks/useAssignedContracts';
 import { supabase } from '../lib/supabase';
+
 import ProofModal from './ProofModal';
+import './TaskCard.css'; // Import custom CSS for TaskCard
 import ImageLightbox from './ImageLightbox';
 import { createPortal } from 'react-dom';
+import { useSwipeable } from 'react-swipeable';
 
-interface ProfileLite {
-  display_name: string | null;
-  avatar_url: string | null;
-}
 
-interface TaskWithDetails extends Task {
-  creator: ProfileLite | null;
-  assignee: ProfileLite | null;
-}
+
+
 
 interface TaskCardProps {
-  task: TaskWithDetails;
+  refetchTasks?: () => void;
+  task: AssignedContract;
   isCreatorView: boolean;
   onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void;
   onProofUpload: (file: File, taskId: string) => Promise<string | null>;
   onDeleteTaskRequest: (taskId: string) => void;
-  onEditTaskRequest?: (task: TaskWithDetails) => void;
+  onEditTaskRequest?: (task: AssignedContract) => void;
   onApprove?: (taskId: string) => void;
   onReject?: (taskId: string) => void;
   uploadProgress: number;
@@ -83,6 +85,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onReject,
   uploadProgress,
   currentUserCredits,
+  refetchTasks, // Added refetchTasks here
 }) => {
   const { user } = useAuth();
   const [showProofModal, setShowProofModal] = useState(false);
@@ -119,6 +122,43 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const actorName = isCreatorView ? (assignee?.display_name || 'N/A') : (creator?.display_name || 'N/A');
   const fromName = creator?.display_name || 'Unknown';
 
+  const handleArchive = async () => {
+    if (task.status !== 'completed' || task.is_archived) return;
+    setActionLoading(true); // Indicate loading state
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ is_archived: true })
+        .eq('id', task.id);
+
+      if (error) {
+        console.error('Error archiving task:', error);
+        // Optionally, show a toast notification for the error
+      } else {
+        console.log(`Task ${task.id} archived successfully`);
+        if (refetchTasks) {
+          refetchTasks();
+        } else if (onStatusUpdate) {
+          // Fallback if refetchTasks is not provided, though less ideal
+          onStatusUpdate(task.id, task.status); 
+        }
+        // Optionally, show a success toast notification
+      }
+    } catch (e) {
+      console.error('Exception archiving task:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: handleArchive,
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+  });
+
+  
+
   const handleAction = async (newStatus: TaskStatus) => {
     setActionLoading(true);
     try {
@@ -130,7 +170,27 @@ const TaskCard: React.FC<TaskCardProps> = ({
     setActionLoading(false);
   };
 
-  const renderActionButtonsInModal = () => {
+  // Function to render the archive button
+const renderArchiveButton = () => {
+  if (task.status === 'completed' && !task.is_archived) {
+    return (
+      <button
+        onClick={(e) => { 
+          e.stopPropagation(); 
+          handleArchive(); 
+        }}
+        className="btn-secondary flex-1 py-2 text-sm ml-2" // Added ml-2 for spacing
+        disabled={actionLoading}
+        title="Archive Task"
+      >
+        <Archive size={16} className="mr-1" /> Archive
+      </button>
+    );
+  }
+  return null;
+};
+
+const renderActionButtonsInModal = () => {
     if (status === 'completed') {
       return <div className="flex items-center text-green-500"><CheckCircle size={20} className="mr-2" />Completed</div>;
     }
@@ -148,7 +208,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
         return (
           <div className="flex gap-2 w-full">
             {onEditTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onEditTaskRequest) onEditTaskRequest(task); }} className="btn-secondary flex-1 py-2 text-sm"><FileEdit size={16} className="mr-1"/> Edit</button>}
-            <button onClick={(e) => { e.stopPropagation(); onDeleteTaskRequest(id); }} className="btn-danger flex-1 py-2 text-sm"><Trash2 size={16} className="mr-1"/> Delete</button>
+            {onDeleteTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onDeleteTaskRequest) onDeleteTaskRequest(task.id); }} className="btn-danger flex-1 py-2 text-sm"><Trash2 size={16} className="mr-1"/> Delete</button>}
+            {renderArchiveButton()} // This call is already in place, we just need to define the function.
           </div>
         );
       }
@@ -180,6 +241,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
     <>
       {/* Collapsed Card Preview */}
       <div
+        {...swipeHandlers} // Added swipe handlers here
         onClick={() => setIsExpanded(true)}
         className={`task-card relative border-2 rounded-lg cursor-pointer transition-all duration-300 ease-in-out
           ${isExpanded ? 'invisible opacity-0 scale-95' : 'visible opacity-100 scale-100'}
@@ -222,7 +284,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
             {/* Body - This is now the main scrollable area */}
             <div className="flex-1 space-y-4 mb-6 overflow-y-auto pr-2">
-              <p className="text-sm text-slate-300 whitespace-pre-wrap break-words" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <p className="text-sm text-slate-300 whitespace-pre-wrap break-words task-card-description">
                 {description || 'No description provided.'}
               </p>
 
@@ -339,12 +401,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
             {/* Footer Actions */}
             <div className="mt-auto pt-4 border-t border-slate-700 space-y-3">
               {renderActionButtonsInModal()}
-              <button
-                onClick={() => setIsExpanded(false)}
-                className="w-full text-sm text-slate-400 hover:text-slate-200 py-2 px-4 rounded-md border border-slate-600 hover:border-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                Close
-              </button>
+              <div {...swipeHandlers} className={`bg-gray-800 rounded-lg shadow-lg p-4 transition-all duration-300 ${isExpanded ? 'mb-4' : ''} border border-gray-700 hover:border-purple-500`}>
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="w-full text-sm text-slate-400 hover:text-slate-200 py-2 px-4 rounded-md border border-slate-600 hover:border-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div> 
         </div>

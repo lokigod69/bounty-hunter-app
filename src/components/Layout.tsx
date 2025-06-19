@@ -19,7 +19,20 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
-import { LogOut, Menu, X, Home, Users, UserCog, Plus, ShoppingCart, Sparkles, Send } from 'lucide-react'; // Added ShoppingCart, Sparkles, Send // Added UserCog, Plus, removed DollarSign, removed Briefcase, removed Gift
+import {
+  Home,
+  Send,
+  ShoppingCart,
+  Sparkles,
+  Users,
+  Book,
+  UserCog,
+  LogOut,
+  Menu,
+  X,
+  PlusCircle,
+  UserCircle
+} from 'lucide-react'; // Added ShoppingCart, Sparkles, Send // Added UserCog, Plus, removed DollarSign, removed Briefcase, removed Gift
 import logo from '../assets/logo5.png'; // Added logo
 import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; // Import the new component
@@ -85,13 +98,19 @@ export default function Layout() {
   });
 
   // Navigation items
-  const navItems = [
+  const baseNavItems = [
     { name: 'Contracts', path: '/', icon: <Home size={20} /> },
     { name: 'Issued', path: '/issued', icon: <Send size={20} /> },
-    { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> }, // Corrected path to rewards-store
-    { name: 'My Rewards', path: '/my-rewards', icon: <Sparkles size={20} /> }, // Corrected path and name to my-rewards
+    { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
+    { name: 'Create Bounty', path: '/create-bounty', icon: <PlusCircle size={20} /> },
     { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
   ];
+
+  const historyNavItem = { name: 'History', path: '/archive', icon: <Book size={20} /> };
+  const profileNavItem = { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> };
+
+  const navItemsDesktop = [...baseNavItems, historyNavItem];
+  const navItemsMobile = [...baseNavItems, profileNavItem, historyNavItem];
 
   const userMenuItems = [
     { name: 'Edit Profile', path: '/profile/edit', icon: <UserCog size={20} /> }
@@ -120,7 +139,7 @@ export default function Layout() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
+            {navItemsDesktop.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -150,7 +169,7 @@ export default function Layout() {
               state={{ openNewContractForm: true }}
               className="btn-primary flex items-center"
             >
-              <Plus size={18} className="mr-2" />
+              <PlusCircle size={18} className="mr-2" />
               NEW CONTRACT
             </Link>
 
@@ -240,7 +259,7 @@ export default function Layout() {
               onClick={closeMobileMenu}
               className="btn-primary flex items-center justify-center mb-6"
             >
-              <Plus size={20} className="mr-2" />
+              <PlusCircle size={20} className="mr-2" />
               NEW CONTRACT
             </Link>
 
@@ -262,8 +281,8 @@ export default function Layout() {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex flex-col space-y-2 mb-4">
-              {navItems.map((item) => (
+            <nav className="flex-grow px-4">
+              {navItemsMobile.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
