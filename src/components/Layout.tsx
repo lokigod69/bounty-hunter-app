@@ -18,6 +18,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useFriends } from '../hooks/useFriends';
 import { LogOut, Menu, X, Home, Users, UserCog, Plus, ShoppingCart, Sparkles, Send } from 'lucide-react'; // Added ShoppingCart, Sparkles, Send // Added UserCog, Plus, removed DollarSign, removed Briefcase, removed Gift
 import logo from '../assets/logo5.png'; // Added logo
 import useClickOutside from '../hooks/useClickOutside';
@@ -26,6 +27,7 @@ import UserCredits from './UserCredits'; // Phase 8: Import UserCredits widget
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth();
+  const { pendingRequests } = useFriends(user?.id);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -122,14 +124,19 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`nav-item-galactic flex items-center space-x-1 ${
+                className={`relative nav-item-galactic flex items-center space-x-1 ${
                   location.pathname === item.path
                     ? 'nav-item-galactic-active'
                     : ''
                 }`}
               >
                 {item.icon}
-                <span>{item.name}</span>
+                                <span>{item.name}</span>
+                {item.name === 'Friends' && pendingRequests && pendingRequests.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                    {pendingRequests.length}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -250,7 +257,7 @@ export default function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`nav-item-galactic flex items-center space-x-3 px-4 py-3 rounded-xl ${
+                  className={`relative nav-item-galactic flex items-center space-x-3 px-4 py-3 rounded-xl ${
                     location.pathname === item.path
                       ? 'nav-item-galactic-active'
                       : ''
@@ -259,6 +266,11 @@ export default function Layout() {
                 >
                   {item.icon}
                   <span className="text-lg">{item.name}</span>
+                  {item.name === 'Friends' && pendingRequests && pendingRequests.length > 0 && (
+                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
+                      {pendingRequests.length}
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>
