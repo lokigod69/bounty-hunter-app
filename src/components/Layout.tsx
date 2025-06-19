@@ -33,6 +33,7 @@ export default function Layout() {
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLElement>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,12 +57,23 @@ export default function Layout() {
   };
 
   // Close user menu when clicking outside
-    useEffect(() => {
+      useEffect(() => {
+    const mainEl = mainContentRef.current;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      if (mainEl) {
+        setScrolled(mainEl.scrollTop > 10);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    if (mainEl) {
+      mainEl.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (mainEl) {
+        mainEl.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, []);
 
   useClickOutside(userMenuRef, () => {
@@ -88,7 +100,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-indigo-950">
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled && !mobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
@@ -286,7 +298,7 @@ export default function Layout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-6 overflow-y-auto scroll-container">
         <Outlet />
       </main>
     </div>

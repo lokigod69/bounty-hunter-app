@@ -7,12 +7,14 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  -webkit-overflow-scrolling: touch;
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
 }
 
-body {
-  overflow-y: auto; /* Or scroll, ensure vertical scrolling is enabled */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* --- FONT SYSTEM OPTION A (REVISED) START --- */
