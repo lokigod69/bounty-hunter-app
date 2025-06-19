@@ -253,8 +253,8 @@ export default function Layout() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg overflow-y-auto">
-          <div className="container mx-auto px-4 py-6 flex flex-col h-full">
+        <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+          <div className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto">
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
                   <>
