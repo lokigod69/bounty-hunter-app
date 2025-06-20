@@ -51,7 +51,21 @@ export function useAssignedContracts() {
         setError(dbError.message);
         setContracts([]);
       } else {
-        setContracts(data || []);
+        const tasksWithPublicUrls = data?.map(task => {
+          if (task.proof_url) {
+            const { data: publicUrlData } = supabase
+              .storage
+              .from('proofs') // This is the bucket name for bounty proofs
+              .getPublicUrl(task.proof_url);
+            
+            return {
+              ...task,
+              proof_url: publicUrlData.publicUrl,
+            };
+          }
+          return task;
+        });
+        setContracts(tasksWithPublicUrls || []);
       }
     } catch (e: unknown) {
       console.error('Unexpected error fetching assigned contracts:', e);

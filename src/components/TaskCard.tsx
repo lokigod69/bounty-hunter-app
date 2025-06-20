@@ -13,19 +13,14 @@ import { useAuth } from '../hooks/useAuth';
 // Define Task-related types from the generated Database types
 // Assuming TaskStatus is a string enum from the DB, but defining as string for safety
 type TaskStatus = string;
-import { FileEdit, Trash2, CheckCircle, ShieldCheck, Clock, Coins, FileVideo, Archive } from 'lucide-react';
+import { Archive, CheckCircle, CircleDollarSign, Clock, Edit3, Eye, FileText, Trash2, XCircle, User } from 'lucide-react'; // Removed FileVideo
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { supabase } from '../lib/supabase';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
-import ImageLightbox from './ImageLightbox';
 import { createPortal } from 'react-dom';
-import { useSwipeable } from 'react-swipeable';
-
-
-
-
+import { useSwipeable } from 'react-swipeable'; // Import useSwipeable
 
 interface TaskCardProps {
   refetchTasks?: () => void;
@@ -41,7 +36,7 @@ interface TaskCardProps {
   currentUserCredits?: number;
 }
 
-const CountdownTimer: React.FC<{ deadline: string | null }> = ({ deadline }) => {
+const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> = ({ deadline, baseColor = 'text-slate-400' }) => {
   const calculateTimeLeft = () => {
     if (!deadline) return null;
     const difference = +new Date(deadline) - +new Date();
@@ -62,11 +57,11 @@ const CountdownTimer: React.FC<{ deadline: string | null }> = ({ deadline }) => 
     return () => clearTimeout(timer);
   });
   if (!timeLeft || Object.keys(timeLeft).length === 0) {
-    return <span className="text-xs text-red-400">Past Deadline</span>;
+    const pastDeadlineColor = baseColor === 'text-purple-400' ? 'text-purple-400 font-semibold' : 'text-red-400';
+    return <span className={`text-xs ${pastDeadlineColor}`}>Past Deadline</span>;
   }
   return (
-    <span className="text-xs text-slate-400 flex items-center">
-      <Clock size={14} className="mr-1" />
+    <span className={`text-xs ${baseColor} flex items-center`}>
       {timeLeft.days !== undefined && timeLeft.days > 0 && `${timeLeft.days}d `}
       {timeLeft.hours !== undefined && timeLeft.hours > 0 && `${timeLeft.hours}h `}
       {`${timeLeft.minutes}m left`}
@@ -89,32 +84,28 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const { user } = useAuth();
   const [showProofModal, setShowProofModal] = useState(false);
-  const [showLightbox, setShowLightbox] = useState(false);
-  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   useEffect(() => {
-    // Prevent body from scrolling when the modal is open
     if (isExpanded) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    // Cleanup function to re-enable scrolling when component unmounts
     return () => {
       document.body.style.overflow = '';
     };
   }, [isExpanded]);
 
-  const getProofUrl = (path: string | null): string => {
-    if (!path) return '/placeholder-image.png';
-    try {
-      return supabase.storage.from('bounty-proofs').getPublicUrl(path).data.publicUrl;
-    } catch (error) {
-      console.error('Error getting public proof URL:', error);
-      return '/placeholder-image.png';
-    }
+  const handleClose = () => {
+    setIsAnimatingOut(true);
+    setTimeout(() => {
+      setIsExpanded(false);
+      setIsAnimatingOut(false); // Reset for next time
+    }, 300); // Duration should match the CSS animation
   };
 
   const { id, title, description, assigned_to, created_by, deadline, reward_type, reward_text, status, proof_required, proof_url, creator, assignee } = task;
@@ -192,7 +183,7 @@ const renderArchiveButton = () => {
 
 const renderActionButtonsInModal = () => {
     if (status === 'completed') {
-      return <div className="flex items-center text-green-500"><CheckCircle size={20} className="mr-2" />Completed</div>;
+      return null;
     }
     if (!isCreatorView && assigned_to === user?.id) {
       if ((status === 'pending' || status === 'in_progress')) {
@@ -207,7 +198,7 @@ const renderActionButtonsInModal = () => {
       if (status === 'pending' || status === 'in_progress' || status === 'rejected') {
         return (
           <div className="flex gap-2 w-full">
-            {onEditTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onEditTaskRequest) onEditTaskRequest(task); }} className="btn-secondary flex-1 py-2 text-sm"><FileEdit size={16} className="mr-1"/> Edit</button>}
+            {onEditTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onEditTaskRequest) onEditTaskRequest(task); }} className="btn-secondary flex-1 py-2 text-sm"><Edit3 size={16} className="mr-1"/> Edit</button>}
             {onDeleteTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onDeleteTaskRequest) onDeleteTaskRequest(task.id); }} className="btn-danger flex-1 py-2 text-sm"><Trash2 size={16} className="mr-1"/> Delete</button>}
             {renderArchiveButton()} // This call is already in place, we just need to define the function.
           </div>
@@ -224,12 +215,16 @@ const renderActionButtonsInModal = () => {
     : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
 
   const modalBgColor = status === 'pending'
-    ? 'bg-red-900/90 border-2 border-red-500'
+    ? 'bg-red-900/90 border-2 border-red-500' // OPEN
+    : status === 'in_progress'
+    ? 'bg-blue-900/90 border-2 border-blue-500' // IN PROGRESS
     : status === 'review'
-    ? 'bg-yellow-900/90 border-2 border-yellow-500'
+    ? 'bg-yellow-900/90 border-2 border-yellow-500' // REVIEW
     : status === 'completed'
-    ? 'bg-green-900/90 border-2 border-green-500'
-    : 'bg-slate-800 border border-slate-700'; // Fallback
+    ? 'bg-green-900/90 border-2 border-green-500' // COMPLETED
+    : status === 'rejected'
+    ? 'bg-rose-900/90 border-2 border-rose-500' // REJECTED (using rose for a distinct red)
+    : 'bg-slate-800/90 border border-slate-700'; // Fallback for ARCHIVED or other unknown
 
   const titleColorClass = status === 'pending'
     ? 'text-red-700 dark:text-red-600'
@@ -260,142 +255,134 @@ const renderActionButtonsInModal = () => {
 
       {/* Expanded Card Modal */}
       {isExpanded && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}>
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setIsExpanded(false)}
+            onClick={handleClose}
           />
 
           {/* Modal Content */}
           <div
-            className={`relative z-[51] w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col animate-slideUp ${modalBgColor}`}
+            className={`relative z-[51] w-[95vw] sm:w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col ${isAnimatingOut ? 'modal-slide-down' : 'modal-slide-up'} ${modalBgColor}`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header - Non-scrollable */}
-            <div className="mb-4 pb-4 border-b border-slate-700/50 flex-shrink-0">
-              <h3 className="text-xl font-bold text-slate-100 break-words max-w-full overflow-hidden" title={title}>
+            {/* MODAL HEADER: Title and Creator/Assignee */}
+            <div className="mb-6 pb-4 border-b border-slate-600/50 flex-shrink-0 text-center">
+              <h3 className="text-3xl sm:text-4xl font-bold text-slate-100 break-words max-w-full overflow-hidden font-mandalore" title={title}>
                 {title}
               </h3>
-              <p className="text-sm text-slate-400 mt-1">
-                {isCreatorView ? `To: ${actorName}` : `From: ${fromName}`}
+              <p className="text-md text-slate-400 mt-2 flex items-center justify-center">
+                <User size={18} className="mr-2" /> {isCreatorView ? actorName : fromName}
               </p>
             </div>
 
             {/* Body - This is now the main scrollable area */}
-            <div className="flex-1 space-y-4 mb-6 overflow-y-auto pr-2">
-              <p className="text-sm text-slate-300 whitespace-pre-wrap break-words task-card-description">
-                {description || 'No description provided.'}
-              </p>
+            <div className="flex-1 space-y-6 mb-6 overflow-y-auto pr-2">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div className="flex flex-col space-y-1">
-                  <span className="text-slate-500 block">Reward:</span>
-                  {reward_text ? (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {reward_type === 'credit' ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-700 text-slate-200 text-xs">
-                          <Coins size={14} className="mr-1 text-amber-400" /> 
-                          <span>{reward_text} Credits</span>
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-200 text-xs break-all max-w-full">
-                          {reward_text}
-                        </span>
-                      )}
-                    </div>
-                  ) : <span className="text-slate-400">N/A</span>}
-                </div>
-                <div>
-                  <span className="text-slate-500 block mb-1">Proof:</span>
-                  {proof_required ? (
-                    <span className="px-3 py-1 rounded-full bg-blue-600/30 text-blue-300 text-xs flex items-center w-fit">
-                      <ShieldCheck size={14} className="mr-1.5" />
-                      Required
-                    </span>
-                  ) : <span className="text-slate-400">Not Required</span>}
-                </div>
-                <div>
-                  <span className="text-slate-500 block mb-1">Deadline:</span>
-                  {deadline ? <CountdownTimer deadline={deadline} /> : <span className="text-slate-400">No Deadline</span>}
-                </div>
-                 <div>
-                  <span className="text-slate-500 block mb-1">Status:</span>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full 
-                      ${status === 'pending' ? 'bg-red-500' : status === 'review' ? 'bg-yellow-500 animate-pulse' : status === 'completed' ? 'bg-green-500' : 'bg-slate-500'}`} 
-                    />
-                    <span className="text-sm font-medium text-slate-300 task-status-text capitalize font-mandalore">
-                      {status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'Overdue' : 'OPEN') :
-                       status.replace('_', ' ')) : 'Unknown Status'}
-                    </span>
+              {/* REWARD SECTION */}
+              <div className="py-8 px-4 rounded-lg bg-slate-700/30 border border-slate-600/50 text-center">
+                {reward_text ? (
+                  <div className="flex flex-col items-center justify-center min-h-[50px]">
+                    {reward_type === 'credit' ? (
+                      <div className="flex items-center gap-2 text-2xl text-amber-400 font-bold">
+                        <span className="text-5xl animate-proper-spin mr-2">🪙</span> 
+                        <span className="text-3xl">{reward_text} Credits</span>
+                      </div>
+                    ) : (
+                      <div className="text-3xl font-bold py-1 px-3 break-all max-w-full relative overflow-hidden flex items-center justify-center">
+                        <span className="animate-pulsate-present mr-2">🎁</span> <span className="bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent animate-shimmer">{reward_text}</span>
+                      </div>
+                    )}
                   </div>
+                ) : <span className="text-slate-400 text-lg">No bounty specified</span>}
+              </div>
+
+              {/* INTEGRATED DESCRIPTION & LOGISTICS SECTION */}
+              <div className="py-4 px-4 rounded-lg bg-slate-800/40 border border-slate-700/60 flex items-center justify-between w-full text-base">
+                {/* Left: Deadline */}
+                <div className="flex items-center flex-shrink-0 mr-4">
+                  <Clock size={24} className="mr-2 text-purple-400 flex-shrink-0" />
+                  {deadline ? (
+                    <CountdownTimer deadline={deadline} baseColor='text-purple-400' />
+                  ) : (
+                    <span className="text-slate-500 text-xs">Not set</span>
+                  )}
+                </div>
+
+                {/* Center: Description */}
+                <div className="flex-grow text-center mx-4">
+                  <p className="text-sm text-slate-300 whitespace-normal break-words task-card-description">
+                    <FileText size={20} className="mr-2 text-sky-400 inline-block relative -top-px" /> {description || 'No further details provided for this mission.'}
+                  </p>
+                </div>
+
+                {/* Right: Status */}
+                <div className="flex items-center flex-shrink-0 ml-4">
+                  {status === 'pending'
+                    ? <CircleDollarSign size={24} className="mr-2 text-red-400 flex-shrink-0" />
+                    : status === 'review'
+                    ? <Eye size={24} className="mr-2 text-yellow-400 flex-shrink-0" />
+                    : status === 'completed'
+                    ? <CheckCircle size={24} className="mr-2 text-green-400 flex-shrink-0" />
+                    : <XCircle size={24} className="mr-2 text-slate-400 flex-shrink-0" />}
+                  <span className={`font-semibold text-xs ${status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'text-red-500' : 'text-red-400') : status === 'review' ? 'text-yellow-400' : status === 'completed' ? 'text-green-400' : 'text-slate-400'}`}>{status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'OVERDUE' : 'OPEN') :
+                   status.replace('_', ' ').toUpperCase()) : 'UNKNOWN'}</span>
                 </div>
               </div>
 
-              {/* Review Section for Creator */}
-              {isCreatorView && status === 'review' && (
-                <div className="mt-4 p-4 rounded-lg bg-slate-700/50 border border-slate-600">
-                  <p className="text-sm text-slate-300 mb-2 font-semibold">Proof submitted by <span className="text-teal-400">{actorName}</span>:</p>
-                  {(() => {
-                    const proofDisplayUrl = getProofUrl(proof_url);
-                    if (task.proof_type === 'video') {
-                      return (
-                        <div className="w-full h-32 flex flex-col items-center justify-center text-sm text-slate-400 bg-slate-900/50 rounded-md mb-3">
-                          <FileVideo size={32} className="mb-2 text-teal-400" />
-                          <span>Video proof submitted. Consider adding a link if available.</span>
-                        </div>
-                      );
-                    } else if (proofDisplayUrl && proofDisplayUrl !== '/placeholder-image.png') {
-                      return (
-                        <img
-                          src={proofDisplayUrl}
-                          alt="Proof thumbnail"
-                          className="w-full max-h-60 object-contain rounded-md mb-3 cursor-pointer hover:opacity-80 transition-opacity bg-slate-900/50 p-1"
-                          onClick={(e) => { e.stopPropagation(); setLightboxImageUrl(proofDisplayUrl); setShowLightbox(true); }}
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.png'; }}
-                        />
-                      );
-                    } else {
-                      return <div className="w-full h-20 flex items-center justify-center text-sm text-slate-500 bg-slate-900/50 rounded-md mb-3">No proof image provided or URL is invalid.</div>;
-                    }
-                  })()}
-                  <div className="flex gap-3 w-full mt-3">
-                    {onApprove && <button onClick={(e) => { e.stopPropagation(); onApprove(id); }} className="btn-success flex-1 py-2 text-sm" disabled={actionLoading}>{actionLoading ? 'Approving...' : 'Approve'}</button>}
-                    {onReject && <button onClick={(e) => { e.stopPropagation(); onReject(id); }} className="btn-danger flex-1 py-2 text-sm" disabled={actionLoading}>{actionLoading ? 'Rejecting...' : 'Reject'}</button>}
+              {/* --- NEW PROOF DISPLAY AND SUBMISSION SECTIONS --- */}
+
+              {/* Submitted Proof Display Area - For Assignee */}
+              {task.proof_url && ['review', 'completed', 'archived'].includes(task.status) && !isCreatorView && (
+                <div className="py-4 px-4 mt-1 rounded-lg bg-slate-800/40 border border-slate-700/60">
+                  <div className="flex items-center text-slate-400 mb-3">
+                    <Eye size={18} className="mr-2 text-indigo-400" />
+                    <span className="font-semibold">SUBMITTED PROOF</span>
+                  </div>
+                  <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
+                    {proof_url ? (
+                      <a 
+                        href={proof_url as string} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20"
+                      >
+                        <FileText size={20} className="mr-2" />
+                        View Submitted Proof
+                      </a>
+                    ) : (
+                      <p className="text-slate-500 text-sm">Proof URL is unexpectedly missing.</p> 
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* View Proof link for Assignee (if proof submitted) */}
-              {!isCreatorView && proof_url && (status === 'review' || status === 'completed' || status === 'rejected') && (
-                <div className="mt-4 p-4 rounded-lg bg-slate-700/50 border border-slate-600">
-                  <p className="text-sm text-slate-300 mb-2 font-semibold">Your Submitted Proof:</p>
-                   {(() => {
-                    const proofDisplayUrl = getProofUrl(proof_url);
-                    if (task.proof_type === 'video') {
-                      return (
-                        <div className="w-full h-32 flex flex-col items-center justify-center text-sm text-slate-400 bg-slate-900/50 rounded-md">
-                          <FileVideo size={32} className="mb-2 text-teal-400" />
-                          <span>Video proof submitted.</span>
-                        </div>
-                      );
-                    } else if (proofDisplayUrl && proofDisplayUrl !== '/placeholder-image.png') {
-                      return (
-                        <img
-                          src={proofDisplayUrl}
-                          alt="Your proof thumbnail"
-                          className="w-full max-h-60 object-contain rounded-md cursor-pointer hover:opacity-80 transition-opacity bg-slate-900/50 p-1"
-                          onClick={(e) => { e.stopPropagation(); setLightboxImageUrl(proofDisplayUrl); setShowLightbox(true); }}
-                           onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.png'; }}
-                        />
-                      );
-                    } else {
-                      return <div className="w-full h-20 flex items-center justify-center text-sm text-slate-500 bg-slate-900/50 rounded-md">No proof image available or URL is invalid.</div>;
-                    }
-                  })()}
+              {/* Review Section for Creator (includes proof display) */}
+              {isCreatorView && status === 'review' && (
+                <div className="py-4 px-4 mt-1 rounded-lg bg-slate-800/40 border border-slate-700/60">
+                  <div className="flex items-center justify-center bg-slate-800/60 rounded-t-md p-2">
+                    <Eye size={18} className="mr-2 text-indigo-400" />
+                    <span className="font-semibold">
+                      {proof_url ? (
+                        <a href={proof_url} target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 underline">
+                          Proof
+                        </a>
+                      ) : (
+                        'Proof'
+                      )}
+                      {' '}Submitted
+                    </span>
+                  </div>
+                  {/* Action buttons for creator to approve/reject proof */}
+                  <div className="flex items-center justify-center gap-x-2 mt-3">
+                    {onApprove && <button onClick={() => onApprove(id)} className="btn-success w-full">Approve</button>}
+                    {onReject && <button onClick={() => onReject(id)} className="btn-danger w-full">Reject</button>}
+                  </div>
                 </div>
               )}
+
+
             </div>
 
             {/* Footer Actions */}
@@ -403,7 +390,7 @@ const renderActionButtonsInModal = () => {
               {renderActionButtonsInModal()}
               <div {...swipeHandlers} className={`bg-gray-800 rounded-lg shadow-lg p-4 transition-all duration-300 ${isExpanded ? 'mb-4' : ''} border border-gray-700 hover:border-purple-500`}>
                 <button
-                  onClick={() => setIsExpanded(false)}
+                  onClick={handleClose}
                   className="w-full text-sm text-slate-400 hover:text-slate-200 py-2 px-4 rounded-md border border-slate-600 hover:border-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   Close
@@ -415,23 +402,25 @@ const renderActionButtonsInModal = () => {
       )}
 
       {/* Proof Submission Modal (Portal) */}
-      {showProofModal && (
-        <ProofModal
-          onClose={() => setShowProofModal(false)}
-          onSubmit={async (file) => {
-            setActionLoading(true);
-            await onProofUpload(file, id);
-            setActionLoading(false);
-            setShowProofModal(false);
-          }}
-          uploadProgress={uploadProgress}
-        />
-      )}
-
-      {/* Image Lightbox (Portal) */}
-      {showLightbox && lightboxImageUrl &&
+      {showProofModal &&
         createPortal(
-          <ImageLightbox src={lightboxImageUrl as string} alt="Proof of completion" onClose={() => setShowLightbox(false)} />,
+          <ProofModal
+            onClose={() => setShowProofModal(false)}
+            onSubmit={async (file: File) => {
+              setActionLoading(true);
+              try {
+                await onProofUpload(file, id); // Call TaskCard's onProofUpload
+                if (refetchTasks) refetchTasks();
+                setShowProofModal(false); // Close modal on success
+              } catch (error) {
+                console.error('Proof submission failed via modal:', error);
+                // Error handling within ProofModal might be better, or pass an onError prop
+              } finally {
+                setActionLoading(false);
+              }
+            }}
+            uploadProgress={uploadProgress}
+          />,
           document.body
         )}
     </>

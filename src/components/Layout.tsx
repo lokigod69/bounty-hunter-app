@@ -113,7 +113,7 @@ export default function Layout() {
   // Navigation items
   const baseNavItems = [
     { name: 'Contracts', path: '/', icon: <Home size={20} /> },
-    { name: 'Issued', path: '/issued', icon: <Send size={20} /> },
+    { name: 'MISSIONS', path: '/issued', icon: <Send size={20} /> },
     { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
     { name: 'Create Bounty', path: '/create-bounty', icon: <PlusCircle size={20} /> },
     { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
@@ -176,16 +176,7 @@ export default function Layout() {
           {/* User Profile & Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <UserCredits />
-            {/* New Contract Button */}
-            <Link
-              to="/issued"
-              state={{ openNewContractForm: true }}
-              className="btn-primary flex items-center"
-            >
-              <PlusCircle size={18} className="mr-2" />
-              NEW CONTRACT
-            </Link>
-
+            {/* 'NEW CONTRACT' button removed from here. Functionality moved to IssuedPage.tsx FAB. */}
             {/* Cursor Trail Toggle Button */}
             <div className="relative group">
               <button
@@ -264,17 +255,7 @@ export default function Layout() {
                     </div>
                   </>
                 )}
-
-            {/* New Contract Button for Mobile */}
-            <Link
-              to="/issued"
-              state={{ openNewContractForm: true }}
-              onClick={closeMobileMenu}
-              className="btn-primary flex items-center justify-center mb-6"
-            >
-              <PlusCircle size={20} className="mr-2" />
-              NEW CONTRACT
-            </Link>
+            {/* 'NEW CONTRACT' button removed from mobile menu. Functionality moved to IssuedPage.tsx FAB. */}
 
             {/* User Profile */}
             <div className="flex items-center space-x-3 p-4 mb-6 glass-card">

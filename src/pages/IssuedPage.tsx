@@ -1,5 +1,5 @@
 // src/pages/IssuedPage.tsx
-// This component serves as the "Issued Contracts" view, displaying contracts created BY the user.
+// This component serves as the "MISSIONS" view, displaying contracts (missions) created BY the user.
 // - Uses `useIssuedContracts` hook for data fetching.
 // - Sorts contracts by status: pending (top), review (middle), completed (bottom).
 // - TaskCard interactions (status updates, proof uploads, deletions) are effectively DISABLED
@@ -18,7 +18,6 @@
 // - Redesigned summary cards to a minimalist icon-based flex layout.
 
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
@@ -28,8 +27,7 @@ import TaskForm from '../components/TaskForm';
 import { toast } from 'react-hot-toast';
 // Types imported from hooks or defined locally
 import type { IssuedContract } from '../hooks/useIssuedContracts';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars --- Used for type assertion in TaskCard prop
-import type { AssignedContract } from '../hooks/useAssignedContracts'; // For TaskCard compatibility
+// import type { AssignedContract } from '../hooks/useAssignedContracts'; // Removed as it's unused after refactor
 
 // Define TaskStatus locally based on known statuses
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
@@ -46,14 +44,14 @@ export interface NewTaskData {
   deadline?: string | null; // Optional
   // Add other fields as necessary from tasks.Insert, e.g., proof_required, proof_type etc.
 }
-import { Clock, AlertTriangle, CheckCircle, DatabaseZap } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
+import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
 import { useDailyQuote } from '../hooks/useDailyQuote';
 
 export default function IssuedPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
-  const location = useLocation();
-  const navigate = useNavigate();
+  // const location = useLocation(); // Removed as unused
+  // const navigate = useNavigate(); // Removed as unused
   const {
     contracts: issuedContracts, // Assuming hook returns 'contracts'
     loading,
@@ -65,7 +63,7 @@ export default function IssuedPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // Enabled for delete functionality
   const dailyQuote = useDailyQuote();
-  const [showNewContractForm, setShowNewContractForm] = useState(!!location.state?.openNewContractForm);
+  const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
 
   const handleDeleteTaskRequest = (taskId: string) => {
     const task = issuedContracts.find((t: IssuedContract) => t.id === taskId);
@@ -227,13 +225,6 @@ export default function IssuedPage() {
     setSortedIssuedContracts(sortedContracts);
   }, [issuedContracts]);
 
-  useEffect(() => {
-    if (location.state?.openNewContractForm) {
-      setShowNewContractForm(true);
-      // Optionally, clear the state to prevent re-opening on refresh if desired
-      // navigate(location.pathname, { replace: true, state: {} }); 
-    }
-  }, [location.state, location.pathname]); // Removed navigate from deps for now to avoid import if not used
 
   const handleCreateContract = async (taskData: NewTaskData) => {
     if (!user) {
@@ -265,7 +256,8 @@ export default function IssuedPage() {
 
       await refetchIssuedContracts(); // Refresh the list
       toast.success('Contract created successfully!'); // Show success toast
-      navigate('/issued'); // Navigate to the issued page
+      setIsTaskFormOpen(false); // Close the modal
+      // navigate('/issued'); // Navigation might not be needed if staying on the page
     } catch (error: unknown) {
       // Log the full error details as requested
       console.error('Full Supabase error:', error);
@@ -287,7 +279,7 @@ export default function IssuedPage() {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
         <DatabaseZap size={48} className="text-teal-400 animate-pulse mb-4" />
-        <p className="text-xl text-slate-300">Loading Your Issued Contracts...</p>
+        <p className="text-xl text-slate-300">Loading Your MISSIONS...</p>
       </div>
     );
   }
@@ -311,8 +303,8 @@ export default function IssuedPage() {
   return (
     <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">Issued Contracts</h1>
-        <p className="text-sm text-slate-400">Contracts you have created and issued to others.</p>
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">MISSIONS</h1>
+        <p className="text-sm text-slate-400">Missions you have created for others to complete.</p>
         {dailyQuote && (
           <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2">
             &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
@@ -320,15 +312,28 @@ export default function IssuedPage() {
         )}
       </header>
 
-      {/* New Contract Form Modal */}
-      {showNewContractForm && user && (
+      {/* New Contract Form Modal triggered by FAB */}
+      {isTaskFormOpen && user && (
         <TaskForm
           userId={user.id} // Pass userId
-          onClose={() => setShowNewContractForm(false)}
+          onClose={() => setIsTaskFormOpen(false)}
           onSubmit={handleCreateContract} // Pass the actual submit handler
           // editingTask can be omitted for new task creation
         />
       )}
+
+      {/* Floating Action Button for New Contract */}
+      {!isTaskFormOpen && (
+        <button
+          onClick={() => setIsTaskFormOpen(true)}
+          className="fixed bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+          aria-label="Create New Contract"
+          title="Create New Contract"
+        >
+          <PlusCircle size={28} />
+        </button>
+      )}
+
 
       {/* New Minimalist Stats Icons for Issued Page */}
       <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
@@ -338,7 +343,7 @@ export default function IssuedPage() {
             <AlertTriangle size={32} /> {/* Changed icon to AlertTriangle for Pending */} 
           </div>
           <div className="text-3xl font-bold text-slate-100">{stats.pending}</div>
-          <div className="text-xs text-slate-400">Pending</div>
+          <div className="text-xs text-slate-400">OPEN</div>
         </div>
         
         {/* Pending / In Review */}
@@ -363,7 +368,7 @@ export default function IssuedPage() {
       {sortedIssuedContracts.length === 0 && !loading ? (
         <div className="text-center py-10">
           <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-          <p className="text-xl text-slate-300">You haven't issued any contracts yet.</p>
+          <p className="text-xl text-slate-300">You haven't created any missions yet.</p>
           {/* TODO: Add a button/link to create a new contract here */}
         </div>
       ) : (

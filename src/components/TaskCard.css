@@ -4,8 +4,116 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Add other styles from TaskCard.tsx here as needed */
+/* Add any custom styles for TaskCard here, especially for animations or complex layouts not easily done with Tailwind */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
 
 .font-mandalore {
   font-family: 'MandaloreRough', 'Mandalore', sans-serif;
+}
+
+/* Shimmer animation for golden text */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(to right, #BF953F 20%, #FCF6BA 40%, #B38728 60%, #BF953F 80%);
+  background-size: 200% auto;
+  color: transparent; /* Make the original text transparent */
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 5s linear infinite alternate;
+}
+
+/* Proper spinning animation for the coin icon */
+@keyframes proper-spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.animate-proper-spin {
+  animation: proper-spin 1.5s linear infinite;
+  transform-style: preserve-3d; /* Important for 3D-like spin */
+}
+
+@keyframes pulsate {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
+}
+
+.animate-pulsate-present {
+  animation: pulsate 2s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Premium Modal Animations */
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-fade-in {
+  animation: modal-fade-in 300ms ease-out forwards;
+}
+
+@keyframes modal-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.modal-fade-out {
+  animation: modal-fade-out 300ms ease-out forwards;
+}
+
+@keyframes modal-slide-up {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-slide-up {
+  animation: modal-slide-up 300ms ease-out forwards;
+}
+
+@keyframes modal-slide-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+}
+
+.modal-slide-down {
+  animation: modal-slide-down 300ms ease-out forwards;
 }
