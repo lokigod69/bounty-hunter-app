@@ -24,19 +24,17 @@ import {
   Send,
   ShoppingCart,
   Sparkles,
-  Users,
   Book,
   UserCog,
   LogOut,
   Menu,
   X,
-  PlusCircle,
-  UserCircle
-} from 'lucide-react'; // Added ShoppingCart, Sparkles, Send // Added UserCog, Plus, removed DollarSign, removed Briefcase, removed Gift
-import logo from '../assets/logo5.png'; // Added logo
+  PlusCircle
+} from 'lucide-react'; 
+import logo from '../assets/logo5.png'; 
 import useClickOutside from '../hooks/useClickOutside';
-import CursorTrail from './CursorTrail'; // Import the new component
-import UserCredits from './UserCredits'; // Phase 8: Import UserCredits widget
+import CursorTrail from './CursorTrail'; 
+import UserCredits from './UserCredits'; 
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth();
@@ -116,14 +114,12 @@ export default function Layout() {
     { name: 'MISSIONS', path: '/issued', icon: <Send size={20} /> },
     { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
     { name: 'Create Bounty', path: '/create-bounty', icon: <PlusCircle size={20} /> },
-    { name: 'Friends', path: '/friends', icon: <Users size={20} /> },
   ];
 
   const historyNavItem = { name: 'History', path: '/archive', icon: <Book size={20} /> };
-  const profileNavItem = { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> };
 
   const navItemsDesktop = [...baseNavItems, historyNavItem];
-  const navItemsMobile = [...baseNavItems, profileNavItem, historyNavItem];
+  const navItemsMobile = [...baseNavItems, historyNavItem];
 
   const userMenuItems = [
     { name: 'Edit Profile', path: '/profile/edit', icon: <UserCog size={20} /> }

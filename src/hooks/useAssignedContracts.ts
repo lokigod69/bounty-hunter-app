@@ -18,6 +18,7 @@ export interface ProfileLite {
 export interface AssignedContract extends BaseTask {
   creator: ProfileLite | null;
   assignee: ProfileLite | null;
+  image_url?: string | null;
   // user_credits?: number; // Temporarily removed as direct join is not possible
 }
 

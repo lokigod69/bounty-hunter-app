@@ -34,6 +34,7 @@ interface TaskCardProps {
   onReject?: (taskId: string) => void;
   uploadProgress: number;
   currentUserCredits?: number;
+  isArchived?: boolean;
 }
 
 const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> = ({ deadline, baseColor = 'text-slate-400' }) => {
@@ -81,6 +82,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   uploadProgress,
   currentUserCredits,
   refetchTasks, // Added refetchTasks here
+  isArchived,
 }) => {
   const { user } = useAuth();
   const [showProofModal, setShowProofModal] = useState(false);
@@ -183,6 +185,8 @@ const renderArchiveButton = () => {
 };
 
 const renderActionButtonsInModal = () => {
+    if (isArchived) return null;
+
     if (status === 'completed') {
       return null;
     }
@@ -201,7 +205,7 @@ const renderActionButtonsInModal = () => {
           <div className="flex gap-2 w-full">
             {onEditTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onEditTaskRequest) onEditTaskRequest(task); }} className="btn-secondary flex-1 py-2 text-sm"><Edit3 size={16} className="mr-1"/> Edit</button>}
             {onDeleteTaskRequest && <button onClick={(e) => { e.stopPropagation(); if (onDeleteTaskRequest) onDeleteTaskRequest(task.id); }} className="btn-danger flex-1 py-2 text-sm"><Trash2 size={16} className="mr-1"/> Delete</button>}
-            {renderArchiveButton()} // This call is already in place, we just need to define the function.
+            {renderArchiveButton()}
           </div>
         );
       }
@@ -209,13 +213,17 @@ const renderActionButtonsInModal = () => {
     return null;
   };
 
-  const collapsedCardBgColor = status === 'pending'
+  const collapsedCardBgColor = isArchived
+    ? 'bg-slate-700/20 border-slate-600/50 hover:border-slate-500'
+    : status === 'pending'
     ? 'bg-red-500/10 border-red-500/50 hover:border-red-400'
     : status === 'review'
     ? 'bg-yellow-500/10 border-yellow-500/50 hover:border-yellow-400'
     : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
 
-  const modalBgColor = status === 'pending'
+  const modalBgColor = isArchived
+    ? 'bg-slate-900 border-2 border-slate-700'
+    : status === 'pending'
     ? 'bg-red-900 border-2 border-red-500' // OPEN
     : status === 'in_progress'
     ? 'bg-blue-900 border-2 border-blue-500' // IN PROGRESS
@@ -287,8 +295,15 @@ const renderActionButtonsInModal = () => {
                   <div className="flex flex-col items-center justify-center min-h-[50px]">
                     {reward_type === 'credit' ? (
                       <div className="flex items-center gap-2 text-2xl text-amber-400 font-bold">
-                        <span className="text-5xl animate-proper-spin mr-2">🪙</span> 
+                        <span className="text-5xl animate-proper-spin mr-2">🪙</span>
                         <span className="text-3xl">{reward_text} Credits</span>
+                      </div>
+                    ) : task.image_url ? (
+                      <div className="relative w-48 h-48 group mx-auto">
+                        <img src={task.image_url} alt={reward_text || 'Reward'} className="w-full h-full object-cover rounded-lg border-2 border-slate-600" />
+                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-black/70 p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-lg">
+                          <span className="text-white text-center text-sm font-semibold break-words">{reward_text}</span>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-3xl font-bold py-1 px-3 break-all max-w-full relative overflow-hidden flex items-center justify-center">

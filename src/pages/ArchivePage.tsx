@@ -32,6 +32,7 @@ const ArchivePage: React.FC = () => {
               onDeleteTaskRequest={() => {}}
               uploadProgress={0}
               refetchTasks={refetchArchivedTasks}
+              isArchived={true}
             />
           ))
         ) : (
