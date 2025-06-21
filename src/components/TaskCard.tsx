@@ -58,13 +58,13 @@ const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> 
   });
   if (!timeLeft || Object.keys(timeLeft).length === 0) {
     const pastDeadlineColor = baseColor === 'text-purple-400' ? 'text-purple-400 font-semibold' : 'text-red-400';
-    return <span className={`text-xs ${pastDeadlineColor}`}>Past Deadline</span>;
+    return <span className={`text-xs ${pastDeadlineColor}`}>x deadline</span>;
   }
   return (
     <span className={`text-xs ${baseColor} flex items-center`}>
       {timeLeft.days !== undefined && timeLeft.days > 0 && `${timeLeft.days}d `}
       {timeLeft.hours !== undefined && timeLeft.hours > 0 && `${timeLeft.hours}h `}
-      {`${timeLeft.minutes}m left`}
+      {`${timeLeft.minutes}m`}
     </span>
   );
 };
@@ -88,6 +88,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [showTimeTooltip, setShowTimeTooltip] = useState(false);
 
   useEffect(() => {
     if (isExpanded) {
@@ -215,16 +216,16 @@ const renderActionButtonsInModal = () => {
     : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
 
   const modalBgColor = status === 'pending'
-    ? 'bg-red-900/90 border-2 border-red-500' // OPEN
+    ? 'bg-red-900 border-2 border-red-500' // OPEN
     : status === 'in_progress'
-    ? 'bg-blue-900/90 border-2 border-blue-500' // IN PROGRESS
+    ? 'bg-blue-900 border-2 border-blue-500' // IN PROGRESS
     : status === 'review'
-    ? 'bg-yellow-900/90 border-2 border-yellow-500' // REVIEW
+    ? 'bg-yellow-900 border-2 border-yellow-500' // REVIEW
     : status === 'completed'
-    ? 'bg-green-900/90 border-2 border-green-500' // COMPLETED
+    ? 'bg-green-900 border-2 border-green-500' // COMPLETED
     : status === 'rejected'
-    ? 'bg-rose-900/90 border-2 border-rose-500' // REJECTED (using rose for a distinct red)
-    : 'bg-slate-800/90 border border-slate-700'; // Fallback for ARCHIVED or other unknown
+    ? 'bg-rose-900 border-2 border-rose-500' // REJECTED (using rose for a distinct red)
+    : 'bg-slate-800 border border-slate-700'; // Fallback for ARCHIVED or other unknown
 
   const titleColorClass = status === 'pending'
     ? 'text-red-700 dark:text-red-600'
@@ -301,33 +302,43 @@ const renderActionButtonsInModal = () => {
               {/* INTEGRATED DESCRIPTION & LOGISTICS SECTION */}
               <div className="py-4 px-4 rounded-lg bg-slate-800/40 border border-slate-700/60 flex items-center justify-between w-full text-base">
                 {/* Left: Deadline */}
-                <div className="flex items-center flex-shrink-0 mr-4">
-                  <Clock size={24} className="mr-2 text-purple-400 flex-shrink-0" />
-                  {deadline ? (
-                    <CountdownTimer deadline={deadline} baseColor='text-purple-400' />
-                  ) : (
-                    <span className="text-slate-500 text-xs">Not set</span>
-                  )}
+                <div className="relative flex items-center flex-shrink-0 mr-4 group">
+                  <Clock
+                    size={24}
+                    className="text-purple-400 flex-shrink-0 cursor-pointer"
+                    onClick={() => setShowTimeTooltip(prev => !prev)}
+                  />
+                  <div className={`absolute bottom-full left-0 mb-2 w-max px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-lg transition-opacity duration-300 pointer-events-none z-10 opacity-0 group-hover:opacity-100 ${showTimeTooltip ? 'opacity-100' : ''}`}>
+                    {deadline ? (
+                      <CountdownTimer deadline={deadline} baseColor='text-purple-400' />
+                    ) : (
+                      <span className="text-slate-500">Not set</span>
+                    )}
+                    <div className="absolute left-4 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+                  </div>
                 </div>
 
                 {/* Center: Description */}
-                <div className="flex-grow text-center mx-4">
+                <div className="flex-grow text-center mx-4 min-w-0">
                   <p className="text-sm text-slate-300 whitespace-normal break-words task-card-description">
                     <FileText size={20} className="mr-2 text-sky-400 inline-block relative -top-px" /> {description || 'No further details provided for this mission.'}
                   </p>
                 </div>
 
                 {/* Right: Status */}
-                <div className="flex items-center flex-shrink-0 ml-4">
+                <div className="relative flex items-center flex-shrink-0 ml-4 group">
                   {status === 'pending'
-                    ? <CircleDollarSign size={24} className="mr-2 text-red-400 flex-shrink-0" />
+                    ? <CircleDollarSign size={24} className="text-red-400 flex-shrink-0" />
                     : status === 'review'
-                    ? <Eye size={24} className="mr-2 text-yellow-400 flex-shrink-0" />
+                    ? <Eye size={24} className="text-yellow-400 flex-shrink-0" />
                     : status === 'completed'
-                    ? <CheckCircle size={24} className="mr-2 text-green-400 flex-shrink-0" />
-                    : <XCircle size={24} className="mr-2 text-slate-400 flex-shrink-0" />}
-                  <span className={`font-semibold text-xs ${status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'text-red-500' : 'text-red-400') : status === 'review' ? 'text-yellow-400' : status === 'completed' ? 'text-green-400' : 'text-slate-400'}`}>{status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'OVERDUE' : 'OPEN') :
-                   status.replace('_', ' ').toUpperCase()) : 'UNKNOWN'}</span>
+                    ? <CheckCircle size={24} className="text-green-400 flex-shrink-0" />
+                    : <XCircle size={24} className="text-slate-400 flex-shrink-0" />}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-lg transition-opacity duration-300 pointer-events-none z-10 opacity-0 group-hover:opacity-100">
+                    {status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'OVERDUE' : 'OPEN') :
+                     status.replace('_', ' ').toUpperCase()) : 'UNKNOWN'}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+                  </div>
                 </div>
               </div>
 
