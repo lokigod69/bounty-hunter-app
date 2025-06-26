@@ -326,11 +326,12 @@ export default function IssuedPage() {
       {!isTaskFormOpen && (
         <button
           onClick={() => setIsTaskFormOpen(true)}
-          className="fixed bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-          aria-label="Create New Contract"
-          title="Create New Contract"
+          className="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-teal-500 hover:bg-teal-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+          aria-label="Create New Mission"
+          title="Create New Mission"
         >
-          <PlusCircle size={28} />
+          <PlusCircle size={24} className="md:hidden" />
+          <PlusCircle size={28} className="hidden md:block" />
         </button>
       )}
 

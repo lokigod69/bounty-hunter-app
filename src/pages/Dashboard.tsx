@@ -26,7 +26,10 @@ import TaskCardSkeleton from '../components/TaskCardSkeleton';
 import { Clock, AlertTriangle, CheckCircle, ScrollText, DatabaseZap } from 'lucide-react';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { toast } from 'react-hot-toast';
-import type { Task, TaskStatus } from '../types/database'; // Added TaskStatus
+import type { Database } from '../types/database';
+import type { TaskStatus } from '../types/app-specific-types';
+
+type Task = Database['public']['Tables']['tasks']['Row'];
 
 export default function Dashboard() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
@@ -72,11 +75,22 @@ export default function Dashboard() {
     try {
       // Upload to Supabase Storage
       const fileName = `proofs/${taskId}/${Date.now()}_${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('bounty-proofs') // Corrected bucket name
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
+
+      // Get the public URL for the uploaded file
+      const { data: publicUrlData } = supabase.storage
+        .from('bounty-proofs')
+        .getPublicUrl(fileName);
+
+      if (!publicUrlData) {
+        throw new Error('Could not get public URL for the uploaded proof.');
+      }
+
+      const proofUrl = publicUrlData.publicUrl;
 
       // Determine proof_type based on file MIME type
       let proofType: 'image' | 'video' | null = null;
@@ -85,22 +99,14 @@ export default function Dashboard() {
       } else if (file.type.startsWith('video/')) {
         proofType = 'video';
       } else {
-        // Fallback or error handling for unknown types if necessary
-        // For now, we'll allow null if not image/video, or default to image
-        // console.warn(`Unknown proof file type: ${file.type}. Defaulting to 'image'.`);
-        // proofType = 'image'; // Or handle as an error/allow null
-        // For this implementation, let's default to image if type is not explicitly video
-        // to maintain previous behavior for non-standard image types not caught by 'image/*'
-        // but if it's not video, we'll treat it as an image for display purposes.
-        // A more robust solution might involve more specific MIME type checks or server-side validation.
-        proofType = file.type.startsWith('video/') ? 'video' : 'image'; 
+        proofType = file.type.startsWith('video/') ? 'video' : 'image';
       }
 
       // Update task with proof URL, proof_type, and set status to 'review'
       const { error: updateError } = await supabase
         .from('tasks')
         .update({
-          proof_url: uploadData.path,
+          proof_url: proofUrl, // Use the full public URL
           status: 'review' as TaskStatus,
           proof_type: proofType,
         })
@@ -111,7 +117,7 @@ export default function Dashboard() {
 
       toast.success('Proof uploaded successfully and task is now in review.');
       if (refetchAssignedContracts) refetchAssignedContracts();
-      return uploadData.path;
+      return proofUrl;
     } catch (error: unknown) {
       console.error('Proof upload failed:', error);
       let message = 'Failed to upload proof.';
@@ -123,18 +129,21 @@ export default function Dashboard() {
     }
   };
 
-  const handleStatusUpdate = async (taskId: string, status: TaskStatus) => {
+  const handleStatusUpdate = async (
+    taskId: string,
+    status: string,
+
+  ) => {
     if (!user) {
       toast.error('You must be logged in to update status.');
       return;
     }
     try {
-      // First get the task to check if proof is required
       const { data: task, error: fetchError } = await supabase
         .from('tasks')
         .select('proof_required, reward_type, reward_text')
         .eq('id', taskId)
-        .eq('assigned_to', user.id) // Ensure we are only fetching tasks assigned to the user
+        .eq('assigned_to', user.id)
         .single();
 
       if (fetchError) throw fetchError;
@@ -143,24 +152,21 @@ export default function Dashboard() {
         return;
       }
 
-      // If no proof required and trying to complete (which TaskCard sends as 'review'), go straight to completed
-      const finalStatus = (!task.proof_required && status === 'review')
-        ? 'completed' as TaskStatus
-        : status;
+      const finalStatus = ((!task.proof_required && status === 'review')
+        ? 'completed'
+        : status) as TaskStatus;
 
       const { error: updateError } = await supabase
         .from('tasks')
         .update({ status: finalStatus })
         .eq('id', taskId)
-        .eq('assigned_to', user.id); // Double check assignment on update
+        .eq('assigned_to', user.id);
 
       if (updateError) throw updateError;
 
       toast.success(finalStatus === 'completed' ? 'Task completed!' : 'Status updated');
-      if (refetchAssignedContracts) refetchAssignedContracts(); // Refresh the list
+      if (refetchAssignedContracts) refetchAssignedContracts();
 
-    // Credit awarding is now handled by the backend trigger 'award_credits_on_completion'
-    // when a task's status is updated to 'completed'.
     } catch (error: unknown) {
       console.error('Status update failed:', error);
       let message = 'Failed to update status.';
@@ -231,7 +237,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <h1 className="text-3xl font-bold text-teal-400 mb-8">My Contracts</h1>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-8">My Contracts</h1>
 
       {/* New Minimalist Stats Icons */}
       <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">

@@ -1,5 +1,28 @@
 /* Styles for TaskCard.tsx */
 
+/* REFACTOR: Centralized tooltip styling to eliminate inline styles. */
+.tooltip-arrow {
+  transform: translateX(-50%);
+}
+
+.animate-shimmer {
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: -1000px 0; }
+  50% { background-position: 1000px 0; }
+}
+
+/* REFACTOR: Centralized tooltip styling to eliminate inline styles. */
+.tooltip-arrow {
+  transform: translateX(-50%);
+}
+
+.font-futura {
+  font-family: 'Futura', sans-serif;
+}
+
 .task-card-description {
   font-family: 'Poppins', sans-serif;
 }
@@ -42,16 +65,6 @@
   animation: shimmer 5s linear infinite alternate;
 }
 
-/* Proper spinning animation for the coin icon */
-@keyframes proper-spin {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
-}
-
-.animate-proper-spin {
-  animation: proper-spin 1.5s linear infinite;
-  transform-style: preserve-3d; /* Important for 3D-like spin */
-}
 
 @keyframes pulsate {
   0%, 100% {

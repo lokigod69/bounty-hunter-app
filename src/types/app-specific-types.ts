@@ -1,21 +1,14 @@
-// src/types/app-specific-types.ts
-// This file contains app-specific type aliases derived from the auto-generated database.ts types.
+// This file was updated to define and export the TaskStatus and ProofType types.
 
-import { Database } from './database';
+/**
+ * Represents the possible statuses of a task.
+ */
+export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'cancelled';
 
-// Profile type based on the 'profiles' table row
-export type Profile = Database['public']['Tables']['profiles']['Row'];
-
-// RecurringTemplate type based on the 'recurring_task_templates' table row
-export type RecurringTemplate = Database['public']['Tables']['recurring_task_templates']['Row'];
-
-// TaskInstance type based on the 'recurring_task_instances' table row
-// Also adding 'proof_required' here as it's being added to the payload in useRecurringTasks.ts
-// and should ideally be part of the instance's data model if it's stored/used.
-export type TaskInstance = Database['public']['Tables']['recurring_task_instances']['Row'] & {
-  proof_required?: boolean | null; // Reflects the flag copied from the template
-};
-
+/**
+ * Represents the type of proof that can be submitted.
+ */
+export type ProofType = 'image' | 'video';
 // Type for the result of the 'complete_task_instance' RPC function
 export interface CompleteTaskInstanceResult {
   success: boolean;

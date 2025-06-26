@@ -8,7 +8,7 @@
 // Applied new galactic theme styling to navigation items.
 // Added 'NEW CONTRACT' button to the header navigation area with cyan holographic style.
 // Phase 6 Part B: Added CursorTrail component for laser cursor effect.
-// Phase 8: Integrated UserCredits display widget. Added 'Bounty Store', and 'My Bounties' to navigation. Removed 'Daily Contracts' and associated icon import.
+// Phase 8: Integrated UserCredits display widget. Added 'Bounties', and 'My Bounties' to navigation. Removed 'Daily Contracts' and associated icon import.
 // Added scroll effect to header, disabled when mobile menu is open.
 // Added 'NEW CONTRACT' button to the mobile navigation menu.
 // Added 'Issued' navigation link. Updated 'NEW CONTRACT' button to point to '/issued'.
@@ -28,8 +28,7 @@ import {
   UserCog,
   LogOut,
   Menu,
-  X,
-  PlusCircle
+  X
 } from 'lucide-react'; 
 import logo from '../assets/logo5.png'; 
 import useClickOutside from '../hooks/useClickOutside';
@@ -111,9 +110,8 @@ export default function Layout() {
   // Navigation items
   const baseNavItems = [
     { name: 'Contracts', path: '/', icon: <Home size={20} /> },
-    { name: 'MISSIONS', path: '/issued', icon: <Send size={20} /> },
-    { name: 'Bounty Store', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
-    { name: 'Create Bounty', path: '/create-bounty', icon: <PlusCircle size={20} /> },
+    { name: 'Missions', path: '/issued', icon: <Send size={20} /> },
+    { name: 'Bounties', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
   ];
 
   const historyNavItem = { name: 'History', path: '/archive', icon: <Book size={20} /> };
@@ -147,7 +145,7 @@ export default function Layout() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-2 md:space-x-6 overflow-x-auto whitespace-nowrap scrollbar-hide">
             {navItemsDesktop.map((item) => (
               <Link
                 key={item.path}

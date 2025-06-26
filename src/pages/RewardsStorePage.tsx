@@ -1,16 +1,168 @@
 // src/pages/RewardsStorePage.tsx
-// This page is temporarily disabled to prevent compilation errors
-// due to incomplete "Rewards Store" functionality.
+// Displays available bounties and provides an interface for creating new ones.
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
+import { useRewardsStore } from '../hooks/useRewardsStore';
+import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
+import { useDeleteBounty } from '../hooks/useDeleteBounty';
+import { useAuth } from '../hooks/useAuth';
+import RewardCard, { Reward } from '../components/RewardCard';
+import CreateBountyModal from '../components/CreateBountyModal';
+import EditBountyModal from '../components/EditBountyModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+
+type Tab = 'available' | 'created' | 'collected';
 
 const RewardsStorePage: React.FC = () => {
+  const { user } = useAuth();
+  const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
+  const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
+  const { deleteBounty, isLoading: isDeleting } = useDeleteBounty();
+
+  // State for modals
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  
+  const [selectedBounty, setSelectedBounty] = useState<Reward | null>(null);
+  const [bountyToDelete, setBountyToDelete] = useState<string | null>(null);
+
+  const [activeTab, setActiveTab] = useState<Tab>('available');
+
+  useEffect(() => {
+    fetchRewards();
+  }, [fetchRewards]);
+
+  const handleClaim = async (rewardId: string) => {
+    if (isPurchasing) return;
+
+    const result = await purchaseBounty(rewardId);
+
+    if (result?.success) {
+      // Refetch to update the UI
+      fetchRewards();
+    }
+  };
+
+  const handleEdit = (reward: Reward) => {
+    setSelectedBounty(reward);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (rewardId: string) => {
+    setBountyToDelete(rewardId);
+    setConfirmDialogOpen(true);
+  };
+
+  const onConfirmDelete = async () => {
+    if (!bountyToDelete) return;
+    const result = await deleteBounty(bountyToDelete);
+    if (result.success) {
+      fetchRewards();
+    }
+    setConfirmDialogOpen(false);
+    setBountyToDelete(null);
+  };
+
+  const onEditSuccess = () => {
+    fetchRewards();
+  };
+
+  const renderContent = () => {
+    if (isLoadingRewards) {
+      return <div className="text-center text-slate-400">Loading bounties...</div>;
+    }
+
+    if (rewardsError) {
+      return <div className="text-center text-red-500">Error loading bounties: {rewardsError}</div>;
+    }
+
+    const filteredRewards = rewards.filter(reward => {
+      if (activeTab === 'available') {
+        // Bounties assigned to the current user by others
+        return reward.assigned_to === user?.id;
+      }
+      if (activeTab === 'created') {
+        // Bounties created by the current user for others
+        return reward.creator_id === user?.id;
+      }
+      if (activeTab === 'collected') {
+        // TODO: This will require fetching from the 'collected_rewards' table.
+        return false;
+      }
+      return false;
+    });
+
+    if (filteredRewards.length === 0) {
+      let message = 'No bounties found in this category.';
+      if (activeTab === 'available') message = 'No one has assigned a bounty to you yet.';
+      if (activeTab === 'created') message = 'You have not created any bounties.';
+      if (activeTab === 'collected') message = 'You have not collected any bounties yet.';
+      return <div className="text-center text-slate-400 pt-8">{message}</div>;
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {filteredRewards.map(reward => (
+          <RewardCard 
+            key={reward.id} 
+            reward={reward} 
+            view={activeTab} 
+            onAction={handleClaim} 
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-white mb-8 text-center">Rewards Store</h1>
-      <div className="text-center text-slate-400">
-        <p>This feature is currently under construction.</p>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-4 text-center">Bounties</h1>
+
+      {/* Tabs */}
+      <div className="mb-8 flex justify-center border-b border-gray-700">
+        <button onClick={() => setActiveTab('available')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'available' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>Available</button>
+        <button onClick={() => setActiveTab('created')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'created' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>My Bounties</button>
+        <button onClick={() => setActiveTab('collected')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'collected' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>Collected</button>
       </div>
+
+      {renderContent()}
+
+      <button 
+        onClick={() => setCreateModalOpen(true)}
+        className="fixed bottom-8 right-8 bg-teal-500 text-black rounded-full p-4 shadow-lg hover:bg-teal-600 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500"
+        aria-label="Create new bounty"
+      >
+        <Plus size={28} />
+      </button>
+
+      <CreateBountyModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setCreateModalOpen(false)} 
+        onSuccess={() => {
+          setCreateModalOpen(false);
+          fetchRewards();
+        }}
+      />
+
+      <EditBountyModal
+        isOpen={isEditModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={onEditSuccess}
+        bounty={selectedBounty}
+      />
+
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        onConfirm={onConfirmDelete}
+        title="Delete Bounty"
+        message="Are you sure you want to delete this bounty? This action cannot be undone."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

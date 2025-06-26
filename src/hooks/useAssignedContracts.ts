@@ -56,7 +56,7 @@ export function useAssignedContracts() {
           if (task.proof_url) {
             const { data: publicUrlData } = supabase
               .storage
-              .from('proofs') // This is the bucket name for bounty proofs
+              .from('bounty-proofs') // This is the bucket name for bounty proofs
               .getPublicUrl(task.proof_url);
             
             return {

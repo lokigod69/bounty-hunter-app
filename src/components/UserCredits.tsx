@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import SpinningCoinIcon from './SpinningCoinIcon';
+import FlippingCoinIcon from './FlippingCoinIcon';
 
 const useUserCredits = () => {
   const supabase = useSupabaseClient();
@@ -155,7 +155,7 @@ const UserCredits: React.FC = () => {
     // but for now, let's ensure it shows 0 as per requirement.
     return (
       <div className="credit-badge">
-        <SpinningCoinIcon size={18} className="mr-1" />
+        <FlippingCoinIcon className="mr-2 text-lg" />
         <span>0</span>
         {/* Optionally show a small error icon or tooltip here */}
       </div>
@@ -167,7 +167,7 @@ const UserCredits: React.FC = () => {
   if (credits === null && !loading) { // Ensure we show 0 if not loading and credits is still null
      return (
       <div className="credit-badge">
-        <SpinningCoinIcon size={18} className="mr-1" />
+        <FlippingCoinIcon className="mr-2 text-lg" />
         <span>0</span>
       </div>
     );
@@ -175,7 +175,7 @@ const UserCredits: React.FC = () => {
 
   return (
     <div className="credit-badge">
-      <SpinningCoinIcon size={18} className="mr-1" />
+      <FlippingCoinIcon className="mr-2 text-lg" />
       {/* Ensure credits is treated as a number, defaulting to 0 if null */}
       <span>{(credits ?? 0).toLocaleString()}</span>
     </div>

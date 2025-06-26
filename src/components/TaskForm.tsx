@@ -209,6 +209,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               onChange={(e) => setTitle(e.target.value)}
               className={`input-field w-full ${errors.title ? 'border-red-500 focus:ring-red-500' : ''}`}
               placeholder="What needs to be done?"
+              maxLength={50}
             />
             {errors.title && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.title}</p>}
           </div>

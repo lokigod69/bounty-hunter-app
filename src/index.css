@@ -3,6 +3,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
+/* Universal Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -1312,6 +1317,17 @@ body {
 }
 
 /* === MOBILE & TABLET OPTIMIZATIONS === */
+
+/* Proper spinning animation for the coin icon */
+@keyframes proper-spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.animate-proper-spin {
+  animation: proper-spin 1.5s linear infinite;
+  transform-style: preserve-3d; /* Important for 3D-like spin */
+}
 
 @media (max-width: 767px) {
   /* Hide desktop headers and laser box */
