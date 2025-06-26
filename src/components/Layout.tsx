@@ -28,7 +28,8 @@ import {
   UserCog,
   LogOut,
   Menu,
-  X
+  X,
+  Users
 } from 'lucide-react'; 
 import logo from '../assets/logo5.png'; 
 import useClickOutside from '../hooks/useClickOutside';
@@ -111,6 +112,7 @@ export default function Layout() {
   const baseNavItems = [
     { name: 'Contracts', path: '/', icon: <Home size={20} /> },
     { name: 'Missions', path: '/issued', icon: <Send size={20} /> },
+    { name: 'Guild Roster', path: '/friends', icon: <Users size={20} /> },
     { name: 'Bounties', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
   ];
 
@@ -158,7 +160,7 @@ export default function Layout() {
               >
                 {item.icon}
                                 <span>{item.name}</span>
-                {item.name === 'Friends' && pendingRequests && pendingRequests.length > 0 && (
+                {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                     {pendingRequests.length}
                   </span>
@@ -283,7 +285,7 @@ export default function Layout() {
                 >
                   {item.icon}
                   <span className="text-lg">{item.name}</span>
-                  {item.name === 'Friends' && pendingRequests && pendingRequests.length > 0 && (
+                  {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
                       {pendingRequests.length}
                     </span>
