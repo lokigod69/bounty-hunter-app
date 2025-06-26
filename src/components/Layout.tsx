@@ -35,6 +35,7 @@ import logo from '../assets/logo5.png';
 import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; 
 import UserCredits from './UserCredits'; 
+import { Toaster } from 'react-hot-toast'; 
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth();
@@ -131,6 +132,7 @@ export default function Layout() {
 
   return (
     <div className="h-screen flex flex-col bg-indigo-950">
+      <Toaster />
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled && !mobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
