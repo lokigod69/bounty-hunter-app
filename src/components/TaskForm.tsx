@@ -11,10 +11,12 @@
 // Styling Update: Applied requested styling to credit dropdown, including bg-gray-800 for options (browser compatibility may vary).
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
-import { Database } from '../types/database';
+import { soundManager } from '../utils/soundManager';
+import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
 // Define BaseTask from the Database type
@@ -47,6 +49,7 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
+  const { t } = useTranslation();
   useEffect(() => {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
@@ -108,17 +111,17 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     const newErrors: Record<string, string> = {};
     
     if (!title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = t('taskForm.validation.titleRequired');
     }
     
     if (!assignedTo) {
-      newErrors.assignedTo = 'Please select a friend';
+      newErrors.assignedTo = t('taskForm.validation.assigneeRequired');
     }
     
     if (contractType === 'bounty' && !rewardText.trim()) {
-      newErrors.rewardText = 'Reward description is required for Bounty Contracts.';
+      newErrors.rewardText = t('taskForm.validation.bountyRequired');
     } else if (contractType === 'credit' && !rewardText) { // rewardText for credit will be the selected value, e.g., '1', '5'
-      newErrors.rewardText = 'Please select a credit amount for Credit Contracts.';
+      newErrors.rewardText = t('taskForm.validation.creditRequired');
     }
     
     setErrors(newErrors);
@@ -146,10 +149,16 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     setIsSubmitting(true);
     try {
       await onSubmit(taskPayload, editingTask ? editingTask.id : undefined);
+      // Play sound on success
+      if (editingTask) {
+        soundManager.play('saveContract');
+      } else {
+        soundManager.play('create');
+      }
       onClose(); // Only close if onSubmit was successful
     } catch (error: unknown) {
       console.error('Task submission error:', error);
-      let errorMessage = 'Failed to submit contract. Please try again.';
+      let errorMessage = t('taskForm.submissionError');
       if (error instanceof Error) {
         errorMessage = error.message || errorMessage;
       }
@@ -183,7 +192,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white hover:text-gray-300 z-[51] p-1.5 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors"
-        aria-label="Close"
+        aria-label={t('taskForm.closeButton')}
       >
         <X size={24} />
       </button>
@@ -194,13 +203,13 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       >
         {/* Original close button removed from here */}
         
-        <h2 className="text-xl font-semibold mb-5 gradient-text">{editingTask ? 'Edit Contract' : 'Create New Contract'}</h2>
+        <h2 className="text-xl font-semibold mb-5 gradient-text">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Task Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Contract Title*
+              {t('taskForm.contractTitleLabel')}
             </label>
             <input
               type="text"
@@ -208,7 +217,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className={`input-field w-full ${errors.title ? 'border-red-500 focus:ring-red-500' : ''}`}
-              placeholder="What needs to be done?"
+              placeholder={t('taskForm.contractTitlePlaceholder')}
               maxLength={50}
             />
             {errors.title && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.title}</p>}
@@ -217,14 +226,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           {/* Task Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Description (Optional)
+              {t('taskForm.descriptionLabel')}
             </label>
             <textarea
               id="description"
               value={description ?? ''}
               onChange={(e) => setDescription(e.target.value)}
               className="input-field w-full min-h-[60px] resize-none"
-              placeholder="Add more details about the task..."
+              placeholder={t('taskForm.descriptionPlaceholder')}
               rows={2}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -239,13 +248,13 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           <div>
             <label htmlFor="assignedTo" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Users size={16} className="mr-1" />
-              Assign To*
+              {t('taskForm.assignToLabel')}
             </label>
             {loading ? (
               <div className="animate-pulse h-10 bg-white/10 rounded-lg"></div>
             ) : friends.length === 0 ? (
               <p className="text-[var(--warning-orange)] text-sm">
-                You need to add friends first to assign tasks.
+                {t('taskForm.noFriendsWarning')}
               </p>
             ) : (
               <>
@@ -255,7 +264,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                   onChange={(e) => setAssignedTo(e.target.value)}
                   className={`input-field w-full ${errors.assignedTo ? 'border-red-500 focus:ring-red-500' : ''}`}
                 >
-                  <option value="">Select a friend</option>
+                  <option value="">{t('taskForm.assignToPlaceholder')}</option>
                   {friends.map((friendship) => (
                     <option key={friendship.friend.id} value={friendship.friend.id}>
                       {friendship.friend.display_name || friendship.friend.email}
@@ -271,7 +280,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           <div>
             <label htmlFor="deadline" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Calendar size={16} className="mr-1" />
-              Deadline (Optional)
+              {t('taskForm.deadlineLabel')}
             </label>
             <input
               type="date"
@@ -287,7 +296,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           <div className="mb-4">
             <label htmlFor="contractType" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Award size={16} className="mr-1" />
-              Contract Type
+              {t('taskForm.contractTypeLabel')}
             </label>
             <select 
               id="contractType"
@@ -300,8 +309,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               }}
               className="input-field w-full"
             >
-              <option value="bounty">Bounty Contract (Direct Reward)</option>
-              <option value="credit">Credit Contract (Coins)</option>
+              <option value="bounty">{t('taskForm.bountyContract')}</option>
+              <option value="credit">{t('taskForm.creditContract')}</option>
             </select>
           </div>
 
@@ -309,7 +318,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           {contractType === 'bounty' ? (
             <div>
               <label htmlFor="rewardTextBounty" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                Reward Description*
+                {t('taskForm.bountyDescriptionLabel')}
               </label>
               <input
                 type="text"
@@ -317,14 +326,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 value={rewardText}
                 onChange={(e) => setRewardText(e.target.value)}
                 className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
-                placeholder="e.g., Trip to Bali, a rare artifact"
+                placeholder={t('taskForm.bountyDescriptionPlaceholder')}
               />
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
             </div>
           ) : (
             <div>
               <label htmlFor="rewardTextCredit" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                Credit Reward*
+                {t('taskForm.creditRewardLabel')}
               </label>
               <select
                 id="rewardTextCredit"
@@ -333,11 +342,11 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
               >
                 {/* Note: Styling <option> tags with background colors has limited cross-browser support. The select box itself is styled. */}
-                <option className="bg-gray-800 text-white" value="1">1 Credit - Quick task</option>
-                <option className="bg-gray-800 text-white" value="2">2 Credits - Small chore</option>
-                <option className="bg-gray-800 text-white" value="3">3 Credits - Medium task</option>
-                <option className="bg-gray-800 text-white" value="5">5 Credits - Large task</option>
-                <option className="bg-gray-800 text-white" value="10">10 Credits - Major task</option>
+                <option className="bg-gray-800 text-white" value="1">{t('taskForm.creditOptions.quickTask')}</option>
+                <option className="bg-gray-800 text-white" value="2">{t('taskForm.creditOptions.smallChore')}</option>
+                <option className="bg-gray-800 text-white" value="3">{t('taskForm.creditOptions.mediumTask')}</option>
+                <option className="bg-gray-800 text-white" value="5">{t('taskForm.creditOptions.largeTask')}</option>
+                <option className="bg-gray-800 text-white" value="10">{t('taskForm.creditOptions.majorTask')}</option>
               </select>
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
             </div>
@@ -353,7 +362,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
             />
             <label htmlFor="proofRequired" className="text-sm text-[var(--text-secondary)]">
-              Proof Required?
+              {t('taskForm.proofRequiredLabel')}
             </label>
           </div>
           {/* Submit Button */}
@@ -362,7 +371,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSubmitting}
           >
-            {isSubmitting ? (editingTask ? 'Saving...' : 'Creating...') : (editingTask ? 'Save Changes' : 'Create Contract')}
+            {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract'))}
           </button>
         </form>
       </div>

@@ -25,6 +25,7 @@ import TaskCard from '../components/TaskCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TaskForm from '../components/TaskForm';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 // Types imported from hooks or defined locally
 import type { IssuedContract } from '../hooks/useIssuedContracts';
 // import type { AssignedContract } from '../hooks/useAssignedContracts'; // Removed as it's unused after refactor
@@ -46,8 +47,11 @@ export interface NewTaskData {
 }
 import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
 import { useDailyQuote } from '../hooks/useDailyQuote';
+import PullToRefresh from 'react-simple-pull-to-refresh';
+import { soundManager } from '../utils/soundManager';
 
 export default function IssuedPage() {
+  const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
   // const location = useLocation(); // Removed as unused
@@ -71,7 +75,7 @@ export default function IssuedPage() {
       setSelectedContract(task);
       setIsDeleteModalOpen(true);
     } else {
-      toast.error('Task not found.');
+      toast.error(t('contracts.taskNotFound'));
     }
   };
 
@@ -82,7 +86,7 @@ export default function IssuedPage() {
 
   const handleConfirmDeleteTask = async () => {
     if (!selectedContract || !user) {
-      toast.error('No task selected or user not found.');
+      toast.error(t('contracts.noTaskSelected'));
       handleCloseDeleteModal();
       return;
     }
@@ -98,15 +102,16 @@ export default function IssuedPage() {
         throw deleteError;
       }
 
-      toast.success(`Contract "${selectedContract.title}" deleted successfully.`);
+      soundManager.play('delete');
+      toast.success(t('contracts.deleteSuccess', { title: selectedContract.title }));
       await refetchIssuedContracts(); // Refresh the list
     } catch (error: unknown) {
       console.error('Failed to delete contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(`Failed: ${supabaseError.message}`);
+        toast.error(t('contracts.deleteFailedMessage', { message: supabaseError.message }));
       } else {
-        toast.error('Failed to delete contract due to an unknown error.');
+        toast.error(t('contracts.deleteFailedUnknown'));
       }
     }
     setIsDeleting(false);
@@ -115,13 +120,13 @@ export default function IssuedPage() {
 
   const handleProofUpload = async (file: File, taskId: string): Promise<string | null> => {
     console.warn('handleProofUpload called for task:', taskId, 'with file:', file.name, 'but uploadProof is not available for issued contracts view.');
-    toast.error('Proof upload functionality is not applicable here or disabled.');
+    toast.error(t('contracts.proofUploadDisabled'));
     return null;
   };
 
   const handleApprove = async (taskId: string) => {
     if (!user) {
-      toast.error('You must be logged in.');
+      toast.error(t('contracts.mustBeLoggedIn'));
       return;
     }
 
@@ -135,7 +140,7 @@ export default function IssuedPage() {
         .single();
 
       if (fetchError || !task) {
-        throw fetchError || new Error('Task not found or you are not the creator.');
+        throw fetchError || new Error(t('contracts.taskNotFoundOrNotCreator'));
       }
 
       // 2. Update task status to 'completed'
@@ -148,6 +153,8 @@ export default function IssuedPage() {
         throw updateError;
       }
 
+      soundManager.play('approveProof');
+
       // 3. If it's a credit task, award credits via RPC
       if (task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
         const creditAmount = parseInt(task.reward_text, 10);
@@ -159,30 +166,32 @@ export default function IssuedPage() {
 
           if (rpcError) {
             console.error('Failed to award credits via RPC:', rpcError);
-            toast.error(`Task approved, but failed to award ${creditAmount} credits.`);
+            toast.error(t('contracts.approvalFailedAward', { amount: creditAmount }));
           } else {
-            toast.success(`${creditAmount} credits awarded to assignee!`);
+            soundManager.play('success');
+            soundManager.play('coin');
+            toast.success(t('contracts.awardSuccess', { amount: creditAmount }));
           }
         }
       }
 
-      toast.success('Contract approved and completed!');
+      toast.success(t('contracts.approveSuccess'));
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
       console.error('Failed to approve contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(`Approval failed: ${(supabaseError as { message: string }).message}`);
+        toast.error(t('contracts.approvalFailed', { message: (supabaseError as { message: string }).message }));
       } else {
-        toast.error('Approval failed due to an unknown error.');
+        toast.error(t('contracts.approvalFailedUnknown'));
       }
     }
   };
 
   const handleReject = async (taskId: string) => {
     if (!user) {
-      toast.error('You must be logged in.');
+      toast.error(t('contracts.mustBeLoggedIn'));
       return;
     }
 
@@ -197,16 +206,16 @@ export default function IssuedPage() {
         throw error;
       }
 
-      toast.success('Contract has been rejected.');
+      toast.success(t('contracts.rejectSuccess'));
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
       console.error('Failed to reject contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(`Rejection failed: ${(supabaseError as { message: string }).message}`);
+        toast.error(t('contracts.rejectionFailed', { message: (supabaseError as { message: string }).message }));
       } else {
-        toast.error('Rejection failed due to an unknown error.');
+        toast.error(t('contracts.rejectionFailedUnknown'));
       }
     }
   };
@@ -228,7 +237,7 @@ export default function IssuedPage() {
 
   const handleCreateContract = async (taskData: NewTaskData) => {
     if (!user) {
-      toast.error('You must be logged in to create a contract.');
+      toast.error(t('contracts.createFailedLoggedIn'));
       return;
     }
 
@@ -255,7 +264,7 @@ export default function IssuedPage() {
       }
 
       await refetchIssuedContracts(); // Refresh the list
-      toast.success('Contract created successfully!'); // Show success toast
+      toast.success(t('contracts.createSuccess')); // Show success toast
       setIsTaskFormOpen(false); // Close the modal
       // navigate('/issued'); // Navigation might not be needed if staying on the page
     } catch (error: unknown) {
@@ -268,9 +277,9 @@ export default function IssuedPage() {
         console.error('Error code:', supabaseError.code);
         console.error('Error message:', supabaseError.message);
         console.error('Error details:', supabaseError.details);
-        toast.error(`Failed: ${supabaseError.message}`);
+        toast.error(t('contracts.deleteFailedMessage', { message: supabaseError.message }));
       } else {
-        toast.error('Failed to create contract due to an unknown error.');
+        toast.error(t('contracts.createFailedUnknown'));
       }
     }
   };
@@ -279,7 +288,7 @@ export default function IssuedPage() {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
         <DatabaseZap size={48} className="text-teal-400 animate-pulse mb-4" />
-        <p className="text-xl text-slate-300">Loading Your MISSIONS...</p>
+        <p className="text-xl text-slate-300">{t('contracts.loadingMissions')}</p>
       </div>
     );
   }
@@ -288,11 +297,17 @@ export default function IssuedPage() {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
         <AlertTriangle size={48} className="text-red-500 mb-4" />
-        <p className="text-xl text-red-400">Error loading contracts: {error}</p>
-        <p className="text-sm text-slate-400">Please try refreshing the page. If the problem persists, contact support.</p>
+        <p className="text-xl text-red-400">{t('contracts.errorLoadingMissions', { error })}</p>
+        <p className="text-sm text-slate-400">{t('contracts.errorLoadingSuggestion')}</p>
       </div>
     );
   }
+
+  const handleRefresh = async () => {
+    if (refetchIssuedContracts) {
+      await refetchIssuedContracts();
+    }
+  };
 
   const stats = {
     pending: sortedIssuedContracts.filter(task => task.status === 'pending').length,
@@ -301,10 +316,13 @@ export default function IssuedPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">MISSIONS</h1>
-        <p className="text-sm text-slate-400">Missions you have created for others to complete.</p>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-2">{t('contracts.myMissions')}</h1>
+          <p className="text-white/60 text-sm">{t('contracts.myMissionsDescription')}</p>
+        </div>
         {dailyQuote && (
           <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2">
             &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
@@ -327,8 +345,8 @@ export default function IssuedPage() {
         <button
           onClick={() => setIsTaskFormOpen(true)}
           className="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-teal-500 hover:bg-teal-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-          aria-label="Create New Mission"
-          title="Create New Mission"
+          aria-label={t('contracts.createNewMission')}
+          title={t('contracts.createNewMission')}
         >
           <PlusCircle size={24} className="md:hidden" />
           <PlusCircle size={28} className="hidden md:block" />
@@ -344,7 +362,7 @@ export default function IssuedPage() {
             <AlertTriangle size={32} /> {/* Changed icon to AlertTriangle for Pending */} 
           </div>
           <div className="text-3xl font-bold text-slate-100">{stats.pending}</div>
-          <div className="text-xs text-slate-400">OPEN</div>
+          <div className="text-xs text-slate-400">{t('contracts.open')}</div>
         </div>
         
         {/* Pending / In Review */}
@@ -353,7 +371,7 @@ export default function IssuedPage() {
             <Clock size={32} />
           </div>
           <div className="text-3xl font-bold text-slate-100">{stats.review}</div>
-          <div className="text-xs text-slate-400">Review</div>
+          <div className="text-xs text-slate-400">{t('contracts.review')}</div>
         </div>
         
         {/* Completed */}
@@ -362,14 +380,14 @@ export default function IssuedPage() {
             <CheckCircle size={32} />
           </div>
           <div className="text-3xl font-bold text-slate-100">{stats.completed}</div>
-          <div className="text-xs text-slate-400">Completed</div>
+          <div className="text-xs text-slate-400">{t('contracts.completed')}</div>
         </div>
       </div>
 
       {sortedIssuedContracts.length === 0 && !loading ? (
         <div className="text-center py-10">
           <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-          <p className="text-xl text-slate-300">You haven't created any missions yet.</p>
+          <p className="text-xl text-slate-300">{t('contracts.noMissions')}</p>
           {/* TODO: Add a button/link to create a new contract here */}
         </div>
       ) : (
@@ -399,5 +417,6 @@ export default function IssuedPage() {
         isConfirming={isDeleting} // Enabled for delete functionality
       />
     </div>
+    </PullToRefresh>
   );
 }

@@ -82,6 +82,12 @@ export function useAuth() {
     }
   };
 
+  const refreshProfile = () => {
+    if (user) {
+      fetchProfile(user.id);
+    }
+  };
+
   return {
     user,
     profile,
@@ -89,5 +95,6 @@ export function useAuth() {
     loading,
     error,
     signOut,
+    refreshProfile,
   };
 }

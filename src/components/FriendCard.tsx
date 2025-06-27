@@ -7,7 +7,7 @@
 // - Added `onCancelSentRequest` prop for deletion logic.
 
 import { Profile } from '../types/database';
-import { CheckCircle, X, UserX, UserCheck, Trash2 } from 'lucide-react'; // Added Trash2
+import { CheckCircle, X, UserX, Trash2, Check } from 'lucide-react'; // Added Trash2
 
 interface FriendCardProps {
   profile: Profile;
@@ -91,24 +91,22 @@ export default function FriendCard({
         )}
 
         {status === 'pending' && isIncoming && onAccept && onReject && friendshipId && (
-          <>
+          <div className="flex gap-3 mt-4">
             <button
               onClick={() => onAccept(friendshipId)}
-              className="p-1.5 rounded-full hover:bg-green-500/20 text-white/70 hover:text-green-400 transition-colors"
-              aria-label="Accept"
-              title="Accept request"
+              className="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
             >
-              <UserCheck size={18} />
+              <Check className="w-5 h-5" />
+              Accept
             </button>
             <button
               onClick={() => onReject(friendshipId)}
-              className="p-1.5 rounded-full hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-colors"
-              aria-label="Reject"
-              title="Reject request"
+              className="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
             >
-              <X size={18} />
+              <X className="w-5 h-5" />
+              Decline
             </button>
-          </>
+          </div>
         )}
 
         {status === 'pending' && !isIncoming && (

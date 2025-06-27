@@ -1,13 +1,19 @@
 // src/components/ProofSubmissionModal.tsx
 // A modal form for submitting a textual proof of completion (description) for a task instance.
-// The 'onSubmit' prop handles the actual submission logic, typically by calling a function from 'useRecurringTasks'.
+// The 'onSubmit' prop handles the actual submission logic.
 
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { TaskInstanceWithTemplate } from '../hooks/useRecurringTasks';
+
+// A generic task type, update if a global type is available
+export interface SimpleTask {
+  id: string;
+  name?: string;
+  title?: string;
+}
 
 interface ProofSubmissionModalProps {
-  instance: TaskInstanceWithTemplate;
+  instance: SimpleTask;
   onClose: () => void;
   onSubmit: (instanceId: string, proof: string) => void;
   loading: boolean;
@@ -36,7 +42,7 @@ const ProofSubmissionModal: React.FC<ProofSubmissionModalProps> = ({ instance, o
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-teal-400 mb-2">Submit Proof of Completion</h2>
-        <p className="text-slate-300 mb-6">Submitting proof for: <span className="font-semibold text-teal-300">{instance.recurring_task_templates?.title || 'Task'}</span></p>
+        <p className="text-slate-300 mb-6">Submitting proof for: <span className="font-semibold text-teal-300">{instance.title || instance.name || 'Task'}</span></p>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -45,7 +51,7 @@ const ProofSubmissionModal: React.FC<ProofSubmissionModalProps> = ({ instance, o
               id="proof"
               value={proof}
               onChange={(e) => setProof(e.target.value)}
-              className="input-glass w-full min-h-[100px]"
+              className="input-glass w-full min-h-[100px] text-base"
               placeholder="e.g., https://imgur.com/link-to-screenshot or 'Completed the task as requested.'"
               required
             />

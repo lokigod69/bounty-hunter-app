@@ -19,13 +19,13 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
+import { useTranslation } from 'react-i18next';
 import {
   Home,
   Send,
   ShoppingCart,
   Sparkles,
   Book,
-  UserCog,
   LogOut,
   Menu,
   X,
@@ -36,14 +36,19 @@ import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; 
 import UserCredits from './UserCredits'; 
 import { Toaster } from 'react-hot-toast'; 
+import ProfileEditModal from './ProfileEditModal';
+
+import { soundManager } from '../utils/soundManager';
 
 export default function Layout() {
+  const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
+  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -75,31 +80,19 @@ export default function Layout() {
     setMobileMenuOpen(false);
   };
 
-  const toggleUserMenu = () => {
-    setUserMenuOpen(!userMenuOpen);
-  };
+  const closeUserMenu = () => setUserMenuOpen(false);
 
-  const closeUserMenu = () => {
-    setUserMenuOpen(false);
-  };
+  useClickOutside(userMenuRef, closeUserMenu); // Close user menu when clicking outside
 
-  // Close user menu when clicking outside
-      useEffect(() => {
-    const mainEl = mainContentRef.current;
+  useEffect(() => {
     const handleScroll = () => {
-      if (mainEl) {
-        setScrolled(mainEl.scrollTop > 10);
-      }
+      setScrolled(window.scrollY > 10);
     };
 
-    if (mainEl) {
-      mainEl.addEventListener('scroll', handleScroll);
-    }
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      if (mainEl) {
-        mainEl.removeEventListener('scroll', handleScroll);
-      }
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -110,21 +103,18 @@ export default function Layout() {
   });
 
   // Navigation items
-  const baseNavItems = [
-    { name: 'Contracts', path: '/', icon: <Home size={20} /> },
-    { name: 'Missions', path: '/issued', icon: <Send size={20} /> },
-    { name: 'Guild Roster', path: '/friends', icon: <Users size={20} /> },
-    { name: 'Bounties', path: '/rewards-store', icon: <ShoppingCart size={20} /> },
+  const navItems = [
+    { name: t('navigation.contracts'), path: '/', icon: <Home size={20} />, sound: 'click2a' },
+    { name: t('navigation.missions'), path: '/issued', icon: <Send size={20} />, sound: 'click2b' },
+    { name: t('navigation.guildRoster'), path: '/friends', icon: <Users size={20} />, sound: 'click2c' },
+    { name: t('navigation.bounties'), path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click2d' },
+    { name: t('navigation.history'), path: '/archive', icon: <Book size={20} />, sound: 'click2e' },
   ];
 
-  const historyNavItem = { name: 'History', path: '/archive', icon: <Book size={20} /> };
+  const navItemsDesktop = navItems;
+  const navItemsMobile = navItems;
 
-  const navItemsDesktop = [...baseNavItems, historyNavItem];
-  const navItemsMobile = [...baseNavItems, historyNavItem];
-
-  const userMenuItems = [
-    { name: 'Edit Profile', path: '/profile/edit', icon: <UserCog size={20} /> }
-  ];
+  const userMenuItems: { name: string; path: string; icon: JSX.Element }[] = [];
 
   if (!user) {
     return <Outlet />;
@@ -154,6 +144,7 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => item.sound && soundManager.play(item.sound)}
                 className={`relative nav-item-galactic flex items-center space-x-1 ${
                   location.pathname === item.path
                     ? 'nav-item-galactic-active'
@@ -161,7 +152,7 @@ export default function Layout() {
                 }`}
               >
                 {item.icon}
-                                <span>{item.name}</span>
+                                <span className="nav-text-spacing">{item.name}</span>
                 {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                     {pendingRequests.length}
@@ -188,12 +179,14 @@ export default function Layout() {
                 />
               </button>
               <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                Toggle Cursor Trail
+                {t('profile.toggleCursorTrail')}
               </div>
             </div>
 
-            <div className="relative"> {/* Removed 'group' class */} 
-              <div onClick={toggleUserMenu} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
+
+
+            <div className="relative">
+              <div onClick={() => setProfileModalOpen(true)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
                   <img
                     src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user.email || 'user')}
@@ -208,21 +201,13 @@ export default function Layout() {
               {/* Desktop User Dropdown Menu */}
               {userMenuOpen && (
                 <div ref={userMenuRef} className="absolute right-0 mt-1 w-48 glass-card rounded-md shadow-lg py-1">
-                <Link
-                  to="/profile/edit"
-                  onClick={closeUserMenu} // Close menu on click
-                  className="flex items-center space-x-2 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
-                >
-                  <UserCog size={16} />
-                  <span>Edit Profile</span>
-                </Link>
                 <button
                   onClick={() => { handleSignOut(); closeUserMenu(); }} // Close menu on click
                   className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
-                  aria-label="Sign out"
+                  aria-label={t('auth.signOut')}
                 >
                   <LogOut size={16} />
-                  <span>Sign Out</span>
+                  <span>{t('auth.signOut')}</span>
                 </button>
               </div>
               )}
@@ -256,7 +241,18 @@ export default function Layout() {
             {/* 'NEW CONTRACT' button removed from mobile menu. Functionality moved to IssuedPage.tsx FAB. */}
 
             {/* User Profile */}
-            <div className="flex items-center space-x-3 p-4 mb-6 glass-card">
+            <button
+              onClick={() => {
+                setProfileModalOpen(true);
+                closeMobileMenu();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setProfileModalOpen(true);
+                closeMobileMenu();
+              }}
+              className="w-full flex items-center space-x-3 p-4 mb-6 glass-card text-left transition-colors hover:bg-white/5"
+            >
               <div className="w-12 h-12 rounded-full overflow-hidden">
                 <img
                   src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user?.email || 'defaultUser')}
@@ -270,7 +266,7 @@ export default function Layout() {
                 </p>
                 <p className="text-white/70 text-sm">{user.email}</p>
               </div>
-            </div>
+            </button>
 
             {/* Navigation Links */}
             <nav className="flex-grow px-4">
@@ -283,10 +279,13 @@ export default function Layout() {
                       ? 'nav-item-galactic-active'
                       : ''
                   }`}
-                  onClick={closeMobileMenu}
+                  onClick={() => {
+                    if (item.sound) soundManager.play(item.sound);
+                    closeMobileMenu();
+                  }}
                 >
                   {item.icon}
-                  <span className="text-lg">{item.name}</span>
+                  <span className="text-lg nav-text-spacing">{item.name}</span>
                   {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
                       {pendingRequests.length}
@@ -298,7 +297,7 @@ export default function Layout() {
 
             {/* User Menu Links - Mobile */}
             <div className="border-t border-white/10 pt-4 mt-4">
-              <p className="px-4 pb-2 text-xs uppercase text-white/50">Account</p>
+              <p className="px-4 pb-2 text-xs uppercase text-white/50">{t('profile.account')}</p>
               {userMenuItems.map((item) => (
                 <Link
                   key={item.path}
@@ -316,6 +315,11 @@ export default function Layout() {
               ))}
             </div>
 
+            {/* Language Switcher - Mobile */}
+            <div className="mt-6 mb-4 flex justify-center">
+
+            </div>
+
             {/* Sign Out Button */}
             <div className="mt-auto">
               <button
@@ -323,7 +327,7 @@ export default function Layout() {
                 className="w-full flex items-center justify-center space-x-2 px-4 py-3 glass-card hover:bg-white/10 transition-colors rounded-xl"
               >
                 <LogOut size={20} />
-                <span>Sign Out</span>
+                <span>{t('auth.signOut')}</span>
               </button>
             </div>
           </div>
@@ -331,9 +335,11 @@ export default function Layout() {
       )}
 
       {/* Main Content */}
-      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-6 overflow-y-auto scroll-container">
+      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-6 main-content no-bounce">
         <Outlet />
       </main>
+
+      <ProfileEditModal isOpen={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </div>
   );
 }

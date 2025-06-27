@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { soundManager } from '../utils/soundManager';
 import { Database } from '../types/database';
 
 export const useDeleteBounty = () => {
@@ -21,6 +22,7 @@ export const useDeleteBounty = () => {
         throw new Error(error.message);
       }
 
+      soundManager.play('delete');
       toast.success('Bounty deleted successfully!');
       setIsLoading(false);
       return { success: true };

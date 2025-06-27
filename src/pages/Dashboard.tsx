@@ -22,16 +22,19 @@ import { supabase } from '../lib/supabase'; // Added for Supabase client
 import { useAssignedContracts } from '../hooks/useAssignedContracts'; // Renamed from useTasks
 import TaskCard from '../components/TaskCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import TaskCardSkeleton from '../components/TaskCardSkeleton';
 import { Clock, AlertTriangle, CheckCircle, ScrollText, DatabaseZap } from 'lucide-react';
 import { useDailyQuote } from '../hooks/useDailyQuote';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import { toast } from 'react-hot-toast';
+import { soundManager as sm } from '../utils/soundManager'; // Added for sound effects
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../types/app-specific-types';
+import { useTranslation } from 'react-i18next';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { user } = useAuth(); // Get current user
   const {
@@ -80,6 +83,8 @@ export default function Dashboard() {
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
+
+      sm.play('upload');
 
       // Get the public URL for the uploaded file
       const { data: publicUrlData } = supabase.storage
@@ -164,7 +169,13 @@ export default function Dashboard() {
 
       if (updateError) throw updateError;
 
-      toast.success(finalStatus === 'completed' ? 'Task completed!' : 'Status updated');
+      if (finalStatus === 'completed') {
+        toast.success('Task completed!');
+        sm.play('acceptContract');
+        sm.play('success');
+      } else {
+        toast.success('Status updated');
+      }
       if (refetchAssignedContracts) refetchAssignedContracts();
 
     } catch (error: unknown) {
@@ -195,38 +206,20 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-4 md:p-6 animate-pulse">
-        <div className="h-9 bg-slate-700 rounded w-1/2 sm:w-1/3 mb-6"></div> {/* Title placeholder */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
-            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div>
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-          </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
-            <div className="h-6 bg-slate-700 rounded w-3/5 mb-4"></div>
-            <div className="h-4 bg-slate-700 rounded w-4/5"></div>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <TaskCardSkeleton />
-          <TaskCardSkeleton />
-          <TaskCardSkeleton />
-        </div>
+      <div className="text-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto"></div>
+        <p className="mt-4 text-white/50">{t('common.loadingContracts')}</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-4 md:p-6">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 text-center">
-          <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
-          <h3 className="text-lg font-semibold mb-2 text-red-400">A Problem Occurred</h3>
-          <p className="text-white/70 mb-4">
-            {typeof error === 'string' ? error : 'An unexpected error occurred while loading your contracts.'}
-          </p>
-          <p className="mt-3 text-sm text-red-400/80">Please try refreshing the page.</p>
-        </div>
+      <div className="text-center p-8 text-white/70 bg-red-900/20 rounded-lg">
+        <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+        <h3 className="mt-2 text-lg font-semibold text-white">{t('contracts.errorTitle')}</h3>
+        <p className="mt-1 text-sm">{t('contracts.errorMessage')}</p>
+        <p className="mt-1 text-sm text-white/50">{t('contracts.errorSuggestion')}</p>
       </div>
     );
   }
@@ -235,86 +228,97 @@ export default function Dashboard() {
   const reviewCount = assignedContracts.filter((t: Task) => t.status === 'review').length;
   const completedCount = assignedContracts.filter((t: Task) => t.status === 'completed').length;
 
+  const handleRefresh = async () => {
+    if (refetchAssignedContracts) {
+      await refetchAssignedContracts();
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-8">My Contracts</h1>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="max-w-4xl mx-auto p-4 md:p-6">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold app-title">{t('contracts.title')}</h1>
+          <p className="text-white/60 text-sm">{t('contracts.description')}</p>
+        </div>
 
-      {/* New Minimalist Stats Icons */}
-      <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
-        {/* Open/Pending */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-red-400 mb-2">
-            <ScrollText size={32} /> {/* Using ScrollText as per previous Dashboard preference */}
+        {/* New Minimalist Stats Icons */}
+        <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
+          {/* Open/Pending */}
+          <div className="text-center flex flex-col items-center">
+            <div className="text-red-400 mb-2">
+              <ScrollText size={32} /> {/* Using ScrollText as per previous Dashboard preference */}
+            </div>
+            <div className="text-3xl font-bold text-slate-100">{pendingCount}</div>
+            <div className="text-xs text-slate-400">{t('contracts.open')}</div>
           </div>
-          <div className="text-3xl font-bold text-slate-100">{pendingCount}</div>
-          <div className="text-xs text-slate-400">Open</div>
-        </div>
-        
-        {/* In Review */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-yellow-400 mb-2">
-            <Clock size={32} />
+          
+          {/* In Review */}
+          <div className="text-center flex flex-col items-center">
+            <div className="text-yellow-400 mb-2">
+              <Clock size={32} />
+            </div>
+            <div className="text-3xl font-bold text-slate-100">{reviewCount}</div>
+            <div className="text-xs text-slate-400">{t('contracts.review')}</div>
           </div>
-          <div className="text-3xl font-bold text-slate-100">{reviewCount}</div>
-          <div className="text-xs text-slate-400">Review</div>
-        </div>
-        
-        {/* Completed */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-green-400 mb-2">
-            <CheckCircle size={32} />
+          
+          {/* Completed */}
+          <div className="text-center flex flex-col items-center">
+            <div className="text-green-400 mb-2">
+              <CheckCircle size={32} />
+            </div>
+            <div className="text-3xl font-bold text-slate-100">{completedCount}</div>
+            <div className="text-xs text-slate-400">{t('contracts.done')}</div>
           </div>
-          <div className="text-3xl font-bold text-slate-100">{completedCount}</div>
-          <div className="text-xs text-slate-400">Done</div>
         </div>
-      </div>
 
-      {/* Assigned Contracts List */}
-      {sortedAssignedContracts.length === 0 && !loading && (
-        <div className="text-center py-10 bg-gray-800/30 rounded-lg">
-          <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
-          <h3 className="text-xl font-semibold text-white/90">No Contracts Assigned</h3>
-          <p className="text-white/70">You currently have no active contracts. Check back later!</p>
-        </div>
-      )}
+        {/* Assigned Contracts List */}
+        {sortedAssignedContracts.length === 0 && !loading && (
+          <div className="text-center py-10 bg-gray-800/30 rounded-lg">
+            <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+            <h3 className="text-xl font-semibold text-white/90">{t('contracts.noContracts')}</h3>
+            <p className="text-white/70">{t('contracts.noContractsMessage')}</p>
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedAssignedContracts.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            isCreatorView={false} // This is "My Contracts" (assigned to me)
-            onStatusUpdate={handleStatusUpdate}
-            onProofUpload={handleProofUpload}
-            uploadProgress={0} // Pass default value as prop is mandatory
-            onDeleteTaskRequest={handleDeleteTaskRequest}
-            refetchTasks={refetchAssignedContracts}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedAssignedContracts.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              isCreatorView={false} // This is "My Contracts" (assigned to me)
+              onStatusUpdate={handleStatusUpdate}
+              onProofUpload={handleProofUpload}
+              uploadProgress={0} // Pass default value as prop is mandatory
+              onDeleteTaskRequest={handleDeleteTaskRequest}
+              refetchTasks={refetchAssignedContracts}
+            />
+          ))}
+        </div>
+
+        {isDeleteModalOpen && taskToDelete && (
+          <ConfirmDeleteModal
+            isOpen={isDeleteModalOpen}
+            onClose={handleCloseDeleteModal}
+            onConfirm={handleConfirmDeleteTask}
+            title={t('contracts.confirmDeletion')}
+            message={t('contracts.confirmDeletionMessage', { title: taskToDelete.title || t('contracts.thisTask') })}
+            isConfirming={isDeleting} // Ensure this prop matches the modal's expected prop name
           />
-        ))}
-      </div>
+        )}
 
-      {isDeleteModalOpen && taskToDelete && (
-        <ConfirmDeleteModal
-          isOpen={isDeleteModalOpen}
-          onClose={handleCloseDeleteModal}
-          onConfirm={handleConfirmDeleteTask}
-          title="Confirm Deletion"
-          message={`Are you sure you want to delete the contract "${taskToDelete.title || 'this task'}"? This action cannot be undone.`}
-          isConfirming={isDeleting} // Ensure this prop matches the modal's expected prop name
-        />
-      )}
-
-      {/* Hunter's Creed Card */}
-      {dailyQuote && (
-        <div className="mt-8 mb-8 p-6 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-gray-600 transition-all">
-          <div className="flex items-center text-purple-400 mb-2">
-            <ScrollText size={20} className="mr-2" />
-            <h3 className="text-lg font-semibold">Hunter's Creed</h3>
+        {/* Hunter's Creed Card */}
+        {dailyQuote && (
+          <div className="mt-8 mb-8 p-6 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-gray-600 transition-all">
+            <div className="flex items-center text-purple-400 mb-2">
+              <ScrollText size={20} className="mr-2" />
+              <h3 className="text-lg font-semibold">{t('contracts.huntersCreed')}</h3>
+            </div>
+            <p className="text-white/80 italic">{dailyQuote.text}</p>
+            {dailyQuote.author && <p className="text-sm text-white/60 mt-1 text-right">- {dailyQuote.author}</p>}
           </div>
-          <p className="text-white/80 italic">"{dailyQuote.text}"</p>
-          {dailyQuote.author && <p className="text-sm text-white/60 mt-1 text-right">- {dailyQuote.author}</p>}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </PullToRefresh>
   );
 }

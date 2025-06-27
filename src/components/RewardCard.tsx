@@ -2,8 +2,9 @@
 // A component to display a single reward or bounty item.
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2 } from 'lucide-react';
-import { Database } from '../types/database';
+import type { Database } from '../types/database';
 import CreditDisplay from './CreditDisplay';
 
 export type Reward = Database['public']['Tables']['rewards_store']['Row'];
@@ -17,6 +18,7 @@ interface RewardCardProps {
 }
 
 const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const { id, name, description, image_url, credit_cost } = reward;
   const [imageError, setImageError] = useState(false);
 
@@ -65,14 +67,14 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             <button 
               onClick={() => onEdit?.(reward)}
               className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-              title="Edit Bounty"
+              title={t('rewards.rewardCard.editButton')}
             >
               <Pencil size={18} />
             </button>
             <button 
               onClick={() => onDelete?.(id)}
               className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-              title="Delete Bounty"
+              title={t('rewards.rewardCard.deleteButton')}
             >
               <Trash2 size={18} />
             </button>
@@ -83,7 +85,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             className="px-4 py-2 text-sm md:text-base bg-teal-500 text-black font-bold rounded-lg hover:bg-teal-600 transition disabled:bg-gray-600 disabled:cursor-not-allowed"
             disabled={view !== 'available' || !onAction}
           >
-            {view === 'available' ? 'Claim' : 'View'}
+            {view === 'available' ? t('rewards.rewardCard.claimButton') : t('rewards.rewardCard.viewButton')}
           </button>
         )}
       </div>

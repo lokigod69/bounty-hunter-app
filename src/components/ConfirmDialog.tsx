@@ -2,6 +2,7 @@
 // A reusable confirmation dialog modal.
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface ConfirmDialogProps {
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfirm, title, message, isLoading }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -27,7 +29,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfir
             className="px-6 py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition"
             disabled={isLoading}
           >
-            Cancel
+            {t('rewards.confirmDialog.cancelButton')}
           </button>
           <button 
             type="button" 
@@ -35,7 +37,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfir
             className="px-6 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition disabled:bg-red-800"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Confirm'}
+            {isLoading ? t('rewards.confirmDialog.deletingButton') : t('rewards.confirmDialog.confirmButton')}
           </button>
         </div>
       </div>

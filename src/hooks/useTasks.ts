@@ -22,7 +22,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Database, NewTaskData, Task, TaskStatus, ProofType } from '../types/database';
+import type { Database } from '../types/database';
+import type { NewTaskData, Task, TaskStatus, ProofType, TaskWithProfiles } from '../types/custom';
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
 
@@ -58,7 +59,7 @@ const generateProofFilePath = (taskId: string, file: File): string => {
 };
 
 export function useTasks(user: User | null, client: SupabaseClient = supabase) {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<TaskWithProfiles[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -114,13 +115,13 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       }
 
       // Combine results and remove duplicates
-      const allTasksMap = new Map<string, Task>();
+      const allTasksMap = new Map<string, TaskWithProfiles>();
       [...(createdByMe || []), ...(assignedToMe || []), ...(unassignedPending || [])].forEach(task => {
         if (task) allTasksMap.set(task.id, task);
       });
       
       const data = Array.from(allTasksMap.values()).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-      setTasks(data || []);
+      setTasks(data as TaskWithProfiles[] || []);
     } catch (e) {
       const errorMessage = getErrorMessage(e);
       setError(errorMessage);
@@ -194,10 +195,17 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
     const originalTasks = [...tasks];
     // Optimistic UI update
-    setTasks(prevTasks => 
-      prevTasks.map(t => 
-        t.id === taskId ? { ...t, ...taskData, updated_at: new Date().toISOString() } : t
-      )
+        setTasks(prevTasks =>
+      prevTasks.map(t => {
+        if (t.id !== taskId) return t;
+        // Reconstruct the task to ensure type safety, preserving existing profile data
+        const updatedTask: TaskWithProfiles = {
+          ...t,
+          ...taskData,
+          updated_at: new Date().toISOString(),
+        };
+        return updatedTask;
+      })
     );
 
     const toastId = `updateTask-${taskId}`;
@@ -221,16 +229,20 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .update(dataToUpdate)
         .eq('id', taskId)
         .eq('created_by', currentUserId) // Ensure creator is the one updating
-        .select()
+        .select(`
+          *,
+          profiles:profiles!assigned_to ( id, display_name, email ),
+          creator_profile:profiles!created_by ( id, display_name, email )
+        `)
         .single();
 
       if (updateError) throw updateError;
       if (!updatedTask) throw new Error('Task update returned no data.');
 
       // Update local state with the actual returned task to ensure consistency
-      setTasks(prevTasks => 
+            setTasks(prevTasks => 
         prevTasks.map(t => 
-          t.id === taskId ? { ...updatedTask, updated_at: new Date(updatedTask.updated_at || Date.now()).toISOString() } : t
+          t.id === taskId ? { ...t, ...updatedTask } : t
         )
       );
       toast.success('Task updated successfully!', { id: toastId });
@@ -244,14 +256,14 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     }
   };
 
-  const createTask = async (newTaskData: NewTaskData): Promise<Task | null> => {
+    const createTask = async (newTaskData: NewTaskData): Promise<TaskWithProfiles | null> => {
     if (!currentUserId) {
       toast.error('You must be logged in to create a task.');
       return null;
     }
 
     const tempId = `temp-${Date.now()}`;
-    const optimisticTask: Task = {
+        const optimisticTask: TaskWithProfiles = {
       // Base fields from newTaskData
       title: newTaskData.title,
       description: (newTaskData.description ?? null) as (string | null), // Explicit cast for persistent linter issue
@@ -268,12 +280,14 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       proof_url: null,
       proof_type: null,
       completed_at: null,
-      profiles: null, // Profiles will be populated by the actual insert if joined
+      is_archived: false,
+            profiles: null, // This is the assignee's profile
+      creator_profile: null, // This is the creator's profile
       // Add potentially missing nullable fields from Task type
       frequency_limit: null,
       frequency_period: null,
       proof_description: null,
-      recurring_task_template_id: null // Added to satisfy Task type, though actual DB table doesn't have this
+      
     };
 
     setTasks((prevTasks) => [optimisticTask, ...prevTasks]);
@@ -298,8 +312,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .insert(taskToInsert)
         .select(`
           *,
-          assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url),
-          creator:profiles!tasks_created_by_fkey(display_name, avatar_url)
+          profiles:profiles!assigned_to ( id, display_name, email ),
+          creator_profile:profiles!created_by ( id, display_name, email )
         `)
         .single();
 
@@ -310,7 +324,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         prevTasks.map((task) => (task.id === tempId ? createdTask : task))
       );
       toast.success('Task created successfully!', { id: toastId });
-      return createdTask;
+            return createdTask as TaskWithProfiles;
     } catch (e) {
       const errorMessage = getErrorMessage(e);
       setError(errorMessage);

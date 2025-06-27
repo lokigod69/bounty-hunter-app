@@ -79,8 +79,8 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
           {uploadProgress > 0 && (
             <div className="w-full bg-slate-700 rounded-full h-2.5 mt-4">
               <div
-                className="bg-indigo-500 h-2.5 rounded-full w-[var(--progress-width)]"
-                style={{ '--progress-width': `${uploadProgress}%` } as React.CSSProperties}
+                className="bg-indigo-500 h-2.5 rounded-full"
+                style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
           )}

@@ -1,12 +1,15 @@
 // src/hooks/useDailyQuote.ts
-// Custom hook to manage and cycle through daily quotes.
-// Changes:
-// - Fixed lint error: removed unnecessary 'unknown' constraint for generic type T in fisherYatesShuffle.
+// Custom hook to manage and cycle through daily quotes using i18next.
+// The hook now pulls translated quotes from the 'quotes' namespace.
 
 import { useState, useEffect } from 'react';
-import { allQuotes, Quote } from '../lib/quotes';
+import { useTranslation } from 'react-i18next';
 
-// Fisher-Yates Shuffle Algorithm
+export interface Quote {
+  text: string;
+  author: string;
+}
+
 const fisherYatesShuffle = <T>(array: T[]): T[] => {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -22,55 +25,51 @@ const getTodayDateString = (): string => {
 };
 
 const STORAGE_KEYS = {
-  SHUFFLED_QUOTES: 'dailyQuote_shuffledQuotes_v1',
-  CURRENT_INDEX: 'dailyQuote_currentIndex_v1',
-  LAST_DATE: 'dailyQuote_lastDate_v1',
+  SHUFFLED_QUOTE_KEYS: 'dailyQuote_shuffledQuoteKeys_v2',
+  CURRENT_INDEX: 'dailyQuote_currentIndex_v2',
+  LAST_DATE: 'dailyQuote_lastDate_v2',
 };
 
 export const useDailyQuote = (): Quote | null => {
+  const { t, i18n } = useTranslation('quotes');
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !allQuotes || allQuotes.length === 0) {
-      return; // Don't run on server or if there are no quotes
-    }
+    if (typeof window === 'undefined') return;
+
+    // Get all quote keys from the 'quotes' namespace for the current language
+        const allQuoteKeys = Object.keys(i18n.getResourceBundle(i18n.language, 'quotes') || {});
+
+    if (allQuoteKeys.length === 0) return;
 
     const todayStr = getTodayDateString();
     
-    let shuffledQuotes: Quote[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTES) || 'null') || [];
+    let shuffledKeys: string[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTE_KEYS) || 'null') || [];
     let currentIndex: number = parseInt(localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX) || '-1', 10);
     const lastQuoteDate: string | null = localStorage.getItem(STORAGE_KEYS.LAST_DATE);
 
-    if (lastQuoteDate !== todayStr || shuffledQuotes.length === 0 || currentIndex === -1) {
-      // It's a new day, or no quotes stored, or first ever run for this version of storage
-      currentIndex++; // Move to next quote index
+    if (lastQuoteDate !== todayStr || shuffledKeys.length === 0 || currentIndex === -1) {
+      currentIndex++;
 
-      if (currentIndex >= shuffledQuotes.length || shuffledQuotes.length === 0) {
-        // Need to reshuffle: either end of list reached, or no list existed, or list was from an old version
-        shuffledQuotes = fisherYatesShuffle([...allQuotes]);
-        currentIndex = 0; // Start from the beginning of the new shuffled list
+      if (currentIndex >= shuffledKeys.length || shuffledKeys.length === 0) {
+        shuffledKeys = fisherYatesShuffle(allQuoteKeys);
+        currentIndex = 0;
       }
       
-      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
+      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTE_KEYS, JSON.stringify(shuffledKeys));
       localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, currentIndex.toString());
       localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
     }
 
-    // Set the current quote for display
-    if (shuffledQuotes.length > 0 && currentIndex >= 0 && currentIndex < shuffledQuotes.length) {
-      setCurrentQuote(shuffledQuotes[currentIndex]);
-    } else if (allQuotes.length > 0) {
-      // Fallback if something went wrong (e.g. localStorage cleared manually mid-cycle but not date)
-      // or it's the very first load and allQuotes is not empty but initial setup failed.
-      const freshShuffle = fisherYatesShuffle([...allQuotes]);
-      if (freshShuffle.length > 0) {
-        setCurrentQuote(freshShuffle[0]);
-        localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(freshShuffle));
-        localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, '0');
-        localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
-      }
+    if (shuffledKeys.length > 0 && currentIndex < shuffledKeys.length) {
+      const currentKey = shuffledKeys[currentIndex];
+      // Use the 't' function to get the translated quote object
+      const quoteObject = t(currentKey, { returnObjects: true }) as Quote;
+      setCurrentQuote(quoteObject);
+
     }
-  }, []); // Effect runs once on mount
+
+  }, [i18n.language, t, i18n]); // Rerun effect if language changes
 
   return currentQuote;
 };

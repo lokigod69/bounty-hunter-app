@@ -10,9 +10,11 @@
   font-style: normal;
 }
 
-/* Universal Box Sizing */
+/* Universal Box Sizing & Android Fixes */
 *, *::before, *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 @tailwind base;
@@ -21,16 +23,31 @@
   font-family: 'Mandalore', sans-serif;
 }
 @tailwind components;
+
+.nav-text-spacing {
+  letter-spacing: 0.05em;
+}
 @tailwind utilities;
 
-html, body, #root {
+html, body {
   height: 100%;
-  overflow: hidden;
+  width: 100%;
 }
 
-.scroll-container {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+#root {
+  height: 100%;
+  position: relative;
+}
+
+/* Main scrollable container */
+.main-content {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Prevent bounce on iOS/Android */
+.no-bounce {
+  overscroll-behavior: none;
 }
 
 /* --- FONT SYSTEM OPTION A (REVISED) START --- */
@@ -95,6 +112,14 @@ div[class*="border rounded-lg"] h3,
 }
 
 /* Body Text */
+body {
+  background-image: url('/img/C1.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 body,
 p,
 .text-sm {
@@ -1371,11 +1396,7 @@ body {
     font-size: 0.875rem; /* 14px */
   }
   
-  /* Horizontal scroll for sub-tabs styling */
-  .mobile-tab-container .overflow-x-auto {
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-  }
+
   .mobile-tab-container .overflow-x-auto::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
   }
