@@ -185,7 +185,7 @@ export default function Friends() {
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold app-title">{t('friends.title', 'GUILD ROSTER')}</h1>
+          <h1 className="text-4xl app-title">{t('friends.title', 'GUILD ROSTER')}</h1>
           <p className="text-white/70 mt-2 max-w-2xl mx-auto">{t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')}</p>
         </div>
 
