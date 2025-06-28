@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import UserCredits from './UserCredits';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -104,6 +105,11 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
           <h2 className="text-2xl font-bold gradient-text flex items-center">
             <Edit3 size={24} className="mr-2" /> {t('profile.edit')}
           </h2>
+
+          {/* User Credits Display */}
+          <div className="flex justify-center pb-4 border-b border-white/10">
+            <UserCredits />
+          </div>
           <div className="flex flex-col items-center space-y-3">
             {avatarPreview ? (
               <img 

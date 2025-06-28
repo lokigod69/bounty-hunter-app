@@ -1,4 +1,5 @@
 // src/components/Layout.tsx
+// HEADER REFACTOR: Removed nav-bar scrolling and moved UserCredits to profile modal.
 // DESKTOP HEADER FIX: Aligned profile and logout buttons horizontally.
 // MOBILE MENU FIX: Added a dedicated, visible close (X) button to the mobile menu.
 // Added 'app-title' class to header text for MandaloreTitle font styling.
@@ -124,108 +125,94 @@ export default function Layout() {
       {/* Header */}
       <header className={`sticky top-0 z-30 transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
 
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src={logo} 
-              alt="Bounty Hunter Logo" 
-              className="h-10 w-10"
-            />
-            <span className="app-title text-2xl font-bold text-white">BOUNTY HUNTER</span>
-          </Link>
+        <div className="container mx-auto px-4 py-3 flex items-center">
+          {/* Left side: Logo and Nav */}
+          <div className="flex-grow flex items-center space-x-8">
+            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
+              <img 
+                src={logo} 
+                alt="Bounty Hunter Logo" 
+                className="h-10 w-10"
+              />
+              <span className="app-title text-2xl font-bold text-white">BOUNTY HUNTER</span>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-2 md:space-x-6 overflow-x-auto whitespace-nowrap scrollbar-hide">
-            {navItemsDesktop.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => item.sound && soundManager.play(item.sound)}
-                className={`relative nav-item-galactic flex items-center space-x-1 ${
-                  location.pathname === item.path
-                    ? 'nav-item-galactic-active'
-                    : ''
-                }`}
-              >
-                {item.icon}
-                                <span className="nav-text-spacing">{item.name}</span>
-                {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {pendingRequests.length}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          {/* User Profile & Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <UserCredits />
-            {/* 'NEW CONTRACT' button removed from here. Functionality moved to IssuedPage.tsx FAB. */}
-            {/* Cursor Trail Toggle Button */}
-            <div className="relative group">
-              <button
-                onClick={() => setIsCursorTrailEnabled(!isCursorTrailEnabled)}
-                className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
-                aria-label="Toggle cursor trail"
-              >
-                <Sparkles 
-                  size={20} 
-                  className={isCursorTrailEnabled ? 'text-cyan-400 animate-pulse' : 'text-gray-500'} 
-                />
-              </button>
-              <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                {t('profile.toggleCursorTrail')}
-              </div>
-            </div>
-
-
-
-            <div className="relative flex items-center space-x-2">
-              <div onClick={() => setProfileModalOpen(true)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
-                  <img
-                    src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user.email || 'user')}
-                    alt={profile?.display_name || 'User'}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="text-sm font-medium">
-                  {profile?.display_name || user.email?.split('@')[0]}
-                </span>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="p-2 rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
-                aria-label="Log out"
-              >
-                <LogOut size={20} className="text-gray-400 hover:text-white" />
-              </button>
-              {/* Desktop User Dropdown Menu */}
-              {userMenuOpen && (
-                <div ref={userMenuRef} className="absolute right-0 mt-1 w-48 glass-card rounded-md shadow-lg py-1">
-                <button
-                  onClick={() => { handleSignOut(); closeUserMenu(); }} // Close menu on click
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
-                  aria-label={t('auth.signOut')}
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-4">
+              {navItemsDesktop.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => item.sound && soundManager.play(item.sound)}
+                  className={`relative nav-item-galactic flex items-center space-x-1 ${
+                    location.pathname === item.path
+                      ? 'nav-item-galactic-active'
+                      : ''
+                  }`}
                 >
-                  <LogOut size={16} />
-                  <span>{t('auth.signOut')}</span>
-                </button>
-              </div>
-              )}
-            </div>
-
+                  {item.icon}
+                  <span className="nav-text-spacing">{item.name}</span>
+                  {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                      {pendingRequests.length}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            {!isMobileMenuOpen && (
-              <button onClick={toggleMobileMenu} className="text-white" aria-label="Open menu">
-                <Menu size={24} />
-              </button>
-            )}
+          {/* Right side: User Profile & Actions */}
+          <div className="flex-shrink-0 flex items-center">
+            <div className="hidden md:flex items-center space-x-4">
+              {/* UserCredits component removed */}
+              <div className="relative group">
+                <button
+                  onClick={() => setIsCursorTrailEnabled(!isCursorTrailEnabled)}
+                  className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+                  aria-label="Toggle cursor trail"
+                >
+                  <Sparkles 
+                    size={20} 
+                    className={isCursorTrailEnabled ? 'text-cyan-400 animate-pulse' : 'text-gray-500'} 
+                  />
+                </button>
+                <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                  {t('profile.toggleCursorTrail')}
+                </div>
+              </div>
+
+              <div className="relative flex items-center space-x-2">
+                <div onClick={() => setProfileModalOpen(true)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
+                    <img
+                      src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user.email || 'user')}
+                      alt={profile?.display_name || 'User'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-sm font-medium">
+                    {profile?.display_name || user.email?.split('@')[0]}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
+                  aria-label="Log out"
+                >
+                  <LogOut size={20} className="text-gray-400 hover:text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden ml-4">
+              {!isMobileMenuOpen && (
+                <button onClick={toggleMobileMenu} className="text-white" aria-label="Open menu">
+                  <Menu size={24} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </header>
