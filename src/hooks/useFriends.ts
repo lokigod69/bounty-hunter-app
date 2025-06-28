@@ -78,6 +78,7 @@ export function useFriends(userId: string | undefined) {
       for (const friendship of data) {
         // Determine which user is the friend
         const friendId = friendship.user1_id === userId ? friendship.user2_id : friendship.user1_id;
+        if (!friendId) continue;
         
         // Get friend's profile
         const { data: profileData, error: profileError } = await supabase
@@ -256,6 +257,9 @@ export function useFriends(userId: string | undefined) {
         .eq('id', friendshipId);
 
       if (error) throw error;
+      if (userId) {
+        await fetchFriendships(userId);
+      }
       return true;
     } catch (error) {
       setError((error as Error).message ?? null);

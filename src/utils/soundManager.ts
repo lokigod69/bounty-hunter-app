@@ -21,6 +21,13 @@ class SoundManager {
       friendRequest: new Audio('/sounds/click7.mp3'), // Send friend request
       acceptContract: new Audio('/sounds/click8.mp3'), // Accept contract
 
+      // Tab navigation sounds
+      click1a: new Audio('/sounds/click1a.mp3'),
+      click1b: new Audio('/sounds/click1b.mp3'),
+      click1c: new Audio('/sounds/click1c.mp3'),
+      click1d: new Audio('/sounds/click1d.mp3'),
+      click1e: new Audio('/sounds/click1e.mp3'),
+
       // Additional specific sounds
       approveProof: new Audio('/sounds/click4.mp3'),     // Approve submitted proof
       saveContract: new Audio('/sounds/click5.mp3'),     // Save contract edits

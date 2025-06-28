@@ -49,8 +49,10 @@ import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'luci
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { soundManager } from '../utils/soundManager';
+import { useUI } from '../context/UIContext';
 
 export default function IssuedPage() {
+  const { isMobileMenuOpen } = useUI();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
@@ -340,8 +342,8 @@ export default function IssuedPage() {
         />
       )}
 
-      {/* Floating Action Button for New Contract */}
-      {!isTaskFormOpen && (
+      {/* Floating Action Button for creating a new contract */}
+      {!isTaskFormOpen && !isMobileMenuOpen && (
         <button
           onClick={() => setIsTaskFormOpen(true)}
           className="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-teal-500 hover:bg-teal-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"

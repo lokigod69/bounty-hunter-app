@@ -1,14 +1,9 @@
 // src/hooks/useDailyQuote.ts
-// Custom hook to manage and cycle through daily quotes using i18next.
-// The hook now pulls translated quotes from the 'quotes' namespace.
+// Custom hook to manage and cycle through daily quotes.
+// The hook now pulls quotes directly from the allQuotes array.
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-
-export interface Quote {
-  text: string;
-  author: string;
-}
+import { allQuotes, Quote } from '../lib/quotes';
 
 const fisherYatesShuffle = <T>(array: T[]): T[] => {
   const newArray = [...array];
@@ -25,51 +20,47 @@ const getTodayDateString = (): string => {
 };
 
 const STORAGE_KEYS = {
-  SHUFFLED_QUOTE_KEYS: 'dailyQuote_shuffledQuoteKeys_v2',
-  CURRENT_INDEX: 'dailyQuote_currentIndex_v2',
-  LAST_DATE: 'dailyQuote_lastDate_v2',
+  SHUFFLED_QUOTES: 'dailyQuote_shuffledQuotes_v3',
+  CURRENT_INDEX: 'dailyQuote_currentIndex_v3',
+  LAST_DATE: 'dailyQuote_lastDate_v3',
 };
 
 export const useDailyQuote = (): Quote | null => {
-  const { t, i18n } = useTranslation('quotes');
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Get all quote keys from the 'quotes' namespace for the current language
-        const allQuoteKeys = Object.keys(i18n.getResourceBundle(i18n.language, 'quotes') || {});
-
-    if (allQuoteKeys.length === 0) return;
+    if (typeof window === 'undefined' || allQuotes.length === 0) return;
 
     const todayStr = getTodayDateString();
     
-    let shuffledKeys: string[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTE_KEYS) || 'null') || [];
+    let shuffledQuotes: Quote[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTES) || 'null') || [];
     let currentIndex: number = parseInt(localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX) || '-1', 10);
     const lastQuoteDate: string | null = localStorage.getItem(STORAGE_KEYS.LAST_DATE);
 
-    if (lastQuoteDate !== todayStr || shuffledKeys.length === 0 || currentIndex === -1) {
-      currentIndex++;
-
-      if (currentIndex >= shuffledKeys.length || shuffledKeys.length === 0) {
-        shuffledKeys = fisherYatesShuffle(allQuoteKeys);
+    if (todayStr !== lastQuoteDate || shuffledQuotes.length === 0) {
+      if (currentIndex >= shuffledQuotes.length - 1 || shuffledQuotes.length === 0) {
+        shuffledQuotes = fisherYatesShuffle(allQuotes);
         currentIndex = 0;
+        localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
+      } else {
+        currentIndex++;
       }
       
-      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTE_KEYS, JSON.stringify(shuffledKeys));
-      localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, currentIndex.toString());
+      localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, String(currentIndex));
       localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
     }
 
-    if (shuffledKeys.length > 0 && currentIndex < shuffledKeys.length) {
-      const currentKey = shuffledKeys[currentIndex];
-      // Use the 't' function to get the translated quote object
-      const quoteObject = t(currentKey, { returnObjects: true }) as Quote;
-      setCurrentQuote(quoteObject);
-
+    if (currentIndex < 0 || currentIndex >= shuffledQuotes.length) {
+      shuffledQuotes = fisherYatesShuffle(allQuotes);
+      currentIndex = 0;
+      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
+      localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, String(currentIndex));
+      localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
     }
+    
+    setCurrentQuote(shuffledQuotes[currentIndex]);
 
-  }, [i18n.language, t, i18n]); // Rerun effect if language changes
+  }, []);
 
   return currentQuote;
 };

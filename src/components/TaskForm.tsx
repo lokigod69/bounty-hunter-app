@@ -1,4 +1,5 @@
 // src/components/TaskForm.tsx
+// DESCRIPTION TEXTAREA FIX: Made the description textarea smaller and auto-resizable.
 // Form for creating new tasks and editing existing ones.
 // Applied galactic theme: .glass-card (inherited), .modal-icon-button, themed labels, themed error messages. Input fields use enhanced .input-field.
 // Fixed TypeScript error for taskPayload.reward_text to ensure it's string | undefined.
@@ -232,9 +233,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               id="description"
               value={description ?? ''}
               onChange={(e) => setDescription(e.target.value)}
-              className="input-field w-full min-h-[60px] resize-none"
+              className="input-field w-full min-h-[40px] resize-none"
               placeholder={t('taskForm.descriptionPlaceholder')}
-              rows={2}
+              rows={1}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';

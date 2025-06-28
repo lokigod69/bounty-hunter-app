@@ -81,7 +81,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
           {/* Form Content (scrollable) */}
           <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
-            <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} />
+            <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
             
             <input
               type="text"

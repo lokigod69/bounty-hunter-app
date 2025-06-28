@@ -19,6 +19,8 @@ import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyS
 import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed from MyCollectedBountiesPage
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import { useAuth } from './hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
+import { UIProvider } from './context/UIContext';
 
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -45,7 +47,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <SessionContextProvider supabaseClient={supabase}>
-      <BrowserRouter>
+      <UIProvider>
+      <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
@@ -63,6 +67,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </UIProvider>
     </SessionContextProvider>
   );
 }

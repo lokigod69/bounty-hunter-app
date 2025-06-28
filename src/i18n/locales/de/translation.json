@@ -197,12 +197,16 @@
     },
     "createModal": {
       "title": "Neues Kopfgeld erstellen",
+        "assignBountyPlaceholder": "Wähle einen Freund, dem du das Kopfgeld zuweisen möchtest",
       "closeButton": "Schließen",
       "bountyNamePlaceholder": "Kopfgeldname (z.B. Logo entwerfen)",
       "descriptionPlaceholder": "Beschreibung",
       "creditCostPlaceholder": "Credit-Kosten",
       "useEmoji": "Emoji verwenden",
-      "useImageUrl": "Bild-URL verwenden"
+      "useImageUrl": "Bild-URL verwenden",
+      "cancelButton": "Abbrechen",
+      "submitButton": "Kopfgeld erstellen",
+      "submittingButton": "Wird erstellt..."
     }
   }
 }

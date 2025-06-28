@@ -30,6 +30,7 @@ import { soundManager as sm } from '../utils/soundManager'; // Added for sound e
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../types/app-specific-types';
 import { useTranslation } from 'react-i18next';
+import HuntersCreed from '../components/HuntersCreed';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -247,7 +248,7 @@ export default function Dashboard() {
           {/* Open/Pending */}
           <div className="text-center flex flex-col items-center">
             <div className="text-red-400 mb-2">
-              <ScrollText size={32} /> {/* Using ScrollText as per previous Dashboard preference */}
+              <ScrollText size={32} />
             </div>
             <div className="text-3xl font-bold text-slate-100">{pendingCount}</div>
             <div className="text-xs text-slate-400">{t('contracts.open')}</div>
@@ -286,10 +287,10 @@ export default function Dashboard() {
             <TaskCard
               key={task.id}
               task={task}
-              isCreatorView={false} // This is "My Contracts" (assigned to me)
+              isCreatorView={false}
               onStatusUpdate={handleStatusUpdate}
               onProofUpload={handleProofUpload}
-              uploadProgress={0} // Pass default value as prop is mandatory
+              uploadProgress={0}
               onDeleteTaskRequest={handleDeleteTaskRequest}
               refetchTasks={refetchAssignedContracts}
             />
@@ -303,21 +304,12 @@ export default function Dashboard() {
             onConfirm={handleConfirmDeleteTask}
             title={t('contracts.confirmDeletion')}
             message={t('contracts.confirmDeletionMessage', { title: taskToDelete.title || t('contracts.thisTask') })}
-            isConfirming={isDeleting} // Ensure this prop matches the modal's expected prop name
+            isConfirming={isDeleting}
           />
         )}
 
-        {/* Hunter's Creed Card */}
-        {dailyQuote && (
-          <div className="mt-8 mb-8 p-6 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-gray-600 transition-all">
-            <div className="flex items-center text-purple-400 mb-2">
-              <ScrollText size={20} className="mr-2" />
-              <h3 className="text-lg font-semibold">{t('contracts.huntersCreed')}</h3>
-            </div>
-            <p className="text-white/80 italic">{dailyQuote.text}</p>
-            {dailyQuote.author && <p className="text-sm text-white/60 mt-1 text-right">- {dailyQuote.author}</p>}
-          </div>
-        )}
+        {/* Hunter's Creed Section */}
+        <HuntersCreed quote={dailyQuote} />
       </div>
     </PullToRefresh>
   );

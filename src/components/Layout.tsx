@@ -1,4 +1,6 @@
 // src/components/Layout.tsx
+// DESKTOP HEADER FIX: Aligned profile and logout buttons horizontally.
+// MOBILE MENU FIX: Added a dedicated, visible close (X) button to the mobile menu.
 // Added 'app-title' class to header text for MandaloreTitle font styling.
 // Removed unused 'Gift' import.
 // Main layout component with navigation, app name changed to 'Bounty Hunter'.
@@ -20,6 +22,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
+import { useUI } from '../context/UIContext';
 import {
   Home,
   Send,
@@ -35,7 +38,7 @@ import logo from '../assets/logo5.png';
 import useClickOutside from '../hooks/useClickOutside';
 import CursorTrail from './CursorTrail'; 
 import UserCredits from './UserCredits'; 
-import { Toaster } from 'react-hot-toast'; 
+
 import ProfileEditModal from './ProfileEditModal';
 
 import { soundManager } from '../utils/soundManager';
@@ -44,9 +47,9 @@ export default function Layout() {
   const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
@@ -56,7 +59,7 @@ export default function Layout() {
 
   // Effect to control body scroll when mobile menu is open
   useEffect(() => {
-    if (mobileMenuOpen) {
+    if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = ''; // Or 'auto'
@@ -65,20 +68,14 @@ export default function Layout() {
     return () => {
       document.body.style.overflow = ''; // Or 'auto'
     };
-  }, [mobileMenuOpen]);
+  }, [isMobileMenuOpen]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
   };
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
 
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
 
   const closeUserMenu = () => setUserMenuOpen(false);
 
@@ -104,11 +101,11 @@ export default function Layout() {
 
   // Navigation items
   const navItems = [
-    { name: t('navigation.contracts'), path: '/', icon: <Home size={20} />, sound: 'click2a' },
-    { name: t('navigation.missions'), path: '/issued', icon: <Send size={20} />, sound: 'click2b' },
-    { name: t('navigation.guildRoster'), path: '/friends', icon: <Users size={20} />, sound: 'click2c' },
-    { name: t('navigation.bounties'), path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click2d' },
-    { name: t('navigation.history'), path: '/archive', icon: <Book size={20} />, sound: 'click2e' },
+    { name: t('navigation.contracts'), path: '/', icon: <Home size={20} />, sound: 'click1a' },
+    { name: t('navigation.missions'), path: '/issued', icon: <Send size={20} />, sound: 'click1b' },
+    { name: t('navigation.guildRoster'), path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
+    { name: t('navigation.bounties'), path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
+    { name: t('navigation.history'), path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
   ];
 
   const navItemsDesktop = navItems;
@@ -122,10 +119,10 @@ export default function Layout() {
 
   return (
     <div className="h-screen flex flex-col bg-indigo-950">
-      <Toaster />
+
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
-      <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled && !mobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
+      <header className={`sticky top-0 z-30 transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
 
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo */}
@@ -185,7 +182,7 @@ export default function Layout() {
 
 
 
-            <div className="relative">
+            <div className="relative flex items-center space-x-2">
               <div onClick={() => setProfileModalOpen(true)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
                   <img
@@ -198,6 +195,13 @@ export default function Layout() {
                   {profile?.display_name || user.email?.split('@')[0]}
                 </span>
               </div>
+              <button
+                onClick={handleSignOut}
+                className="p-2 rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
+                aria-label="Log out"
+              >
+                <LogOut size={20} className="text-gray-400 hover:text-white" />
+              </button>
               {/* Desktop User Dropdown Menu */}
               {userMenuOpen && (
                 <div ref={userMenuRef} className="absolute right-0 mt-1 w-48 glass-card rounded-md shadow-lg py-1">
@@ -216,24 +220,32 @@ export default function Layout() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            onClick={toggleMobileMenu}
-            className="md:hidden p-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden">
+            {!isMobileMenuOpen && (
+              <button onClick={toggleMobileMenu} className="text-white" aria-label="Open menu">
+                <Menu size={24} />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
         <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+          <button
+            onClick={toggleMobileMenu}
+            className="absolute top-3 right-4 text-white p-2 z-50"
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
           <div className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto">
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
                   <>
                     {/* Credits Display - Uses UserCredits component for live updates */}
-                    <div className="px-4 py-3 mb-4 flex justify-center items-center text-xl font-bold text-amber-300">
+                    <div className="px-4 py-3 mb-4 flex justify-center items-center text-6xl font-bold text-amber-300">
                       <UserCredits />
                     </div>
                   </>
