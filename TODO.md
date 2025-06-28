@@ -8,8 +8,8 @@
 - [ ] Add .env.local with placeholder values
 
 ## Phase 2: Supabase Client & Types
-- [ ] Create src/lib/supabase.ts with client initialization
-- [ ] Generate TypeScript types in src/types/database.ts
+- [ ] Create src/lib/supabase.ts with client   initialization
+- [ ] Generate  TypeScript types in src/types/database.ts
 - [ ] Set up auth helpers configuration
 
 ## Phase 3: Authentication Flow
