@@ -1,5 +1,6 @@
 // src/components/CreateBountyModal.tsx
 // A modal form for creating a new bounty and assigning it to a friend.
+// Z-INDEX FIX: Increased close button z-index to ensure it appears above all other UI elements.
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,7 +75,8 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
             <h2 className="text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
-            <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-[1001]" aria-label={t('rewards.createModal.closeButton')}>
+                        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-[10000]" aria-label={t('rewards.createModal.closeButton')}>
+
               <X size={24} />
             </button>
           </div>
