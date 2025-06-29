@@ -68,13 +68,13 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-50 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-[1000] backdrop-blur-sm">
       <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
             <h2 className="text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white" aria-label={t('rewards.createModal.closeButton')}>
+            <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-[1001]" aria-label={t('rewards.createModal.closeButton')}>
               <X size={24} />
             </button>
           </div>

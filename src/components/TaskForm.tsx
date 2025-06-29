@@ -182,7 +182,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 pt-16 px-4 pb-4 overflow-hidden touch-none"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000] pt-16 px-4 pb-4 overflow-hidden touch-none"
       onClick={(e) => { // Click outside to dismiss
         if (e.target === e.currentTarget) {
           onClose();
@@ -192,7 +192,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       {/* Close button - moved to overlay for fixed positioning */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-gray-300 z-[51] p-1.5 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors"
+        className="absolute top-4 right-4 text-white hover:text-gray-300 z-[1001] p-1.5 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors"
         aria-label={t('taskForm.closeButton')}
       >
         <X size={24} />

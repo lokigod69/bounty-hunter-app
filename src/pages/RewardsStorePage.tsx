@@ -128,7 +128,7 @@ const RewardsStorePage: React.FC = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-bold app-title">{t('rewards.title', 'Bounties')}</h1>
+            <h1 className="text-4xl font-bold app-title text-center">{t('rewards.title', 'Bounties')}</h1>
 
       {/* Tabs */}
       <div className="mb-8 flex justify-center border-b border-gray-700">
