@@ -153,6 +153,7 @@ const RewardsStorePage: React.FC = () => {
         onSuccess={() => {
           setCreateModalOpen(false);
           fetchRewards();
+          setActiveTab('created'); // Switch to the 'My Bounties' tab
         }}
       />
 

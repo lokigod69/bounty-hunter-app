@@ -68,7 +68,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-[1000] backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-[9999] backdrop-blur-sm">
       <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
