@@ -18,7 +18,6 @@
 // Added 'Rewards' placeholder navigation link.
 // Renamed 'Dashboard' navigation label to 'Contracts'.
 // STATE SYNC FIX: Added navigation-based mobile menu closure to prevent modal conflicts.
-// COMPLETE MODAL SYSTEM: Header isolation, global modal state integration, and bulletproof UI coordination.
 
 import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -50,7 +49,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, isAnyModalOpen } = useUI();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
@@ -79,20 +78,6 @@ export default function Layout() {
       forceCloseMobileMenu();
     }
   }, [location.pathname, isMobileMenuOpen, forceCloseMobileMenu]);
-
-  // Apply modal-active class for header isolation
-  useEffect(() => {
-    if (isAnyModalOpen) {
-      document.body.classList.add('modal-active');
-    } else {
-      document.body.classList.remove('modal-active');
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      document.body.classList.remove('modal-active');
-    };
-  }, [isAnyModalOpen]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -230,7 +215,7 @@ export default function Layout() {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden ml-4">
-              {!isMobileMenuOpen && !isAnyModalOpen && (
+              {!isMobileMenuOpen && (
                 <button onClick={toggleMobileMenu} className="text-white" aria-label="Open menu">
                   <Menu size={24} />
                 </button>
