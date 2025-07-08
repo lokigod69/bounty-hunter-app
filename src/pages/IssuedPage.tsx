@@ -53,7 +53,7 @@ import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 
 export default function IssuedPage() {
-  const { isMobileMenuOpen, closeMobileMenu } = useUI();
+  const { isMobileMenuOpen, closeMobileMenu, forceCloseMobileMenu } = useUI();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
@@ -291,10 +291,15 @@ export default function IssuedPage() {
   const handleCreateNewContract = () => {
     // If mobile menu is open, close it first
     if (isMobileMenuOpen) {
-      closeMobileMenu();
+      forceCloseMobileMenu();
+      // Add a small delay to ensure state propagation before opening modal
+      setTimeout(() => {
+        setIsTaskFormOpen(true);
+      }, 50); // 50ms is enough for React state update
+    } else {
+      // Mobile menu is already closed, open modal immediately
+      setIsTaskFormOpen(true);
     }
-    // Open the TaskForm modal
-    setIsTaskFormOpen(true);
   };
 
   if (loading) {

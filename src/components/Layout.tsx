@@ -17,6 +17,7 @@
 // Added 'Issued' navigation link. Updated 'NEW CONTRACT' button to point to '/issued'.
 // Added 'Rewards' placeholder navigation link.
 // Renamed 'Dashboard' navigation label to 'Contracts'.
+// STATE SYNC FIX: Added navigation-based mobile menu closure to prevent modal conflicts.
 
 import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -48,7 +49,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUI();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
@@ -70,6 +71,13 @@ export default function Layout() {
       document.body.style.overflow = ''; // Or 'auto'
     };
   }, [isMobileMenuOpen]);
+
+  // Force mobile menu closure on navigation to prevent state sync issues
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      forceCloseMobileMenu();
+    }
+  }, [location.pathname, isMobileMenuOpen, forceCloseMobileMenu]);
 
   const handleSignOut = async () => {
     await signOut();

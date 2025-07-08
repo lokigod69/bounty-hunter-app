@@ -1,5 +1,6 @@
 // src/context/UIContext.tsx
 // This file defines a React context for managing global UI state, such as the mobile menu visibility.
+// Enhanced with state synchronization utilities to handle navigation and modal conflicts.
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
@@ -8,6 +9,7 @@ interface UIContextType {
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
   closeMobileMenu: () => void;
+  forceCloseMobileMenu: () => void; // Immediate force close for critical scenarios
 }
 
 // Create the context with an undefined initial value
@@ -27,7 +29,14 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setMobileMenuOpen(false);
   };
 
-  const value = { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu };
+  // Function to force immediate close for critical scenarios (navigation, modal conflicts)
+  const forceCloseMobileMenu = () => {
+    setMobileMenuOpen(false);
+    // Force a re-render to ensure immediate state update
+    setTimeout(() => setMobileMenuOpen(false), 0);
+  };
+
+  const value = { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu };
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 };
