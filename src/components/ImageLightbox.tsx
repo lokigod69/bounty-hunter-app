@@ -1,7 +1,6 @@
 // src/components/ImageLightbox.tsx
-// Component to display an image in a lightbox overlay.
-// URGENT FIX: Restructured for maximum z-index (z-[99999] for container, z-[99998] for backdrop, z-[100000] for content)
-// to ensure it appears on top of all other elements. Content is centered and closable.
+// URGENT FIX: Restructured for maximum z-index (critical overlay layer for container, backdrop, and content)
+// PHASE 2 FIX: Updated to use new z-index hierarchy system with critical overlay layer.
 
 import { X } from 'lucide-react';
 
@@ -22,23 +21,20 @@ export default function ImageLightbox({ src, alt, onClose }: ImageLightboxProps)
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4" // Main container with highest z-index context
-      // onClick for the main container is removed, will be on backdrop
+      className="fixed inset-0 z-critical-overlay flex items-center justify-center p-4" // Main container with critical overlay z-index
+      onClick={onClose}
     >
       {/* Backdrop with slightly lower z-index, handles close on click */}
       <div 
-        className="absolute inset-0 bg-black/80 z-[99998] backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80 z-critical-overlay backdrop-blur-sm"
         onClick={onClose}
       />
       {/* Content wrapper with highest z-index within this modal context */}
-      <div
-        className="relative z-[100000] max-w-full max-h-full bg-white dark:bg-neutral-800 p-2 rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()} // Prevent click from bubbling to overlay
-      >
+      <div className="relative z-critical-content max-w-full max-h-full bg-white dark:bg-neutral-800 p-2 rounded-lg shadow-xl">
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 z-10 p-1 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
-          aria-label="Close image lightbox"
+          className="absolute -top-3 -right-3 z-critical-controls p-1 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
+          aria-label="Close image"
         >
           <X size={20} />
         </button>

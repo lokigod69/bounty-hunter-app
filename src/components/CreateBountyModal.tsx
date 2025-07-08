@@ -1,13 +1,16 @@
 // src/components/CreateBountyModal.tsx
 // A modal form for creating a new bounty and assigning it to a friend.
 // Z-INDEX FIX: Increased close button z-index to ensure it appears above all other UI elements.
+// PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
+// PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import FriendSelector from './FriendSelector';
 import EmojiPicker from './EmojiPicker';
 import { X } from 'lucide-react';
 import { useCreateBounty } from '../hooks/useCreateBounty';
+import { useUI } from '../context/UIContext';
 
 interface CreateBountyModalProps {
   isOpen: boolean;
@@ -18,6 +21,7 @@ interface CreateBountyModalProps {
 const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { createBounty, isLoading } = useCreateBounty();
+  const { isMobileMenuOpen, closeMobileMenu } = useUI();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>('');
@@ -66,23 +70,31 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      // Ensure mobile menu is closed when modal opens
+      if (isMobileMenuOpen) {
+        closeMobileMenu();
+      }
+    }
+  }, [isOpen, isMobileMenuOpen, closeMobileMenu]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-[9999] backdrop-blur-sm">
-      <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-2 sm:p-4 z-modal-backdrop backdrop-blur-sm">
+      <div className="bg-gray-900 w-full h-[98vh] sm:h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content mx-1 sm:mx-0">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
-            <h2 className="text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
-                        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-[10000]" aria-label={t('rewards.createModal.closeButton')}>
-
-              <X size={24} />
+          {/* Header with enhanced mobile spacing */}
+          <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
+            <h2 className="text-lg sm:text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
+              <X size={20} />
             </button>
           </div>
 
-          {/* Form Content (scrollable) */}
-          <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
+          {/* Form Content (scrollable) with enhanced mobile spacing */}
+          <div className="flex-grow overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
             
             <input
@@ -141,12 +153,12 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex justify-end space-x-4 flex-shrink-0">
-            <button type="button" onClick={onClose} className="px-6 py-3 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold">
+          {/* Footer with enhanced mobile button layout */}
+          <div className="p-3 sm:p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold min-h-[48px] sm:min-h-[auto] text-base sm:text-sm">
               {t('rewards.createModal.cancelButton')}
             </button>
-            <button type="submit" className="px-6 py-3 rounded-lg text-black bg-teal-400 hover:bg-teal-500 font-bold transition disabled:bg-gray-500 disabled:cursor-not-allowed" disabled={isLoading}>
+            <button type="submit" className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg text-black bg-teal-400 hover:bg-teal-500 font-bold transition disabled:bg-gray-500 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[auto] text-base sm:text-sm" disabled={isLoading}>
               {isLoading ? t('rewards.createModal.submittingButton') : t('rewards.createModal.submitButton')}
             </button>
           </div>

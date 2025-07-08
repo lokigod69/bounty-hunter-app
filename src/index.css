@@ -1371,6 +1371,82 @@ body {
   transform-style: preserve-3d; /* Important for 3D-like spin */
 }
 
+/* Enhanced mobile responsiveness and touch targets */
+/* PHASE 3 FIX: Mobile-first responsive improvements for better touch interaction */
+
+/* Enhanced input field responsiveness */
+.input-field {
+  @apply min-h-[44px] sm:min-h-[40px]; /* Larger touch targets on mobile */
+  @apply text-base sm:text-sm; /* Prevent zoom on iOS */
+  @apply px-3 sm:px-4 py-3 sm:py-2;
+}
+
+/* Mobile-optimized button heights */
+.btn-primary, .btn-secondary {
+  @apply min-h-[48px] sm:min-h-[40px];
+  @apply text-base sm:text-sm;
+  @apply py-3 sm:py-2;
+}
+
+/* Enhanced mobile modal animations */
+@keyframes modal-slide-up-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-fade-in-mobile {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile-specific modal classes */
+@media (max-width: 640px) {
+  .modal-mobile-slide {
+    animation: modal-slide-up-mobile 0.3s ease-out;
+  }
+  
+  .modal-mobile-fade {
+    animation: modal-fade-in-mobile 0.2s ease-out;
+  }
+  
+  /* Enhanced touch targets for mobile */
+  .touch-target {
+    @apply min-w-[44px] min-h-[44px];
+  }
+  
+  /* Better mobile spacing */
+  .mobile-spacing {
+    @apply p-3 space-y-3;
+  }
+  
+  .mobile-spacing-sm {
+    @apply p-2 space-y-2;
+  }
+}
+
+/* Improved mobile scrolling */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 767px) {
   /* Hide desktop headers and laser box */
   .desktop-header-section {
@@ -1481,3 +1557,50 @@ body {
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-300;
 }
+
+/* Enhanced z-index hierarchy system */
+/* PHASE 2 FIX: Bulletproof z-index hierarchy to prevent all layering conflicts */
+
+:root {
+  /* Z-Index Hierarchy System */
+  --z-background: 0;
+  --z-content: 10;
+  --z-elevated: 20;
+  
+  /* Navigation Layer: 30-39 */
+  --z-header: 30;
+  --z-mobile-menu: 35;
+  
+  /* UI Controls Layer: 40-99 */
+  --z-mobile-menu-close: 45;
+  --z-fab: 50;
+  --z-dropdown: 55;
+  --z-tooltip: 60;
+  
+  /* Modal System: 9000+ */
+  --z-modal-backdrop: 9000;
+  --z-modal-content: 9100;
+  --z-modal-controls: 9200;
+  
+  /* Critical Overlays: 99000+ */
+  --z-critical-overlay: 99000;
+  --z-critical-content: 99100;
+  --z-critical-controls: 99200;
+}
+
+/* Z-Index utility classes for consistent usage */
+.z-background { z-index: var(--z-background); }
+.z-content { z-index: var(--z-content); }
+.z-elevated { z-index: var(--z-elevated); }
+.z-header { z-index: var(--z-header); }
+.z-mobile-menu { z-index: var(--z-mobile-menu); }
+.z-mobile-menu-close { z-index: var(--z-mobile-menu-close); }
+.z-fab { z-index: var(--z-fab); }
+.z-dropdown { z-index: var(--z-dropdown); }
+.z-tooltip { z-index: var(--z-tooltip); }
+.z-modal-backdrop { z-index: var(--z-modal-backdrop); }
+.z-modal-content { z-index: var(--z-modal-content); }
+.z-modal-controls { z-index: var(--z-modal-controls); }
+.z-critical-overlay { z-index: var(--z-critical-overlay); }
+.z-critical-content { z-index: var(--z-critical-content); }
+.z-critical-controls { z-index: var(--z-critical-controls); }

@@ -16,6 +16,7 @@
 // - Implemented Approve/Reject logic for contracts in review, including credit rewards.
 // - Reordered summary cards: Total Issued (red icon, left), Pending/In Review (middle), Completed (right).
 // - Redesigned summary cards to a minimalist icon-based flex layout.
+// PHASE 1 FIX: Enhanced state coordination between TaskForm modal and mobile menu to prevent UI conflicts.
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -52,7 +53,7 @@ import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 
 export default function IssuedPage() {
-  const { isMobileMenuOpen } = useUI();
+  const { isMobileMenuOpen, closeMobileMenu } = useUI();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
@@ -286,6 +287,16 @@ export default function IssuedPage() {
     }
   };
 
+  // Enhanced FAB click handler with mobile menu state coordination
+  const handleCreateNewContract = () => {
+    // If mobile menu is open, close it first
+    if (isMobileMenuOpen) {
+      closeMobileMenu();
+    }
+    // Open the TaskForm modal
+    setIsTaskFormOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
@@ -342,15 +353,16 @@ export default function IssuedPage() {
         />
       )}
 
-      {/* Floating Action Button for creating a new contract */}
+      {/* Enhanced Floating Action Button with improved mobile positioning */}
       {!isTaskFormOpen && !isMobileMenuOpen && (
         <button
-          onClick={() => setIsTaskFormOpen(true)}
-          className="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-teal-500 hover:bg-teal-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+          onClick={handleCreateNewContract}
+          className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
           aria-label={t('contracts.createNewMission')}
           title={t('contracts.createNewMission')}
         >
-          <PlusCircle size={24} className="md:hidden" />
+          <PlusCircle size={28} className="sm:hidden" />
+          <PlusCircle size={24} className="hidden sm:block md:hidden" />
           <PlusCircle size={28} className="hidden md:block" />
         </button>
       )}

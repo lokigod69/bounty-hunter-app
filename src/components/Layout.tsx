@@ -123,7 +123,7 @@ export default function Layout() {
 
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
-      <header className={`sticky top-0 z-30 transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
+      <header className={`sticky top-0 z-header transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
 
         <div className="container mx-auto px-4 py-3 flex items-center">
           {/* Left side: Logo and Nav */}
@@ -177,7 +177,7 @@ export default function Layout() {
                     className={isCursorTrailEnabled ? 'text-cyan-400 animate-pulse' : 'text-gray-500'} 
                   />
                 </button>
-                <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-tooltip">
                   {t('profile.toggleCursorTrail')}
                 </div>
               </div>
@@ -219,10 +219,10 @@ export default function Layout() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden glass-card fixed inset-0 z-40 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+        <div className="md:hidden glass-card fixed inset-0 z-mobile-menu pt-16 bg-indigo-950/95 backdrop-blur-lg">
           <button
             onClick={toggleMobileMenu}
-            className="absolute top-3 right-4 text-white p-2 z-50"
+            className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
             aria-label="Close menu"
           >
             <X size={24} />

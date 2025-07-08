@@ -45,7 +45,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} title="Close" className="absolute top-3 right-3 text-slate-400 hover:text-white">
           <X size={24} />

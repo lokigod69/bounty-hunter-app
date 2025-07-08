@@ -69,7 +69,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-dropdown w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {acceptedFriends.length > 0 ? (
             <ul tabIndex={-1} role="listbox" aria-label="Friends">
               {acceptedFriends.map(({ friend }) => {

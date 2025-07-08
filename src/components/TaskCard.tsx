@@ -228,7 +228,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {tooltipContent && createPortal(
         <div
           style={{ top: `${tooltipPosition.top}px`, left: `${tooltipPosition.left}px` }}
-          className="fixed z-[9999] px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-lg transition-opacity duration-300 -translate-y-full -translate-x-1/2 pointer-events-none"
+          className="fixed z-tooltip px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-lg transition-opacity duration-300 -translate-y-full -translate-x-1/2 pointer-events-none"
         >
           {tooltipContent}
           <div
@@ -264,10 +264,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
       </div>
 
       {isExpanded && createPortal(
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}>
+        <div className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
           <div
-            className={`relative z-[51] w-[95vw] sm:w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col ${isAnimatingOut ? 'modal-slide-down' : 'modal-slide-up'} ${modalBgColor}`}
+            className={`relative z-modal-content w-[95vw] sm:w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col ${isAnimatingOut ? 'modal-slide-down' : 'modal-slide-up'} ${modalBgColor}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 pb-4 border-b border-slate-600/50 flex-shrink-0 text-center">
@@ -331,7 +331,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <span className="font-semibold">SUBMITTED PROOF</span>
                   </div>
                   <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {renderProofLink(task.proof_url, 'proof-link')}
+                    {task.proof_url && renderProofLink(task.proof_url, 'proof-link')}
                   </div>
                 </div>
               )}
@@ -343,7 +343,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <span className="font-semibold">PROOF FOR REVIEW</span>
                   </div>
                   <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {renderProofLink(task.proof_url, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20', true)}
+                    {task.proof_url && renderProofLink(task.proof_url, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20', true)}
                   </div>
                 </div>
               )}
@@ -364,7 +364,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 <button onClick={handleClose} className="btn-secondary py-2 px-8 text-md">Close</button>
                 {isCreatorView && !isArchived && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onDeleteTaskRequest(id); }}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleClose(); // Close the TaskCard modal first
+                      onDeleteTaskRequest(id); 
+                    }}
                     className="p-2 rounded-full hover:bg-red-500/20 transition-colors duration-200"
                     disabled={actionLoading}
                     title="Delete Task"

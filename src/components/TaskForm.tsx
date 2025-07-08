@@ -11,6 +11,8 @@
 // Phase 10 (Issued Page Refresh): Added isSubmitting state for loading indicator on submit button.
 // Styling Update: Applied requested styling to credit dropdown, including bg-gray-800 for options (browser compatibility may vary).
 // Z-INDEX FIX: Increased modal z-index to ensure it appears above all other UI elements.
+// PHASE 1 FIX: Enhanced mobile menu coordination and improved modal behavior to prevent UI conflicts.
+// PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized positioning logic.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +20,7 @@ import { X, Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
 import { soundManager } from '../utils/soundManager';
+import { useUI } from '../context/UIContext';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -52,7 +55,14 @@ interface TaskFormProps {
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   const { t } = useTranslation();
+  const { isMobileMenuOpen, closeMobileMenu } = useUI();
+  
   useEffect(() => {
+    // Ensure mobile menu is closed when TaskForm opens
+    if (isMobileMenuOpen) {
+      closeMobileMenu();
+    }
+    
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
@@ -183,31 +193,31 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
       onClick={(e) => { // Click outside to dismiss
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      {/* Close button - moved to overlay for fixed positioning */}
+      {/* Enhanced responsive close button with better touch targets */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-gray-300 z-[10000] p-1.5 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors"
+        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label={t('taskForm.closeButton')}
       >
-        <X size={24} />
+        <X size={20} />
       </button>
 
       <div 
-        className="glass-card w-full max-w-md p-6 relative animate-fade-in overflow-y-auto max-h-[85vh]"
+        className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative animate-fade-in overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-mobile-fade sm:modal-fade-in"
         onClick={(e) => e.stopPropagation()} // Prevent clicks on modal content from closing modal
       >
         {/* Original close button removed from here */}
         
-        <h2 className="text-xl font-semibold mb-5 gradient-text">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           {/* Task Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
@@ -354,23 +364,24 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             </div>
           )}
 
-          {/* Proof Required Checkbox */}
-          <div className="flex items-center">
+          {/* Proof Required Checkbox with enhanced mobile touch targets */}
+          <div className="flex items-center py-2">
             <input
               id="proofRequired"
               type="checkbox"
               checked={proofRequired}
               onChange={(e) => setProofRequired(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
+              className="h-5 w-5 sm:h-4 sm:w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-3 sm:mr-2"
             />
-            <label htmlFor="proofRequired" className="text-sm text-[var(--text-secondary)]">
+            <label htmlFor="proofRequired" className="text-sm sm:text-sm text-[var(--text-secondary)] cursor-pointer flex-1">
               {t('taskForm.proofRequiredLabel')}
             </label>
           </div>
-          {/* Submit Button */}
+          
+          {/* Enhanced mobile-friendly submit button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 sm:py-2.5 px-4 rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4 sm:mt-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto]"
             disabled={isSubmitting}
           >
             {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract'))}

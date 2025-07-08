@@ -208,7 +208,7 @@ export default function Friends() {
           
           {/* Dropdown Results */}
           {showDropdown && (
-            <div className="absolute z-20 w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+            <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
               {searchResults.map((userResult) => (
                 <button
                   key={userResult.id}
