@@ -3,6 +3,7 @@
 // Z-INDEX FIX: Increased close button z-index to ensure it appears above all other UI elements.
 // PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
+// COMPLETE MODAL SYSTEM: Implements bulletproof modal management with global state tracking, header isolation, and enhanced positioning safety.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +22,7 @@ interface CreateBountyModalProps {
 const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { createBounty, isLoading } = useCreateBounty();
-  const { isMobileMenuOpen, closeMobileMenu } = useUI();
+  const { isMobileMenuOpen, forceCloseMobileMenu, registerModal, unregisterModal } = useUI();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>('');
@@ -72,23 +73,33 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
   useEffect(() => {
     if (isOpen) {
+      // Register this modal as open
+      registerModal('createBounty');
       // Ensure mobile menu is closed when modal opens
       if (isMobileMenuOpen) {
-        closeMobileMenu();
+        forceCloseMobileMenu();
       }
+    } else {
+      // Unregister this modal when closed
+      unregisterModal('createBounty');
     }
-  }, [isOpen, isMobileMenuOpen, closeMobileMenu]);
+    
+    // Cleanup on unmount
+    return () => {
+      unregisterModal('createBounty');
+    };
+  }, [isOpen, isMobileMenuOpen, forceCloseMobileMenu, registerModal, unregisterModal]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-2 sm:p-4 z-modal-backdrop backdrop-blur-sm">
-      <div className="bg-gray-900 w-full h-[98vh] sm:h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content mx-1 sm:mx-0">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-2 sm:p-4 modal-backdrop-bulletproof backdrop-blur-sm">
+      <div className="bg-gray-900 w-full h-[98vh] sm:h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col modal-content-bulletproof mx-1 sm:mx-0">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header with enhanced mobile spacing */}
           <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
             <h2 className="text-lg sm:text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition modal-controls-bulletproof p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
               <X size={20} />
             </button>
           </div>

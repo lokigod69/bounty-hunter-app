@@ -1604,3 +1604,37 @@ body {
 .z-critical-overlay { z-index: var(--z-critical-overlay); }
 .z-critical-content { z-index: var(--z-critical-content); }
 .z-critical-controls { z-index: var(--z-critical-controls); }
+
+/* ===========================================
+   Modal System Enhancements
+   =========================================== */
+
+/* Header isolation to prevent modal interference */
+.modal-active header {
+  z-index: calc(var(--z-modal-backdrop) - 1000) !important; /* Force header below modals */
+}
+
+/* Bulletproof modal positioning */
+.modal-backdrop-bulletproof {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: var(--z-modal-backdrop) !important;
+  pointer-events: auto !important;
+}
+
+/* Enhanced modal content positioning */
+.modal-content-bulletproof {
+  position: relative !important;
+  z-index: var(--z-modal-content) !important;
+  transform: none !important; /* Prevent transform context issues */
+}
+
+/* Critical modal controls (close buttons) */
+.modal-controls-bulletproof {
+  position: relative !important;
+  z-index: var(--z-modal-controls) !important;
+  transform: none !important;
+}
