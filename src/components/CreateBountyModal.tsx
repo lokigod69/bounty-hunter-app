@@ -3,7 +3,7 @@
 // Z-INDEX FIX: Increased close button z-index to ensure it appears above all other UI elements.
 // PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
-// PORTAL FIX: Uses createPortal to escape stacking context imprisonment and ensure proper close button positioning.
+// PORTAL ESCAPE FIX: Uses createPortal to render in document.body, escaping stacking context conflicts with header.
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
