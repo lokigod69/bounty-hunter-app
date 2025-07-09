@@ -72,10 +72,12 @@ export default function Layout() {
     };
   }, [isMobileMenuOpen]);
 
-  // Force mobile menu closure on navigation to prevent state sync issues
+  // Track previous pathname to only close menu on actual navigation
+  const previousPathname = useRef(location.pathname);
   useEffect(() => {
-    if (isMobileMenuOpen) {
+    if (previousPathname.current !== location.pathname && isMobileMenuOpen) {
       forceCloseMobileMenu();
+      previousPathname.current = location.pathname;
     }
   }, [location.pathname, isMobileMenuOpen, forceCloseMobileMenu]);
 

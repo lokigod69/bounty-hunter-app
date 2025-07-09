@@ -53,7 +53,7 @@ import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 
 export default function IssuedPage() {
-  const { isMobileMenuOpen, closeMobileMenu, forceCloseMobileMenu } = useUI();
+  const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook

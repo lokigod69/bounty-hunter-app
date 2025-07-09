@@ -55,14 +55,17 @@ interface TaskFormProps {
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   const { t } = useTranslation();
-  const { isMobileMenuOpen, closeMobileMenu } = useUI();
+  const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
   
+  // Separate effects for mobile menu and body scroll to avoid dependency issues
   useEffect(() => {
     // Ensure mobile menu is closed when TaskForm opens
     if (isMobileMenuOpen) {
-      closeMobileMenu();
+      forceCloseMobileMenu();
     }
-    
+  }, [isMobileMenuOpen, forceCloseMobileMenu]);
+
+  useEffect(() => {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
@@ -71,7 +74,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, []); // Empty dependency array ensures this runs only on mount and unmount
+  }, []); // Body scroll management runs once on mount/unmount
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state

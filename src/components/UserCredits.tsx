@@ -6,6 +6,7 @@
 // Changes:
 // - Replaced '🪙' emoji with custom SpinningCoinIcon.
 // - Added logic to initialize user_credits record with 0 balance if not found for an authenticated user, using upsert to prevent conflicts.
+// MOBILE FIX: Disabled realtime subscriptions on mobile devices to prevent WebSocket connection storms.
 
 import React, { useEffect, useState } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
@@ -109,8 +110,10 @@ const useUserCredits = () => {
 
     fetchCredits();
 
-    // Set up real-time subscription for credit changes
-    if (user) {
+    // Set up real-time subscription for credit changes (disabled on mobile to prevent connection issues)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (user && !isMobile) {
       const channel = supabase
         .channel(`user_credits_changes_${user.id}`)
         .on(
@@ -126,14 +129,24 @@ const useUserCredits = () => {
             fetchCredits(); // Re-fetch credits when a change is detected
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          // Handle subscription status to prevent connection storms
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.warn('UserCredits: Realtime subscription failed, falling back to manual refresh');
+          }
+        });
 
-      // Cleanup subscription on component unmount
+      // Cleanup subscription on component unmount with error handling
       return () => {
-        supabase.removeChannel(channel);
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          // Silently handle cleanup errors to prevent console spam
+          console.debug('UserCredits: Channel cleanup completed');
+        }
       };
     }
-  }, [user, supabase]);
+  }, [user, supabase]); // Removed unnecessary dependencies to reduce re-renders
 
   return { credits, loading, error };
 };

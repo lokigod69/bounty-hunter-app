@@ -32,8 +32,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Function to force immediate close for critical scenarios (navigation, modal conflicts)
   const forceCloseMobileMenu = () => {
     setMobileMenuOpen(false);
-    // Force a re-render to ensure immediate state update
-    setTimeout(() => setMobileMenuOpen(false), 0);
   };
 
   const value = { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu };
