@@ -7,18 +7,25 @@
 // UI REFINEMENT: Consolidated status display at the bottom of the expanded card modal.
 // DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 
-type TaskStatus = string;
 import { Archive, CheckCircle, CircleDollarSign, Clock, Eye, FileText, Link, Trash2, XCircle, User } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
+import { IssuedContract } from '../hooks/useIssuedContracts';
+import { useTasks } from '../hooks/useTasks';
 import { supabase } from '../lib/supabase';
+import { createPortal } from 'react-dom';
+import { useSwipeable } from 'react-swipeable';
+import { getErrorMessage } from '../utils/getErrorMessage';
+import { soundManager } from '../utils/soundManager';
+import { TaskStatus } from '../types/custom';
+import { useRewardShimmerDuration } from '../hooks/useShimmerDuration';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
-import { createPortal } from 'react-dom';
-import { useSwipeable } from 'react-swipeable';
 
 interface TaskCardProps {
   refetchTasks?: () => void;
@@ -67,6 +74,22 @@ const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> 
   );
 };
 
+const RewardTextWithShimmer: React.FC<{ rewardText: string | null }> = ({ rewardText }) => {
+  const shimmerText = rewardText || 'Reward';
+  const { shimmerStyle, setElementRef } = useRewardShimmerDuration(shimmerText);
+  
+  return (
+    <span 
+      ref={setElementRef}
+      className="animate-shimmer-premium bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent"
+      style={shimmerStyle}
+      title={shimmerText}
+    >
+      {shimmerText}
+    </span>
+  );
+};
+
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   isCreatorView,
@@ -85,6 +108,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [viewingProof, setViewingProof] = useState(false);
+
+  const { t } = useTranslation();
 
   const [tooltipContent, setTooltipContent] = useState<React.ReactNode>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -125,8 +151,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   const { id, title, description, assigned_to, deadline, reward_type, reward_text, status, proof_required, creator, assignee } = task;
 
-  const actorName = isCreatorView ? (assignee?.display_name || 'N/A') : (creator?.display_name || 'N/A');
-  const fromName = creator?.display_name || 'Unknown';
+  const actorName: string = isCreatorView ? (assignee?.display_name ?? 'N/A') : (creator?.display_name ?? 'N/A');
+  const fromName: string = creator?.display_name ?? 'Unknown';
 
   const handleArchive = async () => {
     if (task.status !== 'completed' || task.is_archived) return;
@@ -156,12 +182,67 @@ const TaskCard: React.FC<TaskCardProps> = ({
   });
 
   const handleAction = async (newStatus: TaskStatus) => {
+    console.log('[TaskCard] handleAction called:', { 
+      taskId: id, 
+      currentStatus: status, 
+      newStatus,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    });
+    
     setActionLoading(true);
+    
+    // Android-specific optimizations
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isAndroid = userAgent.includes('android');
+    
     try {
       const rewardAmount = reward_type === 'credit' && reward_text ? parseInt(reward_text, 10) : undefined;
+      
+      // Enhanced logging for debugging
+      console.log('[TaskCard] About to call onStatusUpdate:', {
+        taskId: id,
+        newStatus,
+        currentUserCredits,
+        rewardAmount,
+        isAndroid
+      });
+      
       await onStatusUpdate(id, newStatus, currentUserCredits, rewardAmount);
+      
+      console.log('[TaskCard] onStatusUpdate completed successfully');
+      
+      // Android-specific success feedback
+      if (isAndroid && 'vibrate' in navigator) {
+        navigator.vibrate(newStatus === 'completed' ? [100, 50, 100] : 50);
+      }
+      
     } catch (e) {
-      console.error("Action failed", e);
+      console.error('[TaskCard] Action failed:', e);
+      
+      // Enhanced error handling for Android
+      if (isAndroid) {
+        let errorMessage = 'Failed to update task';
+        if (e instanceof Error) {
+          errorMessage = e.message;
+        }
+        
+        // Android-specific error suggestions
+        if (errorMessage.includes('network')) {
+          errorMessage += '. Try switching between WiFi and mobile data.';
+        } else if (errorMessage.includes('permission')) {
+          errorMessage += '. Please check your permissions and try again.';
+        }
+        
+        console.error('[TaskCard] Android-specific error:', errorMessage);
+        
+        // Error haptic feedback
+        if ('vibrate' in navigator) {
+          navigator.vibrate(200);
+        }
+      }
+      
+      throw e; // Re-throw to maintain existing error handling
     } finally {
       setActionLoading(false);
     }
@@ -175,6 +256,80 @@ const TaskCard: React.FC<TaskCardProps> = ({
       </a>
     );
   };
+
+  const handleViewProof = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('[TaskCard] View proof clicked for task:', task.id);
+    
+    if (!task.proof_url) {
+      console.error('[TaskCard] No proof URL available for task:', task.id);
+      toast.error(t('errorViewing'), { duration: 4000 });
+      return;
+    }
+
+    try {
+      setViewingProof(true);
+      
+      // Enhanced proof URL validation
+      const proofUrl = task.proof_url!; // Non-null assertion since we checked above
+      
+      // Validate URL format
+      try {
+        const url = new URL(proofUrl);
+        if (!url.protocol.startsWith('http')) {
+          throw new Error('Invalid URL protocol');
+        }
+        
+        // Log for debugging
+        console.log('[TaskCard] Opening proof URL:', proofUrl);
+        
+        // Try to fetch the URL to verify it's accessible
+        const response = await fetch(proofUrl, { method: 'HEAD' });
+        if (!response.ok) {
+          throw new Error(`Proof file not accessible: ${response.status} ${response.statusText}`);
+        }
+        
+        // Open in new tab/window
+        window.open(proofUrl, '_blank', 'noopener,noreferrer');
+        
+        // Play success sound
+        soundManager.play('click1');
+        
+      } catch (urlError) {
+        console.error('[TaskCard] Invalid or inaccessible proof URL:', proofUrl, urlError);
+        
+        // Try fallback - reconstruct URL if it looks like a path
+        if (!proofUrl.startsWith('http')) {
+          console.log('[TaskCard] Attempting to reconstruct proof URL from path:', proofUrl);
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const fallbackUrl = `${supabaseUrl}/storage/v1/object/public/bounty-proofs/${proofUrl}`;
+          
+          try {
+            const fallbackResponse = await fetch(fallbackUrl, { method: 'HEAD' });
+            if (fallbackResponse.ok) {
+              console.log('[TaskCard] Fallback URL successful:', fallbackUrl);
+              window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+              soundManager.play('click1');
+            } else {
+              throw new Error('Fallback URL also failed');
+            }
+          } catch (fallbackError) {
+            console.error('[TaskCard] Fallback URL also failed:', fallbackError);
+            toast.error(t('errorViewing') + ' - Proof file not found', { duration: 6000 });
+          }
+        } else {
+          toast.error(t('errorViewing') + ' - Proof file not accessible', { duration: 6000 });
+        }
+      }
+      
+    } catch (error) {
+      console.error('[TaskCard] Error viewing proof:', error);
+      const errorMessage = getErrorMessage(error, 'proof-viewing');
+      toast.error(errorMessage, { duration: 6000 });
+    } finally {
+      setViewingProof(false);
+    }
+  }, [task.id, task.proof_url, t]);
 
   const renderActionButtonsInModal = () => {
     if (isArchived) return null;
@@ -317,7 +472,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
                       </div>
                     ) : (
                       <div className="text-2xl font-bold py-1 px-3 break-all max-w-full relative overflow-hidden flex items-center justify-center">
-                        <span className="animate-pulsate-present mr-2">🎁</span> <span className="bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent animate-shimmer">{reward_text}</span>
+                        <span className="animate-pulsate-present mr-2">🎁</span> 
+                        <RewardTextWithShimmer rewardText={reward_text} />
                       </div>
                     )}
                   </div>
@@ -331,7 +487,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <span className="font-semibold">SUBMITTED PROOF</span>
                   </div>
                   <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {task.proof_url && renderProofLink(task.proof_url, 'proof-link')}
+                    {task.proof_url && renderProofLink(task.proof_url!, 'proof-link')}
                   </div>
                 </div>
               )}
@@ -343,7 +499,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <span className="font-semibold">PROOF FOR REVIEW</span>
                   </div>
                   <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {task.proof_url && renderProofLink(task.proof_url, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20', true)}
+                    {task.proof_url && renderProofLink(task.proof_url!, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20', true)}
                   </div>
                 </div>
               )}

@@ -1,20 +1,5 @@
 /* src/components/TaskCard.css */
-/* REFACTOR: Slowed down the shimmer animation from 1.5s to 4s for a smoother effect. */
-
-@keyframes shimmer {
-  0% {
-    background-position: -500% 0;
-  }
-  100% {
-    background-position: 500% 0;
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 4s infinite linear;
-  background: linear-gradient(to right, #ffbf00 4%, #ffdd77 25%, #ffbf00 36%);
-  background-size: 1000% 100%;
-}
+/* REFACTOR: Shimmer animations moved to unified system in index.css */
 
 .proof-link {
   display: inline-flex;
@@ -113,20 +98,6 @@
   transform: translateX(-50%);
 }
 
-.animate-shimmer {
-  animation: shimmer 8s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { background-position: -1000px 0; }
-  50% { background-position: 1000px 0; }
-}
-
-/* REFACTOR: Centralized tooltip styling to eliminate inline styles. */
-.tooltip-arrow {
-  transform: translateX(-50%);
-}
-
 .font-futura {
   font-family: 'Futura', sans-serif;
 }
@@ -154,25 +125,7 @@
   font-family: 'MandaloreRough', 'Mandalore', sans-serif;
 }
 
-/* Shimmer animation for golden text */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(to right, #BF953F 20%, #FCF6BA 40%, #B38728 60%, #BF953F 80%);
-  background-size: 200% auto;
-  color: transparent; /* Make the original text transparent */
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: shimmer 5s linear infinite alternate;
-}
-
+/* All shimmer definitions removed - now using unified system in index.css */
 
 @keyframes pulsate {
   0%, 100% {
@@ -198,43 +151,4 @@
 
 .modal-fade-in {
   animation: modal-fade-in 300ms ease-out forwards;
-}
-
-@keyframes modal-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.modal-fade-out {
-  animation: modal-fade-out 300ms ease-out forwards;
-}
-
-@keyframes modal-slide-up {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal-slide-up {
-  animation: modal-slide-up 300ms ease-out forwards;
-}
-
-@keyframes modal-slide-down {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-}
-
-.modal-slide-down {
-  animation: modal-slide-down 300ms ease-out forwards;
 }

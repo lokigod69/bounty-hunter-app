@@ -19,5 +19,5 @@ export type TaskWithProfiles = Task & {
 };
 
 // Manually define Enums as they are not in the generated types
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'archived' | 'pending_proof' | 'rejected';
+export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'archived' | 'pending_proof' | 'rejected';
 export type ProofType = 'text' | 'url' | 'image';

@@ -347,6 +347,12 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       return false;
     }
 
+    // Enhanced validation for task completion
+    if (originalTask.status === 'completed' && requestedStatus !== 'rejected') {
+      toast.error('This task has already been completed.');
+      return false;
+    }
+
     const toastId = `updateStatus-${taskId}`;
     toast.loading('Updating task status...', { id: toastId });
 
@@ -396,7 +402,18 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
       if (updateError) {
         console.error('[useTasks] updateTaskStatus: Error updating task status in DB:', updateError);
-        throw updateError;
+        
+        // Enhanced error handling with specific messages
+        let errorMessage = 'Failed to update task status.';
+        if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
+          errorMessage = 'You do not have permission to update this task.';
+        } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
+          errorMessage = 'Task not found or has been deleted.';
+        } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+        
+        throw new Error(errorMessage);
       }
       if (!updatedTaskResult) {
         console.error('[useTasks] updateTaskStatus: Task status update returned no data.');
@@ -429,12 +446,40 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
       // Update local state with the actual returned task to ensure consistency
       setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedTaskResult : t)));
-      toast.success('Task status updated!', { id: toastId });
+      
+      // Enhanced success messages with Android optimizations
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
+      if (requestedStatus === 'completed') {
+        toast.success('🎉 Task completed successfully!', { 
+          id: toastId, 
+          duration: isAndroid ? 5000 : 4000 
+        });
+      } else if (requestedStatus === 'review') {
+        toast.success('Task submitted for review!', { id: toastId });
+      } else {
+        toast.success('Task status updated!', { id: toastId });
+      }
+      
       return true;
     } catch (e) {
       const errorMessage = getErrorMessage(e);
       setError(errorMessage); // Assuming setError is defined in the hook's scope
-      toast.error(`Error updating status: ${errorMessage}`, { id: toastId });
+      
+      // Android-specific error handling
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
+      let finalErrorMessage = `Error updating status: ${errorMessage}`;
+      if (isAndroid && errorMessage.includes('network')) {
+        finalErrorMessage += ' Try switching between WiFi and mobile data.';
+      }
+      
+      toast.error(finalErrorMessage, { 
+        id: toastId, 
+        duration: isAndroid ? 6000 : 4000 
+      });
       console.error('[useTasks] updateTaskStatus: Catch block error:', errorMessage);
       // Rollback optimistic update
       setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? originalTask : t)));
@@ -453,6 +498,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       toast.error('Task not found.');
       return false;
     }
+    
+    // Client-side validation for better UX
     if (taskToUpdate.assigned_to !== currentUserId) {
       toast.error('You are not assigned to this task and cannot submit proof.');
       return false;
@@ -477,13 +524,18 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? optimisticTaskUpdate : t));
 
     try {
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with Android-specific optimizations
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
       const { error: uploadError } = await client.storage
         .from('bounty-proofs') // Ensure this bucket exists and has correct policies
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true, 
           contentType: file.type,
+          // Android optimization: smaller chunk size for better reliability
+          ...(isAndroid && { chunkSize: 1024 * 1024 }) // 1MB chunks for Android
         });
 
       if (uploadError) throw new Error(`Storage error: ${uploadError.message}`);
@@ -498,7 +550,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       }
       const proofUrl = urlData.publicUrl;
 
-      // Update task record in database
+      // Update task record in database - remove restrictive filter to let RLS handle permissions
       const { data: updatedTask, error: dbUpdateError } = await client
         .from('tasks')
         .update({
@@ -507,7 +559,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           status: 'review' as TaskStatus,
         })
         .eq('id', taskId)
-        .eq('assigned_to', currentUserId) // Ensure only the assignee can update their proof
+        // Remove .eq('assigned_to', currentUserId) to let RLS handle permissions
         .select(`
             *,
             assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url),
@@ -515,12 +567,27 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         `)
         .single();
 
-      if (dbUpdateError) throw dbUpdateError;
+      if (dbUpdateError) {
+        console.error('[useTasks] uploadProof: Database update error:', dbUpdateError);
+        
+        // Enhanced error handling for proof upload
+        let errorMessage = 'Failed to update task with proof details.';
+        if (dbUpdateError.message.includes('permission') || dbUpdateError.code === 'PGRST301') {
+          errorMessage = 'You do not have permission to submit proof for this task.';
+        } else if (dbUpdateError.message.includes('not found') || dbUpdateError.code === 'PGRST116') {
+          errorMessage = 'Task not found or has been deleted.';
+        }
+        
+        throw new Error(errorMessage);
+      }
       if (!updatedTask) throw new Error('Failed to update task record with proof details.');
 
       // Final state update with data from DB
       setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedTask : t)));
-      toast.success('Proof uploaded successfully! Task is now in review.', { id: toastId });
+      toast.success('Proof uploaded successfully! Task is now in review.', { 
+        id: toastId,
+        duration: isAndroid ? 5000 : 4000 
+      });
       setUploadProgress(100);
       return proofUrl;
 
@@ -528,7 +595,24 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       const errorMessage = getErrorMessage(e);
       setUploadProgress(0);
       setError(errorMessage);
-      toast.error(`Failed to upload proof: ${errorMessage}`, { id: toastId });
+      
+      // Android-specific error handling for uploads
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
+      let finalErrorMessage = `Failed to upload proof: ${errorMessage}`;
+      if (isAndroid) {
+        if (errorMessage.includes('network')) {
+          finalErrorMessage += ' Try switching between WiFi and mobile data.';
+        } else if (errorMessage.includes('size') || errorMessage.includes('large')) {
+          finalErrorMessage += ' Try compressing the image/video before uploading.';
+        }
+      }
+      
+      toast.error(finalErrorMessage, { 
+        id: toastId,
+        duration: isAndroid ? 6000 : 4000 
+      });
       // Rollback optimistic update
       setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? originalTaskState : t));
       return false;

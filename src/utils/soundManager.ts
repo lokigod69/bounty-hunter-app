@@ -1,75 +1,226 @@
-// src/utils/soundManager.ts
-// Manages all audio feedback for the application.
-
+// Enhanced sound manager with Android-specific optimizations
 class SoundManager {
   private sounds: { [key: string]: HTMLAudioElement } = {};
-  private enabled: boolean = true;
+  private isAndroid: boolean = false;
+  private androidVersion: number = 0;
+  private isLowPowerMode: boolean = false;
+  private enabled: boolean = true; // Add enabled state
 
   constructor() {
-    // Initialize all sounds
-    this.sounds = {
-      // General actions
-      success: new Audio('/sounds/success.mp3'),
-      create: new Audio('/sounds/create.mp3'),
-      coin: new Audio('/sounds/coin.mp3'),
-      notification: new Audio('/sounds/notification.mp3'),
-      
-      // UI feedback sounds
-      navigation: new Audio('/sounds/click1.mp3'),    // Tab/menu navigation
-      delete: new Audio('/sounds/click2.mp3'),        // Delete actions
-      upload: new Audio('/sounds/click3.mp3'),        // Successful uploads
-      friendRequest: new Audio('/sounds/click7.mp3'), // Send friend request
-      acceptContract: new Audio('/sounds/click8.mp3'), // Accept contract
-
-      // Tab navigation sounds
-      click1a: new Audio('/sounds/click1a.mp3'),
-      click1b: new Audio('/sounds/click1b.mp3'),
-      click1c: new Audio('/sounds/click1c.mp3'),
-      click1d: new Audio('/sounds/click1d.mp3'),
-      click1e: new Audio('/sounds/click1e.mp3'),
-
-      // Additional specific sounds
-      approveProof: new Audio('/sounds/click4.mp3'),     // Approve submitted proof
-      saveContract: new Audio('/sounds/click5.mp3'),     // Save contract edits
-      saveProfile: new Audio('/sounds/click6.mp3'),      // Save profile changes
-    };
-
-    // Preload all sounds and set a default volume
-    Object.values(this.sounds).forEach(sound => {
-      sound.preload = 'auto';
-      sound.volume = 0.5; // Default volume, can be adjusted
-    });
-
-    // Check user preference from localStorage
-    const storedPreference = localStorage.getItem('soundEnabled');
-    this.enabled = storedPreference !== 'false';
+    this.detectAndroid();
+    this.detectLowPowerMode();
+    this.preloadSounds();
+    // Load enabled state from localStorage
+    const savedState = localStorage.getItem('soundEnabled');
+    this.enabled = savedState !== null ? JSON.parse(savedState) : true;
   }
 
-  play(soundName: keyof SoundManager['sounds']) {
-    if (!this.enabled) return;
+  private detectAndroid(): void {
+    const userAgent = navigator.userAgent.toLowerCase();
+    this.isAndroid = userAgent.includes('android');
     
-    try {
-      const sound = this.sounds[soundName];
-      if (sound) {
-        sound.currentTime = 0; // Rewind to start for rapid plays
-        sound.play().catch(e => console.error('Sound play failed:', e));
-      } else {
-        console.warn(`Sound '${soundName}' not found.`);
+    if (this.isAndroid) {
+      const androidMatch = userAgent.match(/android (\d+)/);
+      if (androidMatch) {
+        this.androidVersion = parseInt(androidMatch[1], 10);
       }
-    } catch (error) {
-      console.error(`Error playing sound '${soundName}':`, error);
     }
   }
 
-  toggle(): boolean {
-    this.enabled = !this.enabled;
-    localStorage.setItem('soundEnabled', String(this.enabled));
+  private detectLowPowerMode(): void {
+    // Check for battery API to detect low power mode
+    if ('getBattery' in navigator) {
+      (navigator as any).getBattery().then((battery: any) => {
+        this.isLowPowerMode = battery.level < 0.2; // Below 20%
+      }).catch(() => {
+        this.isLowPowerMode = false;
+      });
+    }
+  }
+
+  private preloadSounds(): void {
+    const soundFiles = {
+      acceptContract: '/sounds/success.mp3',
+      success: '/sounds/success.mp3',
+      click1: '/sounds/click1.mp3',
+      click2: '/sounds/click2.mp3',
+      notification: '/sounds/notification.mp3',
+      coin: '/sounds/coin.mp3',
+      create: '/sounds/create.mp3',
+      delete: '/sounds/delete lowD.mp3',
+    };
+
+    Object.entries(soundFiles).forEach(([name, path]) => {
+      const audio = new Audio(path);
+      
+      // Android-specific optimizations
+      if (this.isAndroid) {
+        audio.preload = 'none'; // Don't preload on Android to save bandwidth
+        audio.volume = 0.7; // Slightly lower volume for Android speakers
+        
+        // Set audio context to handle Android audio policies
+        if (this.androidVersion >= 9) {
+          audio.setAttribute('playsinline', 'true');
+        }
+      } else {
+        audio.preload = 'auto';
+        audio.volume = 0.5;
+      }
+
+      // Add error handling for audio loading
+      audio.addEventListener('error', (e) => {
+        console.warn(`Failed to load sound: ${name}`, e);
+      });
+
+      // Add load event to ensure audio is ready
+      audio.addEventListener('canplaythrough', () => {
+        console.log(`Sound loaded: ${name}`);
+      });
+
+      this.sounds[name] = audio;
+    });
+  }
+
+  public play(soundName: string): void {
+    // Skip sound if disabled globally
+    if (!this.enabled) {
+      return;
+    }
+
+    // Skip sound in low power mode on Android
+    if (this.isAndroid && this.isLowPowerMode) {
+      return;
+    }
+
+    const audio = this.sounds[soundName];
+    if (!audio) {
+      console.warn(`Sound not found: ${soundName}`);
+      return;
+    }
+
+    try {
+      // Android-specific playback handling
+      if (this.isAndroid) {
+        // Reset audio for Android compatibility
+        audio.currentTime = 0;
+        
+        // Use promise-based play for better error handling
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log(`Sound played successfully: ${soundName}`);
+            })
+            .catch((error) => {
+              console.warn(`Sound play failed: ${soundName}`, error);
+              // Fallback: try to play with user interaction
+              this.playWithUserInteraction(audio, soundName);
+            });
+        }
+      } else {
+        // Standard web playback
+        audio.currentTime = 0;
+        audio.play().catch((error) => {
+          console.warn(`Sound play failed: ${soundName}`, error);
+        });
+      }
+    } catch (error) {
+      console.warn(`Error playing sound: ${soundName}`, error);
+    }
+  }
+
+  private playWithUserInteraction(audio: HTMLAudioElement, soundName: string): void {
+    // Create a temporary button to trigger user interaction
+    const tempButton = document.createElement('button');
+    tempButton.style.display = 'none';
+    tempButton.onclick = () => {
+      audio.play().catch((error) => {
+        console.warn(`Fallback sound play failed: ${soundName}`, error);
+      });
+      document.body.removeChild(tempButton);
+    };
+    
+    document.body.appendChild(tempButton);
+    tempButton.click();
+  }
+
+  public preloadSound(soundName: string): void {
+    const audio = this.sounds[soundName];
+    if (audio && this.isAndroid) {
+      // Only preload on Android when specifically requested
+      audio.preload = 'auto';
+      audio.load();
+    }
+  }
+
+  public setVolume(soundName: string, volume: number): void {
+    const audio = this.sounds[soundName];
+    if (audio) {
+      // Adjust volume for Android devices
+      const adjustedVolume = this.isAndroid ? Math.min(volume * 0.8, 1.0) : volume;
+      audio.volume = adjustedVolume;
+    }
+  }
+
+  public mute(soundName?: string): void {
+    if (soundName) {
+      const audio = this.sounds[soundName];
+      if (audio) {
+        audio.muted = true;
+      }
+    } else {
+      // Mute all sounds
+      Object.values(this.sounds).forEach(audio => {
+        audio.muted = true;
+      });
+    }
+  }
+
+  public unmute(soundName?: string): void {
+    if (soundName) {
+      const audio = this.sounds[soundName];
+      if (audio) {
+        audio.muted = false;
+      }
+    } else {
+      // Unmute all sounds
+      Object.values(this.sounds).forEach(audio => {
+        audio.muted = false;
+      });
+    }
+  }
+
+  public isEnabled(): boolean {
     return this.enabled;
   }
 
-  isEnabled(): boolean {
+  public toggle(): boolean {
+    this.enabled = !this.enabled;
+    // Save to localStorage
+    localStorage.setItem('soundEnabled', JSON.stringify(this.enabled));
     return this.enabled;
+  }
+
+  public enable(): void {
+    this.enabled = true;
+    localStorage.setItem('soundEnabled', JSON.stringify(this.enabled));
+  }
+
+  public disable(): void {
+    this.enabled = false;
+    localStorage.setItem('soundEnabled', JSON.stringify(this.enabled));
+  }
+
+  public isAndroidDevice(): boolean {
+    return this.isAndroid;
+  }
+
+  public getAndroidVersion(): number {
+    return this.androidVersion;
   }
 }
 
+// Export singleton instance
 export const soundManager = new SoundManager();
+export default soundManager;

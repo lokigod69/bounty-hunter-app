@@ -1604,3 +1604,200 @@ body {
 .z-critical-overlay { z-index: var(--z-critical-overlay); }
 .z-critical-content { z-index: var(--z-critical-content); }
 .z-critical-controls { z-index: var(--z-critical-controls); }
+
+/* === UNIFIED SHIMMER SYSTEM === */
+/* Consolidated shimmer animations with dynamic duration support */
+
+/* Base shimmer keyframes - smooth and sophisticated */
+@keyframes shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+    transform: translateX(-100%);
+  }
+  100% {
+    background-position: 200% 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced shimmer for premium feel */
+@keyframes shimmer-premium {
+  0% {
+    background-position: -300% 0;
+    transform: translateX(-150%) skewX(-15deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.7;
+  }
+  85% {
+    opacity: 0.7;
+  }
+  100% {
+    background-position: 300% 0;
+    transform: translateX(150%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
+/* Credit shimmer - extra premium with glow effect */
+@keyframes shimmer-credit {
+  0% {
+    background-position: -400% 0;
+    transform: translateX(-200%);
+    filter: brightness(1) contrast(1);
+  }
+  50% {
+    filter: brightness(1.2) contrast(1.1);
+  }
+  100% {
+    background-position: 400% 0;
+    transform: translateX(200%);
+    filter: brightness(1) contrast(1);
+  }
+}
+
+/* Unified shimmer classes with CSS custom property support */
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep var(--shimmer-duration, 6s) ease-in-out infinite;
+  
+  /* Gradient text effect */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  /* Fallback for browsers without CSS custom properties */
+  animation-duration: 6s;
+}
+
+.animate-shimmer-premium {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(255, 255, 255, 0.6) 45%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.6) 55%,
+    transparent 75%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  animation: shimmer-premium var(--shimmer-duration, 8s) ease-in-out infinite;
+  
+  /* Enhanced gradient text effect */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  /* Fallback duration */
+  animation-duration: 8s;
+}
+
+.animate-shimmer-credit {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #BF953F 0%,
+    #BF953F 20%,
+    #FCF6BA 40%,
+    #FFFFFF 50%,
+    #FCF6BA 60%,
+    #B38728 80%,
+    #BF953F 100%
+  );
+  background-size: 400% 100%;
+  animation: shimmer-credit var(--shimmer-duration, 10s) ease-in-out infinite;
+  
+  /* Golden gradient text effect */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  /* Fallback duration */
+  animation-duration: 10s;
+}
+
+/* Legacy shimmer support - maps to new system */
+.animate-shimmer-legacy {
+  /* This maintains compatibility with existing code */
+  background: linear-gradient(to right, #BF953F 20%, #FCF6BA 40%, #B38728 60%, #BF953F 80%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer-sweep var(--shimmer-duration, 5s) linear infinite alternate;
+  animation-duration: 5s; /* Fallback */
+}
+
+/* Shimmer overlay effect for elements that need a shine overlay */
+.shimmer-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer-sweep var(--shimmer-duration, 6s) ease-in-out infinite;
+  animation-duration: 6s; /* Fallback */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Responsive shimmer adjustments */
+@media (max-width: 768px) {
+  .animate-shimmer,
+  .animate-shimmer-premium,
+  .animate-shimmer-credit {
+    /* Slightly faster on mobile for better perceived performance */
+    animation-duration: calc(var(--shimmer-duration, 6s) * 0.8);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .animate-shimmer,
+  .animate-shimmer-premium,
+  .animate-shimmer-credit {
+    /* More visible shimmer in high contrast mode */
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      transparent 100%
+    );
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer,
+  .animate-shimmer-premium,
+  .animate-shimmer-credit,
+  .shimmer-overlay::before {
+    animation: none;
+    background: linear-gradient(to right, currentColor 0%, currentColor 100%);
+  }
+}
+
+/* End of Unified Shimmer System */

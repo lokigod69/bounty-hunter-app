@@ -52,21 +52,32 @@ export function useAssignedContracts() {
         setError(dbError.message);
         setContracts([]);
       } else {
-        const tasksWithPublicUrls = data?.map(task => {
+        // FIXED: Remove double URL generation - proof_url is already a public URL from upload
+        console.log('[useAssignedContracts] Fetched contracts with proof URLs:', data?.map(t => ({ id: t.id, proof_url: t.proof_url })));
+        
+        const processedContracts = data?.map(task => {
+          // Validate proof_url if it exists
           if (task.proof_url) {
-            const { data: publicUrlData } = supabase
-              .storage
-              .from('bounty-proofs') // This is the bucket name for bounty proofs
-              .getPublicUrl(task.proof_url);
-            
-            return {
-              ...task,
-              proof_url: publicUrlData.publicUrl,
-            };
+            try {
+              // Basic URL validation
+              const url = new URL(task.proof_url);
+              if (!url.protocol.startsWith('http')) {
+                console.warn('[useAssignedContracts] Invalid proof URL protocol:', task.proof_url);
+                return { ...task, proof_url: null };
+              }
+              
+              console.log('[useAssignedContracts] Valid proof URL for task', task.id, ':', task.proof_url);
+              return task;
+            } catch (urlError) {
+              console.error('[useAssignedContracts] Invalid proof URL for task', task.id, ':', task.proof_url, urlError);
+              // Set proof_url to null for invalid URLs to prevent broken links
+              return { ...task, proof_url: null };
+            }
           }
           return task;
-        });
-        setContracts(tasksWithPublicUrls || []);
+        }) || [];
+        
+        setContracts(processedContracts);
       }
     } catch (e: unknown) {
       console.error('Unexpected error fetching assigned contracts:', e);

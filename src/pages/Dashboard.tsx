@@ -138,54 +138,145 @@ export default function Dashboard() {
   const handleStatusUpdate = async (
     taskId: string,
     status: string,
-
   ) => {
     if (!user) {
       toast.error('You must be logged in to update status.');
       return;
     }
+    
+    // Add loading state for mobile feedback
+    const toastId = `status-update-${taskId}`;
+    toast.loading('Updating task status...', { id: toastId });
+    
     try {
+      console.log('[Dashboard] handleStatusUpdate called:', { taskId, status, userId: user.id });
+      
+      // Step 1: Fetch task without restrictive filters - let RLS handle permissions
       const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('proof_required, reward_type, reward_text')
+        .select('proof_required, reward_type, reward_text, assigned_to, created_by, status')
         .eq('id', taskId)
-        .eq('assigned_to', user.id)
         .single();
 
-      if (fetchError) throw fetchError;
+      console.log('[Dashboard] Task fetch result:', { task, fetchError });
+
+      if (fetchError) {
+        console.error('[Dashboard] Task fetch error:', fetchError);
+        throw fetchError;
+      }
+      
       if (!task) {
-        toast.error('Task not found or not assigned to you.');
+        const errorMsg = 'Task not found or you do not have permission to access it.';
+        console.error('[Dashboard] Task not found:', taskId);
+        toast.error(errorMsg, { id: toastId });
         return;
       }
 
+      // Step 2: Client-side validation for UI feedback
+      const isAssignee = task.assigned_to === user.id;
+      const isCreator = task.created_by === user.id;
+      
+      if (!isAssignee && !isCreator) {
+        const errorMsg = 'You do not have permission to update this task.';
+        console.error('[Dashboard] Permission denied:', { userId: user.id, assigned_to: task.assigned_to, created_by: task.created_by });
+        toast.error(errorMsg, { id: toastId });
+        return;
+      }
+
+      // Step 3: Validate status transition
+      if (task.status === 'completed') {
+        const errorMsg = 'This task has already been completed.';
+        console.warn('[Dashboard] Task already completed:', taskId);
+        toast.error(errorMsg, { id: toastId });
+        return;
+      }
+
+      // Step 4: Determine final status based on proof requirements
       const finalStatus = ((!task.proof_required && status === 'review')
         ? 'completed'
         : status) as TaskStatus;
 
+      console.log('[Dashboard] Status transition:', { currentStatus: task.status, requestedStatus: status, finalStatus });
+
+      // Step 5: Update task - remove restrictive filter to let RLS handle permissions
+      const updateData: { status: string; completed_at?: string } = { status: finalStatus };
+      
+      // Set completion timestamp for completed tasks
+      if (finalStatus === 'completed') {
+        updateData.completed_at = new Date().toISOString();
+      }
+
       const { error: updateError } = await supabase
         .from('tasks')
-        .update({ status: finalStatus })
-        .eq('id', taskId)
-        .eq('assigned_to', user.id);
+        .update(updateData)
+        .eq('id', taskId);
 
-      if (updateError) throw updateError;
+      console.log('[Dashboard] Update result:', { updateError });
 
-      if (finalStatus === 'completed') {
-        toast.success('Task completed!');
-        sm.play('acceptContract');
-        sm.play('success');
-      } else {
-        toast.success('Status updated');
+      if (updateError) {
+        console.error('[Dashboard] Task update error:', updateError);
+        
+        // Provide specific error messages for common issues
+        let errorMessage = 'Failed to update task status.';
+        if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
+          errorMessage = 'You do not have permission to update this task.';
+        } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
+          errorMessage = 'Task not found or has been deleted.';
+        } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+        
+        throw new Error(errorMessage);
       }
-      if (refetchAssignedContracts) refetchAssignedContracts();
+
+      // Step 6: Success handling with enhanced feedback
+      console.log('[Dashboard] Task status updated successfully:', { taskId, finalStatus });
+      
+      if (finalStatus === 'completed') {
+        toast.success('🎉 Task completed successfully!', { id: toastId, duration: 4000 });
+        // Enhanced sound feedback for mobile
+        try {
+          sm.play('acceptContract');
+          sm.play('success');
+        } catch (soundError) {
+          console.warn('[Dashboard] Sound playback failed:', soundError);
+        }
+      } else if (status === 'review') {
+        toast.success('Task submitted for review!', { id: toastId });
+      } else {
+        toast.success('Task status updated!', { id: toastId });
+      }
+      
+      // Refresh data with error handling
+      if (refetchAssignedContracts) {
+        try {
+          await refetchAssignedContracts();
+        } catch (refreshError) {
+          console.warn('[Dashboard] Failed to refresh contracts:', refreshError);
+          // Don't show error to user as the main operation succeeded
+        }
+      }
 
     } catch (error: unknown) {
-      console.error('Status update failed:', error);
-      let message = 'Failed to update status.';
+      console.error('[Dashboard] handleStatusUpdate error:', error);
+      
+      let message = 'Failed to update task status.';
       if (error instanceof Error) {
         message = error.message;
       }
-      toast.error(message);
+      
+      // Android-specific error handling for common network issues
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
+      if (isAndroid && message.includes('network')) {
+        message += ' Try switching between WiFi and mobile data.';
+      }
+      
+      toast.error(message, { 
+        id: toastId, 
+        duration: isAndroid ? 6000 : 4000 // Longer duration on Android for better UX
+      });
     }
   };
 
