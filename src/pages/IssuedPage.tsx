@@ -280,7 +280,7 @@ export default function IssuedPage() {
         console.error('Error code:', supabaseError.code);
         console.error('Error message:', supabaseError.message);
         console.error('Error details:', supabaseError.details);
-        toast.error(t('contracts.deleteFailedMessage', { message: supabaseError.message }));
+        toast.error(t('contracts.createFailedMessage', { message: supabaseError.message }));
       } else {
         toast.error(t('contracts.createFailedUnknown'));
       }
