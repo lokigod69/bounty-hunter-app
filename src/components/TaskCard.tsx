@@ -23,6 +23,7 @@ import { getErrorMessage } from '../utils/getErrorMessage';
 import { soundManager } from '../utils/soundManager';
 import { TaskStatus } from '../types/custom';
 import { useRewardShimmerDuration } from '../hooks/useShimmerDuration';
+import DoubleCoinValue from './coin/DoubleCoinValue';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
@@ -459,9 +460,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 {reward_text ? (
                   <div className="flex flex-col items-center justify-center min-h-[50px]">
                     {reward_type === 'credit' ? (
-                      <div className="flex items-center gap-2 text-xl text-amber-400 font-bold">
-                        <span className="text-4xl animate-proper-spin mr-2">🪙</span>
-                        <span className="text-2xl">{reward_text} Credits</span>
+                      <div className="flex items-center justify-center py-1" data-testid="mission-cost">
+                        <DoubleCoinValue value={parseInt(reward_text || '0', 10)} />
                       </div>
                     ) : task.image_url ? (
                       <div className="relative w-48 h-48 group mx-auto">
