@@ -1577,10 +1577,10 @@ body {
   --z-dropdown: 55;
   --z-tooltip: 60;
   
-  /* Modal System: 9000+ */
-  --z-modal-backdrop: 9000;
-  --z-modal-content: 9100;
-  --z-modal-controls: 9200;
+  /* Modal System: 10000+ (ensure modals render above all content) */
+  --z-modal-backdrop: 10000;
+  --z-modal-content: 10100;
+  --z-modal-controls: 10200;
   
   /* Critical Overlays: 99000+ */
   --z-critical-overlay: 99000;
