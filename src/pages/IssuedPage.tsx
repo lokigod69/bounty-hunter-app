@@ -327,6 +327,8 @@ export default function IssuedPage() {
     }
   };
 
+  const hasMissions = sortedIssuedContracts.length > 0;
+
   const stats = {
     pending: sortedIssuedContracts.filter(task => task.status === 'pending').length,
     review: sortedIssuedContracts.filter(task => task.status === 'review').length,
@@ -358,13 +360,14 @@ export default function IssuedPage() {
         />
       )}
 
-      {/* Enhanced Floating Action Button with improved mobile positioning */}
-      {!isTaskFormOpen && !isMobileMenuOpen && (
+      {/* Enhanced Floating Action Button - only show when missions exist */}
+      {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
         <button
           onClick={handleCreateNewContract}
           className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
           aria-label={t('contracts.createNewMission')}
           title={t('contracts.createNewMission')}
+          data-testid="missions-fab"
         >
           <PlusCircle size={28} className="sm:hidden" />
           <PlusCircle size={24} className="hidden sm:block md:hidden" />
@@ -406,8 +409,16 @@ export default function IssuedPage() {
       {sortedIssuedContracts.length === 0 && !loading ? (
         <div className="text-center py-10">
           <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-          <p className="text-xl text-slate-300">{t('contracts.noMissions')}</p>
-          {/* TODO: Add a button/link to create a new contract here */}
+          <p className="text-xl text-slate-300 mb-6">{t('contracts.noMissions')}</p>
+          <button
+            onClick={handleCreateNewContract}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+            data-testid="missions-empty-cta"
+            aria-label={t('contracts.createNewMission')}
+          >
+            <PlusCircle size={20} />
+            {t('contracts.createNewMission')}
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
