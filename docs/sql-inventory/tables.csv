@@ -1,0 +1,10 @@
+schema,table_name,column_count,has_rls,has_policies,has_triggers,primary_key,foreign_keys,used_by_app,security_status
+public,collected_bounties,4,YES,NO,NO,id,bounty_id→marketplace_bounties;collector_id→profiles,NO (unused duplicate),❌ CRITICAL - RLS enabled but NO POLICIES
+public,collected_rewards,4,YES,NO,NO,id,reward_id→rewards_store;collector_id→profiles,YES (useCollectedRewards),❌ CRITICAL - RLS enabled but NO POLICIES
+public,credit_transactions,6,YES,NO,NO,id,user_id→profiles;task_id→tasks,NO (ledger table - unused),⚠️ RLS enabled but no policies (safe if unused)
+public,friendships,6,YES,YES (3),NO,id,user1_id→profiles;user2_id→profiles;requested_by→profiles,YES (useFriends),✅ SECURE
+public,marketplace_bounties,11,NO,NO,YES (on_bounties_updated),id,creator_id→profiles,NO (unused duplicate),❌ CRITICAL - NO RLS AT ALL
+public,profiles,6,YES,YES (2),YES (handle_new_user),id (FK to auth.users),none,YES (useAuth),✅ SECURE
+public,rewards_store,10,YES,YES (4),NO,id,creator_id→profiles;assigned_to→profiles,YES (useRewardsStore),✅ SECURE
+public,tasks,19,YES,YES (9),YES (award_credits),id,created_by→profiles;assigned_to→profiles,YES (useTasks),✅ SECURE
+public,user_credits,5,YES,YES (3),NO,user_id,user_id→profiles (1:1),YES (UserCredits),✅ SECURE

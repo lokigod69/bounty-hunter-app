@@ -1,0 +1,13 @@
+table_name,constraint_type,constraint_name,columns,notes
+collected_bounties,UNIQUE,collected_bounties_bounty_id_collector_id_key,"bounty_id, collector_id",✅ Prevents duplicate claims (race condition protection)
+collected_bounties,PRIMARY KEY,collected_bounties_pkey,id,
+collected_rewards,PRIMARY KEY,collected_rewards_pkey,id,⚠️ MISSING UNIQUE constraint on (reward_id + collector_id)
+credit_transactions,PRIMARY KEY,credit_transactions_pkey,id,
+friendships,PRIMARY KEY,friendships_pkey,id,
+friendships,UNIQUE,unique_friendship,"user1_id, user2_id",✅ Prevents duplicate friendships
+marketplace_bounties,PRIMARY KEY,marketplace_bounties_pkey,id,
+profiles,PRIMARY KEY,profiles_pkey,id (FK to auth.users),
+profiles,UNIQUE,profiles_email_key,email,✅ Ensures unique emails
+rewards_store,PRIMARY KEY,rewards_store_pkey,id,
+tasks,PRIMARY KEY,tasks_pkey,id,
+user_credits,PRIMARY KEY,user_credits_pkey,user_id,1:1 relationship with profiles

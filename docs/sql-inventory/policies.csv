@@ -1,0 +1,28 @@
+table_name,policy_name,command,role,using_clause,with_check_clause,notes
+tasks,Admins full access,ALL,authenticated,"auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')",,Admin override - checks profile.role
+tasks,Create tasks,INSERT,authenticated,,"auth.uid() = created_by",Creator must match current user
+tasks,Update tasks,UPDATE,authenticated,"auth.uid() IN (created_by, assigned_to)",,Creator or assignee can update
+tasks,Users can update assigned tasks,UPDATE,authenticated,"auth.uid() = assigned_to",,Assignee-specific update policy
+tasks,Users can update own created tasks,UPDATE,authenticated,"auth.uid() = created_by","auth.uid() = created_by",Creator-specific update with check
+tasks,Users can delete own tasks,DELETE,authenticated,"auth.uid() = created_by",,Only creator can delete
+tasks,Users can view assigned tasks,SELECT,authenticated,"auth.uid() = assigned_to",,View tasks assigned to you
+tasks,View tasks,SELECT,authenticated,"auth.uid() IN (created_by, assigned_to)",,View tasks you created or are assigned
+profiles,Public profiles,SELECT,ALL,true,,Anyone can view any profile (public directory)
+profiles,Update own profile,UPDATE,authenticated,"auth.uid() = id",,Users can only update their own profile
+friendships,Create friendships,INSERT,authenticated,,"auth.uid() = requested_by",Requester must match current user
+friendships,Update friendships,UPDATE,authenticated,"auth.uid() IN (user1_id, user2_id)",,Either party can update (accept/reject)
+friendships,Users can delete own friend requests,DELETE,authenticated,"auth.uid() = requested_by AND status = 'pending'",,Can only delete own pending requests
+friendships,View friendships,SELECT,authenticated,"auth.uid() IN (user1_id, user2_id)",,View friendships you're part of
+rewards_store,Create bounties for friends,INSERT,authenticated,,"creator_id = auth.uid() AND EXISTS (SELECT 1 FROM friendships WHERE ...)",Creator must be friends with assigned_to
+rewards_store,Update own bounties,UPDATE,authenticated,"creator_id = auth.uid()",,Only creator can update
+rewards_store,Delete own bounties,DELETE,authenticated,"creator_id = auth.uid()",,Only creator can delete
+rewards_store,View bounties I created,SELECT,authenticated,"creator_id = auth.uid()",,View your own bounties
+rewards_store,View bounties assigned to me by friends,SELECT,authenticated,"assigned_to = auth.uid() AND is_active = true AND EXISTS (friendship check)",,View active bounties assigned to you by friends
+user_credits,Users can insert own credits,INSERT,authenticated,,"auth.uid()::text = user_id::text",User can create their own credit record
+user_credits,Users can update own credits,UPDATE,authenticated,"auth.uid()::text = user_id::text",,User can update own credits (⚠️ should be trigger-only)
+user_credits,Users can view own credits,SELECT,authenticated,"auth.uid()::text = user_id::text",,View your own credit balance
+storage.objects,Allow authenticated uploads (bounty-proofs),INSERT,authenticated,,"bucket_id = 'bounty-proofs'",Upload proofs to bounty-proofs bucket
+storage.objects,Allow public viewing (bounty-proofs),SELECT,anon,"bucket_id = 'bounty-proofs'",,Public can view proof images
+storage.objects,Public Read Access (avatars),SELECT,"authenticated,anon",true,,Anyone can view avatar images
+storage.objects,User Update (avatars),UPDATE,authenticated,"bucket_id = 'avatars' AND foldername(name)[1] = auth.uid()::text",,Users can update their own avatar
+storage.objects,User Upload (avatars),INSERT,authenticated,,"foldername(name)[1] = auth.uid()::text",Users can upload to their own folder

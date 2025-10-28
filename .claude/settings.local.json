@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Read(//d//**)",
+      "Bash(supabase start:*)",
+      "Bash(where.exe:*)",
+      "Bash(docker --version:*)",
+      "Bash(supabase --version:*)",
+      "Bash(C:Usersmichascoopshimssupabase.exe --version)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File scripts/local/start_supabase.ps1)",
+      "Bash(powershell.exe -Command \"netstat -ano | Select-String '':54322''\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"$env:PGPASSWORD=''''postgres''''; & ''''C:\\Users\\micha\\scoop\\apps\\postgresql\\current\\bin\\psql.exe'''' ''''host=127.0.0.1 port=55432 user=postgres dbname=postgres'''' -f ''''supabase\\schema_all.sql'''' 2>&1\")",
+      "Bash(npx cap:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(powershell.exe -Command:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 15 npm run dev:*)",
+      "Bash(git fetch:*)",
+      "Bash(git push:*)",
+      "Bash(npm dedupe:*)",
+      "Bash(timeout 5 bash -c 'npm run preview > /tmp/preview-test.log 2>&1 & sleep 2 && curl -I http://localhost:4173')",
+      "Bash(timeout 10 npm run dev:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
