@@ -29,28 +29,24 @@ interface ProfileEditModalProps {
 export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const { t } = useTranslation();
   const { user, profile, loading: authLoading } = useAuth();
-  const { isMobileMenuOpen, closeMobileMenu } = useUI();
+  const { openModal, clearLayer } = useUI();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
 
-  // Add effect to lock body scroll when modal is open and coordinate with mobile menu
+  // Phase 2: Use UIContext to coordinate overlay layers and scroll locking
   useEffect(() => {
     if (isOpen) {
-      // Ensure mobile menu is closed when modal opens
-      if (isMobileMenuOpen) {
-        closeMobileMenu();
-      }
-      document.body.style.overflow = 'hidden';
+      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
     } else {
-      document.body.style.overflow = '';
+      clearLayer();
     }
     return () => {
-      document.body.style.overflow = ''; // Cleanup on unmount
+      clearLayer(); // Phase 2: Cleanup on unmount
     };
-  }, [isOpen, isMobileMenuOpen, closeMobileMenu]);
+  }, [isOpen, openModal, clearLayer]);
 
   useEffect(() => {
     if (profile) {

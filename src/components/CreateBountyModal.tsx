@@ -1,9 +1,6 @@
 // src/components/CreateBountyModal.tsx
+// Phase 2: Updated to use overlay-root and UIContext activeLayer coordination.
 // A modal form for creating a new bounty and assigning it to a friend.
-// Z-INDEX FIX: Increased close button z-index to ensure it appears above all other UI elements.
-// PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
-// PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
-// PORTAL ESCAPE FIX: Uses createPortal to render in document.body, escaping stacking context conflicts with header.
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -13,6 +10,7 @@ import EmojiPicker from './EmojiPicker';
 import { X } from 'lucide-react';
 import { useCreateBounty } from '../hooks/useCreateBounty';
 import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 
 interface CreateBountyModalProps {
   isOpen: boolean;
@@ -23,7 +21,7 @@ interface CreateBountyModalProps {
 const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { createBounty, isLoading } = useCreateBounty();
-  const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
+  const { openModal, clearLayer } = useUI();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>('');
@@ -74,12 +72,11 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
   useEffect(() => {
     if (isOpen) {
-      // Ensure mobile menu is closed when modal opens
-      if (isMobileMenuOpen) {
-        forceCloseMobileMenu();
-      }
+      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    } else {
+      clearLayer(); // Phase 2: Clear layer when modal closes
     }
-  }, [isOpen, isMobileMenuOpen, forceCloseMobileMenu]);
+  }, [isOpen, openModal, clearLayer]);
 
   if (!isOpen) return null;
 
@@ -167,7 +164,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         </form>
       </div>
     </div>,
-    document.body
+    getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
   );
 };
 

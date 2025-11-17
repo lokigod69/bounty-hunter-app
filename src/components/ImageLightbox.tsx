@@ -1,8 +1,10 @@
 // src/components/ImageLightbox.tsx
-// URGENT FIX: Restructured for maximum z-index (critical overlay layer for container, backdrop, and content)
-// PHASE 2 FIX: Updated to use new z-index hierarchy system with critical overlay layer.
+// Phase 2: Updated to use UIContext for critical overlay coordination.
+// Critical overlay for full-screen image viewing.
 
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useUI } from '../context/UIContext';
 
 interface ImageLightboxProps {
   src: string;
@@ -11,13 +13,15 @@ interface ImageLightboxProps {
 }
 
 export default function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
-  // Prevent background scroll when lightbox is open
-  // useEffect(() => {
-  //   document.body.style.overflow = 'hidden';
-  //   return () => {
-  //     document.body.style.overflow = 'unset';
-  //   };
-  // }, []);
+  const { openCriticalOverlay, clearLayer } = useUI();
+
+  // Phase 2: Use UIContext to coordinate critical overlay layers and scroll locking
+  useEffect(() => {
+    openCriticalOverlay(); // Phase 2: Use UIContext for critical overlay coordination
+    return () => {
+      clearLayer(); // Phase 2: Clear layer when lightbox closes
+    };
+  }, [openCriticalOverlay, clearLayer]);
 
   return (
     <div

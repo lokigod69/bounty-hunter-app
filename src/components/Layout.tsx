@@ -49,7 +49,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu } = useUI();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
@@ -59,27 +59,17 @@ export default function Layout() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  // Effect to control body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = ''; // Or 'auto'
-    }
-    // Cleanup function to restore scroll when component unmounts or menu closes
-    return () => {
-      document.body.style.overflow = ''; // Or 'auto'
-    };
-  }, [isMobileMenuOpen]);
+  // Phase 2: Scroll locking is now handled by UIContext via activeLayer
+  // Removed manual scroll lock management here
 
   // Track previous pathname to only close menu on actual navigation
   const previousPathname = useRef(location.pathname);
   useEffect(() => {
     if (previousPathname.current !== location.pathname && isMobileMenuOpen) {
-      forceCloseMobileMenu();
+      clearLayer(); // Phase 2: Use clearLayer to reset all overlay state on route change
       previousPathname.current = location.pathname;
     }
-  }, [location.pathname, isMobileMenuOpen, forceCloseMobileMenu]);
+  }, [location.pathname, isMobileMenuOpen, clearLayer]);
 
   const handleSignOut = async () => {
     await signOut();

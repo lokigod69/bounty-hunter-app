@@ -1,9 +1,12 @@
 // src/components/ProofSubmissionModal.tsx
+// Phase 2: Updated to use overlay-root and UIContext activeLayer coordination.
 // A modal form for submitting a textual proof of completion (description) for a task instance.
-// The 'onSubmit' prop handles the actual submission logic.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 
 // A generic task type, update if a global type is available
 export interface SimpleTask {
@@ -21,6 +24,14 @@ interface ProofSubmissionModalProps {
 
 const ProofSubmissionModal: React.FC<ProofSubmissionModalProps> = ({ instance, onClose, onSubmit, loading }) => {
   const [proof, setProof] = useState('');
+  const { openModal, clearLayer } = useUI();
+
+  useEffect(() => {
+    openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    return () => {
+      clearLayer(); // Phase 2: Clear layer when modal unmounts
+    };
+  }, [openModal, clearLayer]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +42,9 @@ const ProofSubmissionModal: React.FC<ProofSubmissionModalProps> = ({ instance, o
     onSubmit(instance.id, proof);
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-6 w-full max-w-md relative animate-fade-in-up">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-modal-backdrop p-4">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-6 w-full max-w-md relative animate-fade-in-up z-modal-content">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-slate-400 hover:text-slate-100 transition-colors"
@@ -75,7 +86,8 @@ const ProofSubmissionModal: React.FC<ProofSubmissionModalProps> = ({ instance, o
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
   );
 };
 

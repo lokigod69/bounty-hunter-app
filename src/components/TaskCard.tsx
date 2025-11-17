@@ -24,6 +24,8 @@ import { soundManager } from '../utils/soundManager';
 import { TaskStatus } from '../types/custom';
 import { useRewardShimmerDuration } from '../hooks/useShimmerDuration';
 import DoubleCoinValue from './coin/DoubleCoinValue';
+import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
@@ -105,6 +107,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   isArchived,
 }) => {
   const { user } = useAuth();
+  const { openModal, clearLayer } = useUI();
   const [showProofModal, setShowProofModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -147,8 +150,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
     setTimeout(() => {
       setIsExpanded(false);
       setIsAnimatingOut(false);
+      clearLayer(); // Phase 2: Clear overlay layer when modal closes
     }, 300);
   };
+
+  // Phase 2: Sync expanded state with UIContext
+  useEffect(() => {
+    if (isExpanded) {
+      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    }
+  }, [isExpanded, openModal]);
 
   const { id, title, description, assigned_to, deadline, reward_type, reward_text, status, proof_required, creator, assignee } = task;
 
@@ -536,7 +547,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
         </div>,
-        document.body
+        getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
       )}
 
       {showProofModal && createPortal(
@@ -559,7 +570,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           }}
           uploadProgress={uploadProgress}
         />,
-        document.body
+        getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
       )}
     </>
   );

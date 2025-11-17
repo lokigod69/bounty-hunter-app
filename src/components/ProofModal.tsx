@@ -1,7 +1,9 @@
 // src/components/ProofModal.tsx
-import React, { useState, useCallback } from 'react';
+// Phase 2: Updated to use UIContext for modal coordination.
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone, FileRejection } from 'react-dropzone';
 import { X, UploadCloud, File as FileIcon } from 'lucide-react';
+import { useUI } from '../context/UIContext';
 
 interface ProofModalProps {
   taskId: string;
@@ -11,8 +13,16 @@ interface ProofModalProps {
 }
 
 const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress, taskId }) => {
+  const { openModal, clearLayer } = useUI();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    return () => {
+      clearLayer(); // Phase 2: Clear layer when modal unmounts
+    };
+  }, [openModal, clearLayer]);
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     if (rejectedFiles.length > 0) {
@@ -46,8 +56,8 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
   return (
     <div className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} title="Close" className="absolute top-3 right-3 text-slate-400 hover:text-white">
+      <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} title="Close" className="absolute top-3 right-3 text-slate-400 hover:text-white z-modal-controls">
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-white mb-4">Submit Proof for Task {taskId}</h2>

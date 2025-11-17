@@ -1,12 +1,16 @@
 // src/components/EditBountyModal.tsx
+// Phase 2: Updated to use overlay-root, UIContext, and standardized z-index classes.
 // A modal for editing an existing bounty.
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import EmojiPicker from './EmojiPicker';
 import { X } from 'lucide-react';
 import { useUpdateBounty } from '../hooks/useUpdateBounty';
 import { Reward } from './RewardCard';
+import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 
 interface EditBountyModalProps {
   isOpen: boolean;
@@ -18,6 +22,7 @@ interface EditBountyModalProps {
 const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSuccess, bounty }) => {
   const { t } = useTranslation();
   const { updateBounty, isLoading } = useUpdateBounty();
+  const { openModal, clearLayer } = useUI();
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -45,6 +50,14 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
       }
     }
   }, [bounty]);
+
+  useEffect(() => {
+    if (isOpen) {
+      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    } else {
+      clearLayer();
+    }
+  }, [isOpen, openModal, clearLayer]);
 
   const validateImageUrl = (url: string) => {
     if (!url) return true;
@@ -83,9 +96,9 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
 
   if (!isOpen || !bounty) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-50 backdrop-blur-sm">
-      <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-modal-backdrop backdrop-blur-sm">
+      <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
@@ -152,7 +165,8 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    getOverlayRoot() // Phase 2: Portal into overlay-root
   );
 };
 

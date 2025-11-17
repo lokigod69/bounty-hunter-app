@@ -1,8 +1,12 @@
 // src/components/ConfirmationModal.tsx
+// Phase 2: Updated to use overlay-root, UIContext, and standardized z-index classes.
 // A reusable modal for confirming actions.
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
+import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -25,11 +29,21 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   cancelButtonText = 'Cancel',
   loading = false,
 }) => {
+  const { openModal, clearLayer } = useUI();
+
+  useEffect(() => {
+    if (isOpen) {
+      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    } else {
+      clearLayer();
+    }
+  }, [isOpen, openModal, clearLayer]);
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4 animate-fade-in">
-      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-6 w-full max-w-md relative animate-fade-in-up">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-modal-backdrop p-4 animate-fade-in">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-6 w-full max-w-md relative z-modal-content animate-fade-in-up">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-slate-400 hover:text-slate-100 transition-colors"
@@ -63,7 +77,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    getOverlayRoot() // Phase 2: Portal into overlay-root
   );
 };
 
