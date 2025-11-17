@@ -23,6 +23,7 @@ import { Database } from '../types/database';
 type Profile = Database['public']['Tables']['profiles']['Row'];
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
+import { PageContainer, PageHeader, PageBody } from '../components/layout';
 
 export default function Friends() {
   const { t } = useTranslation();
@@ -182,12 +183,11 @@ export default function Friends() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="max-w-4xl mx-auto">
-        {/* Header Section */}
-        <div className="text-center mb-6">
-          <h1 className="text-4xl app-title">{t('friends.title', 'GUILD ROSTER')}</h1>
-          <p className="text-white/70 mt-2 max-w-2xl mx-auto">{t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')}</p>
-        </div>
+      <PageContainer>
+        <PageHeader 
+          title={t('friends.title', 'GUILD ROSTER')} 
+          subtitle={t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')} 
+        />
 
         {/* Add Friend Form */}
         <div className="relative mb-6">
@@ -400,10 +400,10 @@ export default function Friends() {
             title={t('friends.cancelRequestTitle')}
             message={t('friends.cancelRequestMessage')}
             confirmText={t('friends.cancelRequestConfirm')}
-            isConfirming={isCancelling} // Corrected prop name
+            isConfirming={isCancelling}
           />
         )}
-      </div>
+      </PageContainer>
     </PullToRefresh>
   );
 }

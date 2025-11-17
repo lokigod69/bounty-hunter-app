@@ -26,6 +26,7 @@ import { useRewardShimmerDuration } from '../hooks/useShimmerDuration';
 import DoubleCoinValue from './coin/DoubleCoinValue';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
+import { BaseCard } from './ui/BaseCard';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
@@ -402,33 +403,38 @@ const TaskCard: React.FC<TaskCardProps> = ({
             className="absolute left-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900 tooltip-arrow"
           />
         </div>,
-        document.body
+        getOverlayRoot() // Phase 2: Portal into overlay-root (tooltips can use overlay-root too)
       )}
 
-      <div
-        {...swipeHandlers}
-        className={`relative p-4 rounded-lg border transition-all duration-300 ease-in-out cursor-pointer overflow-visible ${collapsedCardBgColor}`}
-        onClick={() => !isAnimatingOut && setIsExpanded(true)}
+      <BaseCard
+        variant="glass"
+        className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor}`}
+        hover={true}
       >
-        <div className="flex justify-between items-start">
-          <h3 className={`text-lg font-bold mb-2 pr-4 ${titleColorClass} font-futura min-w-0`}>
-            <span className="block truncate" title={title}>{title}</span>
-          </h3>
-          <div className="flex-shrink-0 text-right">
-            <CountdownTimer deadline={deadline} />
+        <div
+          {...swipeHandlers}
+          onClick={() => !isAnimatingOut && setIsExpanded(true)}
+        >
+          <div className="flex justify-between items-start">
+            <h3 className={`text-subtitle font-bold mb-2 pr-4 ${titleColorClass} min-w-0`}>
+              <span className="block truncate" title={title}>{title}</span>
+            </h3>
+            <div className="flex-shrink-0 text-right">
+              <CountdownTimer deadline={deadline} />
+            </div>
+          </div>
+          <div className="flex justify-between items-center mt-2">
+            <p className="text-meta text-slate-400 flex items-center">
+              <User size={16} className="mr-2" /> {actorName}
+            </p>
+            <div className="flex items-center">
+              {status === 'review' && <Eye size={16} className="text-yellow-400" />}
+              {status === 'completed' && <CheckCircle size={16} className="text-green-400" />}
+              {isArchived && <Archive size={16} className="text-slate-500" />}
+            </div>
           </div>
         </div>
-        <div className="flex justify-between items-center mt-2">
-          <p className="text-sm text-slate-400 flex items-center">
-            <User size={16} className="mr-2" /> {actorName}
-          </p>
-          <div className="flex items-center">
-            {status === 'review' && <Eye size={16} className="text-yellow-400" />}
-            {status === 'completed' && <CheckCircle size={16} className="text-green-400" />}
-            {isArchived && <Archive size={16} className="text-slate-500" />}
-          </div>
-        </div>
-      </div>
+      </BaseCard>
 
       {isExpanded && createPortal(
         <div className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}>

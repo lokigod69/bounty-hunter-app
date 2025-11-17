@@ -1,13 +1,10 @@
 // src/components/FriendCard.tsx
+// Phase 1: Updated to use BaseCard for consistent styling.
 // Card component for displaying friend information.
-// Changes:
-// - Updated card styling to use consistent Tailwind glassmorphism (bg-gray-800/50, backdrop-blur, border, p-6, hover:border-gray-600).
-// - Removed unused 'React' import.
-// - Added delete (Trash2) icon button for pending sent friend requests.
-// - Added `onCancelSentRequest` prop for deletion logic.
 
 import { Profile } from '../types/database';
-import { CheckCircle, X, UserX, Trash2, Check } from 'lucide-react'; // Added Trash2
+import { CheckCircle, X, UserX, Trash2, Check } from 'lucide-react';
+import { BaseCard } from './ui/BaseCard';
 
 interface FriendCardProps {
   profile: Profile;
@@ -43,7 +40,7 @@ export default function FriendCard({
   };
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-all flex items-center duration-300">
+    <BaseCard variant="glass" className="flex items-center">
       {/* Avatar */}
       <div className="mr-4">
         {profile.avatar_url ? (
@@ -125,6 +122,6 @@ export default function FriendCard({
           </>
         )}
       </div>
-    </div>
+    </BaseCard>
   );
 }

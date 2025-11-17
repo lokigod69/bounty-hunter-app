@@ -3,9 +3,9 @@
 
 import React from 'react';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
-
 import { useTranslation } from 'react-i18next';
 import TaskCard from '../components/TaskCard';
+import { PageContainer, PageHeader, PageBody } from '../components/layout';
 
 
 const ArchivePage: React.FC = () => {
@@ -21,29 +21,35 @@ const ArchivePage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 text-center">
-      <h1 className="text-4xl font-bold app-title">{t('navigation.history', 'History')}</h1>
-      <p className="text-white/70 mb-6 max-w-2xl mx-auto">{t('history.description', 'Review your history of completed and expired contracts.')}</p>
-      <div className="space-y-4">
+    <PageContainer>
+      <PageHeader 
+        title={t('navigation.history', 'History')} 
+        subtitle={t('history.description', 'Review your history of completed and expired contracts.')} 
+      />
+      <PageBody>
         {archivedTasks.length > 0 ? (
-          archivedTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isCreatorView={false}
-              onStatusUpdate={() => {}}
-              onProofUpload={async () => null}
-              onDeleteTaskRequest={() => {}}
-              uploadProgress={0}
-              refetchTasks={refetchArchivedTasks}
-              isArchived={true}
-            />
-          ))
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+            {archivedTasks.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                isCreatorView={false}
+                onStatusUpdate={() => {}}
+                onProofUpload={async () => null}
+                onDeleteTaskRequest={() => {}}
+                uploadProgress={0}
+                refetchTasks={refetchArchivedTasks}
+                isArchived={true}
+              />
+            ))}
+          </div>
         ) : (
-          <p className="text-white/70">No archived tasks found.</p>
+          <div className="text-center py-10">
+            <p className="text-body text-white/70">No archived tasks found.</p>
+          </div>
         )}
-      </div>
-    </div>
+      </PageBody>
+    </PageContainer>
   );
 };
 

@@ -8,6 +8,8 @@ import { supabase } from '../lib/supabase';
 import { UserCircle, Edit3, UploadCloud, AlertCircle } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import toast from 'react-hot-toast';
+import { PageContainer, PageHeader, PageBody } from '../components/layout';
+import { BaseCard } from '../components/ui/BaseCard';
 
 export default function ProfileEdit() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -81,21 +83,27 @@ export default function ProfileEdit() {
 
   if (authLoading) {
     return (
-      <div className="max-w-lg mx-auto glass-card p-8 text-center">
-        Loading profile...
-      </div>
+      <PageContainer>
+        <BaseCard>
+          <div className="text-center">Loading profile...</div>
+        </BaseCard>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold gradient-text flex items-center">
-          <Edit3 size={24} className="mr-2" /> Edit Profile
-        </h1>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title={
+          <span className="flex items-center justify-center">
+            <Edit3 size={24} className="mr-2" /> Edit Profile
+          </span>
+        }
+      />
 
-      <form onSubmit={handleSubmit} className="glass-card p-6 space-y-6">
+      <PageBody>
+        <BaseCard>
+          <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col items-center space-y-3">
           {avatarPreview ? (
             <img 
@@ -141,7 +149,9 @@ export default function ProfileEdit() {
             <UserCircle size={16} className="mr-1" /> {success}
           </div>
         )}
-      </form>
-    </div>
+          </form>
+        </BaseCard>
+      </PageBody>
+    </PageContainer>
   );
 }

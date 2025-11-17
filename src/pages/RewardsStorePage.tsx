@@ -13,6 +13,7 @@ import CreateBountyModal from '../components/CreateBountyModal';
 import EditBountyModal from '../components/EditBountyModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PullToRefresh from 'react-simple-pull-to-refresh';
+import { PageContainer, PageHeader, PageBody } from '../components/layout';
 
 type Tab = 'available' | 'created' | 'collected';
 
@@ -110,7 +111,7 @@ const RewardsStorePage: React.FC = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 spacing-grid">
         {filteredRewards.map(reward => (
           <RewardCard 
             key={reward.id} 
@@ -127,17 +128,19 @@ const RewardsStorePage: React.FC = () => {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-bold app-title text-center">{t('rewards.title', 'Bounties')}</h1>
+      <PageContainer>
+        <PageHeader title={t('rewards.title', 'Bounties')} />
 
-      {/* Tabs */}
-      <div className="mb-8 flex justify-center border-b border-gray-700">
-        <button onClick={() => setActiveTab('available')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'available' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.available')}</button>
-        <button onClick={() => setActiveTab('created')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'created' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.created')}</button>
-        <button onClick={() => setActiveTab('collected')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'collected' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.collected')}</button>
-      </div>
+        {/* Tabs */}
+        <div className="mb-8 flex justify-center border-b border-gray-700">
+          <button onClick={() => setActiveTab('available')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'available' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.available')}</button>
+          <button onClick={() => setActiveTab('created')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'created' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.created')}</button>
+          <button onClick={() => setActiveTab('collected')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'collected' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.collected')}</button>
+        </div>
 
-      {renderContent()}
+        <PageBody>
+          {renderContent()}
+        </PageBody>
 
       <button 
         onClick={() => setCreateModalOpen(true)}
@@ -164,15 +167,15 @@ const RewardsStorePage: React.FC = () => {
         bounty={selectedBounty}
       />
 
-      <ConfirmDialog
-        isOpen={isConfirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-        onConfirm={onConfirmDelete}
-        title={t('rewards.confirmDialog.deleteTitle')}
-        message={t('rewards.confirmDialog.deleteMessage')}
-        isLoading={isDeleting}
-      />
-    </div>
+        <ConfirmDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+          onConfirm={onConfirmDelete}
+          title={t('rewards.confirmDialog.deleteTitle')}
+          message={t('rewards.confirmDialog.deleteMessage')}
+          isLoading={isDeleting}
+        />
+      </PageContainer>
     </PullToRefresh>
   );
 };

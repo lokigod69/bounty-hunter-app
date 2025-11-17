@@ -33,7 +33,52 @@
 
 ---
 
-## 2. Repository Structure (Frontend-Focused, 3 Levels)
+## 2. Layout & Design System
+
+### 2.1 Layout Primitives
+
+**PageContainer** (`src/components/layout/PageContainer.tsx`)
+- Standardized page container providing consistent max-width (5xl), horizontal centering, and responsive padding
+- Used by all main pages: Dashboard, IssuedPage, RewardsStorePage, ArchivePage, Friends, ProfileEdit
+
+**PageHeader** (`src/components/layout/PageHeader.tsx`)
+- Standardized page header with title, optional subtitle, and action buttons
+- Title uses `.text-display` and `.app-title` classes
+- Subtitle uses `.text-meta` for secondary text
+
+**PageBody** (`src/components/layout/PageBody.tsx`)
+- Standardized page body wrapper providing consistent vertical spacing (`space-y-6`)
+
+**StatsRow** (`src/components/layout/StatsRow.tsx`)
+- Reusable component for displaying summary statistics (used in Dashboard, IssuedPage)
+- Consistent icon/value/label layout with responsive spacing
+
+### 2.2 Card Primitives
+
+**BaseCard** (`src/components/ui/BaseCard.tsx`)
+- Base card component providing consistent styling across all cards
+- Variants: `glass` (default, uses `.glass-card`), `solid`, `bordered`
+- Standardized padding via `.spacing-card` class
+- Used by: `TaskCard`, `RewardCard`, `FriendCard`
+
+### 2.3 Typography & Spacing Scale
+
+**Typography Roles** (defined in `src/index.css`):
+- `.text-display` - Very large titles (4xl/5xl, MandaloreTitle font)
+- `.text-title` - Page/section titles (3xl, Mandalore font)
+- `.text-subtitle` - Subtitles (xl, Poppins semibold)
+- `.text-body` - Body text (base, Poppins medium)
+- `.text-meta` - Small labels/timestamps (xs/sm, Poppins regular)
+
+**Spacing Utilities** (defined in `src/index.css`):
+- `.spacing-page` - Page-level responsive padding
+- `.spacing-section` - Section-level vertical spacing
+- `.spacing-card` - Card padding (p-4 sm:p-6)
+- `.spacing-grid` - Grid gaps (gap-4 sm:gap-6)
+
+---
+
+## 3. Repository Structure (Frontend-Focused, 3 Levels)
 
 ```text
 bounty-hunter-app/
@@ -185,7 +230,7 @@ All authenticated routes share `Layout` as the top-level shell (header/HUD, mobi
 
 ---
 
-## 4. Core Domains & Modules
+## 5. Core Domains & Modules
 
 ### 4.1 Contracts / Tasks Domain
 
@@ -277,7 +322,7 @@ All authenticated routes share `Layout` as the top-level shell (header/HUD, mobi
 
 ---
 
-## 5. State Management & Data Flow
+## 6. State Management & Data Flow
 
 ### 5.1 Global / Shared State
 
@@ -336,7 +381,7 @@ These components are **feature-rich but heavy**. They work, but they concentrate
 
 ---
 
-## 6. UI Composition & Styling
+## 7. UI Composition & Styling
 
 ### 6.1 Layout System
 
@@ -416,7 +461,7 @@ These components are **feature-rich but heavy**. They work, but they concentrate
 
 ---
 
-## 7. Interaction Layer & Overlays (Analogue to 3D Scene & Controls)
+## 8. Interaction Layer & Overlays (Analogue to 3D Scene & Controls)
 
 While this app is not a 3D gallery, it behaves like a small interactive application with layered HUD, overlays, and mobile gestures. The "interaction layer" is essentially:
 
@@ -464,7 +509,7 @@ While this app is not a 3D gallery, it behaves like a small interactive applicat
 
 ---
 
-## 8. Cross-Platform Readiness (Web → iOS / React Native)
+## 9. Cross-Platform Readiness (Web → iOS / React Native)
 
 ### 8.1 Platform-Agnostic Modules (Today)
 
@@ -517,7 +562,7 @@ Once this split exists:
 
 ---
 
-## 9. Refactor & Upgrade Roadmap (Phased)
+## 10. Refactor & Upgrade Roadmap (Phased)
 
 This roadmap focuses on:
 
@@ -555,6 +600,42 @@ This roadmap focuses on:
 - **Acceptance criteria**
   - Visual audit across all primary screens shows consistent padding, typography, and card treatments.
   - No screen redefines its own max-width or background gradient in a way that clashes with `Layout` and `index.css`.
+
+**Status**: ✅ **IMPLEMENTED** (2025-01-27)
+- **Layout Primitives Created**:
+  - `src/components/layout/PageContainer.tsx` - Standardized page container (max-w-5xl, responsive padding)
+  - `src/components/layout/PageHeader.tsx` - Standardized page header with title/subtitle/actions
+  - `src/components/layout/PageBody.tsx` - Standardized page body wrapper with consistent spacing
+  - `src/components/layout/StatsRow.tsx` - Reusable stats row component for summary statistics
+- **Base Card Component**:
+  - `src/components/ui/BaseCard.tsx` - Standardized base card with variants (glass, solid, bordered)
+  - All card components (`TaskCard`, `RewardCard`, `FriendCard`) now use `BaseCard`
+- **Typography Scale** (defined in `src/index.css`):
+  - `.text-display` - Very large titles (text-4xl sm:text-5xl)
+  - `.text-title` - Page/section titles (text-3xl)
+  - `.text-subtitle` - Subtitles (text-xl)
+  - `.text-body` - Body text (text-base)
+  - `.text-meta` - Small labels/timestamps (text-xs sm:text-sm)
+- **Spacing Scale** (defined in `src/index.css`):
+  - `.spacing-page` - Page-level padding
+  - `.spacing-section` - Section-level spacing
+  - `.spacing-card` - Card padding
+  - `.spacing-grid` - Grid gaps
+- **Pages Refactored**:
+  - `Dashboard` - Uses PageContainer, PageHeader, PageBody, StatsRow
+  - `IssuedPage` - Uses PageContainer, PageHeader, PageBody, StatsRow
+  - `RewardsStorePage` - Uses PageContainer, PageHeader, PageBody
+  - `Friends` - Uses PageContainer, PageHeader, PageBody
+  - `ArchivePage` - Uses PageContainer, PageHeader, PageBody
+  - `MyCollectedRewardsPage` - Uses PageContainer, PageHeader, PageBody
+  - `ProfileEdit` - Uses PageContainer, PageHeader, PageBody, BaseCard
+- **Cards Updated**:
+  - `TaskCard` collapsed state uses `BaseCard` variant="glass"
+  - `RewardCard` uses `BaseCard` variant="solid"
+  - `FriendCard` uses `BaseCard` variant="glass"
+- **Remaining Work**:
+  - Some pages still have inline text size classes that could be migrated to typography scale (non-critical)
+  - Mobile-specific refinements may be needed after visual testing
 
 ### Phase 2 – Overlay & Interaction Layer Refactor (Modal System)
 
@@ -612,6 +693,29 @@ This phase should align with and subsume the existing modal/z-index plans in:
   - Domain rules are expressed as pure functions that can be imported into tests or reused by other platforms.
   - Pages and components no longer import `supabase` directly; they talk only to hooks or repositories.
 
+**Status**: ✅ **IMPLEMENTED** (2025-01-27)
+- **Core Domain Modules Created**:
+  - `src/core/contracts/contracts.types.ts` - Domain types for contracts (ContractStatus, Contract, StatusChangeContext, StatusChangeResult)
+  - `src/core/contracts/contracts.domain.ts` - Pure functions for status transitions (`evaluateStatusChange`, `requiresProof`, `hasProofSubmitted`)
+  - `src/core/credits/credits.domain.ts` - Credit awarding rules (`decideCreditsForApprovedContract`, `canAwardCredits`)
+  - `src/core/rewards/rewards.domain.ts` - Reward purchase validation (`canPurchaseReward`)
+  - `src/core/proofs/proofs.domain.ts` - Proof validation (`validateProofPayload`, `requiresProofForStatusChange`, `getStatusAfterProofSubmission`)
+  - `src/core/index.ts` - Barrel file for exports
+- **Pages Refactored**:
+  - `Dashboard.tsx` - `handleStatusUpdate` now uses `evaluateStatusChange` from domain
+  - `IssuedPage.tsx` - `handleApprove` and `handleReject` use domain functions for status transitions and credit awarding
+- **Hooks Refactored**:
+  - `useTasks.ts` - `updateTaskStatus` uses domain functions for status evaluation and credit decisions; `uploadProof` uses domain functions for proof validation and status determination
+- **Business Logic Extracted**:
+  - Status transition rules: Who can change status, valid transitions, auto-completion logic
+  - Credit awarding: When credits are awarded, how much, based on contract reward
+  - Proof validation: Type-specific validation, status determination after proof submission
+  - Reward purchase: Client-side validation (server-side validation remains in RPC)
+- **Remaining Work**:
+  - Hooks still import Supabase directly (acceptable for now; Phase 4 will abstract this)
+  - Some business logic may still exist in hooks (non-critical edge cases)
+  - Domain modules are pure functions but could benefit from repository pattern abstraction (Phase 4)
+
 ### Phase 4 – Platform Boundary & iOS Readiness
 
 - **Goals**
@@ -645,7 +749,7 @@ This phase should align with and subsume the existing modal/z-index plans in:
 
 ---
 
-## 10. Highest-Leverage Changes (Summary)
+## 11. Highest-Leverage Changes (Summary)
 
 1. **Adopt the existing z-index token system everywhere and centralize overlay rendering through a single `overlay-root`** to eliminate entire classes of mobile layering bugs (menus vs modals vs critical overlays).
 2. **Introduce small, reusable layout primitives (`Page`, `PageHeader`, `PageBody`, `PageStatsRow`) and a simple typography scale**, then apply them across `Dashboard`, `IssuedPage`, `RewardsStorePage`, `ArchivePage`, and `Friends` to stop visual drift between screens.

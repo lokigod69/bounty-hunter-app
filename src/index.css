@@ -140,6 +140,52 @@ p,
 }
 /* --- FONT SYSTEM OPTION A (REVISED) END --- */
 
+/* Phase 1: Typography Scale - Standardized text roles */
+.text-display {
+  @apply text-4xl sm:text-5xl font-bold;
+  font-family: 'MandaloreTitle', 'Mandalore', 'Bebas Neue';
+  letter-spacing: 0.1em;
+}
+
+.text-title {
+  @apply text-3xl font-bold;
+  font-family: 'Mandalore', 'Bebas Neue';
+}
+
+.text-subtitle {
+  @apply text-xl font-semibold;
+  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+}
+
+.text-body {
+  @apply text-base leading-relaxed;
+  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+  font-weight: 500;
+}
+
+.text-meta {
+  @apply text-xs sm:text-sm;
+  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+  font-weight: 400;
+}
+
+/* Phase 1: Standardized spacing scale */
+.spacing-page {
+  @apply px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8;
+}
+
+.spacing-section {
+  @apply space-y-6;
+}
+
+.spacing-card {
+  @apply p-4 sm:p-6;
+}
+
+.spacing-grid {
+  @apply gap-4 sm:gap-6;
+}
+
 @layer components {
   .input-field {
     @apply bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white placeholder-white/50 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 outline-none transition;

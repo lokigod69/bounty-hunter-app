@@ -26,6 +26,9 @@ import type { Database } from '../types/database';
 import type { NewTaskData, Task, TaskStatus, ProofType, TaskWithProfiles } from '../types/custom';
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
+import { evaluateStatusChange, hasProofSubmitted, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
+import { validateProofPayload, getStatusAfterProofSubmission } from '../core/proofs/proofs.domain';
 
 // Helper to reliably get an error message string
 interface ErrorWithMessage {
@@ -421,26 +424,39 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       }
       console.log('[useTasks] updateTaskStatus: Successfully updated task status in DB. Result:', updatedTaskResult);
 
-      // Award credits if task is completed and is a credit task
-      if (requestedStatus === 'completed' && originalTask.reward_type === 'credit' && originalTask.assigned_to) {
-        console.log('[useTasks] updateTaskStatus: Attempting to award credits. Task original reward_text:', originalTask.reward_text, 'Assigned to:', originalTask.assigned_to);
-        const creditAmount = parseInt(originalTask.reward_text || '0', 10);
-        if (creditAmount > 0) {
-          console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditAmount);
+      // Award credits using domain logic
+      const statusChangeContext: StatusChangeContext = {
+        actorId: currentUserId,
+        contractOwnerId: originalTask.created_by,
+        assigneeId: originalTask.assigned_to,
+        currentStatus: originalTask.status as TaskStatus,
+        requestedStatus,
+        proofRequired: originalTask.proof_required,
+        hasProof: hasProofSubmitted(originalTask),
+      };
+
+      const statusChangeResult = evaluateStatusChange(statusChangeContext);
+
+      if (statusChangeResult.shouldAwardCredits && originalTask.reward_type === 'credit' && originalTask.reward_text && originalTask.assigned_to) {
+        const creditDecision = decideCreditsForApprovedContract({
+          contractId: taskId,
+          assigneeId: originalTask.assigned_to,
+          baseReward: parseInt(originalTask.reward_text || '0', 10),
+        });
+
+        if (creditDecision.amount > 0) {
+          console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditDecision.amount);
           const { error: creditError } = await client.rpc('increment_user_credits', {
             user_id_param: originalTask.assigned_to,
-            amount_param: creditAmount,
+            amount_param: creditDecision.amount,
           });
           if (creditError) {
             console.error('[useTasks] updateTaskStatus: Error calling increment_user_credits RPC:', creditError);
             toast.error(`Task completed, but failed to award credits: ${getErrorMessage(creditError)}`, { duration: 5000 });
-            // Note: Task status is already updated. Consider if further rollback is needed here.
           } else {
             console.log('[useTasks] updateTaskStatus: Successfully called increment_user_credits RPC.');
-            toast.success(`${creditAmount} credits awarded to ${updatedTaskResult.profiles?.display_name || 'assignee'}!`, { id: `creditAward-${taskId}`, duration: 4000 });
+            toast.success(`${creditDecision.amount} credits awarded to ${updatedTaskResult.profiles?.display_name || 'assignee'}!`, { id: `creditAward-${taskId}`, duration: 4000 });
           }
-        } else {
-          console.log('[useTasks] updateTaskStatus: Credit amount is 0 or invalid, not calling increment_user_credits. Amount:', creditAmount);
         }
       }
 
@@ -514,12 +530,22 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     toast.loading('Uploading proof...', { id: toastId });
     setUploadProgress(0); 
 
+    // Validate proof payload using domain logic
+    const proofValidation = validateProofPayload({ type: proofType, file });
+    if (!proofValidation.valid) {
+      toast.error(proofValidation.errors?.join(' ') || 'Invalid proof payload.');
+      return false;
+    }
+
+    // Determine status after proof submission using domain logic
+    const statusAfterProof = getStatusAfterProofSubmission(taskToUpdate.proof_required);
+
     const originalTaskState = { ...taskToUpdate }; // For rollback
     // Optimistic UI update
     const optimisticTaskUpdate = {
       ...taskToUpdate,
       proof_type: proofType,
-      status: 'review' as TaskStatus, 
+      status: statusAfterProof as TaskStatus, 
     };
     setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? optimisticTaskUpdate : t));
 
@@ -556,7 +582,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .update({
           proof_url: proofUrl,
           proof_type: proofType,
-          status: 'review' as TaskStatus,
+          status: statusAfterProof as TaskStatus,
         })
         .eq('id', taskId)
         // Remove .eq('assigned_to', currentUserId) to let RLS handle permissions

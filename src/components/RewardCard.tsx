@@ -1,4 +1,5 @@
 // src/components/RewardCard.tsx
+// Phase 1: Updated to use BaseCard for consistent styling.
 // A component to display a single reward or bounty item.
 
 import React, { useState, useEffect } from 'react';
@@ -6,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { Database } from '../types/database';
 import CreditDisplay from './CreditDisplay';
+import { BaseCard } from './ui/BaseCard';
 
 export type Reward = Database['public']['Tables']['rewards_store']['Row'];
 
@@ -54,11 +56,11 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-full">
+    <BaseCard variant="solid" className="overflow-hidden flex flex-col h-full p-0">
       {renderImageOrEmoji()}
       <div className="p-3 md:p-4 flex-grow">
-        <h3 className="text-lg md:text-xl font-bold text-white mb-2 truncate" title={name}>{name}</h3>
-        <p className="text-gray-400 text-sm leading-relaxed">{description}</p>
+        <h3 className="text-subtitle font-bold text-white mb-2 truncate" title={name}>{name}</h3>
+        <p className="text-body text-gray-400 text-sm">{description}</p>
       </div>
       <div className="p-3 md:p-4 border-t border-gray-700/50 flex justify-between items-center">
         <CreditDisplay amount={credit_cost || 0} />
@@ -89,7 +91,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </button>
         )}
       </div>
-    </div>
+    </BaseCard>
   );
 };
 

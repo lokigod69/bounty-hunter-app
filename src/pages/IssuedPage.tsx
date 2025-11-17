@@ -51,6 +51,7 @@ import { useDailyQuote } from '../hooks/useDailyQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
+import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
@@ -146,10 +147,33 @@ export default function IssuedPage() {
         throw fetchError || new Error(t('contracts.taskNotFoundOrNotCreator'));
       }
 
-      // 2. Update task status to 'completed'
+      // 2. Evaluate status change using domain logic
+      const statusChangeContext: StatusChangeContext = {
+        actorId: user.id,
+        contractOwnerId: user.id, // Creator is approving
+        assigneeId: task.assigned_to,
+        currentStatus: 'review', // Approving from review status
+        requestedStatus: 'completed',
+        proofRequired: false, // Not needed for approval decision
+        hasProof: true, // Assumed true if in review
+      };
+
+      const statusChangeResult = evaluateStatusChange(statusChangeContext);
+
+      if (!statusChangeResult.allowed) {
+        const errorMsg = statusChangeResult.errors?.join(' ') || 'Cannot approve this task.';
+        throw new Error(errorMsg);
+      }
+
+      // 3. Update task status to 'completed'
+      const updateData: { status: string; completed_at?: string } = { status: 'completed' };
+      if (statusChangeResult.shouldSetCompletedAt) {
+        updateData.completed_at = new Date().toISOString();
+      }
+
       const { error: updateError } = await supabase
         .from('tasks')
-        .update({ status: 'completed' })
+        .update(updateData)
         .eq('id', taskId);
 
       if (updateError) {
@@ -158,22 +182,27 @@ export default function IssuedPage() {
 
       soundManager.play('approveProof');
 
-      // 3. If it's a credit task, award credits via RPC
-      if (task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
-        const creditAmount = parseInt(task.reward_text, 10);
-        if (!isNaN(creditAmount) && creditAmount > 0) {
+      // 4. Award credits if domain logic says so
+      if (statusChangeResult.shouldAwardCredits && task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
+        const creditDecision = decideCreditsForApprovedContract({
+          contractId: taskId,
+          assigneeId: task.assigned_to,
+          baseReward: parseInt(task.reward_text, 10),
+        });
+
+        if (creditDecision.amount > 0) {
           const { error: rpcError } = await supabase.rpc('increment_user_credits', {
-            user_id_param: task.assigned_to, // Corrected parameter name
-            amount_param: creditAmount,      // Corrected parameter name
+            user_id_param: task.assigned_to,
+            amount_param: creditDecision.amount,
           });
 
           if (rpcError) {
             console.error('Failed to award credits via RPC:', rpcError);
-            toast.error(t('contracts.approvalFailedAward', { amount: creditAmount }));
+            toast.error(t('contracts.approvalFailedAward', { amount: creditDecision.amount }));
           } else {
             soundManager.play('success');
             soundManager.play('coin');
-            toast.success(t('contracts.awardSuccess', { amount: creditAmount }));
+            toast.success(t('contracts.awardSuccess', { amount: creditDecision.amount }));
           }
         }
       }
@@ -199,11 +228,44 @@ export default function IssuedPage() {
     }
 
     try {
+      // Fetch task to get context
+      const { data: task, error: fetchError } = await supabase
+        .from('tasks')
+        .select('assigned_to, created_by, status')
+        .eq('id', taskId)
+        .eq('created_by', user.id)
+        .single();
+
+      if (fetchError || !task) {
+        throw fetchError || new Error(t('contracts.taskNotFoundOrNotCreator'));
+      }
+
+      // Evaluate status change using domain logic
+      const statusChangeContext: StatusChangeContext = {
+        actorId: user.id,
+        contractOwnerId: user.id,
+        assigneeId: task.assigned_to,
+        currentStatus: task.status as TaskStatus,
+        requestedStatus: 'rejected',
+        proofRequired: false,
+      };
+
+      const statusChangeResult = evaluateStatusChange(statusChangeContext);
+
+      if (!statusChangeResult.allowed) {
+        const errorMsg = statusChangeResult.errors?.join(' ') || 'Cannot reject this task.';
+        throw new Error(errorMsg);
+      }
+
+      // Update task status - rejection resets to pending and clears proof
       const { error } = await supabase
         .from('tasks')
-        .update({ status: 'rejected' })
-        .eq('id', taskId)
-        .eq('created_by', user.id); // Security check
+        .update({ 
+          status: 'pending',
+          proof_url: null,
+          proof_type: null,
+        })
+        .eq('id', taskId);
 
       if (error) {
         throw error;
@@ -337,116 +399,108 @@ export default function IssuedPage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white">
-      <header className="mb-6">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-2">{t('contracts.myMissions')}</h1>
-          <p className="text-white/60 text-sm">{t('contracts.myMissionsDescription')}</p>
-        </div>
+      <PageContainer>
+        <PageHeader 
+          title={t('contracts.myMissions')} 
+          subtitle={t('contracts.myMissionsDescription')} 
+        />
+        
         {dailyQuote && (
-          <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2">
+          <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
             &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
           </p>
         )}
-      </header>
 
-      {/* New Contract Form Modal triggered by FAB */}
-      {isTaskFormOpen && user && (
-        <TaskForm
-          userId={user.id} // Pass userId
-          onClose={() => setIsTaskFormOpen(false)}
-          onSubmit={handleCreateContract} // Pass the actual submit handler
-          // editingTask can be omitted for new task creation
-        />
-      )}
+        {/* New Contract Form Modal triggered by FAB */}
+        {isTaskFormOpen && user && (
+          <TaskForm
+            userId={user.id}
+            onClose={() => setIsTaskFormOpen(false)}
+            onSubmit={handleCreateContract}
+          />
+        )}
 
-      {/* Enhanced Floating Action Button - only show when missions exist */}
-      {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
-        <button
-          onClick={handleCreateNewContract}
-          className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
-          aria-label={t('contracts.createNewMission')}
-          title={t('contracts.createNewMission')}
-          data-testid="missions-fab"
-        >
-          <PlusCircle size={28} className="sm:hidden" />
-          <PlusCircle size={24} className="hidden sm:block md:hidden" />
-          <PlusCircle size={28} className="hidden md:block" />
-        </button>
-      )}
-
-
-      {/* New Minimalist Stats Icons for Issued Page */}
-      <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
-        {/* Pending Contracts */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-orange-400 mb-2"> {/* Changed to orange for Pending, kept icon */} 
-            <AlertTriangle size={32} /> {/* Changed icon to AlertTriangle for Pending */} 
-          </div>
-          <div className="text-3xl font-bold text-slate-100">{stats.pending}</div>
-          <div className="text-xs text-slate-400">{t('contracts.open')}</div>
-        </div>
-        
-        {/* Pending / In Review */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-yellow-400 mb-2">
-            <Clock size={32} />
-          </div>
-          <div className="text-3xl font-bold text-slate-100">{stats.review}</div>
-          <div className="text-xs text-slate-400">{t('contracts.review')}</div>
-        </div>
-        
-        {/* Completed */}
-        <div className="text-center flex flex-col items-center">
-          <div className="text-green-400 mb-2">
-            <CheckCircle size={32} />
-          </div>
-          <div className="text-3xl font-bold text-slate-100">{stats.completed}</div>
-          <div className="text-xs text-slate-400">{t('contracts.completed')}</div>
-        </div>
-      </div>
-
-      {sortedIssuedContracts.length === 0 && !loading ? (
-        <div className="text-center py-10">
-          <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-          <p className="text-xl text-slate-300 mb-6">{t('contracts.noMissions')}</p>
+        {/* Enhanced Floating Action Button - only show when missions exist */}
+        {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
           <button
             onClick={handleCreateNewContract}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-            data-testid="missions-empty-cta"
+            className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
             aria-label={t('contracts.createNewMission')}
+            title={t('contracts.createNewMission')}
+            data-testid="missions-fab"
           >
-            <PlusCircle size={20} />
-            {t('contracts.createNewMission')}
+            <PlusCircle size={28} className="sm:hidden" />
+            <PlusCircle size={24} className="hidden sm:block md:hidden" />
+            <PlusCircle size={28} className="hidden md:block" />
           </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedIssuedContracts.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isCreatorView={true}
-              onStatusUpdate={() => {}} // No-op; handled by approve/reject
-              onApprove={() => handleApprove(task.id)}
-              onReject={() => handleReject(task.id)}
-              onProofUpload={handleProofUpload}
-              uploadProgress={0}
-              onDeleteTaskRequest={handleDeleteTaskRequest}
-            />
-          ))}
-        </div>
-      )}
+        )}
 
-      <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDeleteTask}
-        title="Confirm Delete Contract"
-        message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
-        isConfirming={isDeleting} // Enabled for delete functionality
-      />
-    </div>
+        <StatsRow
+          stats={[
+            {
+              icon: <AlertTriangle size={32} />,
+              value: stats.pending,
+              label: t('contracts.open'),
+              iconColor: 'text-orange-400',
+            },
+            {
+              icon: <Clock size={32} />,
+              value: stats.review,
+              label: t('contracts.review'),
+              iconColor: 'text-yellow-400',
+            },
+            {
+              icon: <CheckCircle size={32} />,
+              value: stats.completed,
+              label: t('contracts.completed'),
+              iconColor: 'text-green-400',
+            },
+          ]}
+        />
+
+        <PageBody>
+          {sortedIssuedContracts.length === 0 && !loading ? (
+            <div className="text-center py-10">
+              <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
+              <p className="text-subtitle text-slate-300 mb-6">{t('contracts.noMissions')}</p>
+              <button
+                onClick={handleCreateNewContract}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+                data-testid="missions-empty-cta"
+                aria-label={t('contracts.createNewMission')}
+              >
+                <PlusCircle size={20} />
+                {t('contracts.createNewMission')}
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+              {sortedIssuedContracts.map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isCreatorView={true}
+                  onStatusUpdate={() => {}} // No-op; handled by approve/reject
+                  onApprove={() => handleApprove(task.id)}
+                  onReject={() => handleReject(task.id)}
+                  onProofUpload={handleProofUpload}
+                  uploadProgress={0}
+                  onDeleteTaskRequest={handleDeleteTaskRequest}
+                />
+              ))}
+            </div>
+          )}
+        </PageBody>
+
+        <ConfirmDeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDeleteTask}
+          title="Confirm Delete Contract"
+          message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
+          isConfirming={isDeleting}
+        />
+      </PageContainer>
     </PullToRefresh>
   );
 }

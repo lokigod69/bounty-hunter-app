@@ -20,6 +20,9 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import HuntersCreed from '../components/HuntersCreed';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { soundManager as sm } from '../utils/soundManager';
+import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
+import { evaluateStatusChange, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { hasProofSubmitted } from '../core/contracts/contracts.domain';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -143,37 +146,34 @@ export default function Dashboard() {
         return;
       }
 
-      // Step 2: Client-side validation for UI feedback
-      const isAssignee = task.assigned_to === user.id;
-      const isCreator = task.created_by === user.id;
-      
-      if (!isAssignee && !isCreator) {
-        const errorMsg = 'You do not have permission to update this task.';
-        console.error('[Dashboard] Permission denied:', { userId: user.id, assigned_to: task.assigned_to, created_by: task.created_by });
+      // Step 2: Evaluate status change using domain logic
+      const statusChangeContext: StatusChangeContext = {
+        actorId: user.id,
+        contractOwnerId: task.created_by,
+        assigneeId: task.assigned_to,
+        currentStatus: task.status as TaskStatus,
+        requestedStatus: status as TaskStatus,
+        proofRequired: task.proof_required,
+        hasProof: hasProofSubmitted(task),
+      };
+
+      const statusChangeResult = evaluateStatusChange(statusChangeContext);
+
+      if (!statusChangeResult.allowed) {
+        const errorMsg = statusChangeResult.errors?.join(' ') || 'Status change not allowed.';
+        console.error('[Dashboard] Status change not allowed:', statusChangeResult.errors);
         toast.error(errorMsg, { id: toastId });
         return;
       }
 
-      // Step 3: Validate status transition
-      if (task.status === 'completed') {
-        const errorMsg = 'This task has already been completed.';
-        console.warn('[Dashboard] Task already completed:', taskId);
-        toast.error(errorMsg, { id: toastId });
-        return;
-      }
-
-      // Step 4: Determine final status based on proof requirements
-      const finalStatus = ((!task.proof_required && status === 'review')
-        ? 'completed'
-        : status) as TaskStatus;
-
+      const finalStatus = statusChangeResult.newStatus!;
       console.log('[Dashboard] Status transition:', { currentStatus: task.status, requestedStatus: status, finalStatus });
 
-      // Step 5: Update task - remove restrictive filter to let RLS handle permissions
+      // Step 3: Update task - remove restrictive filter to let RLS handle permissions
       const updateData: { status: string; completed_at?: string } = { status: finalStatus };
       
-      // Set completion timestamp for completed tasks
-      if (finalStatus === 'completed') {
+      // Set completion timestamp if domain logic says so
+      if (statusChangeResult.shouldSetCompletedAt) {
         updateData.completed_at = new Date().toISOString();
       }
 
@@ -299,69 +299,64 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="max-w-4xl mx-auto p-4 md:p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold app-title">{t('contracts.title')}</h1>
-          <p className="text-white/60 text-sm">{t('contracts.description')}</p>
-        </div>
+      <PageContainer>
+        <PageHeader 
+          title={t('contracts.title')} 
+          subtitle={t('contracts.description')} 
+        />
 
-        {/* New Minimalist Stats Icons */}
-        <div className="flex flex-wrap justify-around items-center mb-8 py-4 gap-4 sm:gap-8 md:gap-12">
-          {/* Open/Pending */}
-          <div className="text-center flex flex-col items-center">
-            <div className="text-red-400 mb-2">
-              <ScrollText size={32} />
+        <StatsRow
+          stats={[
+            {
+              icon: <ScrollText size={32} />,
+              value: pendingCount,
+              label: t('contracts.open'),
+              iconColor: 'text-red-400',
+            },
+            {
+              icon: <Clock size={32} />,
+              value: reviewCount,
+              label: t('contracts.review'),
+              iconColor: 'text-yellow-400',
+            },
+            {
+              icon: <CheckCircle size={32} />,
+              value: completedCount,
+              label: t('contracts.done'),
+              iconColor: 'text-green-400',
+            },
+          ]}
+        />
+
+        <PageBody>
+          {/* Assigned Contracts List */}
+          {sortedAssignedContracts.length === 0 && !loading && (
+            <div className="text-center py-10 bg-gray-800/30 rounded-lg">
+              <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+              <h3 className="text-subtitle text-white/90">{t('contracts.noContracts')}</h3>
+              <p className="text-body text-white/70">{t('contracts.noContractsMessage')}</p>
             </div>
-            <div className="text-3xl font-bold text-slate-100">{pendingCount}</div>
-            <div className="text-xs text-slate-400">{t('contracts.open')}</div>
-          </div>
-          
-          {/* In Review */}
-          <div className="text-center flex flex-col items-center">
-            <div className="text-yellow-400 mb-2">
-              <Clock size={32} />
-            </div>
-            <div className="text-3xl font-bold text-slate-100">{reviewCount}</div>
-            <div className="text-xs text-slate-400">{t('contracts.review')}</div>
-          </div>
-          
-          {/* Completed */}
-          <div className="text-center flex flex-col items-center">
-            <div className="text-green-400 mb-2">
-              <CheckCircle size={32} />
-            </div>
-            <div className="text-3xl font-bold text-slate-100">{completedCount}</div>
-            <div className="text-xs text-slate-400">{t('contracts.done')}</div>
-          </div>
-        </div>
+          )}
 
-        {/* Assigned Contracts List */}
-        {sortedAssignedContracts.length === 0 && !loading && (
-          <div className="text-center py-10 bg-gray-800/30 rounded-lg">
-            <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
-            <h3 className="text-xl font-semibold text-white/90">{t('contracts.noContracts')}</h3>
-            <p className="text-white/70">{t('contracts.noContractsMessage')}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+            {sortedAssignedContracts.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                isCreatorView={false}
+                onStatusUpdate={handleStatusUpdate}
+                onProofUpload={handleProofUpload}
+                uploadProgress={0}
+                onDeleteTaskRequest={handleDeleteTaskRequest}
+                refetchTasks={refetchAssignedContracts}
+              />
+            ))}
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedAssignedContracts.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isCreatorView={false}
-              onStatusUpdate={handleStatusUpdate}
-              onProofUpload={handleProofUpload}
-              uploadProgress={0}
-              onDeleteTaskRequest={handleDeleteTaskRequest}
-              refetchTasks={refetchAssignedContracts}
-            />
-          ))}
-        </div>
-
-        {/* Hunter's Creed Section */}
-        <HuntersCreed quote={dailyQuote} />
-      </div>
+          {/* Hunter's Creed Section */}
+          <HuntersCreed quote={dailyQuote} />
+        </PageBody>
+      </PageContainer>
     </PullToRefresh>
   );
 }
