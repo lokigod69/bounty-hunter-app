@@ -6,10 +6,12 @@
 // - TaskCard interactions (status updates, proof uploads) are now ENABLED with proper error handling
 // - Delete functionality is disabled for assignees (they should not delete tasks created by others)
 //   Handler functions provide clear error messages explaining why delete is not available.
+// P1: Updated page header title to use theme strings.
 
 import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText } from 'lucide-react';
@@ -30,6 +32,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { contracts: assignedContracts, loading, error, refetch: refetchAssignedContracts } = useAssignedContracts();
   const { t } = useTranslation();
+  const { theme } = useTheme();
 
   const dailyQuote = useDailyQuote();
 
@@ -301,7 +304,7 @@ export default function Dashboard() {
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
         <PageHeader 
-          title={t('contracts.title')} 
+          title={theme.strings.inboxTitle} 
           subtitle={t('contracts.description')} 
         />
 

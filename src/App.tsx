@@ -4,6 +4,7 @@
 // Renamed BountyStorePage to RewardsStorePage and MyCollectedBountiesPage to MyCollectedRewardsPage, and updated routes.
 // Removed DailyContractsPage route and import.
 // Added IssuedPage route for viewing contracts created by the user.
+// P1: Added ThemeProvider wrapper for theme system support.
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -21,6 +22,7 @@ import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,27 +49,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <SessionContextProvider supabaseClient={supabase}>
-      <UIProvider>
-      <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            {/* Routes below are protected and use the Layout component */}
-            <Route index element={<Dashboard />} />
-            <Route path="friends" element={<Friends />} />
-            <Route path="archive" element={<ArchivePage />} />
-            <Route path="profile/edit" element={<ProfileEdit />} />
-            <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
-            <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
-            <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
-            {/* Add other protected routes here */}
-          </Route>
-          {/* Fallback for any other route, could be a 404 page */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-      </UIProvider>
+      <ThemeProvider>
+        <UIProvider>
+          <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                {/* Routes below are protected and use the Layout component */}
+                <Route index element={<Dashboard />} />
+                <Route path="friends" element={<Friends />} />
+                <Route path="archive" element={<ArchivePage />} />
+                <Route path="profile/edit" element={<ProfileEdit />} />
+                <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
+                <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
+                <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
+                {/* Add other protected routes here */}
+              </Route>
+              {/* Fallback for any other route, could be a 404 page */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </UIProvider>
+      </ThemeProvider>
     </SessionContextProvider>
   );
 }

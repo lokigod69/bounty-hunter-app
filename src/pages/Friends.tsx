@@ -8,6 +8,7 @@
 // - Added functionality to cancel pending sent friend requests with a confirmation modal.
 // - Imported ConfirmDeleteModal and necessary state/handlers.
 // - Passed cancel handler to FriendCard for sent requests.
+// P1: Updated page header title to use theme strings.
 
 import { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -23,10 +24,12 @@ import { Database } from '../types/database';
 type Profile = Database['public']['Tables']['profiles']['Row'];
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import { PageContainer, PageHeader, PageBody } from '../components/layout';
 
 export default function Friends() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { user } = useAuth();
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(user?.id);
   
@@ -185,7 +188,7 @@ export default function Friends() {
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
         <PageHeader 
-          title={t('friends.title', 'GUILD ROSTER')} 
+          title={theme.strings.friendsTitle} 
           subtitle={t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')} 
         />
 

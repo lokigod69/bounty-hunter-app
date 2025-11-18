@@ -310,9 +310,30 @@ Technical architecture phases (overlay/system/layout/domain) are already done in
 
 ### Milestone P1 – Theme System & Mode Selection
 
-- Implement theme config with 3 modes (Guild, Family, Couple).
-- Wire palette + copy into existing screens.
-- Add a simple mode selector in settings (and in FTX).
+**Status**: ✅ **COMPLETED** (2025-01-27)
+
+- **Theme System Created**:
+  - `src/theme/theme.types.ts` - Type definitions for ThemeId, ThemeStrings, ThemeDefinition
+  - `src/theme/themes.ts` - Three theme definitions (guildTheme, familyTheme, coupleTheme) with mode-specific strings
+  - Default theme: `guild` (Guild Mode)
+- **ThemeContext & Hook**:
+  - `src/context/ThemeContext.tsx` - ThemeProvider and useTheme hook
+  - Theme preference persisted to localStorage (key: `bounty_theme`)
+  - ThemeProvider wrapped around app in `App.tsx`
+- **Theme Selector UI**:
+  - Added to `ProfileEdit` page (`/profile/edit`)
+  - Three theme cards with labels, descriptions, and visual selection indicator
+  - Instant theme switching with toast feedback
+- **Theme Strings Applied**:
+  - Navigation labels in `Layout.tsx` (Contracts, Missions, Friends, Store, History)
+  - Page headers:
+    - Dashboard: `inboxTitle` (e.g. "Mission Inbox", "Chore Inbox", "Request Inbox")
+    - Friends: `friendsTitle` (e.g. "Guild Roster", "Your Family", "Your Partner")
+    - RewardsStorePage: `storeTitle` (e.g. "Loot Vault", "Reward Store", "Gift Store")
+- **Remaining Work** (for future passes):
+  - Apply theme strings to TaskCard, RewardCard, and other components
+  - Add palette/color customization (currently only strings are themed)
+  - Integrate theme selection into First-Time Experience (P2)
 
 ### Milestone P2 – First-Time Experience
 

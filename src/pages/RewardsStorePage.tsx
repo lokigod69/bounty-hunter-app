@@ -1,8 +1,10 @@
 // src/pages/RewardsStorePage.tsx
 // Displays available bounties and provides an interface for creating new ones.
+// P1: Updated page header title to use theme strings.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import { Plus } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
 import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
@@ -19,6 +21,7 @@ type Tab = 'available' | 'created' | 'collected';
 
 const RewardsStorePage: React.FC = () => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { user } = useAuth();
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
@@ -129,7 +132,7 @@ const RewardsStorePage: React.FC = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
-        <PageHeader title={t('rewards.title', 'Bounties')} />
+        <PageHeader title={theme.strings.storeTitle} />
 
         {/* Tabs */}
         <div className="mb-8 flex justify-center border-b border-gray-700">

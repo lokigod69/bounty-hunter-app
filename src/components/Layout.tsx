@@ -18,6 +18,7 @@
 // Added 'Rewards' placeholder navigation link.
 // Renamed 'Dashboard' navigation label to 'Contracts'.
 // STATE SYNC FIX: Added navigation-based mobile menu closure to prevent modal conflicts.
+// P1: Updated navigation labels to use theme strings from ThemeContext.
 
 import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -25,6 +26,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   Home,
   Send,
@@ -47,6 +49,7 @@ import { soundManager } from '../utils/soundManager';
 
 export default function Layout() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer } = useUI();
@@ -100,13 +103,13 @@ export default function Layout() {
     }
   });
 
-  // Navigation items
+  // Navigation items - using theme strings
   const navItems = [
-    { name: t('navigation.contracts'), path: '/', icon: <Home size={20} />, sound: 'click1a' },
-    { name: t('navigation.missions'), path: '/issued', icon: <Send size={20} />, sound: 'click1b' },
-    { name: t('navigation.guildRoster'), path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
-    { name: t('navigation.bounties'), path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
-    { name: t('navigation.history'), path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
+    { name: theme.strings.contractsLabel, path: '/', icon: <Home size={20} />, sound: 'click1a' },
+    { name: theme.strings.missionsLabel, path: '/issued', icon: <Send size={20} />, sound: 'click1b' },
+    { name: theme.strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
+    { name: theme.strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
+    { name: theme.strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
   ];
 
   const navItemsDesktop = navItems;
