@@ -337,31 +337,145 @@ Technical architecture phases (overlay/system/layout/domain) are already done in
 
 ### Milestone P2 – First-Time Experience
 
-- Implement the onboarding flow:
-  - Mode selection
-  - Create first reward
-  - Invite first person
-  - Create first mission
-- Tie it into existing auth and navigation.
+**Status**: ✅ **COMPLETED** (2025-01-27)
+
+- **Onboarding Flow Implemented**:
+  - `/onboarding` route with 4-step wizard
+  - Step 1: Mode selection (Guild/Family/Couple) - wires to ThemeContext
+  - Step 2: Create first reward (with skip option)
+  - Step 3: Invite someone (optional, can skip)
+  - Step 4: Create first mission (with skip option)
+- **FTX Gate System**:
+  - `src/lib/ftxGate.ts` - Helper functions to check if user should see onboarding
+  - `src/components/FTXGate.tsx` - Component that wraps protected routes and redirects to onboarding
+  - Checks localStorage flag `bounty_onboarding_completed`
+  - Also checks if user has any missions or rewards (existing users skip onboarding)
+- **Integration**:
+  - FTXGate wraps Layout route in `App.tsx`
+  - New users without missions/rewards are redirected to `/onboarding`
+  - After completion, `markOnboardingCompleted()` sets localStorage flag
+  - "Restart Onboarding" option added to ProfileEdit page for testing
+- **Files Created**:
+  - `src/pages/Onboarding.tsx` - Main wizard container
+  - `src/components/onboarding/OnboardingStep1Mode.tsx` - Theme selection
+  - `src/components/onboarding/OnboardingStep2Reward.tsx` - Reward creation
+  - `src/components/onboarding/OnboardingStep3Invite.tsx` - Friend invitation
+  - `src/components/onboarding/OnboardingStep4Mission.tsx` - Mission creation
+  - `src/lib/ftxGate.ts` - Gate logic and helpers
+  - `src/components/FTXGate.tsx` - Gate component
+- **Known Limitations**:
+  - Reward creation in Step 2 requires a friend (RPC constraint). Users can skip and create rewards later.
+  - Onboarding completion flag is localStorage-only (can be extended to profile table in future).
 
 ### Milestone P3 – Mission Inbox V1
 
-- Redesign the home screen to match the sections:
-  - Do this now
-  - Waiting for approval
-  - Recently completed
-- Ensure flows for opening missions, submitting proof, and checking approvals are smooth.
+**Status**: ✅ **COMPLETED** (2025-01-27)
+
+- **Mission Inbox Sections Implemented**:
+  - **Do this now**: Active missions assigned to current user (pending, in_progress, rejected, overdue, or null status)
+    - Sorted by deadline: overdue first, then soonest deadline, then by creation date
+    - Empty state with CTAs to create mission or visit Reward Store
+  - **Waiting for approval**: Missions where current user submitted proof and status is 'review'
+    - Empty state: "Nothing waiting for approval"
+  - **Recently completed**: Last 10 completed missions (status 'completed')
+    - Sorted by completion date (most recent first)
+    - Empty state: "You haven't completed any missions yet"
+  - **Issued missions summary**: Small summary card showing missions the user has issued to others
+    - Shows counts for missions awaiting proof and pending approval
+    - Link to full Issued page for management
+- **Theme Integration**:
+  - Section titles use theme strings (`sectionDoNowTitle`, `sectionWaitingApprovalTitle`, `sectionCompletedTitle`, `sectionIssuedSummaryTitle`)
+  - Empty state messages are theme-aware (different copy for Guild/Family/Couple modes)
+- **Implementation Details**:
+  - `src/pages/Dashboard.tsx` refactored into Mission Inbox layout
+  - Uses `useMemo` for efficient filtering and sorting
+  - Maintains existing TaskCard interactions (status updates, proof uploads)
+  - Stats row updated to reflect Mission Inbox sections
+- **User Experience**:
+  - Clear section headings with theme-aware labels
+  - Empty states provide actionable CTAs
+  - Issued missions summary doesn't dominate the inbox (only shown if user has issued missions)
+  - All existing interactions preserved (click to open, submit proof, etc.)
 
 ### Milestone P4 – Reward Store V1.5
 
-- Visual redesign of Reward Store.
-- Make rewards visually distinct and aspirational.
-- Ensure credits and “distance to reward” are visible from Mission Inbox.
+**Status**: ✅ **COMPLETED** (2025-01-27)
+
+- **Credits Summary at Top**:
+  - Prominent display of current user credits with theme-aware label (`storeCreditsLabel`)
+  - Shows count of affordable rewards ("You can afford X rewards")
+  - Shows distance to next reward ("Y credits away from [reward name]")
+  - Uses gradient card styling for visual prominence
+- **Aspirational RewardCard Design**:
+  - Larger image/emoji area (h-40 md:h-48) with gradient backgrounds for affordable rewards
+  - Clear visual hierarchy: image → title → description → price → action
+  - Prominent price display using `CreditDisplay` with premium shimmer
+  - Affordability hints: shows "Need N more [tokens]" for unaffordable rewards
+  - Disabled state styling for unaffordable rewards (opacity, overlay, disabled button)
+  - Hover effects and scale transitions for interactive feel
+- **Theme Integration**:
+  - Store subtitle (`storeSubtitle`) varies by theme
+  - Credits label uses theme tokens (Credits/Stars/Tokens)
+  - Empty state messages are theme-aware
+  - "Can afford" / "Out of reach" labels use theme strings
+- **Empty State**:
+  - Theme-aware empty state with icon, title, and body text
+  - CTA button to create first reward (if user has permission)
+- **Mission Inbox Integration**:
+  - Small prompt card in Mission Inbox when user has credits > 0
+  - Shows credit count and link to Reward Store
+  - Helps users remember the store exists and why credits matter
+- **Implementation Details**:
+  - `src/pages/RewardsStorePage.tsx` - Added credits summary, theme strings, empty state
+  - `src/components/RewardCard.tsx` - Redesigned for aspirational feel with affordability checks
+  - `src/hooks/useUserCredits.ts` - Extracted reusable hook for fetching user credits
+  - `src/pages/Dashboard.tsx` - Added store prompt card
+  - Responsive grid layout: 1 column mobile, 2-4 columns on larger screens
+- **User Experience**:
+  - Reward cards feel like "items in a shop" rather than plain list rows
+  - Clear visual distinction from mission lists
+  - Credits and affordability are front-and-center
+  - All purchase flows preserved (no broken functionality)
 
 ### Milestone P5 – Recurring Daily Missions (Optional for first public release)
 
-- Data model and UI to mark missions as daily.
-- Simple streak logic and visuals.
+**Status**: ✅ **COMPLETED** (2025-01-27)
+
+- **Data Model**:
+  - Added `is_daily` boolean column to `tasks` table (default: false)
+  - Created `daily_mission_streaks` table to track streak counts per contract/user
+  - Columns: `contract_id`, `user_id`, `streak_count`, `last_completion_date`
+  - RLS policies ensure users can only read/update streaks for contracts they're assigned to
+- **Domain Logic** (`src/core/contracts/contracts.domain.ts`):
+  - `isDailyMission()` - checks if a contract is a daily mission
+  - `computeStreakAfterCompletion()` - pure function to compute streak updates based on date logic
+  - `computeNewStreakCount()` - helper to compute new streak given current streak and completion date
+  - Streak rules:
+    - First completion → streak = 1
+    - Completed yesterday → streak increments
+    - Completed today → streak stays same (no increment)
+    - Gap detected → streak resets to 1
+- **Credits Domain** (`src/core/credits/credits.domain.ts`):
+  - `applyStreakBonus()` - applies +10% per streak day (capped at 2x multiplier)
+  - Streak bonus only applies to daily missions with streakCount > 1
+  - Integrated into `decideCreditsForApprovedContract()` via `isDaily` and `streakCount` context
+- **Approval Flow Integration** (`src/pages/IssuedPage.tsx`):
+  - On approval of daily mission: updates streak via `updateStreakAfterCompletion()`
+  - Passes `streakCount` to credit awarding logic for bonus calculation
+  - Shows streak bonus message in success toast
+- **UI Components**:
+  - `TaskForm.tsx`: Added "Make this a daily mission" checkbox
+  - `TaskCard.tsx`: Shows "Daily" badge and streak count (🔥 N-day streak) for daily missions
+  - `Dashboard.tsx`: Fetches streaks for all daily missions and passes to TaskCard
+- **Theme Integration**:
+  - Added `dailyLabel` and `streakLabel` to `ThemeStrings`
+  - Guild: "Daily mission", Family: "Daily chore", Couple: "Daily moment"
+  - Streak label is consistent across themes
+- **Hooks** (`src/hooks/useDailyMissionStreak.ts`):
+  - `fetchStreak()` - fetches streak for a single contract/user
+  - `fetchStreaksForContracts()` - batch fetches streaks for multiple contracts
+  - `updateStreakAfterCompletion()` - updates/creates streak after completion
+  - `useDailyMissionStreak()` - React hook for fetching streak data
 
 ### Milestone P6 – Small-group Testing
 

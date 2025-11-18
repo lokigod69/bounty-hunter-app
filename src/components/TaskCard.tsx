@@ -27,6 +27,7 @@ import DoubleCoinValue from './coin/DoubleCoinValue';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { BaseCard } from './ui/BaseCard';
+import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
@@ -43,6 +44,7 @@ interface TaskCardProps {
   uploadProgress: number;
   currentUserCredits?: number;
   isArchived?: boolean;
+  streakCount?: number; // P5: Streak count for daily missions
 }
 
 const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> = ({ deadline, baseColor = 'text-slate-400' }) => {
@@ -106,9 +108,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
   currentUserCredits,
   refetchTasks,
   isArchived,
+  streakCount,
 }) => {
   const { user } = useAuth();
   const { openModal, clearLayer } = useUI();
+  const { theme } = useTheme(); // P5: Get theme for daily label
   const [showProofModal, setShowProofModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -416,9 +420,24 @@ const TaskCard: React.FC<TaskCardProps> = ({
           onClick={() => !isAnimatingOut && setIsExpanded(true)}
         >
           <div className="flex justify-between items-start">
-            <h3 className={`text-subtitle font-bold mb-2 pr-4 ${titleColorClass} min-w-0`}>
-              <span className="block truncate" title={title}>{title}</span>
-            </h3>
+            <div className="flex-1 min-w-0">
+              <h3 className={`text-subtitle font-bold mb-2 pr-4 ${titleColorClass} min-w-0`}>
+                <span className="block truncate" title={title}>{title}</span>
+              </h3>
+              {/* P5: Daily badge and streak */}
+              {task.is_daily && (
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                    {theme.strings.dailyLabel}
+                  </span>
+                  {streakCount !== undefined && streakCount > 0 && (
+                    <span className="inline-flex items-center gap-1 text-xs text-orange-400">
+                      🔥 {streakCount}-day {theme.strings.streakLabel}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex-shrink-0 text-right">
               <CountdownTimer deadline={deadline} />
             </div>

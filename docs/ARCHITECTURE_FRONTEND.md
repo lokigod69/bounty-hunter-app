@@ -95,107 +95,68 @@ bounty-hunter-app/
       EditBountyModal.tsx   # Edit bounty modal
       ConfirmationModal.tsx # Generic confirm modal (legacy z-index)
       ConfirmDeleteModal.tsx# Critical overlay confirm modal (new z-index naming)
-      ConfirmDialog.tsx     # Rewards-specific confirm dialog (legacy z-index)
+      ConfirmDialog.tsx    # Rewards-specific confirm dialog (legacy z-index)
       ProofModal.tsx        # File proof upload modal
       ProofSubmissionModal.tsx # Text proof modal
-      ImageLightbox.tsx     # Critical overlay image viewer
-      FriendCard.tsx        # Friend/guild member card
-      FriendSelector.tsx    # Friend dropdown for task assignment
-      UserCredits.tsx       # Live credits HUD widget
-      CursorTrail.tsx       # Laser cursor effect
-      HuntersCreed.tsx      # Quote display / flavor
-      coin/                 # Coin/credit visualizations
-    pages/                  # Route-level screens
-      Login.tsx             # Magic-link auth
-      Dashboard.tsx         # "Contracts" view (assigned contracts)
-      IssuedPage.tsx        # "Missions" creator view (issued contracts)
-      ArchivePage.tsx       # Archive of completed contracts
-      Friends.tsx           # Guild / friendships management
-      RewardsStorePage.tsx  # Rewards marketplace
-      MyCollectedRewardsPage.tsx # Stub for claimed rewards
-      ProfileEdit.tsx       # Profile editing shell
-    hooks/                  # Feature-specific hooks (data + side effects)
-      useAuth.ts
-      useTasks.ts
-      useAssignedContracts.ts
-      useIssuedContracts.ts
-      useArchivedContracts.ts
-      useFriends.ts
-      useRewardsStore.ts
-      useCreateBounty.ts
-      useUpdateBounty.ts
-      useDeleteBounty.ts
-      usePurchaseBounty.ts
-      useCollectedRewards.ts
-      useDailyQuote.ts
-      useClickOutside.ts
-      useShimmerDuration.ts
-    context/
-      UIContext.tsx         # Global UI state (mobile menu)
-    lib/
-      supabase.ts           # Typed Supabase client
-      quotes.ts             # Static quotes data
-    types/
-      database.ts           # Supabase-generated DB types
-      custom.ts             # Task/profile helpers
-      app-specific-types.ts
-      rpc-types.ts
-    utils/
-      getErrorMessage.ts    # Error categorization
-      soundManager.ts       # Audio playback helpers
-      dateUtils.ts
-
-  docs/
-    overview.md             # Product & repo overview
-    architecture.md         # System-level architecture
-    state-and-events.md     # State distribution & flows
-    api-map.md              # All backend API interactions
-    data-model.md           # Database schema
-    runbook.md              # Setup, migrations, deployment
-    ios/SETUP.md            # Capacitor iOS integration
-
-  supabase/
-    migrations/             # Database tables, RLS policies, RPCs
-    functions/              # Edge function: notify-reward-creator
-
-  public/
-    fonts/                  # Mandalore, Howdybun font families
-    sounds/                 # Credit transfer / UI SFX
-    logo5.png
-
-  capacitor.config.ts       # Capacitor app configuration
-  vite.config.ts            # Vite build config
-  tailwind.config.js        # Tailwind theme extension
-  package.json              # Scripts & dependencies
-  vercel.json               # Frontend deployment config
+      ui/                   # Base UI primitives
+        BaseCard.tsx        # Card component with variants
+      layout/               # Layout primitives
+        PageContainer.tsx   # Page wrapper
+        PageHeader.tsx      # Page header
+        PageBody.tsx        # Page body wrapper
+        StatsRow.tsx        # Stats summary component
+    pages/                  # Screen-level components
+      Dashboard.tsx         # Mission Inbox (P3)
+      IssuedPage.tsx        # Issued missions management
+      RewardsStorePage.tsx  # Reward Store (P4)
+      FriendsPage.tsx       # Friends/Crew/Family management
+      ProfileEdit.tsx       # Profile editing
+      ArchivePage.tsx       # Archived contracts
+      Onboarding.tsx        # First-time experience (P2)
+    hooks/                  # Custom hooks for data access
+      useTasks.ts           # Task/contract CRUD operations
+      useAssignedContracts.ts # Contracts assigned to user
+      useIssuedContracts.ts  # Contracts issued by user
+      useRewardsStore.ts    # Rewards store operations
+      useFriends.ts         # Friendships management
+      useUserCredits.ts     # User credits balance
+      useDailyMissionStreak.ts # Daily missions & streaks (P5)
+    core/                   # Domain logic (pure functions)
+      contracts/            # Contract status transitions
+      credits/              # Credit awarding rules
+      proofs/               # Proof validation
+    context/                # React contexts
+      ThemeContext.tsx      # Theme system (P1)
+      UIContext.tsx         # UI state (modals, mobile menu)
+    lib/                    # Utilities & config
+      supabase.ts           # Supabase client
+      overlayRoot.tsx       # Portal root for modals
+    types/                  # TypeScript types
+      database.ts           # Generated Supabase types
+      custom.ts             # Custom domain types
+    theme/                  # Theme system
+      theme.types.ts        # Theme type definitions
+      themes.ts             # Theme implementations
 ```
-
-**Assessment**
-
-- **Solid**: Clear layering of `pages` → `components` → `hooks` → `lib`, with doc coverage in `docs/` that matches reality reasonably well.
-- **Fragile**: Some divergence between docs and code (e.g. docs mention additional `npm run ios:*` scripts that are not present in `package.json`; RLS and migration status in docs is ahead of the actual SQL).
-- **Inconsistent**: UI primitives (modals, confirm dialogs) are scattered across `components/` without a single modal/overlay abstraction; multiple confirm components overlap in purpose.
 
 ---
 
-## 3. Routing & Screens
+## 4. Routing & Navigation
 
-### 3.1 Route Map
+### 4.1 Route Structure
 
-Defined in `App.tsx`:
+All routes defined in `src/App.tsx`:
 
-- **`/login` → `Login`**
-  - Magic-link authentication flow via Supabase (`supabase.auth.signInWithOtp`).
-  - Very self-contained; no global layout.
-- **`/` (root) → `Dashboard` (inside `Layout` via `ProtectedRoute`)**
-  - Main "Contracts" view for tasks assigned to the current user.
-  - Uses `useAssignedContracts()` and `TaskCard` grid.
+- **`/` → `Dashboard`** (Mission Inbox)
+  - Main landing page after login.
+  - Shows contracts assigned to the current user, grouped by status.
+  - Uses `useAssignedContracts()` and `useIssuedContracts()` hooks.
 - **`/issued` → `IssuedPage`**
-  - Missions created by the current user.
-  - Uses `useIssuedContracts()`, `TaskCard` (creator view), and `TaskForm` as a modal for creating contracts.
-- **`/friends` → `Friends`**
-  - Guild/friendships management.
-  - Uses `useFriends()`, `FriendCard`, search, pending/accepted tabs.
+  - Contracts created by the current user.
+  - Uses `useIssuedContracts()` hook.
+- **`/friends` → `FriendsPage`**
+  - Friends/Crew/Family management.
+  - Uses `useFriends()` hook.
 - **`/archive` → `ArchivePage`**
   - Historical/completed contracts.
   - Uses `useArchivedContracts()` and `TaskCard` in read-only mode.
@@ -211,7 +172,7 @@ Defined in `App.tsx`:
 
 All authenticated routes share `Layout` as the top-level shell (header/HUD, mobile menu, cursor/credits UI, `Outlet` for the page).
 
-### 3.2 Layout & Duplication
+### 4.2 Layout & Duplication
 
 - **Shared layout via `Layout`**:
   - Sticky header with nav, logo, user avatar, cursor trail toggle, logout button.
@@ -237,10 +198,25 @@ All authenticated routes share `Layout` as the top-level shell (header/HUD, mobi
 - **Where implemented**
   - Data hooks: `useTasks.ts`, `useAssignedContracts.ts`, `useIssuedContracts.ts`, `useArchivedContracts.ts`.
   - UI components: `TaskCard.tsx`, `TaskCardSkeleton.tsx`, `TaskForm.tsx`, `ConfirmationModal.tsx`, `ConfirmDeleteModal.tsx`, `ProofModal.tsx`, `ProofSubmissionModal.tsx`.
-  - Screens: `Dashboard.tsx`, `IssuedPage.tsx`, `ArchivePage.tsx`.
+  - Screens: `Dashboard.tsx` (Mission Inbox), `IssuedPage.tsx`, `ArchivePage.tsx`.
 - **Data model**
   - `tasks` table with fields such as `title`, `description`, `status`, `reward_type`, `reward_text`, `assigned_to`, `created_by`, `deadline`, `proof_required`, `proof_url`, `proof_type`, `is_archived`, `completed_at`.
   - Strongly typed via `Database['public']['Tables']['tasks']` and extended types in `types/custom.ts`.
+- **Mission Inbox (Dashboard.tsx) - P3 Implementation**
+  - **Grouping Logic**: Client-side filtering and sorting using `useMemo` for performance
+    - **Do this now**: Filters tasks with status `pending`, `in_progress`, `rejected`, `overdue`, or `null`
+      - Sorted by deadline: overdue first, then soonest deadline, then by creation date (newest first)
+    - **Waiting for approval**: Filters tasks with status `review` (where current user is assignee and has submitted proof)
+    - **Recently completed**: Filters tasks with status `completed`, sorted by `completed_at` (most recent first), limited to last 10
+  - **Status Mapping**:
+    - Active statuses: `pending`, `in_progress`, `rejected`, `overdue`, `null` → "Do this now"
+    - `review` → "Waiting for approval"
+    - `completed` → "Recently completed"
+  - **Issued Missions Summary**: Uses `useIssuedContracts` hook to show summary stats
+    - Counts missions awaiting proof (status `pending` or `in_progress`)
+    - Counts missions pending approval (status `review`)
+    - Only displayed if user has issued missions
+  - **Theme Integration**: Section titles use theme strings (`sectionDoNowTitle`, `sectionWaitingApprovalTitle`, `sectionCompletedTitle`, `sectionIssuedSummaryTitle`)
 - **Data flow**
   - Hooks encapsulate Supabase queries and subscriptions; pages call hooks and pass results to components.
   - Some operations (e.g. archiving a task in `TaskCard.handleArchive`) directly use `supabase` instead of going through hooks, creating cross-cutting dependencies.
@@ -256,505 +232,187 @@ All authenticated routes share `Layout` as the top-level shell (header/HUD, mobi
 - **Inconsistent**
   - Some code paths use hooks for updates; others reach for `supabase` directly (e.g. archiving, deletion, approval), which weakens the "hooks as domain boundary" convention.
 
+### 4.1.1 Daily Missions & Streaks (P5 Implementation)
+
+- **Data Model** (`supabase/migrations/20250127000000_add_daily_missions_and_streaks.sql`):
+  - `tasks.is_daily` boolean column (default: false) - marks missions as daily recurring
+  - `daily_mission_streaks` table tracks streak counts per contract/user
+    - Columns: `contract_id`, `user_id`, `streak_count`, `last_completion_date` (date only, no time)
+    - Unique constraint on `(contract_id, user_id)` ensures one streak record per contract/user pair
+    - RLS policies: users can read/update streaks for contracts they're assigned to
+- **Domain Logic** (`src/core/contracts/contracts.domain.ts`):
+  - `isDailyMission()` - checks if contract has `is_daily` flag set
+  - `computeStreakAfterCompletion()` - pure function computing streak updates based on date comparison
+  - `computeNewStreakCount()` - helper taking current streak and computing new count
+  - Streak rules (date-based, UTC normalized):
+    - No previous completion → streak = 1
+    - Last completion was yesterday → streak increments
+    - Last completion was today → streak stays same (no increment)
+    - Gap detected (last completion > 1 day ago) → streak resets to 1
+- **Credits Domain** (`src/core/credits/credits.domain.ts`):
+  - `applyStreakBonus()` - applies +10% per streak day (starting from day 2), capped at 2x multiplier
+  - Integrated into `decideCreditsForApprovedContract()` via `isDaily` and `streakCount` context fields
+  - Streak bonus only applies to daily missions with `streakCount > 1`
+- **Hooks** (`src/hooks/useDailyMissionStreak.ts`):
+  - `fetchStreak()` - fetches streak for single contract/user
+  - `fetchStreaksForContracts()` - batch fetches streaks for multiple contracts (used in Dashboard)
+  - `updateStreakAfterCompletion()` - updates/creates streak after completion, returns new streak count
+  - `useDailyMissionStreak()` - React hook for fetching streak data
+- **Approval Flow** (`src/pages/IssuedPage.tsx`):
+  - On approval of daily mission: calls `updateStreakAfterCompletion()` before awarding credits
+  - Passes `streakCount` to `decideCreditsForApprovedContract()` for bonus calculation
+  - Shows streak bonus message in success toast (e.g., "10 credits awarded (3-day streak bonus!)")
+- **UI Components**:
+  - `TaskForm.tsx`: Added "Make this a daily mission" checkbox, saves `is_daily` flag on create/edit
+  - `TaskCard.tsx`: Shows theme-aware "Daily" badge and streak count (🔥 N-day streak) for daily missions
+  - `Dashboard.tsx`: Fetches streaks for all daily missions using `fetchStreaksForContracts()`, passes to TaskCard
+- **Theme Integration** (`src/theme/theme.types.ts`, `src/theme/themes.ts`):
+  - Added `dailyLabel` and `streakLabel` to `ThemeStrings`
+  - Guild: "Daily mission", Family: "Daily chore", Couple: "Daily moment"
+  - Streak label is consistent across themes ("streak")
+
 ### 4.2 Rewards / Bounties Domain
 
 - **Where implemented**
-  - Hooks: `useRewardsStore.ts`, `useCreateBounty.ts`, `useUpdateBounty.ts`, `useDeleteBounty.ts`, `usePurchaseBounty.ts`, `useCollectedRewards.ts`.
+  - Hooks: `useRewardsStore.ts`, `useCreateBounty.ts`, `useUpdateBounty.ts`, `useDeleteBounty.ts`, `usePurchaseBounty.ts`, `useCollectedRewards.ts`, `useUserCredits.ts`.
   - Components: `RewardCard.tsx`, `CreateBountyModal.tsx`, `EditBountyModal.tsx`, `ConfirmDialog.tsx`, `CreditDisplay.tsx`.
   - Screen: `RewardsStorePage.tsx`, stub `MyCollectedRewardsPage.tsx`.
 - **Data model**
   - `rewards_store` table for active bounties, `collected_rewards` for claims, `user_credits` for balances, plus related RPCs (`create_reward_store_item`, `update_reward_store_item`, `purchase_bounty`, etc.).
+- **Reward Store Layout & Credits Summary (P4 Implementation)**
+  - **Credits Summary**: Prominent card at top of `RewardsStorePage.tsx` showing current user credits
+    - Uses `useUserCredits()` hook to fetch balance
+    - Calculates affordable rewards count and distance to next reward (client-side filtering)
+    - Theme-aware labels (`storeCreditsLabel`, `storeCanAffordLabel`, `storeCantAffordLabel`)
+  - **RewardCard Design**: Aspirational card layout with clear visual hierarchy
+    - Image/emoji area (h-40 md:h-48) with gradient backgrounds
+    - Prominent price display using `CreditDisplay` with premium shimmer
+    - Affordability checks: accepts `currentCredits` prop, shows "Need N more" hint for unaffordable rewards
+    - Disabled state styling (opacity, overlay) for unaffordable rewards
+    - Theme integration: uses theme strings for token labels (`tokenSingular`, `tokenPlural`)
+  - **Empty State**: Theme-aware empty state with icon, title (`storeEmptyTitle`), body (`storeEmptyBody`), and CTA
+  - **Mission Inbox Integration**: Prompt card in `Dashboard.tsx` when user has credits > 0
+    - Shows credit count and link to Reward Store
+    - Helps surface the store and remind users why credits matter
 
 **Assessment**
 
 - **Solid**
-  - Clear split between hooks for fetching (`useRewardsStore`), creating/updating (`useCreateBounty`, `useUpdateBounty`), deleting (`useDeleteBounty`), and purchasing (`usePurchaseBounty`).
-  - Rewards UI is nicely modularized into `RewardCard` and modal components.
+  - Clear separation between store items and collected rewards.
+  - Purchase flow uses RPCs with proper error handling.
 - **Fragile**
-  - RLS policies for `rewards_store`, `collected_rewards`, and `user_credits` are noted as incomplete in docs; this impacts trustworthiness of the data domain.
-  - `MyCollectedRewardsPage` is incomplete; the hook exists but the screen is stubbed, which can cause UX gaps on mobile.
+  - Credit balance updates rely on manual refetching after purchases; no realtime subscription for `user_credits` table changes.
+  - Purchase errors are shown via toast but may not be surfaced in UI if the hook fails silently.
 - **Inconsistent**
-  - Modals for rewards (`CreateBountyModal`, `EditBountyModal`, `ConfirmDialog`) use custom styling and `z-50`, partially bypassing the canonical modal z-index utilities.
-
-### 4.3 Friends / Guild Domain
-
-- **Where implemented**
-  - Hook: `useFriends.ts`.
-  - Screen: `Friends.tsx`.
-  - Components: `FriendCard.tsx`, `FriendSelector.tsx`.
-- **Responsibilities**
-  - Search profiles, send requests, accept/reject, remove friends.
-  - Provide friend options in `TaskForm` / `CreateBountyModal` for assignments.
-
-**Assessment**
-
-- **Solid**
-  - `useFriends` encapsulates the necessary queries and mutations, including realtime updates.
-  - `FriendCard` provides a consistent visual treatment across different friendship states (accepted, incoming pending, outgoing pending).
-- **Fragile**
-  - Friend selection logic is tied directly into `TaskForm` and `CreateBountyModal`; if the friends domain changes (e.g. multiple guilds), these components will need manual rewiring.
-
-### 4.4 Proofs & Media Domain
-
-- **Where implemented**
-  - Storage operations inside `useTasks.ts` and `Dashboard.handleProofUpload`, plus `ProofModal.tsx`, `ProofSubmissionModal.tsx`, `ImageLightbox.tsx`.
-  - Uses Supabase Storage bucket `bounty-proofs`.
-- **Assessment**
-  - **Solid**
-    - Proofs integrate with tasks clearly: upload file ⇒ update `tasks.proof_url` and `status=review` ⇒ review in `IssuedPage`.
-  - **Fragile**
-    - Proof upload logic is duplicated: `useTasks` has upload helpers, but `Dashboard` also implements its own upload handling that talks directly to Supabase.
-    - `ImageLightbox` introduces a separate "critical overlay" z-index tier, but its class names (`z-critical-overlay`, etc.) are not yet reused uniformly by other critical overlays.
-  - **Inconsistent**
-    - Some proof flows use file upload (`ProofModal`), others use text/URL (`ProofSubmissionModal`), and the naming of these two modals can be confusing.
-
-### 4.5 Credits & Economy
-
-- **Where implemented**
-  - Hooks and RPCs: `useRewardsStore`, `usePurchaseBounty`, `useIssuedContracts` + direct `supabase.rpc('increment_user_credits')`.
-  - UI: `UserCredits.tsx` subscribed to realtime updates on `user_credits`.
-- **Assessment**
-  - **Solid**
-    - Credits are centrally displayed in the HUD (`UserCredits` in `Layout`), with realtime updates and confetti feedback.
-  - **Fragile**
-    - Current `increment_user_credits` RPC is client-callable and not RLS-protected, which is a critical security risk already captured in docs.
-    - Credit awarding logic lives in `IssuedPage.handleApprove`, making it tightly coupled to one specific UI pathway.
+  - Some reward operations go through `useRewardsStore`, others through separate hooks (`useCreateBounty`, `usePurchaseBounty`), creating confusion about which hook to use.
 
 ---
 
-## 6. State Management & Data Flow
+## 6. Error Handling & Resilience (P6)
 
-### 5.1 Global / Shared State
+### 6.1 Error Handling Patterns
 
-- **UIContext (`context/UIContext.tsx`)**
-  - `isMobileMenuOpen`, `toggleMobileMenu`, `closeMobileMenu`, `forceCloseMobileMenu`.
-  - Used only for the mobile nav drawer; modals have their own internal state and local scroll locking.
-- **Supabase session context (`SessionContextProvider`)**
-  - Provided at the root (`App.tsx`); consumed by `useAuth()` and through it by virtually all pages.
-- **Global visual effects**
-  - `CursorTrail` toggled via header button; stored locally in `Layout`.
-  - Daily quote state lives in a hook and uses `localStorage` under the hood.
+**Hook Return Patterns**:
+- Most hooks follow a consistent pattern: `{ data, loading, error, refetch }`
+- Error types: `string | null` (most hooks) or `Error | null` (some hooks)
+- Loading states: `boolean`
 
-### 5.2 God Components & Coupling
+**Current Error Handling Status**:
 
-- **`Dashboard.tsx`**
-  - Drives data fetch (`useAssignedContracts`), proof uploads (direct storage + Supabase update), status transitions (complex logic in `handleStatusUpdate`), and UI layout, all in one place.
-- **`IssuedPage.tsx`**
-  - Owns mission listing, approval/rejection logic, credit awarding RPC, contract creation (`TaskForm` integration), deletion (`ConfirmDeleteModal`), and summary stats.
-- **`TaskCard.tsx`**
-  - Encapsulates a lot of behavior (tooltips, swipe gestures, modal expansion, proof viewing, archiving) and directly calls Supabase for archiving.
+- **useAssignedContracts**: ✅ Returns `error: string | null`, Dashboard displays error state
+- **useIssuedContracts**: ✅ Returns `error: string | null`, IssuedPage should display errors
+- **useRewardsStore**: ✅ Returns `rewardsError: string | null`, shows toast but may not display inline
+- **useFriends**: ✅ Returns `error: string | null`, FriendsPage should display errors
+- **useUserCredits**: ✅ Returns `error: string | null`, gracefully handles missing records
+- **useTasks**: ✅ Returns `error: string | null`, but may not be consistently displayed
 
-These components are **feature-rich but heavy**. They work, but they concentrate data access, domain rules, and UI logic, which makes them hard to reuse or test in isolation.
+**Risk Points**:
 
-### 5.3 Key Interaction Pipelines (Current)
+1. **Dashboard.tsx**: ✅ Has error state display, but doesn't show retry button
+2. **RewardsStorePage.tsx**: ⚠️ Uses `rewardsError` but may not display it inline (only toast)
+3. **Onboarding**: ⚠️ May not handle Supabase errors gracefully, could leave users stuck
+4. **Direct Supabase calls**: Some components call `supabase` directly without error handling
+5. **Streak updates**: `updateStreakAfterCompletion()` errors are logged but don't block approval flow (intentional, but should be visible)
 
-**A. User switches "room" (screen) via header HUD**
+**Error Display Patterns**:
 
-1. User taps a nav item in `Layout` (`Link` with path `/`, `/issued`, `/friends`, etc.).
-2. `react-router-dom` updates the URL and swaps the `Outlet` content.
-3. On mobile, if the drawer is open, `closeMobileMenu()` is called on nav click, and `Layout` restores body scroll.
-4. The destination page's hook runs (`useAssignedContracts`, `useIssuedContracts`, etc.), fetches data from Supabase, and renders cards.
+- **Good**: Dashboard shows full-page error with icon and message
+- **Needs improvement**: RewardsStorePage should show inline error state
+- **Needs improvement**: Onboarding steps should show errors and allow skip paths
 
-**B. User opens a contract card and views details/proof**
+### 6.2 System Status & Diagnostics
 
-1. `Dashboard` renders a grid of `TaskCard` components for assigned tasks.
-2. User taps a collapsed card; `TaskCard` sets `isExpanded=true`.
-3. `TaskCard` uses `createPortal` to render a fixed overlay into `document.body`, with `z-modal-backdrop` / `z-modal-content` classes.
-4. Body scroll is locked while the modal is open.
-5. If proof exists, `TaskCard` shows proof links or the `ProofModal`; proof viewing may open a new tab or validate the URL first.
-6. User closes the modal via the "Close" button or backdrop, restoring scroll and returning to the underlying grid.
-
-**C. User creates a new contract from the "Missions" (Issued) page**
-
-1. User taps the floating action button (FAB) in `IssuedPage`.
-2. FAB handler checks `isMobileMenuOpen` from `UIContext`:
-   - If open, calls `forceCloseMobileMenu()` and waits briefly before opening the `TaskForm` modal.
-   - If closed, opens `TaskForm` immediately.
-3. `TaskForm` manages its own body scroll lock and uses `useFriends` to populate the assignee dropdown.
-4. On submit, `TaskForm` constructs a `NewTaskData` payload and calls `onSubmit` (`IssuedPage.handleCreateContract`), which uses Supabase to insert into `tasks`.
-5. On success, `IssuedPage` calls `refetchIssuedContracts()`, shows a toast, and closes the modal; the new contract appears in the list.
-
-**Assessment**
-
-- **Solid**: Hook-based data access, optimistic updates in some hooks, and clear pipelines in `state-and-events.md`.
-- **Fragile**: Scroll locking and z-indexing for overlays are implemented ad-hoc per modal instead of via a central overlay system; `Dashboard` and `IssuedPage` each embed a fair amount of business logic.
+**P6 Addition**: Simple debug/status component to quickly identify backend issues:
+- Location: `/profile/edit` or `/debug` route (dev-only or feature flag)
+- Shows: User ID, theme mode, Supabase health check (ping test)
+- Purpose: Quick diagnostics when "something is broken"
 
 ---
 
-## 7. UI Composition & Styling
+## 7. Theme System (P1)
 
-### 6.1 Layout System
+- **Implementation**: `src/theme/themes.ts` defines three theme modes (Guild, Family, Couple)
+- **Context**: `ThemeContext` provides `theme` and `setThemeId` via `useTheme()` hook
+- **Persistence**: Theme preference stored in `localStorage` (key: `bounty_theme`)
+- **Theme Strings**: Centralized labels in `ThemeStrings` interface, populated per theme
+- **Usage**: Components use `useTheme()` to access theme-aware strings and colors
 
-- **Primary layout primitive**
-  - `Layout.tsx` is effectively the global `<AppShell>`:
-    - Sticky header with nav, logo, user avatar, cursor trail toggle, logout button.
-    - Mobile nav drawer overlay.
-    - Main content region (`<main className="flex-1 container mx-auto px-4 py-6 main-content no-bounce"> <Outlet /> </main>`).
-- **Per-page layout patterns**
-  - `Dashboard` uses `max-w-4xl mx-auto p-4 md:p-6` within the main; `IssuedPage` wraps its content with `min-h-screen bg-gradient-to-br` inside the `Outlet` region.
-  - `RewardsStorePage` uses `container mx-auto p-4` and a FAB.
-  - Some pages apply their own backgrounds/gradients that stack on top of the global `body` background defined in `index.css`.
-
-**Assessment**
-
-- **Solid**: The presence of a single `Layout` with a sticky HUD is a good foundation for a "HUD + viewport" mental model.
-- **Fragile**: Individual pages diverge in how they treat padding, max-width, and backgrounds; this makes it hard to guarantee that every "room" feels like part of a single cohesive space.
-- **Refactor opportunity**: Introduce small layout primitives (`<Page>`, `<PageHeader>`, `<PageBody>`, `<PageStatsRow>`) to standardize structure across all screens and keep the per-page code focused on domain logic.
-
-### 6.2 Design System Elements
-
-- **Tokens & Typography**
-  - Typography, colors, and z-index are defined via CSS custom properties in `index.css`.
-  - Custom fonts (`Mandalore`, `Howdybun`, Poppins/Bebas) are wired up with dedicated classes (`app-title`, `.gradient-text`, `.galactic-title`, `.status-badge`, etc.).
-- **Re-usable styles**
-  - `glass-card`, `btn-primary`, `btn-secondary`, `btn-danger-galactic`, `nav-item-galactic`, and `bounty-card-*` provide a coherent "galactic" visual language.
-  - Input styling is centralized in `.input-field`, with mobile-specific tweaks for touch targets and font sizes.
-- **Spacing & tap targets**
-  - Many controls explicitly enforce minimum 44–48px heights for mobile buttons and inputs, aligning with mobile UX best practices.
-
-**Assessment**
-
-- **Solid**: A lot of work has already gone into centralizing theme and visual primitives; the `index.css` file serves as a de-facto design system.
-- **Fragile**: Several components bypass these primitives and hardcode `bg-gray-800`, `rounded-lg`, `h-32`, etc., instead of relying on tokenized classes; this will cause subtle visual drift over time.
-- **Inconsistent**:
-  - Typography hierarchy (font size/weight for headers and labels) is not enforced consistently; some pages use `app-title`, others use raw `text-3xl` with default fonts.
-  - Card layouts (TaskCard vs RewardCard vs FriendCard) all use slightly different paddings and grid structures.
-
-### 6.3 Styling Mechanisms & Z-Index
-
-- **Mechanisms in play**
-  - Tailwind utility classes (dominant).
-  - Global CSS utilities and components defined in `index.css` (shimmer, holographic effects, card layouts).
-- **Z-index system**
-  - `index.css` defines a canonical hierarchy:
-    - `--z-header`, `--z-mobile-menu`, `--z-modal-*`, `--z-critical-*` with matching utility classes (`.z-header`, `.z-modal-content`, etc.).
-  - Many modals correctly use `z-modal-backdrop`, `z-modal-content`, `z-modal-controls` (e.g. `TaskForm`, `CreateBountyModal`, `ProfileEditModal`, `ProofModal`, `TaskCard` expanded view, `ProofSubmissionModal`).
-  - Critical overlays (`ImageLightbox`) use `z-critical-overlay`, `z-critical-content`, `z-critical-controls`.
-- **Inconsistencies & legacy**
-  - `ConfirmationModal.tsx`, `ConfirmDialog.tsx`, and `EditBountyModal.tsx` still use raw `z-50` on their roots.
-  - `ConfirmDeleteModal.tsx` introduces new class names (`z-critical-overlay-backdrop`, `z-critical-overlay-content`, `z-critical-overlay-controls`) that do **not** match the existing CSS utility class names.
-    - This means it visually works only because its parent classes (`glass-card`, layout, etc.) happen to sit above the content, not because the new z-classes are wired to the token system.
-
-**Assessment**
-
-- **Solid**: The z-index token system in `index.css` is exactly what is needed to avoid "z-index wars" on mobile and in modals.
-- **Fragile**: Incomplete adoption of the token system means some modals may still mis-layer, especially when combined (e.g. a confirm dialog showing on top of an already open modal or the mobile menu).
-- **Refactor opportunity**:
-  - Standardize all overlays and modals to use the same `z-modal-*` / `z-critical-*` utilities.
-  - Remove `z-50` and hand-invented z-classes in favor of the canonical tokens.
-
-### 6.4 Mobile vs Desktop Behavior
-
-- **Mobile handling**
-  - `Layout` locks body scroll when the mobile menu is open and auto-closes the menu on route change.
-  - Many buttons use `min-h-[44px]` and responsive font sizes to avoid iOS zoom and ensure finger-friendly controls.
-  - Modals like `TaskForm` explicitly lock both `body` and `html` scroll and use mobile-specific animations (`modal-mobile-slide`, `modal-mobile-fade`).
-- **Desktop handling**
-  - Desktop nav header uses `nav-item-galactic` styles and a hover/active state system.
-  - Cursor trail and more dramatic holographic effects are desktop-friendly and hidden or toned down on small screens.
-
-**Assessment**
-
-- **Solid**: The app clearly cares about mobile-first UX— especially around tap targets and scroll behavior.
-- **Fragile**: Scroll locking is handled by multiple components independently (`Layout`, `TaskForm`, `TaskCard`, some modals); if two overlays are open at once, they may stomp each other's scroll settings.
-- **Risk**: Without a central "overlay controller", it's easy to reintroduce issues like "modal behind menu" or "menu open while modal is active", especially on iOS where viewport behavior is tricky.
+**Theme Coverage**:
+- ✅ Navigation labels
+- ✅ Page titles (Mission Inbox, Reward Store, Friends)
+- ✅ Section titles (Do this now, Waiting for approval, etc.)
+- ✅ Reward Store labels
+- ✅ Daily mission labels (P5)
+- ⚠️ Some hard-coded strings still exist (needs P6 audit)
 
 ---
 
-## 8. Interaction Layer & Overlays (Analogue to 3D Scene & Controls)
+## 8. First-Time Experience (P2)
 
-While this app is not a 3D gallery, it behaves like a small interactive application with layered HUD, overlays, and mobile gestures. The "interaction layer" is essentially:
-
-- The **HUD**: header, credits, cursor trail, mobile drawer.
-- The **viewport content**: cards and lists rendered by each page.
-- The **overlay system**: modals, proof viewers, confirmations, image lightbox.
-
-### 7.1 Controls & Input
-
-- **Pointer / touch interactions**
-  - Cards are tap/click targets that open modals or trigger actions (`TaskCard`, `RewardCard`, `FriendCard`).
-  - Swipe-to-archive is implemented on `TaskCard` via `react-swipeable`.
-  - Pull-to-refresh is implemented on `Dashboard`, `IssuedPage`, and `RewardsStorePage` via `react-simple-pull-to-refresh`.
-- **Keyboard**
-  - No explicit keyboard-handling abstractions beyond standard browser focus; modals use buttons and close icons but not explicit focus traps.
-- **Platform-specific behavior**
-  - `TaskCard` and `Dashboard` both contain Android-specific handling:
-    - Vibrations via `navigator.vibrate`, with different patterns for success vs error.
-    - Tailored error messages to suggest toggling between WiFi and mobile data.
-
-### 7.2 "Room" Switching & Scene Management
-
-- **Rooms** in this context are the routed screens (`Dashboard`, `IssuedPage`, `Friends`, `Archive`, `Rewards`, `ProfileEdit`).
-- **Switching** is purely route-based:
-  - Nav links in `Layout` change the URL, and each page mounts/unmounts its own hooks and subscriptions.
-  - No shared scene manager or transition controller; transitions are simple route switches.
-
-### 7.3 Overlay & Modal Behavior
-
-- **Where overlays live**
-  - Most overlays are rendered with `createPortal` into `document.body` (`TaskCard` expanded modal, `TaskForm`, `CreateBountyModal`, `ProfileEditModal`, `ProofModal`, `ProofSubmissionModal`).
-  - Some simpler modals (e.g. `ConfirmationModal`, `ConfirmDialog`, `EditBountyModal`) are not portaled and rely on being relatively high in the DOM.
-- **Layer coordination**
-  - There is **no global overlay root** (like `#overlay-root`) and no shared overlay manager.
-  - `UIContext` only tracks mobile menu state; modals maintain their own booleans (`isOpen`, `isExpanded`, etc.).
-  - Body scroll lock is implemented per overlay component, not centrally.
-
-**Assessment**
-
-- **Solid**: Portaling modals to `document.body` is the right move to escape header stacking contexts; the z-index tokens are there to support a robust layering system.
-- **Fragile**:
-  - Without a single `overlay-root` element, It's harder to reason about overall layering, especially if the app grows more complex.
-  - Overlays that are not portaled have to rely on `z-50` and DOM order to win layering battles.
-  - There is no central notion of an "active layer" (menu vs modal vs critical overlay), so conflicts are resolved ad-hoc (e.g. Issued FAB checking mobile menu manually).
+- **Implementation**: `/onboarding` route with 4-step wizard
+- **Steps**: Mode selection → Create reward → Invite someone → Create mission
+- **Gate**: `FTXGate` component checks `localStorage['bounty_onboarding_completed']` and user data
+- **Completion**: Sets `bounty_onboarding_completed` flag and redirects to Mission Inbox
+- **Error Handling**: ⚠️ Needs improvement (P6) - should allow skip paths and show errors clearly
 
 ---
 
-## 9. Cross-Platform Readiness (Web → iOS / React Native)
+## 9. Cross-Platform Readiness
 
-### 8.1 Platform-Agnostic Modules (Today)
-
-These are *closest* to being portable to a future `core/` layer:
-
-- **Data types & models**: `types/database.ts`, `types/custom.ts`, `app-specific-types.ts`, `rpc-types.ts`.
-- **Pure utilities**: `utils/dateUtils.ts` (dates), `lib/quotes.ts` (static data).
-- **Business-logic-ish hooks** (partially):
-  - The shape of hooks like `useTasks`, `useIssuedContracts`, `useRewardsStore`, `useFriends` is conceptually portable, but they are implemented using React + Supabase client directly.
-
-### 8.2 Web-Bound Modules
-
-These are tightly coupled to the DOM, the browser event model, or Tailwind CSS:
-
-- **All React components in `components/` and `pages/`**
-  - They rely on `document`, `window`, CSS classes, and browser-specific patterns (e.g., `window.open`, `IntersectionObserver` for shimmer, `navigator.vibrate`).
-- **Supabase client initialization in `lib/supabase.ts`**
-  - Uses `import.meta.env` and browser assumptions; would need a different environment wiring for React Native.
-- **`utils/soundManager.ts`**
-  - Uses `HTMLAudioElement` and assumes a browser-like audio subsystem.
-- **CSS-driven design system in `index.css`**
-  - Tailwind + custom CSS is strongly web-centric; React Native would require re-implementing the look and feel using RN styles or libraries like `react-native-tailwindcss`.
-
-### 8.3 Proposed `core/` vs `web/` Layering
-
-To enable reuse in a future React Native or hybrid iOS app:
-
-- **Introduce a `core/` directory (pure logic & models)**
-  - `core/domain/contracts.ts`:
-    - Functions for status transitions, archive rules, and proof requirements (e.g. `canTransition(from, to, { proofRequired })`).
-  - `core/domain/rewards.ts`:
-    - Functions for validating reward creation, credit costs, and purchase rules (e.g. `canAfford(userCredits, cost)`).
-  - `core/services/tasksRepo.ts` / `rewardsRepo.ts`:
-    - Interfaces for "task repository" and "rewards repository" that encapsulate CRUD operations but not the React hook layer.
-  - `core/errors.ts`:
-    - The categorization logic currently inside `getErrorMessage`, decoupled from `toast`/UI concerns.
-- **Refactor current hooks into an adapter layer**
-  - `web/hooks/useTasks.ts` (current file) becomes a thin adapter:
-    - Calls `tasksRepo` from `core/` using Supabase as the implementation.
-    - Exposes the same React API to components.
-  - Equivalent pattern for `useRewardsStore`, `useFriends`, etc.
-- **Keep DOM/UI-specific pieces in `web/`**
-  - `web/components/`, `web/pages/`, `web/utils/soundManager`, `web/styles/index.css`.
-  - These are where Tailwind, `document`, `window`, `navigator`, and Capacitor plugins are used.
-
-Once this split exists:
-
-- A React Native/iOS app can reimplement `web/hooks/*` and `web/components/*` while reusing `core/domain/*` and `core/services/*` with a different backing client (e.g. `@supabase/supabase-js` for native or an HTTP API wrapper).
-- The cross-platform boundary is clear: **core** knows about contracts, rewards, proofs, and credits as *concepts*, not about Tailwind classes or HTML elements.
+- **Capacitor**: iOS project exists in `ios/App`
+- **Mobile considerations**: Pull-to-refresh, touch targets, responsive layouts
+- **Known gaps**: Some components may not be fully mobile-optimized
 
 ---
 
-## 10. Refactor & Upgrade Roadmap (Phased)
+## 10. Refactor Roadmap
 
-This roadmap focuses on:
+### Phase 1: Layout Consistency (In Progress)
+- ✅ Standardize page containers (`PageContainer`, `PageHeader`, `PageBody`)
+- ✅ Create reusable card components (`BaseCard`)
+- ⚠️ Migrate all pages to use layout primitives
 
-1. **Stabilizing** layering and UI behavior (especially modals and mobile).
-2. **Unifying** the design system and layouts across screens.
-3. **Extracting** domain logic so it can later be reused in a React Native / iOS implementation.
+### Phase 2: Error Handling (P6)
+- ✅ Document error handling patterns
+- ⚠️ Add consistent error states to all pages
+- ⚠️ Add system status/debug component
+- ⚠️ Improve onboarding error handling
 
-### Phase 0 – Inventory & Stabilization
+### Phase 3: Theme Integration (P6)
+- ✅ Core theme system in place
+- ⚠️ Audit and replace hard-coded strings
+- ⚠️ Ensure all flows use theme strings
 
-- **Goals**
-  - Ensure that the current app can be deployed safely without breaking schema or obvious security issues.
-- **Key tasks**
-  - Align migrations with actual table names (`bounties` ↔ `rewards_store`, `collected_bounties` ↔ `collected_rewards`) per `data-model.md` and `runbook.md`.
-  - Lock down the `increment_user_credits` RPC so it is not callable from the client (service-role-only, move to server-side triggers or trusted RPC).
-  - Verify and add missing RLS policies for `rewards_store`, `collected_rewards`, and `user_credits`.
-- **Acceptance criteria**
-  - A fresh Supabase project with migrations runs cleanly and matches what the app expects.
-  - No obvious path for users to mint credits or see other users' sensitive data via the client.
-
-### Phase 1 – Layout & Design System Unification
-
-- **Goals**
-  - Make every "room" (screen) feel consistent in layout, spacing, and typography, especially on mobile, as preparation for cross-platform work.
-- **Key tasks**
-  - Introduce lightweight layout primitives:
-    - `Page` (controls `max-width`, side padding, vertical rhythm).
-    - `PageHeader` (standardized title + subtitle + optional stats row).
-    - `PageBody` (grid/list layout wrapper).
-  - Refactor `Dashboard`, `IssuedPage`, `RewardsStorePage`, `ArchivePage`, and `Friends` to use these primitives rather than ad-hoc `container` / `max-w-4xl` / `bg-gradient` combinations.
-  - Audit typographic usage:
-    - Define a simple scale (e.g. `display`, `h1`, `h2`, `body`, `caption`) and map them to utility classes or small CSS helpers.
-    - Replace one-off font styles with `app-title`, `galactic-title`, or new standardized heading classes.
-  - Normalize cards:
-    - Align `TaskCard`, `RewardCard`, and `FriendCard` to share padding, corner radius, and shadow intensity where appropriate.
-- **Acceptance criteria**
-  - Visual audit across all primary screens shows consistent padding, typography, and card treatments.
-  - No screen redefines its own max-width or background gradient in a way that clashes with `Layout` and `index.css`.
-
-**Status**: ✅ **IMPLEMENTED** (2025-01-27)
-- **Layout Primitives Created**:
-  - `src/components/layout/PageContainer.tsx` - Standardized page container (max-w-5xl, responsive padding)
-  - `src/components/layout/PageHeader.tsx` - Standardized page header with title/subtitle/actions
-  - `src/components/layout/PageBody.tsx` - Standardized page body wrapper with consistent spacing
-  - `src/components/layout/StatsRow.tsx` - Reusable stats row component for summary statistics
-- **Base Card Component**:
-  - `src/components/ui/BaseCard.tsx` - Standardized base card with variants (glass, solid, bordered)
-  - All card components (`TaskCard`, `RewardCard`, `FriendCard`) now use `BaseCard`
-- **Typography Scale** (defined in `src/index.css`):
-  - `.text-display` - Very large titles (text-4xl sm:text-5xl)
-  - `.text-title` - Page/section titles (text-3xl)
-  - `.text-subtitle` - Subtitles (text-xl)
-  - `.text-body` - Body text (text-base)
-  - `.text-meta` - Small labels/timestamps (text-xs sm:text-sm)
-- **Spacing Scale** (defined in `src/index.css`):
-  - `.spacing-page` - Page-level padding
-  - `.spacing-section` - Section-level spacing
-  - `.spacing-card` - Card padding
-  - `.spacing-grid` - Grid gaps
-- **Pages Refactored**:
-  - `Dashboard` - Uses PageContainer, PageHeader, PageBody, StatsRow
-  - `IssuedPage` - Uses PageContainer, PageHeader, PageBody, StatsRow
-  - `RewardsStorePage` - Uses PageContainer, PageHeader, PageBody
-  - `Friends` - Uses PageContainer, PageHeader, PageBody
-  - `ArchivePage` - Uses PageContainer, PageHeader, PageBody
-  - `MyCollectedRewardsPage` - Uses PageContainer, PageHeader, PageBody
-  - `ProfileEdit` - Uses PageContainer, PageHeader, PageBody, BaseCard
-- **Cards Updated**:
-  - `TaskCard` collapsed state uses `BaseCard` variant="glass"
-  - `RewardCard` uses `BaseCard` variant="solid"
-  - `FriendCard` uses `BaseCard` variant="glass"
-- **Remaining Work**:
-  - Some pages still have inline text size classes that could be migrated to typography scale (non-critical)
-  - Mobile-specific refinements may be needed after visual testing
-
-### Phase 2 – Overlay & Interaction Layer Refactor (Modal System)
-
-This phase should align with and subsume the existing modal/z-index plans in:
-
-- `bounty_hunter_mobile_modal_fix_ui_polish_plan_v_1.md`
-- `REAL_IMPLEMENTATION_PLAN.md`
-- `UI_UX_improvements_plan.md`
-
-- **Goals**
-  - Eliminate z-index bugs and scrolling conflicts between mobile menu, modals, and critical overlays.
-  - Centralize overlay rendering and body scroll locking.
-- **Key tasks**
-  - Introduce a **single overlay root**:
-    - Add `#overlay-root` next to `#root` in `index.html`.
-    - Update all modal/overlay components that currently use `createPortal(document.body)` to portal into `overlay-root` instead.
-  - Extend `UIContext` with a simple layer mutex:
-    - `activeLayer: 'none' | 'menu' | 'modal' | 'critical'`.
-    - Helpers like `setActiveLayer(layer)` that automatically close conflicting layers (e.g., opening a modal closes the menu).
-  - Standardize z-index usage:
-    - Replace `z-50` in `ConfirmationModal`, `ConfirmDialog`, `EditBountyModal` with `z-modal-*` or `z-critical-*` classes.
-    - Fix naming mismatches (`z-critical-overlay-backdrop` vs `.z-critical-overlay`) by aligning class names with the utilities defined in `index.css`.
-  - Centralize body scroll lock:
-    - Implement a small `overlayManager` or hook that:
-      - Tracks the number/type of open overlays.
-      - Applies/removes scroll lock on `body`/`html` exactly once.
-    - Refactor `Layout`, `TaskForm`, `TaskCard`, and modal components to call into this manager instead of manipulating `document.body` directly.
-- **Acceptance criteria**
-  - On typical mobile viewports (360×780, 393×852, 430×932):
-    - Opening any modal always renders it above the mobile menu and content.
-    - Opening a modal closes the mobile menu; opening the mobile menu closes modals.
-    - Backdrop and close buttons are always reachable and visible.
-  - No use of raw `z-50` or ad-hoc z-indexes remains in the codebase.
-
-**Status**: ✅ **IMPLEMENTED** (2025-01-27)
-- Overlay root (`#overlay-root`) added to `index.html`.
-- `UIContext` extended with `activeLayer` state and coordination helpers (`openMenu`, `openModal`, `openCriticalOverlay`, `clearLayer`).
-- Centralized scroll lock utility (`src/lib/scrollLock.ts`) manages body scroll locking with reference counting.
-- All modals updated to portal into `overlay-root` instead of `document.body`.
-- Z-index standardized: all modals use `z-modal-*` classes, critical overlays use `z-critical-*` classes.
-- Removed all `z-50` usage and inconsistent z-class names.
-
-### Phase 3 – Domain & Data Layer Extraction
-
-- **Goals**
-  - Move business logic (status transitions, credit rules, proof requirements) out of React components and into testable domain modules.
-- **Key tasks**
-  - Extract pure logic from:
-    - `Dashboard.handleStatusUpdate` (status rules, permission rules).
-    - `IssuedPage.handleApprove` / `handleReject` (approval/rejection semantics, credit awarding).
-    - Proof upload helpers in `useTasks` and `Dashboard`.
-  - Create domain modules in a new `core/` folder (see Section 8.3) and have hooks call into them.
-  - Make hooks delegate to repo-style modules that accept a generic "client" interface, so they are not intrinsically bound to Supabase's client API.
-- **Acceptance criteria**
-  - Domain rules are expressed as pure functions that can be imported into tests or reused by other platforms.
-  - Pages and components no longer import `supabase` directly; they talk only to hooks or repositories.
-
-**Status**: ✅ **IMPLEMENTED** (2025-01-27)
-- **Core Domain Modules Created**:
-  - `src/core/contracts/contracts.types.ts` - Domain types for contracts (ContractStatus, Contract, StatusChangeContext, StatusChangeResult)
-  - `src/core/contracts/contracts.domain.ts` - Pure functions for status transitions (`evaluateStatusChange`, `requiresProof`, `hasProofSubmitted`)
-  - `src/core/credits/credits.domain.ts` - Credit awarding rules (`decideCreditsForApprovedContract`, `canAwardCredits`)
-  - `src/core/rewards/rewards.domain.ts` - Reward purchase validation (`canPurchaseReward`)
-  - `src/core/proofs/proofs.domain.ts` - Proof validation (`validateProofPayload`, `requiresProofForStatusChange`, `getStatusAfterProofSubmission`)
-  - `src/core/index.ts` - Barrel file for exports
-- **Pages Refactored**:
-  - `Dashboard.tsx` - `handleStatusUpdate` now uses `evaluateStatusChange` from domain
-  - `IssuedPage.tsx` - `handleApprove` and `handleReject` use domain functions for status transitions and credit awarding
-- **Hooks Refactored**:
-  - `useTasks.ts` - `updateTaskStatus` uses domain functions for status evaluation and credit decisions; `uploadProof` uses domain functions for proof validation and status determination
-- **Business Logic Extracted**:
-  - Status transition rules: Who can change status, valid transitions, auto-completion logic
-  - Credit awarding: When credits are awarded, how much, based on contract reward
-  - Proof validation: Type-specific validation, status determination after proof submission
-  - Reward purchase: Client-side validation (server-side validation remains in RPC)
-- **Remaining Work**:
-  - Hooks still import Supabase directly (acceptable for now; Phase 4 will abstract this)
-  - Some business logic may still exist in hooks (non-critical edge cases)
-  - Domain modules are pure functions but could benefit from repository pattern abstraction (Phase 4)
-
-### Phase 4 – Platform Boundary & iOS Readiness
-
-- **Goals**
-  - Define a clean boundary between platform-independent logic and the current React DOM + Tailwind implementation so it's clear how to build a React Native or more-native iOS shell.
-- **Key tasks**
-  - Restructure project folders along a `core/` vs `web/` axis (or similar), moving:
-    - Types, domain logic, repository abstractions into `core/`.
-    - All React DOM components, Tailwind CSS, and Capacitor-specific integration into `web/`.
-  - Wrap platform APIs:
-    - `soundManager` should go behind an interface (`SoundPlayer`) whose implementation can vary between web (HTMLAudio) and native (Capacitor plugins).
-    - Haptics (`navigator.vibrate`) could be abstracted for eventual replacement with `@capacitor/haptics` or React Native's `Vibration`.
-  - Align iOS setup docs with code:
-    - Ensure `package.json` scripts and `docs/ios/SETUP.md` agree on the recommended Capacitor workflow (`npm run ios:sync`, etc.).
-- **Acceptance criteria**
-  - A reviewer can point to a small set of `core/` modules that can be reused unchanged in a hypothetical React Native app.
-  - Platform-specific APIs are accessed via thin adapters that can be reimplemented on iOS.
-
-### Phase 5 – Hardening & QA
-
-- **Goals**
-  - Make the app safer to iterate on through automated checks and visual consistency testing.
-- **Key tasks**
-  - Add tests where they give the highest leverage:
-    - Domain logic in `core/` (status transitions, reward validation, credit calculations).
-    - A few critical UI workflows via integration tests (login, create contract, approve with proof, purchase reward).
-  - Implement a lightweight visual regression / screenshot workflow for key screens and overlays to catch layout drift.
-  - Instrument basic error tracking (e.g. Sentry) for the web app.
-- **Acceptance criteria**
-  - At least the primary contract and reward flows are covered by tests.
-  - Regressions in core flows or layering issues are caught early via automation instead of manual device checks only.
+### Phase 4: Mobile Optimization
+- ⚠️ Audit touch targets and spacing
+- ⚠️ Test on real devices
+- ⚠️ Optimize performance for mobile
 
 ---
 
-## 11. Highest-Leverage Changes (Summary)
+## 11. Testing & Quality
 
-1. **Adopt the existing z-index token system everywhere and centralize overlay rendering through a single `overlay-root`** to eliminate entire classes of mobile layering bugs (menus vs modals vs critical overlays).
-2. **Introduce small, reusable layout primitives (`Page`, `PageHeader`, `PageBody`, `PageStatsRow`) and a simple typography scale**, then apply them across `Dashboard`, `IssuedPage`, `RewardsStorePage`, `ArchivePage`, and `Friends` to stop visual drift between screens.
-3. **Extract domain logic (status transitions, approval rules, credit awarding, proof requirements) from `Dashboard`, `IssuedPage`, and `TaskCard` into pure `core/` modules**, making it easier to test, evolve rules, and reuse them in a future iOS client.
-4. **Lock down credit and rewards-related RPCs (`increment_user_credits`, `rewards_store`, `user_credits`, `collected_rewards`) and align migrations with actual table usage**, so the UI never has to compensate for insecure or inconsistent backend behavior.
-5. **Define a clear platform boundary (`core/` vs `web/`) and abstract platform-specific services (Supabase client, audio, haptics)** to make the eventual React Native / iOS port largely a matter of re-skinning UI components rather than rewriting business logic.
-
-
+- **Manual testing**: See `docs/V1_TESTING_CHECKLIST.md` (P6)
+- **Error scenarios**: Test with Supabase offline/unreachable
+- **Theme switching**: Verify all strings update correctly
+- **Onboarding**: Test skip paths and error recovery

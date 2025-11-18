@@ -52,6 +52,9 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
+import { evaluateStatusChange, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
+import { updateStreakAfterCompletion } from '../hooks/useDailyMissionStreak';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
@@ -135,10 +138,10 @@ export default function IssuedPage() {
     }
 
     try {
-      // 1. Fetch task details to get reward info
+      // 1. Fetch task details to get reward info and is_daily flag
       const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('assigned_to, reward_type, reward_text')
+        .select('assigned_to, reward_type, reward_text, is_daily')
         .eq('id', taskId)
         .eq('created_by', user.id) // Security check
         .single();
@@ -182,12 +185,26 @@ export default function IssuedPage() {
 
       soundManager.play('approveProof');
 
+      // P5: Update streak for daily missions before awarding credits
+      let streakCount: number | undefined = undefined;
+      if (task.is_daily && task.assigned_to) {
+        try {
+          streakCount = await updateStreakAfterCompletion(taskId, task.assigned_to);
+          console.log(`[handleApprove] Updated streak for daily mission: ${streakCount}`);
+        } catch (streakError) {
+          console.error('Failed to update streak:', streakError);
+          // Don't block approval if streak update fails, but log it
+        }
+      }
+
       // 4. Award credits if domain logic says so
       if (statusChangeResult.shouldAwardCredits && task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
         const creditDecision = decideCreditsForApprovedContract({
           contractId: taskId,
           assigneeId: task.assigned_to,
           baseReward: parseInt(task.reward_text, 10),
+          isDaily: task.is_daily || false,
+          streakCount: streakCount,
         });
 
         if (creditDecision.amount > 0) {
@@ -202,7 +219,10 @@ export default function IssuedPage() {
           } else {
             soundManager.play('success');
             soundManager.play('coin');
-            toast.success(t('contracts.awardSuccess', { amount: creditDecision.amount }));
+            const streakMessage = task.is_daily && streakCount && streakCount > 1
+              ? ` (${streakCount}-day streak bonus!)`
+              : '';
+            toast.success(t('contracts.awardSuccess', { amount: creditDecision.amount }) + streakMessage);
           }
         }
       }

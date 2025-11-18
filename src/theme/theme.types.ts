@@ -18,6 +18,21 @@ export interface ThemeStrings {
   contractsLabel: string; // Navigation label for contracts/missions inbox
   missionsLabel: string; // Navigation label for issued missions
   historyLabel: string; // Navigation label for archive/history
+  // P3: Mission Inbox section titles
+  sectionDoNowTitle: string; // e.g. "Do this now", "Today's chores", "Do this for your partner"
+  sectionWaitingApprovalTitle: string; // e.g. "Waiting for approval"
+  sectionCompletedTitle: string; // e.g. "Recently completed"
+  sectionIssuedSummaryTitle: string; // e.g. "Missions you've issued"
+  // P4: Reward Store labels
+  storeSubtitle: string; // Short description under title
+  storeCreditsLabel: string; // e.g. "Your Credits", "Your Stars", "Your Tokens"
+  storeCanAffordLabel: string; // e.g. "You can afford", "Within reach"
+  storeCantAffordLabel: string; // e.g. "Out of reach", "Keep earning"
+  storeEmptyTitle: string; // e.g. "No rewards yet"
+  storeEmptyBody: string; // Short empty state copy
+  // P5: Daily missions labels
+  dailyLabel: string; // e.g. "Daily mission", "Daily chore", "Daily moment"
+  streakLabel: string; // e.g. "streak", "streak", "streak" (can be same across themes)
 }
 
 export interface ThemeDefinition {

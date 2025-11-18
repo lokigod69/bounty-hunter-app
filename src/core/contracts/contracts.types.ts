@@ -25,6 +25,31 @@ export interface Contract {
   reward_text?: string | null;
   assigned_to?: string | null;
   created_by: string;
+  is_daily?: boolean; // P5: Indicates if this is a daily recurring mission
+}
+
+/**
+ * P5: Streak information for daily missions.
+ */
+export interface StreakInfo {
+  streakCount: number;
+  lastCompletionDate?: Date | null;
+}
+
+/**
+ * P5: Context for computing streak updates.
+ */
+export interface StreakContext {
+  lastCompletionDate?: Date | null;
+  now: Date;
+}
+
+/**
+ * P5: Result of computing streak after completion.
+ */
+export interface StreakUpdateResult {
+  newStreakCount: number;
+  reset: boolean;
 }
 
 /**

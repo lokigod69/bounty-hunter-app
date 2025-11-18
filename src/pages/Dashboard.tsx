@@ -7,14 +7,19 @@
 // - Delete functionality is disabled for assignees (they should not delete tasks created by others)
 //   Handler functions provide clear error messages explaining why delete is not available.
 // P1: Updated page header title to use theme strings.
+// P3: Refactored into Mission Inbox with sections: "Do this now", "Waiting for approval", "Recently completed"
 
+import { useMemo, useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
+import { useIssuedContracts } from '../hooks/useIssuedContracts';
+import { useUserCredits } from '../hooks/useUserCredits';
+import { fetchStreaksForContracts } from '../hooks/useDailyMissionStreak';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import { Database } from '../types/database';
@@ -23,16 +28,22 @@ import HuntersCreed from '../components/HuntersCreed';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { soundManager as sm } from '../utils/soundManager';
 import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
+import { BaseCard } from '../components/ui/BaseCard';
 import { evaluateStatusChange, type StatusChangeContext } from '../core/contracts/contracts.domain';
 import { hasProofSubmitted } from '../core/contracts/contracts.domain';
+import { useNavigate } from 'react-router-dom';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
+type AssignedContract = ReturnType<typeof useAssignedContracts>['contracts'][0];
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { contracts: assignedContracts, loading, error, refetch: refetchAssignedContracts } = useAssignedContracts();
+  const { contracts: issuedContracts } = useIssuedContracts();
+  const { credits: userCredits } = useUserCredits();
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   const dailyQuote = useDailyQuote();
 
@@ -254,21 +265,98 @@ export default function Dashboard() {
     }
   };
 
-  // Sort assigned contracts by status
-  const sortedAssignedContracts = [...assignedContracts].sort((a, b) => {
-    const order: Record<string, number> = {
-      pending: 0,
-      in_progress: 0, // Treat in_progress same as pending for sorting
-      review: 1,
-      completed: 2,
-      rejected: 0, // Treat rejected same as pending
-      overdue: 0, // Treat overdue same as pending
+  // P3: Filter and sort contracts into Mission Inbox sections
+  const { doNowMissions, waitingApprovalMissions, completedMissions } = useMemo(() => {
+    const activeStatuses: (TaskStatus | null)[] = ['pending', 'in_progress', 'rejected', 'overdue', null];
+    const doNow = assignedContracts
+      .filter((task) => {
+        const status = task.status || 'pending';
+        return activeStatuses.includes(status);
+      })
+      .sort((a, b) => {
+        // Sort by deadline: overdue first, then soonest deadline, then by creation date
+        const deadlineA = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+        const deadlineB = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+        const now = Date.now();
+        
+        // Overdue tasks first
+        const aOverdue = deadlineA < now ? -1 : 0;
+        const bOverdue = deadlineB < now ? -1 : 0;
+        if (aOverdue !== bOverdue) return aOverdue - bOverdue;
+        
+        // Then by deadline (soonest first)
+        if (deadlineA !== deadlineB) return deadlineA - deadlineB;
+        
+        // Finally by creation date (newest first)
+        const createdA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const createdB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return createdB - createdA;
+      });
+
+    const waitingApproval = assignedContracts.filter(
+      (task) => task.status === 'review'
+    );
+
+    const completed = assignedContracts
+      .filter((task) => task.status === 'completed')
+      .sort((a, b) => {
+        // Sort by completion date (most recent first)
+        const completedA = a.completed_at ? new Date(a.completed_at).getTime() : 0;
+        const completedB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
+        return completedB - completedA;
+      })
+      .slice(0, 10); // Limit to last 10 completed missions
+
+    return {
+      doNowMissions: doNow,
+      waitingApprovalMissions: waitingApproval,
+      completedMissions: completed,
     };
-    // Handle null or undefined status as 'pending'
-    const statusA = a.status || 'pending';
-    const statusB = b.status || 'pending';
-    return order[statusA] - order[statusB];
-  });
+  }, [assignedContracts]);
+
+  // P3: Calculate issued missions summary stats
+  const issuedStats = useMemo(() => {
+    const awaitingProof = issuedContracts.filter(
+      (task) => task.status === 'pending' || task.status === 'in_progress'
+    ).length;
+    const pendingApproval = issuedContracts.filter(
+      (task) => task.status === 'review'
+    ).length;
+    return { awaitingProof, pendingApproval };
+  }, [issuedContracts]);
+
+  // P5: Fetch streaks for daily missions
+  const [streaksMap, setStreaksMap] = useState<Record<string, { streak_count: number }>>({});
+  
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchStreaks = async () => {
+      // Get all daily mission IDs assigned to current user
+      const dailyMissionIds = assignedContracts
+        .filter(task => task.is_daily)
+        .map(task => task.id);
+
+      if (dailyMissionIds.length === 0) {
+        setStreaksMap({});
+        return;
+      }
+
+      try {
+        const streaks = await fetchStreaksForContracts(dailyMissionIds, user.id);
+        // Convert to simpler format for TaskCard
+        const simplified: Record<string, { streak_count: number }> = {};
+        Object.entries(streaks).forEach(([contractId, streakData]) => {
+          simplified[contractId] = { streak_count: streakData.streak_count };
+        });
+        setStreaksMap(simplified);
+      } catch (error) {
+        console.error('Error fetching streaks:', error);
+      }
+    };
+
+    fetchStreaks();
+  }, [assignedContracts, user?.id]);
 
   if (loading) {
     return (
@@ -281,18 +369,32 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="text-center p-8 text-white/70 bg-red-900/20 rounded-lg">
-        <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
-        <h3 className="mt-2 text-lg font-semibold text-white">{t('contracts.errorTitle')}</h3>
-        <p className="mt-1 text-sm">{t('contracts.errorMessage')}</p>
-        <p className="mt-1 text-sm text-white/50">{t('contracts.errorSuggestion')}</p>
-      </div>
+      <PageContainer>
+        <PageHeader title={theme.strings.inboxTitle} />
+        <PageBody>
+          <BaseCard className="bg-red-900/20 border-red-500/30">
+            <div className="text-center py-8">
+              <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-subtitle text-white font-semibold mb-2">We're having trouble loading your missions</h3>
+              <p className="text-body text-white/70 mb-4">{error}</p>
+              <button
+                onClick={() => refetchAssignedContracts?.()}
+                className="btn-primary flex items-center justify-center gap-2 mx-auto"
+              >
+                <DatabaseZap size={20} />
+                Retry
+              </button>
+            </div>
+          </BaseCard>
+        </PageBody>
+      </PageContainer>
     );
   }
 
-  const pendingCount = assignedContracts.filter((t: Task) => t.status === 'pending' || t.status === 'in_progress' || t.status === 'rejected' || t.status === 'overdue' || !t.status).length;
-  const reviewCount = assignedContracts.filter((t: Task) => t.status === 'review').length;
-  const completedCount = assignedContracts.filter((t: Task) => t.status === 'completed').length;
+  // P3: Update stats to match Mission Inbox sections
+  const pendingCount = doNowMissions.length;
+  const reviewCount = waitingApprovalMissions.length;
+  const completedCount = completedMissions.length;
 
   const handleRefresh = async () => {
     if (refetchAssignedContracts) {
@@ -332,29 +434,172 @@ export default function Dashboard() {
         />
 
         <PageBody>
-          {/* Assigned Contracts List */}
-          {sortedAssignedContracts.length === 0 && !loading && (
-            <div className="text-center py-10 bg-gray-800/30 rounded-lg">
-              <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
-              <h3 className="text-subtitle text-white/90">{t('contracts.noContracts')}</h3>
-              <p className="text-body text-white/70">{t('contracts.noContractsMessage')}</p>
+          {/* P3: Section 1 - Do this now */}
+          <div className="space-y-4">
+            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionDoNowTitle}</h2>
+            {doNowMissions.length === 0 ? (
+              <BaseCard>
+                <div className="text-center py-8">
+                  <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">
+                    {theme.id === 'guild' && 'No missions right now. Create one or check the store.'}
+                    {theme.id === 'family' && 'No chores assigned. You\'re all clear for now.'}
+                    {theme.id === 'couple' && 'No requests pending. Maybe create one?'}
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                    <button
+                      onClick={() => navigate('/issued')}
+                      className="btn-primary flex items-center justify-center gap-2"
+                    >
+                      <PlusCircle size={20} />
+                      Create new {theme.strings.missionSingular}
+                    </button>
+                    <button
+                      onClick={() => navigate('/rewards-store')}
+                      className="btn-secondary flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart size={20} />
+                      Visit {theme.strings.storeTitle}
+                    </button>
+                  </div>
+                </div>
+              </BaseCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                {doNowMissions.map(task => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isCreatorView={false}
+                    onStatusUpdate={handleStatusUpdate}
+                    onProofUpload={handleProofUpload}
+                    uploadProgress={0}
+                    onDeleteTaskRequest={handleDeleteTaskRequest}
+                    refetchTasks={refetchAssignedContracts}
+                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* P3: Section 2 - Waiting for approval */}
+          <div className="space-y-4">
+            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionWaitingApprovalTitle}</h2>
+            {waitingApprovalMissions.length === 0 ? (
+              <BaseCard>
+                <div className="text-center py-6">
+                  <p className="text-body text-white/70">Nothing waiting for approval.</p>
+                </div>
+              </BaseCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                {waitingApprovalMissions.map(task => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isCreatorView={false}
+                    onStatusUpdate={handleStatusUpdate}
+                    onProofUpload={handleProofUpload}
+                    uploadProgress={0}
+                    onDeleteTaskRequest={handleDeleteTaskRequest}
+                    refetchTasks={refetchAssignedContracts}
+                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* P3: Section 3 - Recently completed */}
+          <div className="space-y-4">
+            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionCompletedTitle}</h2>
+            {completedMissions.length === 0 ? (
+              <BaseCard>
+                <div className="text-center py-6">
+                  <p className="text-body text-white/70">You haven't completed any {theme.strings.missionPlural} yet.</p>
+                </div>
+              </BaseCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                {completedMissions.map(task => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isCreatorView={false}
+                    onStatusUpdate={handleStatusUpdate}
+                    onProofUpload={handleProofUpload}
+                    uploadProgress={0}
+                    onDeleteTaskRequest={handleDeleteTaskRequest}
+                    refetchTasks={refetchAssignedContracts}
+                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* P3: Section 4 - Issued missions summary */}
+          {issuedContracts.length > 0 && (
+            <div className="space-y-4">
+              <BaseCard>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-subtitle text-white font-semibold mb-2">
+                      {theme.strings.sectionIssuedSummaryTitle}
+                    </h3>
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      {issuedStats.awaitingProof > 0 && (
+                        <span className="text-white/70">
+                          {issuedStats.awaitingProof} {theme.strings.missionPlural} awaiting proof
+                        </span>
+                      )}
+                      {issuedStats.pendingApproval > 0 && (
+                        <span className="text-white/70">
+                          {issuedStats.pendingApproval} {theme.strings.missionPlural} pending your approval
+                        </span>
+                      )}
+                      {issuedStats.awaitingProof === 0 && issuedStats.pendingApproval === 0 && (
+                        <span className="text-white/70">All {theme.strings.missionPlural} are up to date</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/issued')}
+                    className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+                  >
+                    Manage {theme.strings.missionsLabel}
+                    <ArrowRight size={20} />
+                  </button>
+                </div>
+              </BaseCard>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-            {sortedAssignedContracts.map(task => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                isCreatorView={false}
-                onStatusUpdate={handleStatusUpdate}
-                onProofUpload={handleProofUpload}
-                uploadProgress={0}
-                onDeleteTaskRequest={handleDeleteTaskRequest}
-                refetchTasks={refetchAssignedContracts}
-              />
-            ))}
-          </div>
+          {/* P4: Reward Store prompt - only show if user has credits */}
+          {(userCredits ?? 0) > 0 && (
+            <div className="space-y-4">
+              <BaseCard className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/20">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-subtitle text-white font-semibold mb-1">
+                      Visit {theme.strings.storeTitle}
+                    </h3>
+                    <p className="text-body text-white/70 text-sm">
+                      You have {userCredits} {userCredits === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural} to spend. Check out available {theme.strings.rewardPlural}!
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/rewards-store')}
+                    className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <ShoppingCart size={20} />
+                    Go to {theme.strings.storeTitle}
+                  </button>
+                </div>
+              </BaseCard>
+            </div>
+          )}
 
           {/* Hunter's Creed Section */}
           <HuntersCreed quote={dailyQuote} />

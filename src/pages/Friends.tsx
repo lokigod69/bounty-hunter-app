@@ -16,7 +16,7 @@ import { useFriends } from '../hooks/useFriends';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import { UserPlus, Users } from 'lucide-react';
+import { UserPlus, Users, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
@@ -26,6 +26,7 @@ import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { PageContainer, PageHeader, PageBody } from '../components/layout';
+import { BaseCard } from '../components/ui/BaseCard';
 
 export default function Friends() {
   const { t } = useTranslation();
@@ -289,11 +290,22 @@ export default function Friends() {
           </div>
         )}
 
-        {/* Error State */}
+        {/* P6: Error State */}
         {error && !loading && (
-          <div className="glass-card p-5 text-red-400">
-            <p>{t('friends.errorLoading', { error: error })}</p>
-          </div>
+          <BaseCard className="bg-red-900/20 border-red-500/30">
+            <div className="text-center py-8">
+              <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-subtitle text-white font-semibold mb-2">Cannot load {theme.strings.friendsTitle.toLowerCase()}</h3>
+              <p className="text-body text-white/70 mb-4">{error}</p>
+              <button
+                onClick={() => refreshFriends?.()}
+                className="btn-primary flex items-center justify-center gap-2 mx-auto"
+              >
+                <Users size={20} />
+                Retry
+              </button>
+            </div>
+          </BaseCard>
         )}
 
         {/* Friends List */}
@@ -310,21 +322,40 @@ export default function Friends() {
                 />
               ))
             ) : (
-              <div className="glass-card p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                  <Users size={24} className="text-white/50" />
+              <BaseCard>
+                <div className="text-center py-8">
+                  <Users size={48} className="mx-auto mb-4 text-teal-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">{theme.strings.friendsTitle}</h3>
+                  <p className="text-body text-white/70 mb-6">
+                    {theme.id === 'guild' && 'Invite crew members to share missions and rewards.'}
+                    {theme.id === 'family' && 'Invite family members to share chores and rewards.'}
+                    {theme.id === 'couple' && 'Invite your partner to share requests and moments.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        // Focus the search input
+                        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+                        if (searchInput) {
+                          searchInput.focus();
+                        }
+                      }}
+                      className="btn-primary flex items-center justify-center gap-2"
+                    >
+                      <UserPlus size={20} />
+                      Invite someone
+                    </button>
+                    {pendingRequests.length > 0 && (
+                      <button
+                        onClick={() => setActiveTab('requests')}
+                        className="btn-secondary"
+                      >
+                        View requests ({pendingRequests.length})
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <h3 className="text-xl font-medium mb-2">{t('friends.noFriendsTitle')}</h3>
-                <p className="text-white/70 mb-4">
-                  {t('friends.noFriendsMessage')}
-                </p>
-                <button
-                  onClick={() => setActiveTab('requests')}
-                  className="btn-secondary"
-                >
-                  {t('friends.viewRequests')}
-                </button>
-              </div>
+              </BaseCard>
             )}
           </div>
         )}

@@ -41,6 +41,7 @@ export interface NewTaskData {
   reward_type: string; // 'credit' or 'text'
   reward_text?: string; // For bounty description or credit amount (stringified number)
   proof_required?: boolean;
+  is_daily?: boolean; // P5: Indicates if this is a daily recurring mission
   status: TaskStatus; // Should be 'pending' on creation
   created_by: string; // Added, as it's usually required
   // Add other fields from tasks.Insert as necessary
@@ -72,6 +73,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const [contractType, setContractType] = useState<'bounty' | 'credit'>('bounty'); // New state for contract type
   const [rewardText, setRewardText] = useState(''); // For bounty description or credit amount
   const [proofRequired, setProofRequired] = useState(false); // New state for proof requirement
+  const [isDaily, setIsDaily] = useState(false); // P5: State for daily mission toggle
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -99,6 +101,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         // editingTask.reward_type will be used by the payload logic if it's not 'credit'
       }
       setProofRequired(editingTask.proof_required || false);
+      setIsDaily(editingTask.is_daily || false); // P5: Set is_daily from editing task
     } else {
       // Reset form for creation mode or if editingTask is cleared
       setTitle('');
@@ -108,6 +111,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       setContractType('bounty'); // Default to bounty for new tasks
       setRewardText('');
       setProofRequired(false); // Reset proof required for new tasks
+      setIsDaily(false); // P5: Reset is_daily for new tasks
     }
   }, [editingTask, friends]);
 
@@ -149,6 +153,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       reward_type: contractType === 'credit' ? 'credit' : 'text', // Explicitly set 'text' for bounty, 'credit' for credit
       reward_text: rewardText.trim() ? rewardText.trim() : (contractType === 'credit' ? '0' : undefined), // Ensure credit has a value, bounty can be undefined
       proof_required: proofRequired, // Add proof_required to payload
+      is_daily: isDaily, // P5: Add is_daily to payload
     };
     setIsSubmitting(true);
     try {
@@ -367,6 +372,20 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             />
             <label htmlFor="proofRequired" className="text-sm sm:text-sm text-[var(--text-secondary)] cursor-pointer flex-1">
               {t('taskForm.proofRequiredLabel')}
+            </label>
+          </div>
+
+          {/* P5: Daily Mission Checkbox */}
+          <div className="flex items-center py-2">
+            <input
+              id="isDaily"
+              type="checkbox"
+              checked={isDaily}
+              onChange={(e) => setIsDaily(e.target.checked)}
+              className="h-5 w-5 sm:h-4 sm:w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-3 sm:mr-2"
+            />
+            <label htmlFor="isDaily" className="text-sm sm:text-sm text-[var(--text-secondary)] cursor-pointer flex-1">
+              Make this a daily mission
             </label>
           </div>
           

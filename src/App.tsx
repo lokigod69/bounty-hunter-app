@@ -5,6 +5,7 @@
 // Removed DailyContractsPage route and import.
 // Added IssuedPage route for viewing contracts created by the user.
 // P1: Added ThemeProvider wrapper for theme system support.
+// P2: Added onboarding route and FTXGate component to check if new users should see onboarding flow.
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -19,10 +20,12 @@ import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
 import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyStorePage
 import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed from MyCollectedBountiesPage
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
+import Onboarding from './pages/Onboarding'; // P2: First-Time Experience onboarding flow
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
+import FTXGate from './components/FTXGate';
 
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -55,7 +58,8 @@ export default function App() {
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute><FTXGate><Layout /></FTXGate></ProtectedRoute>}>
                 {/* Routes below are protected and use the Layout component */}
                 <Route index element={<Dashboard />} />
                 <Route path="friends" element={<Friends />} />

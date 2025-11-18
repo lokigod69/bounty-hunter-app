@@ -2,11 +2,12 @@
 // Page for users to edit their profile (display name and avatar)
 // Refactored to use FileUpload component for Android compatibility and improved upload state management.
 // P1: Added theme selector UI section allowing users to switch between Guild, Family, and Couple modes.
+// P2: Added "Restart Onboarding" option for testing/power users.
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { UserCircle, Edit3, UploadCloud, AlertCircle, Check } from 'lucide-react';
+import { UserCircle, Edit3, UploadCloud, AlertCircle, Check, Activity, CheckCircle2, XCircle } from 'lucide-react';
 import { FileUpload } from '../components/FileUpload';
 import toast from 'react-hot-toast';
 import { PageContainer, PageHeader, PageBody } from '../components/layout';
@@ -14,16 +15,22 @@ import { BaseCard } from '../components/ui/BaseCard';
 import { useTheme } from '../context/ThemeContext';
 import { themesById } from '../theme/themes';
 import { ThemeId } from '../theme/theme.types';
+import { useNavigate } from 'react-router-dom';
+import { clearOnboardingFlag } from '../lib/ftxGate';
 
 export default function ProfileEdit() {
   const { user, profile, loading: authLoading } = useAuth();
   const { themeId, setThemeId } = useTheme();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  // P6: System status
+  const [supabaseStatus, setSupabaseStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
 
   const handleThemeChange = (newThemeId: ThemeId) => {
     setThemeId(newThemeId);
@@ -36,6 +43,35 @@ export default function ProfileEdit() {
       setAvatarPreview(profile.avatar_url || null);
     }
   }, [profile]);
+
+  // P6: Check Supabase health
+  useEffect(() => {
+    const checkSupabaseHealth = async () => {
+      setSupabaseStatus('checking');
+      setSupabaseError(null);
+      try {
+        // Simple ping: try to select from a lightweight table
+        const { error } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1);
+        
+        if (error) {
+          setSupabaseStatus('error');
+          setSupabaseError(error.message);
+        } else {
+          setSupabaseStatus('healthy');
+        }
+      } catch (err) {
+        setSupabaseStatus('error');
+        setSupabaseError(err instanceof Error ? err.message : 'Unknown error');
+      }
+    };
+
+    if (user) {
+      checkSupabaseHealth();
+    }
+  }, [user]);
 
   const handleFileSelect = (file: File) => {
     setAvatarFile(file);
@@ -192,6 +228,73 @@ export default function ProfileEdit() {
                 </div>
               </button>
             ))}
+          </div>
+        </BaseCard>
+
+        {/* Restart Onboarding Option */}
+        <BaseCard>
+          <h2 className="text-title text-white mb-4">Onboarding</h2>
+          <p className="text-meta text-white/60 mb-4">
+            Restart the first-time experience to see the setup flow again.
+          </p>
+          <button
+            onClick={() => {
+              clearOnboardingFlag();
+              navigate('/onboarding');
+            }}
+            className="btn-secondary w-full"
+          >
+            Restart Onboarding
+          </button>
+        </BaseCard>
+
+        {/* P6: System Status / Debug */}
+        <BaseCard>
+          <h2 className="text-title text-white mb-4 flex items-center gap-2">
+            <Activity size={24} />
+            System Status
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <p className="text-meta text-white/60 mb-1">User ID</p>
+              <p className="text-body text-white/90 font-mono text-sm break-all">{user?.id || 'Not logged in'}</p>
+            </div>
+            <div>
+              <p className="text-meta text-white/60 mb-1">Email</p>
+              <p className="text-body text-white/90">{user?.email || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-meta text-white/60 mb-1">Theme Mode</p>
+              <p className="text-body text-white/90">{themesById[themeId].label}</p>
+            </div>
+            <div>
+              <p className="text-meta text-white/60 mb-2">Backend Connection</p>
+              <div className="flex items-center gap-2">
+                {supabaseStatus === 'checking' && (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-teal-400"></div>
+                    <span className="text-body text-white/70">Checking...</span>
+                  </>
+                )}
+                {supabaseStatus === 'healthy' && (
+                  <>
+                    <CheckCircle2 size={20} className="text-green-400" />
+                    <span className="text-body text-white/90">Connected</span>
+                  </>
+                )}
+                {supabaseStatus === 'error' && (
+                  <>
+                    <XCircle size={20} className="text-red-400" />
+                    <div className="flex-1">
+                      <span className="text-body text-red-400">Connection Error</span>
+                      {supabaseError && (
+                        <p className="text-meta text-red-400/70 mt-1">{supabaseError}</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </BaseCard>
       </PageBody>
