@@ -52,8 +52,9 @@ const createHtmlEmail = (title: string, name: string, messageBody: string, closi
 serve(async (req: Request) => {
   console.log('[Function: send-proof-submitted-alert] Invoked.')
   try {
-    // Default appUrl if not provided by the trigger
-    const { creatorEmail, creatorName, taskTitle, taskId, proofId, appUrl = 'https://bountyhunter.xyz' } = await req.json()
+    // Use environment variable for default appUrl, or fallback to empty string if not provided
+    const defaultAppUrl = Deno.env.get('SITE_URL') || ''
+    const { creatorEmail, creatorName, taskTitle, taskId, proofId, appUrl = defaultAppUrl } = await req.json()
     console.log('[Function: send-proof-submitted-alert] Request payload:', { creatorEmail, creatorName, taskTitle, taskId, proofId, appUrl })
 
     if (!creatorEmail) {
