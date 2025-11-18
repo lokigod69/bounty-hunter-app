@@ -137,7 +137,7 @@ export default function Layout() {
                 alt="Bounty Hunter Logo" 
                 className="h-10 w-10"
               />
-              <span className="app-title text-2xl font-bold text-white">BOUNTY HUNTER</span>
+              <span className="app-title text-2xl font-bold text-white">{theme.strings.appName}</span>
             </Link>
 
             {/* Desktop Navigation */}
