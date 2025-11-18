@@ -2,7 +2,8 @@
 // P2: Onboarding Step 1 - Theme/Mode Selection
 
 import { useState, useEffect } from 'react';
-import { useTheme, themesById } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
+import { themesById } from '../../theme/themes';
 import { ThemeId } from '../../theme/theme.types';
 import { BaseCard } from '../ui/BaseCard';
 import { Check, ArrowRight } from 'lucide-react';
