@@ -29,9 +29,10 @@ import FTXGate from './components/FTXGate';
 
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, session, profileLoading, profileError } = useAuth();
   
-  if (loading) {
+  // Wait for profile to load (but don't block on profile error for onboarding)
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass-card p-6 text-center">
@@ -42,10 +43,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (!user) {
+  if (!user || !session) {
     return <Navigate to="/login" replace />;
   }
   
+  // For onboarding route, allow even if profileError (let Onboarding handle it)
+  // For other routes, profile should exist (handled by FTXGate)
   return <>{children}</>;
 }
 
