@@ -17,7 +17,20 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const { error } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
+      
+      // Use dynamic redirect based on current origin instead of hardcoded URL
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : undefined;
+      
+      const options = redirectTo ? { emailRedirectTo: redirectTo } : undefined;
+      
+      const { error } = await supabase.auth.signInWithOtp({ 
+        email: normalizedEmail,
+        options 
+      });
+      
       if (error) {
         toast.error(error.message);
       } else {
