@@ -1,6 +1,7 @@
 // src/lib/ftxGate.ts
 // P2: First-Time Experience gate - determines if user should see onboarding
 
+import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 
 const ONBOARDING_COMPLETED_KEY = 'bounty_onboarding_completed';
@@ -87,3 +88,36 @@ export function clearOnboardingFlag(): void {
   localStorage.removeItem(ONBOARDING_COMPLETED_KEY);
 }
 
+/**
+ * Hook version of FTX gate logic for use in components.
+ * Returns ready state and whether to redirect to onboarding.
+ * Does NOT use any router hooks - pure data fetching only.
+ */
+export function useFTXGateLogic(userId: string | null | undefined, loading: boolean) {
+  const [ready, setReady] = useState(false);
+  const [shouldRedirectToOnboarding, setShouldRedirectToOnboarding] = useState(false);
+
+  useEffect(() => {
+    async function checkGate() {
+      if (loading) {
+        setReady(false);
+        return;
+      }
+
+      if (!userId) {
+        // Not logged in, don't gate
+        setReady(true);
+        setShouldRedirectToOnboarding(false);
+        return;
+      }
+
+      const result = await checkFTXGate(userId);
+      setShouldRedirectToOnboarding(result.shouldShowOnboarding);
+      setReady(true);
+    }
+
+    checkGate();
+  }, [userId, loading]);
+
+  return { ready, shouldRedirectToOnboarding };
+}

@@ -56,23 +56,25 @@ export default function App() {
         <UIProvider>
           <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><FTXGate><Layout /></FTXGate></ProtectedRoute>}>
-                {/* Routes below are protected and use the Layout component */}
-                <Route index element={<Dashboard />} />
-                <Route path="friends" element={<Friends />} />
-                <Route path="archive" element={<ArchivePage />} />
-                <Route path="profile/edit" element={<ProfileEdit />} />
-                <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
-                <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
-                <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
-                {/* Add other protected routes here */}
-              </Route>
-              {/* Fallback for any other route, could be a 404 page */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <FTXGate>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  {/* Routes below are protected and use the Layout component */}
+                  <Route index element={<Dashboard />} />
+                  <Route path="friends" element={<Friends />} />
+                  <Route path="archive" element={<ArchivePage />} />
+                  <Route path="profile/edit" element={<ProfileEdit />} />
+                  <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
+                  <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
+                  <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
+                  {/* Add other protected routes here */}
+                </Route>
+                {/* Fallback for any other route, could be a 404 page */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </FTXGate>
           </BrowserRouter>
         </UIProvider>
       </ThemeProvider>

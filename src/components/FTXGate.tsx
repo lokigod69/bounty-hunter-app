@@ -1,42 +1,27 @@
 // src/components/FTXGate.tsx
 // P2: First-Time Experience gate component - checks if user should see onboarding
+// Gate that sends fresh users to /onboarding, everyone else just passes through.
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { checkFTXGate } from '../lib/ftxGate';
+import { useFTXGateLogic } from '../lib/ftxGate';
 
 interface FTXGateProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function FTXGate({ children }: FTXGateProps) {
+  const location = useLocation();
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    async function checkOnboarding() {
-      if (loading) return;
+  // This hook encapsulates: 
+  // - ready (still checking missions/rewards)
+  // - shouldRedirectToOnboarding (true/false)
+  const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(user?.id, loading);
 
-      if (!user) {
-        setChecking(false);
-        return;
-      }
-
-      const result = await checkFTXGate(user.id);
-
-      if (result.shouldShowOnboarding) {
-        navigate('/onboarding', { replace: true });
-      } else {
-        setChecking(false);
-      }
-    }
-
-    checkOnboarding();
-  }, [user, loading, navigate]);
-
-  if (loading || checking) {
+  // While we don't yet know whether to gate or not, render loading state.
+  if (!ready || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass-card p-6 text-center">
@@ -47,6 +32,14 @@ export default function FTXGate({ children }: FTXGateProps) {
     );
   }
 
+  // If they should be on onboarding and aren't already there, redirect declaratively.
+  if (
+    shouldRedirectToOnboarding &&
+    location.pathname !== '/onboarding'
+  ) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Otherwise, let the app render normally.
   return <>{children}</>;
 }
-
