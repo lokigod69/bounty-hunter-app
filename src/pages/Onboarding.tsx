@@ -1,10 +1,9 @@
 // src/pages/Onboarding.tsx
 // P2: First-Time Experience wizard - guides new users through setup
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../context/ThemeContext';
 import { ThemeId } from '../theme/theme.types';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -39,12 +38,7 @@ export default function Onboarding() {
     assigneeChoice: null,
   });
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!session) {
-      navigate('/login');
-    }
-  }, [session, navigate]);
+  // Redirect if not logged in - use Navigate component instead of useEffect for declarative routing
 
   // Handle profile loading states
   if (profileLoading) {
@@ -83,7 +77,7 @@ export default function Onboarding() {
 
   // Ensure we have a user before proceeding
   if (!user || !session) {
-    return null; // Will redirect via useEffect
+    return <Navigate to="/login" replace />;
   }
 
   const handleStep1Complete = (themeId: ThemeId) => {

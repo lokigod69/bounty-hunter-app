@@ -12,8 +12,11 @@ interface FTXGateProps {
 }
 
 export default function FTXGate({ children }: FTXGateProps) {
+  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP LEVEL
   const location = useLocation();
   const { user, session, profile, profileLoading, profileError } = useAuth();
+  // Call useFTXGateLogic unconditionally - must be before any early returns
+  const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(user?.id, profileLoading);
 
   // Gate on a real loaded flag - don't proceed until profile is loaded or error is shown
   if (!session) {
@@ -56,10 +59,6 @@ export default function FTXGate({ children }: FTXGateProps) {
   }
 
   // From here on, profile is either existing or newly created
-  // This hook encapsulates: 
-  // - ready (still checking missions/rewards)
-  // - shouldRedirectToOnboarding (true/false)
-  const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(user?.id, profileLoading);
 
   // While we're still checking onboarding state, render nothing.
   if (!ready) {
