@@ -17,7 +17,10 @@ import CreateBountyModal from '../components/CreateBountyModal';
 import EditBountyModal from '../components/EditBountyModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
+import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
 import CreditDisplay from '../components/CreditDisplay';
 

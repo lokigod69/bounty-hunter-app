@@ -5,7 +5,9 @@ import React from 'react';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
 import { useTranslation } from 'react-i18next';
 import TaskCard from '../components/TaskCard';
-import { PageContainer, PageHeader, PageBody } from '../components/layout';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
 
 
 const ArchivePage: React.FC = () => {

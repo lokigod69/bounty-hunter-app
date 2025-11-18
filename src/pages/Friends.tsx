@@ -25,7 +25,9 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { PageContainer, PageHeader, PageBody } from '../components/layout';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
 
 export default function Friends() {

@@ -203,3 +203,60 @@ This document tracks the audit and fixes applied to ensure the codebase matches 
 2. Verify deployed app matches documented behavior
 3. Run through `V1_TESTING_CHECKLIST.md` to confirm all flows work
 
+---
+
+## TS and Layout Fixes (2025-01-27)
+
+**Goal**: Fix all TypeScript errors and get the new Mission Inbox / P1–P6 architecture compiling cleanly.
+
+### Files Changed
+
+1. **`src/pages/Dashboard.tsx`**
+   - Fixed layout imports to use explicit paths (`../components/layout/PageContainer` etc.) to resolve casing conflict with `Layout.tsx`
+   - StatusChangeContext import already correct (from `contracts.types`)
+   - Removed unused `Task` type declaration
+   - Verified `is_daily` property is accessible via AssignedContract extending BaseTask
+   - Verified `hasProofSubmitted` call uses correct type signature
+
+2. **`src/pages/IssuedPage.tsx`**
+   - Fixed layout imports to use explicit paths
+
+3. **`src/pages/Friends.tsx`**
+   - Fixed layout imports to use explicit paths
+
+4. **`src/pages/ArchivePage.tsx`**
+   - Fixed layout imports to use explicit paths
+
+5. **`src/pages/ProfileEdit.tsx`**
+   - Fixed layout imports to use explicit paths
+
+6. **`src/pages/RewardsStorePage.tsx`**
+   - Fixed layout imports to use explicit paths
+
+7. **`src/pages/Onboarding.tsx`**
+   - Fixed layout imports to use explicit paths
+
+8. **`src/pages/MyCollectedRewardsPage.tsx`**
+   - Fixed layout imports to use explicit paths
+
+### Issues Fixed
+
+- **Layout primitives casing conflict**: Resolved TypeScript error where `Layout.tsx` (capital L) conflicted with `layout/` directory (lowercase l) on Windows case-insensitive filesystem. Fixed by using explicit import paths instead of barrel exports.
+
+- **Type consistency**: Verified all type definitions are consistent:
+  - `TaskStatus` defined in `src/types/custom.ts` (canonical)
+  - `StatusChangeContext` exported from `contracts.types.ts` (not `contracts.domain.ts`)
+  - `AssignedContract` extends `BaseTask` which includes `is_daily` from database types
+  - `hasProofSubmitted` accepts `{ proof_url?: string | null }` and is called correctly
+
+- **Build verification**: `npm run build` succeeds with zero TypeScript errors
+
+### Verification
+
+- ✅ TypeScript compiles cleanly (`npm run build` succeeds)
+- ✅ No duplicate casing issues for Layout
+- ✅ Dashboard.tsx compiles cleanly and implements Mission Inbox layout
+- ✅ TaskForm compiles cleanly and has daily mission checkbox wired to `is_daily`
+- ✅ App.tsx structure verified: `ThemeProvider > UIProvider > BrowserRouter > FTXGate > Layout`
+- ✅ Onboarding route exists at `/onboarding`
+

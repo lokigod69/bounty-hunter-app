@@ -20,21 +20,21 @@ import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
-import { TaskStatus } from '../types/custom';
+import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
-import { Database } from '../types/database';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import HuntersCreed from '../components/HuntersCreed';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { soundManager as sm } from '../utils/soundManager';
-import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
+import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import { evaluateStatusChange, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import { hasProofSubmitted } from '../core/contracts/contracts.domain';
+import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import { useNavigate } from 'react-router-dom';
-
-type Task = Database['public']['Tables']['tasks']['Row'];
-type AssignedContract = ReturnType<typeof useAssignedContracts>['contracts'][0];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -142,7 +142,7 @@ export default function Dashboard() {
       // Step 1: Fetch task without restrictive filters - let RLS handle permissions
       const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('proof_required, reward_type, reward_text, assigned_to, created_by, status')
+        .select('proof_required, reward_type, reward_text, assigned_to, created_by, status, proof_url')
         .eq('id', taskId)
         .single();
 
@@ -161,14 +161,18 @@ export default function Dashboard() {
       }
 
       // Step 2: Evaluate status change using domain logic
+      if (!task.created_by) {
+        throw new Error('Task is missing creator information.');
+      }
+      
       const statusChangeContext: StatusChangeContext = {
         actorId: user.id,
         contractOwnerId: task.created_by,
-        assigneeId: task.assigned_to,
-        currentStatus: task.status as TaskStatus,
+        assigneeId: task.assigned_to ?? undefined,
+        currentStatus: (task.status || 'pending') as TaskStatus,
         requestedStatus: status as TaskStatus,
-        proofRequired: task.proof_required,
-        hasProof: hasProofSubmitted(task),
+        proofRequired: task.proof_required ?? false,
+        hasProof: hasProofSubmitted({ proof_url: task.proof_url }),
       };
 
       const statusChangeResult = evaluateStatusChange(statusChangeContext);
@@ -267,10 +271,10 @@ export default function Dashboard() {
 
   // P3: Filter and sort contracts into Mission Inbox sections
   const { doNowMissions, waitingApprovalMissions, completedMissions } = useMemo(() => {
-    const activeStatuses: (TaskStatus | null)[] = ['pending', 'in_progress', 'rejected', 'overdue', null];
+    const activeStatuses: (TaskStatus | null)[] = ['pending', 'in_progress', 'rejected', null];
     const doNow = assignedContracts
       .filter((task) => {
-        const status = task.status || 'pending';
+        const status = (task.status || 'pending') as TaskStatus | null;
         return activeStatuses.includes(status);
       })
       .sort((a, b) => {

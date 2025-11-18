@@ -3,7 +3,9 @@
 // due to incomplete "Rewards Store" functionality.
 
 import React from 'react';
-import { PageContainer, PageHeader, PageBody } from '../components/layout';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
 
 const MyCollectedRewardsPage: React.FC = () => {
   return (

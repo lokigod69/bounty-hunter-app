@@ -51,8 +51,12 @@ import { useDailyQuote } from '../hooks/useDailyQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
-import { PageContainer, PageHeader, PageBody, StatsRow } from '../components/layout';
-import { evaluateStatusChange, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageBody } from '../components/layout/PageBody';
+import { StatsRow } from '../components/layout/StatsRow';
+import { evaluateStatusChange } from '../core/contracts/contracts.domain';
+import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
 import { updateStreakAfterCompletion } from '../hooks/useDailyMissionStreak';
 
