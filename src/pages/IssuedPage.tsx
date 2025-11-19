@@ -20,7 +20,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase'; // Import supabase client
+import { supabase } from '../lib/supabase'; // Import supabase client (still used for create/delete)
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
 import TaskCard from '../components/TaskCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
@@ -55,10 +55,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
-import { evaluateStatusChange } from '../core/contracts/contracts.domain';
-import type { StatusChangeContext } from '../core/contracts/contracts.types';
-import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
-import { updateStreakAfterCompletion } from '../hooks/useDailyMissionStreak';
+import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
@@ -142,103 +139,28 @@ export default function IssuedPage() {
     }
 
     try {
-      // 1. Fetch task details to get reward info and is_daily flag
-      const { data: task, error: fetchError } = await supabase
-        .from('tasks')
-        .select('assigned_to, reward_type, reward_text, is_daily')
-        .eq('id', taskId)
-        .eq('created_by', user.id) // Security check
-        .single();
-
-      if (fetchError || !task) {
-        throw fetchError || new Error(t('contracts.taskNotFoundOrNotCreator'));
-      }
-
-      // 2. Evaluate status change using domain logic
-      const statusChangeContext: StatusChangeContext = {
-        actorId: user.id,
-        contractOwnerId: user.id, // Creator is approving
-        assigneeId: task.assigned_to,
-        currentStatus: 'review', // Approving from review status
-        requestedStatus: 'completed',
-        proofRequired: false, // Not needed for approval decision
-        hasProof: true, // Assumed true if in review
-      };
-
-      const statusChangeResult = evaluateStatusChange(statusChangeContext);
-
-      if (!statusChangeResult.allowed) {
-        const errorMsg = statusChangeResult.errors?.join(' ') || 'Cannot approve this task.';
-        throw new Error(errorMsg);
-      }
-
-      // 3. Update task status to 'completed'
-      const updateData: { status: string; completed_at?: string } = { status: 'completed' };
-      if (statusChangeResult.shouldSetCompletedAt) {
-        updateData.completed_at = new Date().toISOString();
-      }
-
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update(updateData)
-        .eq('id', taskId);
-
-      if (updateError) {
-        throw updateError;
-      }
+      const result = await approveMission({
+        missionId: taskId,
+        issuerId: user.id,
+      });
 
       soundManager.play('approveProof');
+      soundManager.play('success');
+      soundManager.play('coin');
 
-      // P5: Update streak for daily missions before awarding credits
-      let streakCount: number | undefined = undefined;
-      if (task.is_daily && task.assigned_to) {
-        try {
-          streakCount = await updateStreakAfterCompletion(taskId, task.assigned_to);
-          console.log(`[handleApprove] Updated streak for daily mission: ${streakCount}`);
-        } catch (streakError) {
-          console.error('Failed to update streak:', streakError);
-          // Don't block approval if streak update fails, but log it
-        }
+      if (result.streakCount && result.streakCount > 1) {
+        toast.success(t('contracts.approveSuccess') + ` (${result.streakCount}-day streak bonus!)`);
+      } else {
+        toast.success(t('contracts.approveSuccess'));
       }
 
-      // 4. Award credits if domain logic says so
-      if (statusChangeResult.shouldAwardCredits && task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
-        const creditDecision = decideCreditsForApprovedContract({
-          contractId: taskId,
-          assigneeId: task.assigned_to,
-          baseReward: parseInt(task.reward_text, 10),
-          isDaily: task.is_daily || false,
-          streakCount: streakCount,
-        });
-
-        if (creditDecision.amount > 0) {
-          const { error: rpcError } = await supabase.rpc('increment_user_credits', {
-            user_id_param: task.assigned_to,
-            amount_param: creditDecision.amount,
-          });
-
-          if (rpcError) {
-            console.error('Failed to award credits via RPC:', rpcError);
-            toast.error(t('contracts.approvalFailedAward', { amount: creditDecision.amount }));
-          } else {
-            soundManager.play('success');
-            soundManager.play('coin');
-            const streakMessage = task.is_daily && streakCount && streakCount > 1
-              ? ` (${streakCount}-day streak bonus!)`
-              : '';
-            toast.success(t('contracts.awardSuccess', { amount: creditDecision.amount }) + streakMessage);
-          }
-        }
-      }
-
-      toast.success(t('contracts.approveSuccess'));
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
       console.error('Failed to approve contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
-        const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(t('contracts.approvalFailed', { message: (supabaseError as { message: string }).message }));
+        const errorMessage = (error as { message: string }).message;
+        toast.error(t('contracts.approvalFailed', { message: errorMessage }));
       } else {
         toast.error(t('contracts.approvalFailedUnknown'));
       }
@@ -252,48 +174,10 @@ export default function IssuedPage() {
     }
 
     try {
-      // Fetch task to get context
-      const { data: task, error: fetchError } = await supabase
-        .from('tasks')
-        .select('assigned_to, created_by, status')
-        .eq('id', taskId)
-        .eq('created_by', user.id)
-        .single();
-
-      if (fetchError || !task) {
-        throw fetchError || new Error(t('contracts.taskNotFoundOrNotCreator'));
-      }
-
-      // Evaluate status change using domain logic
-      const statusChangeContext: StatusChangeContext = {
-        actorId: user.id,
-        contractOwnerId: user.id,
-        assigneeId: task.assigned_to,
-        currentStatus: task.status as TaskStatus,
-        requestedStatus: 'rejected',
-        proofRequired: false,
-      };
-
-      const statusChangeResult = evaluateStatusChange(statusChangeContext);
-
-      if (!statusChangeResult.allowed) {
-        const errorMsg = statusChangeResult.errors?.join(' ') || 'Cannot reject this task.';
-        throw new Error(errorMsg);
-      }
-
-      // Update task status - rejection resets to pending and clears proof
-      const { error } = await supabase
-        .from('tasks')
-        .update({ 
-          status: 'pending',
-          proof_url: null,
-          proof_type: null,
-        })
-        .eq('id', taskId);
-
-      if (error) {
-        throw error;
-      }
+      await rejectMission({
+        missionId: taskId,
+        issuerId: user.id,
+      });
 
       toast.success(t('contracts.rejectSuccess'));
       await refetchIssuedContracts();
@@ -301,8 +185,8 @@ export default function IssuedPage() {
     } catch (error: unknown) {
       console.error('Failed to reject contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
-        const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(t('contracts.rejectionFailed', { message: (supabaseError as { message: string }).message }));
+        const errorMessage = (error as { message: string }).message;
+        toast.error(t('contracts.rejectionFailed', { message: errorMessage }));
       } else {
         toast.error(t('contracts.rejectionFailedUnknown'));
       }

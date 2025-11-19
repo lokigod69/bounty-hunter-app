@@ -1,16 +1,27 @@
 // src/pages/Login.tsx
 // Redesigned to center the login form, add the application logo and title, and use the custom Mandalore font.
+// Fixed auth callback handling to prevent blank screens for new users.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, session } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect authenticated users away from /login
+  useEffect(() => {
+    // Only redirect if auth is done loading AND user exists
+    // This ensures Supabase has finished processing the callback
+    if (!authLoading && user && session) {
+      navigate('/', { replace: true });
+    }
+  }, [user, session, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,10 +29,11 @@ const Login: React.FC = () => {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       
-      // Use dynamic redirect based on current origin instead of hardcoded URL
+      // Use dynamic redirect to /login so Supabase can process the callback
+      // The SessionContextProvider will handle the auth state change
       const redirectTo =
         typeof window !== 'undefined'
-          ? window.location.origin
+          ? `${window.location.origin}/login`
           : undefined;
       
       const options = redirectTo ? { emailRedirectTo: redirectTo } : undefined;
@@ -52,7 +64,7 @@ const Login: React.FC = () => {
     try {
       const redirectTo =
         typeof window !== 'undefined'
-          ? window.location.origin
+          ? `${window.location.origin}/login`
           : undefined;
 
       const { error } = await supabase.auth.signInWithOAuth({
@@ -79,12 +91,29 @@ const Login: React.FC = () => {
     }
   };
 
+  // Show loading state while Supabase is initializing or processing auth callback
   if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (user) {
-    return <Navigate to="/" replace />;
+  // If user is authenticated, the useEffect above will handle redirect
+  // But show loading state here as well to prevent flash of login form
+  if (user && session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Signing you in...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

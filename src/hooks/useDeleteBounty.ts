@@ -3,24 +3,26 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useAuth } from './useAuth';
 import { soundManager } from '../utils/soundManager';
-import { Database } from '../types/database';
+import { deleteReward } from '../domain/rewards';
 
 export const useDeleteBounty = () => {
-  const supabase = useSupabaseClient<Database>();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const deleteBounty = async (bountyId: string) => {
+    if (!user) {
+      toast.error('You must be logged in to delete a bounty.');
+      return { success: false, error: 'Not authenticated' };
+    }
+
     setIsLoading(true);
     try {
-      const { error } = await supabase.rpc('delete_reward_store_item', {
-        p_bounty_id: bountyId,
+      await deleteReward({
+        rewardId: bountyId,
+        userId: user.id,
       });
-
-      if (error) {
-        throw new Error(error.message);
-      }
 
       soundManager.play('delete');
       toast.success('Bounty deleted successfully!');

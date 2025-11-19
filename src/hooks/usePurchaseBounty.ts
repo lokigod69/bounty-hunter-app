@@ -2,10 +2,9 @@
 // Hook for purchasing/claiming a reward store item.
 
 import { useState } from 'react';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useAuth } from './useAuth';
 import toast from 'react-hot-toast';
-import { Database } from '../types/database';
+import { purchaseReward } from '../domain/rewards';
 
 interface PurchaseBountyResult {
   success: boolean;
@@ -13,7 +12,6 @@ interface PurchaseBountyResult {
 }
 
 export const usePurchaseBounty = () => {
-  const supabase = useSupabaseClient<Database>();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,24 +26,18 @@ export const usePurchaseBounty = () => {
     setError(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('purchase_bounty', {
-        p_bounty_id: rewardId,
-        p_collector_id: user.id
+      const result = await purchaseReward({
+        rewardId,
+        userId: user.id,
       });
 
-      if (rpcError) {
-        throw rpcError;
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      const result = data as unknown as PurchaseBountyResult;
-
-      if (result && !result.success) {
-        throw new Error(result.error || 'Failed to claim bounty.');
-      }
-
-      toast.success('Bounty claimed successfully!');
+      toast.success(result.message || 'Bounty claimed successfully!');
       setIsLoading(false);
-      return result;
+      return { success: true };
 
     } catch (err: unknown) {
       let errorMessage = 'An unexpected error occurred.';

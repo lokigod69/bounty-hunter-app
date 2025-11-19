@@ -17,7 +17,6 @@ import { useUserCredits } from '../hooks/useUserCredits';
 import { fetchStreaksForContracts } from '../hooks/useDailyMissionStreak';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
@@ -31,9 +30,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import { evaluateStatusChange } from '../core/contracts/contracts.domain';
-import { hasProofSubmitted } from '../core/contracts/contracts.domain';
-import type { StatusChangeContext } from '../core/contracts/contracts.types';
+import { updateMissionStatus, uploadProof } from '../domain/missions';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -60,54 +57,13 @@ export default function Dashboard() {
       return null;
     }
 
-    // Enhanced file validation
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      toast.error('File is too large. Maximum size is 10MB.');
-      return null;
-    }
-
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      toast.error('Invalid file type. Only images and videos are allowed.');
-      return null;
-    }
-
     try {
-      // Determine proof_type based on file MIME type (before upload)
-      const proofType = file.type.startsWith('image/') ? 'image' : 'video';
-
-      // Upload to Supabase Storage
-      const fileName = `proofs/${taskId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from('bounty-proofs') // Corrected bucket name
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
       sm.play('upload');
-
-      // Get the public URL for the uploaded file
-      const { data: publicUrlData } = supabase.storage
-        .from('bounty-proofs')
-        .getPublicUrl(fileName);
-
-      if (!publicUrlData) {
-        throw new Error('Could not get public URL for the uploaded proof.');
-      }
-
-      const proofUrl = publicUrlData.publicUrl;
-
-      // Update task with proof URL, proof_type, and set status to 'review'
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update({
-          proof_url: proofUrl, // Use the full public URL
-          status: 'review' as TaskStatus,
-          proof_type: proofType,
-        })
-        .eq('id', taskId)
-        .eq('assigned_to', user.id); // Security: only assigned user can submit proof
-
-      if (updateError) throw updateError;
+      const proofUrl = await uploadProof({
+        missionId: taskId,
+        file,
+        userId: user.id,
+      });
 
       toast.success('Proof uploaded successfully and task is now in review.');
       if (refetchAssignedContracts) refetchAssignedContracts();
@@ -139,89 +95,15 @@ export default function Dashboard() {
     try {
       console.log('[Dashboard] handleStatusUpdate called:', { taskId, status, userId: user.id });
       
-      // Step 1: Fetch task without restrictive filters - let RLS handle permissions
-      const { data: task, error: fetchError } = await supabase
-        .from('tasks')
-        .select('proof_required, reward_type, reward_text, assigned_to, created_by, status, proof_url')
-        .eq('id', taskId)
-        .single();
+      await updateMissionStatus({
+        missionId: taskId,
+        status: status as TaskStatus,
+        userId: user.id,
+      });
 
-      console.log('[Dashboard] Task fetch result:', { task, fetchError });
-
-      if (fetchError) {
-        console.error('[Dashboard] Task fetch error:', fetchError);
-        throw fetchError;
-      }
+      console.log('[Dashboard] Task status updated successfully:', { taskId, status });
       
-      if (!task) {
-        const errorMsg = 'Task not found or you do not have permission to access it.';
-        console.error('[Dashboard] Task not found:', taskId);
-        toast.error(errorMsg, { id: toastId });
-        return;
-      }
-
-      // Step 2: Evaluate status change using domain logic
-      if (!task.created_by) {
-        throw new Error('Task is missing creator information.');
-      }
-      
-      const statusChangeContext: StatusChangeContext = {
-        actorId: user.id,
-        contractOwnerId: task.created_by,
-        assigneeId: task.assigned_to ?? undefined,
-        currentStatus: (task.status || 'pending') as TaskStatus,
-        requestedStatus: status as TaskStatus,
-        proofRequired: task.proof_required ?? false,
-        hasProof: hasProofSubmitted({ proof_url: task.proof_url }),
-      };
-
-      const statusChangeResult = evaluateStatusChange(statusChangeContext);
-
-      if (!statusChangeResult.allowed) {
-        const errorMsg = statusChangeResult.errors?.join(' ') || 'Status change not allowed.';
-        console.error('[Dashboard] Status change not allowed:', statusChangeResult.errors);
-        toast.error(errorMsg, { id: toastId });
-        return;
-      }
-
-      const finalStatus = statusChangeResult.newStatus!;
-      console.log('[Dashboard] Status transition:', { currentStatus: task.status, requestedStatus: status, finalStatus });
-
-      // Step 3: Update task - remove restrictive filter to let RLS handle permissions
-      const updateData: { status: string; completed_at?: string } = { status: finalStatus };
-      
-      // Set completion timestamp if domain logic says so
-      if (statusChangeResult.shouldSetCompletedAt) {
-        updateData.completed_at = new Date().toISOString();
-      }
-
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update(updateData)
-        .eq('id', taskId);
-
-      console.log('[Dashboard] Update result:', { updateError });
-
-      if (updateError) {
-        console.error('[Dashboard] Task update error:', updateError);
-        
-        // Provide specific error messages for common issues
-        let errorMessage = 'Failed to update task status.';
-        if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
-          errorMessage = 'You do not have permission to update this task.';
-        } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
-          errorMessage = 'Task not found or has been deleted.';
-        } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      // Step 6: Success handling with enhanced feedback
-      console.log('[Dashboard] Task status updated successfully:', { taskId, finalStatus });
-      
-      if (finalStatus === 'completed') {
+      if (status === 'completed') {
         toast.success('🎉 Task completed successfully!', { id: toastId, duration: 4000 });
         // Enhanced sound feedback for mobile
         try {

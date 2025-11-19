@@ -3,28 +3,39 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useAuth } from './useAuth';
 import { Database } from '../types/database';
+import { updateReward } from '../domain/rewards';
 
 // The parameters for the RPC function
 type BountyUpdateParams = Database['public']['Functions']['update_reward_store_item']['Args'];
 
 export const useUpdateBounty = () => {
-  const supabase = useSupabaseClient<Database>();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const updateBounty = async (updates: BountyUpdateParams) => {
+    if (!user) {
+      toast.error('You must be logged in to update a bounty.');
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    if (!updates.p_reward_id) {
+      toast.error('Reward ID is required.');
+      return { success: false, error: 'Missing reward ID' };
+    }
+
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('update_reward_store_item', updates);
-
-      if (error) {
-        throw new Error(error.message);
-      }
+      await updateReward({
+        rewardId: updates.p_reward_id,
+        updates,
+        userId: user.id,
+      });
 
       toast.success('Bounty updated successfully!');
       setIsLoading(false);
-      return { success: true, data };
+      return { success: true };
     } catch (err: unknown) {
       let errorMessage = 'An unexpected error occurred.';
       if (err instanceof Error) {

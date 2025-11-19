@@ -97,35 +97,28 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setCreateRewardError(null);
 
     try {
-      const rpcArgs: CreateRewardStoreItemArgs = {
-        p_name: newReward.name,
-        p_description: newReward.description ?? '', // Ensure string
-        p_image_url: newReward.image_url ?? '',   // Ensure string
-        p_credit_cost: newReward.credit_cost,
-        p_creator_id: user.id,
-      };
-      // RPC function name cast to 'any' to bypass constraint checks due to incomplete database.ts types.
-      const { data: rawData, error: rpcError } = await supabase.rpc(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        'create_reward_store_item' as any,
-        rpcArgs
-      );
-      const data = rawData as CreateRewardStoreItemResult | null;
+      const { createReward: createRewardDomain } = await import('../domain/rewards');
+      const result = await createRewardDomain({
+        data: {
+          p_name: newReward.name,
+          p_description: newReward.description ?? '',
+          p_image_url: newReward.image_url ?? '',
+          p_credit_cost: newReward.credit_cost,
+          p_creator_id: user.id,
+        },
+        userId: user.id,
+      });
 
-      if (rpcError) throw rpcError;
-
-      const rpcResponse = data as { success?: boolean; message?: string; reward_id?: string };
-      if (rpcResponse && rpcResponse.success === false) {
-        toast.error(rpcResponse.message || 'Failed to create reward.');
-        return { success: false, message: rpcResponse.message || 'Failed to create reward.' };
+      if (!result.success) {
+        toast.error(result.message);
+        return result;
       }
 
-      toast.success(rpcResponse?.message || 'Reward created successfully!');
+      toast.success(result.message);
       fetchRewards();
-      return { success: true, reward_id: rpcResponse?.reward_id, message: rpcResponse?.message || 'Reward created successfully!' };
+      return result;
     } catch (err) {
-      const postgrestError = err as PostgrestError;
-      const errorMessage = postgrestError.message || 'An unexpected error occurred.';
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
       console.error('Error creating reward:', errorMessage);
       setCreateRewardError(errorMessage);
       toast.error(`Error creating reward: ${errorMessage}`);
@@ -146,37 +139,27 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setPurchaseRewardError(null);
 
     try {
-      const rpcArgs: PurchaseRewardStoreItemArgs = {
-        p_reward_id: rewardId,
-        p_collector_id: user.id,
-      };
-      // RPC function name cast to 'any' to bypass constraint checks due to incomplete database.ts types.
-      const { data: rawData, error: rpcError } = await supabase.rpc(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        'purchase_reward_store_item' as any,
-        rpcArgs
-      );
-      const data = rawData as PurchaseRewardStoreItemResult | null;
+      const { purchaseReward: purchaseRewardDomain } = await import('../domain/rewards');
+      const result = await purchaseRewardDomain({
+        rewardId,
+        userId: user.id,
+      });
 
-      if (rpcError) throw rpcError;
-
-      const rpcResponse = data as { success?: boolean; message?: string; collection_id?: string; reward_name?: string };
-      if (rpcResponse && rpcResponse.success === false) {
-        toast.error(rpcResponse.message || 'Purchase failed.');
-        return { success: false, message: rpcResponse.message || 'Purchase failed.' };
+      if (!result.success) {
+        toast.error(result.message);
+        return result;
       }
 
-      toast.success(rpcResponse?.message || 'Reward purchased successfully!');
+      toast.success(result.message);
       fetchRewards();
 
-      if (rpcResponse?.collection_id) {
+      if (result.collection_id) {
         triggerNotification(rewardId, user.id);
       }
 
-      return { success: true, message: rpcResponse?.message || 'Reward purchased successfully!' };
+      return result;
     } catch (err) {
-      const postgrestError = err as PostgrestError;
-      const errorMessage = postgrestError.message || 'An unexpected error occurred.';
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
       console.error('Error purchasing reward:', errorMessage);
       setPurchaseRewardError(errorMessage);
       toast.error(`Error purchasing reward: ${errorMessage}`);
