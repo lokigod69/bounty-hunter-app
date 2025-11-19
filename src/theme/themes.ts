@@ -90,7 +90,7 @@ export const coupleTheme: ThemeDefinition = {
     contractsLabel: 'Requests',
     missionsLabel: 'Moments',
     historyLabel: 'History',
-    sectionDoNowTitle: 'Do this for your partner',
+    sectionDoNowTitle: 'Assigned to you',
     sectionWaitingApprovalTitle: 'Waiting for approval',
     sectionCompletedTitle: 'Recently completed',
     sectionIssuedSummaryTitle: 'Requests you\'ve made',

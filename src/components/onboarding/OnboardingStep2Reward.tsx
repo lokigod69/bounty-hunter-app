@@ -56,9 +56,12 @@ export default function OnboardingStep2Reward({
         setCreateError(null);
         onComplete(result.reward_id);
       } else {
-        const errorMsg = result.message || 'Reward creation failed. You can create rewards later after inviting someone.';
+        // Non-blocking error - show info toast but allow proceeding
+        const errorMsg = result.message || 'Couldn\'t save this gift right now. You can create gifts later in the Gift Store.';
         setCreateError(errorMsg);
         toast.error(errorMsg);
+        // Still allow user to proceed - don't block onboarding
+        // User can manually proceed via skip button if they want
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to create reward. You can create rewards later.';

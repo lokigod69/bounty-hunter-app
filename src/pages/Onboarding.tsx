@@ -137,7 +137,7 @@ export default function Onboarding() {
     'Select a theme that matches how you\'ll use Bounty Hunter.',
     'Set up a reward that missions can earn towards.',
     'Invite a friend, family member, or partner to share missions with.',
-    'Create your first mission to get started.',
+    'This is what you\'ll assign to yourself or your partner to earn tokens.',
   ];
 
   // Render onboarding wizard
@@ -186,13 +186,6 @@ export default function Onboarding() {
             Skip setup, I'll explore on my own
           </button>
         </div>
-
-        {/* Optional: Show non-blocking notice if profile is still loading */}
-        {profileLoading && (
-          <div className="mb-4 text-center">
-            <p className="text-sm text-white/50">Loading your profile...</p>
-          </div>
-        )}
 
         {/* Step content */}
         {/* Profile is optional - used only for prefilling, wizard works without it */}

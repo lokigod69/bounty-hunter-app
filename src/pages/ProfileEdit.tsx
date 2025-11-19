@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { clearOnboardingFlag } from '../lib/ftxGate';
 
 export default function ProfileEdit() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const { themeId, setThemeId } = useTheme();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
@@ -116,9 +116,15 @@ export default function ProfileEdit() {
 
       if (updateError) throw updateError;
 
+      // Refresh profile in useAuth to update header and other components immediately
       setSuccess('Profile updated successfully!');
       toast.success('Profile updated!');
       setAvatarFile(null);
+      
+      // Refresh profile state so changes are visible immediately in header and other components
+      if (refreshProfile) {
+        await refreshProfile();
+      }
     } catch (err) {
       console.error('Upload failed:', err);
       const errorMessage = (err as Error).message || 'An unknown error occurred.';

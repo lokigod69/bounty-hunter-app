@@ -8,13 +8,14 @@ import { useUI } from '../context/UIContext';
 interface ProofModalProps {
   taskId: string;
   onClose: () => void;
-  onSubmit: (file: File) => Promise<void>;
+  onSubmit: (file: File | null, textDescription?: string) => Promise<void>;
   uploadProgress: number;
 }
 
 const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress, taskId }) => {
   const { openModal, clearLayer } = useUI();
   const [file, setFile] = useState<File | null>(null);
+  const [textDescription, setTextDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,11 +48,11 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setError('Please select a file to submit.');
+    if (!file && !textDescription.trim()) {
+      setError('Please provide a file or text description.');
       return;
     }
-    await onSubmit(file);
+    await onSubmit(file, textDescription.trim() || undefined);
   };
 
   return (
@@ -60,41 +61,67 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
         <button onClick={onClose} title="Close" className="absolute top-3 right-3 text-slate-400 hover:text-white z-modal-controls">
           <X size={24} />
         </button>
-        <h2 className="text-2xl font-bold text-white mb-4">Submit Proof for Task {taskId}</h2>
-        <form onSubmit={handleSubmit}>
-          <div
-            {...getRootProps()}
-            className={`mt-4 flex justify-center items-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-              isDragActive ? 'border-indigo-400 bg-slate-700/50' : 'border-slate-600 hover:border-indigo-500'
-            }`}
-          >
-            <input {...getInputProps()} />
-            {file ? (
-              <div className="text-center text-slate-300">
-                <FileIcon size={48} className="mx-auto mb-2" />
-                <p className="font-semibold">{file.name}</p>
-                <p className="text-xs">({(file.size / 1024).toFixed(2)} KB)</p>
-              </div>
-            ) : (
-              <div className="text-center text-slate-400">
-                <UploadCloud size={48} className="mx-auto mb-2" />
-                <p className="font-semibold">
-                  {isDragActive ? 'Drop the file here...' : 'Drag & drop or click to select'}
-                </p>
-                <p className="text-xs mt-1">PNG, JPG, or PDF</p>
-              </div>
-            )}
+        <h2 className="text-2xl font-bold text-white mb-4">Submit Proof</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Text description input */}
+          <div>
+            <label htmlFor="proof-description" className="block text-sm font-medium text-white/70 mb-2">
+              Description (Optional)
+            </label>
+            <textarea
+              id="proof-description"
+              value={textDescription}
+              onChange={(e) => setTextDescription(e.target.value)}
+              placeholder="Describe what you did or add any notes..."
+              className="input-field w-full text-white h-24 resize-none"
+              maxLength={500}
+            />
           </div>
-          {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+
+          {/* File upload */}
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              Attach File (Optional)
+            </label>
+            <div
+              {...getRootProps()}
+              className={`flex justify-center items-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                isDragActive ? 'border-indigo-400 bg-slate-700/50' : 'border-slate-600 hover:border-indigo-500'
+              }`}
+            >
+              <input {...getInputProps()} />
+              {file ? (
+                <div className="text-center text-slate-300">
+                  <FileIcon size={48} className="mx-auto mb-2" />
+                  <p className="font-semibold">{file.name}</p>
+                  <p className="text-xs">({(file.size / 1024).toFixed(2)} KB)</p>
+                </div>
+              ) : (
+                <div className="text-center text-slate-400">
+                  <UploadCloud size={48} className="mx-auto mb-2" />
+                  <p className="font-semibold">
+                    {isDragActive ? 'Drop the file here...' : 'Drag & drop or click to select'}
+                  </p>
+                  <p className="text-xs mt-1">PNG, JPG, or PDF</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
           {uploadProgress > 0 && (
-            <div className="w-full bg-slate-700 rounded-full h-2.5 mt-4">
+            <div className="w-full bg-slate-700 rounded-full h-2.5">
               <div
                 className="bg-indigo-500 h-2.5 rounded-full"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
           )}
-          <button type="submit" className="btn-primary w-full mt-6 py-2" disabled={!file || uploadProgress > 0}>
+          <button 
+            type="submit" 
+            className="btn-primary w-full py-2" 
+            disabled={(!file && !textDescription.trim()) || uploadProgress > 0}
+          >
             {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submit for Review'}
           </button>
         </form>

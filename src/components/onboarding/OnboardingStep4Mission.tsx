@@ -159,9 +159,9 @@ export default function OnboardingStep4Mission({
               ))}
             </select>
             <p className="text-meta text-white/50 mt-1">
-              {invitedUserId
+              {assigneeOptions.length > 1
                 ? 'You can assign this to yourself or your invited friend.'
-                : 'Assign this mission to yourself to get started.'}
+                : 'Only you for now (invite someone later to assign missions to them).'}
             </p>
           </div>
 

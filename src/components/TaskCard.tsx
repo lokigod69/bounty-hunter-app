@@ -37,7 +37,7 @@ interface TaskCardProps {
   task: AssignedContract;
   isCreatorView: boolean;
   onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void;
-  onProofUpload: (file: File, taskId: string) => Promise<string | null>;
+  onProofUpload: (file: File | null, taskId: string, textDescription?: string) => Promise<string | null>;
   onDeleteTaskRequest: (taskId: string) => void;
   onApprove?: (taskId: string) => void;
   onReject?: (taskId: string) => void;
@@ -354,10 +354,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     if (!isCreatorView && assigned_to === user?.id) {
       if ((status === 'pending' || status === 'in_progress')) {
-        if (proof_required) {
-          return <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-primary py-2 px-8 text-md" disabled={actionLoading}>{actionLoading ? 'Submitting...' : 'Submit Proof'}</button>;
-        }
-        return <button onClick={(e) => { e.stopPropagation(); handleAction('review'); }} className="btn-primary py-2 px-8 text-md" disabled={actionLoading}>{actionLoading ? 'Completing...' : 'Complete Task'}</button>;
+        // Always show proof modal for "Complete Task" - allows text or file proof
+        return <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-primary py-2 px-8 text-md" disabled={actionLoading}>{actionLoading ? 'Submitting...' : 'Complete Task'}</button>;
       }
     }
     return null;
@@ -579,10 +577,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <ProofModal
           taskId={id}
           onClose={() => setShowProofModal(false)}
-          onSubmit={async (file: File) => {
+          onSubmit={async (file: File | null, textDescription?: string) => {
             setActionLoading(true);
             try {
-              const uploadedUrl = await onProofUpload(file, id);
+              const uploadedUrl = await onProofUpload(file, id, textDescription);
               if (uploadedUrl) {
                 if (refetchTasks) refetchTasks();
                 setShowProofModal(false);

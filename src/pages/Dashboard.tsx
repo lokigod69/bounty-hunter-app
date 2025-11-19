@@ -51,7 +51,7 @@ export default function Dashboard() {
     toast.error('You cannot delete tasks assigned to you. Contact the task creator if needed.');
   };
 
-  const handleProofUpload = async (file: File, taskId: string): Promise<string | null> => {
+  const handleProofUpload = async (file: File | null, taskId: string, textDescription?: string): Promise<string | null> => {
     if (!user) {
       toast.error('You must be logged in to upload proof.');
       return null;
@@ -61,18 +61,19 @@ export default function Dashboard() {
       sm.play('upload');
       const proofUrl = await uploadProof({
         missionId: taskId,
-        file,
+        file: file || undefined,
+        textDescription,
         userId: user.id,
       });
 
-      toast.success('Proof uploaded successfully and task is now in review.');
+      toast.success('Proof submitted successfully. Task is now waiting for approval.');
       if (refetchAssignedContracts) refetchAssignedContracts();
       return proofUrl;
     } catch (error: unknown) {
       console.error('Proof upload failed:', error);
-      let message = 'Failed to upload proof.';
+      let message = 'Couldn\'t submit proof, please try again.';
       if (error instanceof Error) {
-        message = error.message;
+        message = error.message || message;
       }
       toast.error(message);
       return null;

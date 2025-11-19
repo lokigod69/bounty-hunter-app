@@ -32,7 +32,8 @@ export interface UpdateMissionStatusParams {
 
 export interface UploadProofParams {
   missionId: MissionId;
-  file: File;
+  file?: File | null;
+  textDescription?: string;
   userId: string;
   supabaseClient?: SupabaseClient;
 }
@@ -276,53 +277,80 @@ export async function updateMissionStatus(params: UpdateMissionStatusParams): Pr
  * Uploads proof for a mission.
  * 
  * Flow:
- * 1. Upload file to Supabase storage (bounty-proofs bucket)
- * 2. Update task with proof_url and set status to 'review'
+ * 1. Upload file to Supabase storage (if provided)
+ * 2. Update task with proof_url (if file) or proof_description (if text), and set status to 'review'
  */
 export async function uploadProof(params: UploadProofParams): Promise<string> {
-  const { missionId, file, userId, supabaseClient = supabase } = params;
+  const { missionId, file, textDescription, userId, supabaseClient = supabase } = params;
 
-  // Enhanced file validation
-  if (file.size > 10 * 1024 * 1024) { // 10MB limit
-    throw new Error('File is too large. Maximum size is 10MB.');
+  if (!file && !textDescription) {
+    throw new Error('Please provide either a file or text description.');
   }
 
-  if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-    throw new Error('Invalid file type. Only images and videos are allowed.');
+  let proofUrl: string | null = null;
+  let proofType: string | null = null;
+
+  // Handle file upload if provided
+  if (file) {
+    // Enhanced file validation
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      throw new Error('File is too large. Maximum size is 10MB.');
+    }
+
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      throw new Error('Invalid file type. Only images and videos are allowed.');
+    }
+
+    // Determine proof_type based on file MIME type
+    proofType = file.type.startsWith('image/') ? 'image' : 'video';
+
+    // Upload to Supabase Storage
+    const fileName = `proofs/${missionId}/${Date.now()}_${file.name}`;
+    const { error: uploadError } = await supabaseClient.storage
+      .from('bounty-proofs')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    // Get the public URL for the uploaded file
+    const { data: publicUrlData } = supabaseClient.storage
+      .from('bounty-proofs')
+      .getPublicUrl(fileName);
+
+    if (!publicUrlData) {
+      throw new Error('Could not get public URL for the uploaded proof.');
+    }
+
+    proofUrl = publicUrlData.publicUrl;
   }
 
-  // Determine proof_type based on file MIME type
-  const proofType = file.type.startsWith('image/') ? 'image' : 'video';
+  // Update task with proof data and set status to 'review'
+  const updateData: {
+    proof_url?: string | null;
+    proof_description?: string | null;
+    proof_type?: string | null;
+    status: string;
+  } = {
+    status: 'review',
+  };
 
-  // Upload to Supabase Storage
-  const fileName = `proofs/${missionId}/${Date.now()}_${file.name}`;
-  const { error: uploadError } = await supabaseClient.storage
-    .from('bounty-proofs')
-    .upload(fileName, file);
-
-  if (uploadError) {
-    throw uploadError;
+  if (proofUrl) {
+    updateData.proof_url = proofUrl;
+    updateData.proof_type = proofType;
   }
 
-  // Get the public URL for the uploaded file
-  const { data: publicUrlData } = supabaseClient.storage
-    .from('bounty-proofs')
-    .getPublicUrl(fileName);
-
-  if (!publicUrlData) {
-    throw new Error('Could not get public URL for the uploaded proof.');
+  if (textDescription) {
+    updateData.proof_description = textDescription;
+    if (!proofType) {
+      updateData.proof_type = 'text';
+    }
   }
 
-  const proofUrl = publicUrlData.publicUrl;
-
-  // Update task with proof URL, proof_type, and set status to 'review'
   const { error: updateError } = await supabaseClient
     .from('tasks')
-    .update({
-      proof_url: proofUrl,
-      status: 'review',
-      proof_type: proofType,
-    })
+    .update(updateData)
     .eq('id', missionId)
     .eq('assigned_to', userId); // Security: only assigned user can submit proof
 
@@ -330,7 +358,7 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     throw updateError;
   }
 
-  return proofUrl;
+  return proofUrl || 'text-proof';
 }
 
 /**
