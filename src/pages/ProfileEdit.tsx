@@ -109,12 +109,20 @@ export default function ProfileEdit() {
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      const { error: updateError } = await supabase
+      const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
         .update({ display_name: displayName, avatar_url: avatarUrl })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select()
+        .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[ProfileEdit] Update error:', updateError);
+        throw updateError;
+      }
+
+      // Log success for debugging
+      console.log('[ProfileEdit] Profile updated successfully:', updatedProfile);
 
       // Refresh profile in useAuth to update header and other components immediately
       setSuccess('Profile updated successfully!');

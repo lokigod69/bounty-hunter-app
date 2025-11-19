@@ -13,13 +13,15 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
+import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import { UserPlus, Users, AlertTriangle } from 'lucide-react';
+import { UserPlus, Users, AlertTriangle, Heart, Mail, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
+import { useNavigate } from 'react-router-dom';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 import { soundManager } from '../utils/soundManager';
@@ -34,6 +36,10 @@ export default function Friends() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  // For Couple Mode, use partner state; for other modes, use friends
+  const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(user?.id);
   
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
@@ -182,11 +188,242 @@ export default function Friends() {
   };
 
   const handleRefresh = async () => {
+    if (theme.id === 'couple' && partnerState.refresh) {
+      await partnerState.refresh();
+    }
     if (refreshFriends) {
       await refreshFriends();
     }
   };
 
+  // For Couple Mode, show partner-specific UI
+  if (theme.id === 'couple') {
+    return (
+      <PullToRefresh onRefresh={handleRefresh}>
+        <PageContainer>
+          <PageHeader 
+            title={theme.strings.friendsTitle} 
+            subtitle="Connect with your partner to share requests and moments." 
+          />
+
+          <PageBody>
+            {partnerState.isLoading ? (
+              <BaseCard>
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-body text-white/70">Loading partner status...</p>
+                </div>
+              </BaseCard>
+            ) : partnerState.error ? (
+              <BaseCard className="bg-red-900/20 border-red-500/30">
+                <div className="text-center py-8">
+                  <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+                  <h3 className="text-subtitle text-white font-semibold mb-2">Error loading partner</h3>
+                  <p className="text-body text-white/70 mb-4">{partnerState.error}</p>
+                  <button
+                    onClick={() => partnerState.refresh()}
+                    className="btn-primary flex items-center justify-center gap-2 mx-auto"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </BaseCard>
+            ) : partnerState.state === 'NO_PARTNER' ? (
+              <BaseCard>
+                <div className="text-center py-12">
+                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">You haven't connected with a partner yet</h3>
+                  <p className="text-body text-white/70 mb-8">
+                    Invite your partner to start sharing requests and moments together.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+                        if (searchInput) {
+                          searchInput.focus();
+                        }
+                      }}
+                      className="btn-primary flex items-center justify-center gap-2"
+                    >
+                      <UserPlus size={20} />
+                      Invite your partner
+                    </button>
+                    <button
+                      onClick={() => navigate('/onboarding')}
+                      className="btn-secondary flex items-center justify-center gap-2"
+                    >
+                      Complete onboarding
+                    </button>
+                  </div>
+                </div>
+              </BaseCard>
+            ) : partnerState.state === 'INVITE_SENT' ? (
+              <BaseCard>
+                <div className="text-center py-12">
+                  <Mail size={64} className="mx-auto mb-6 text-yellow-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">
+                    Invite sent to {partnerState.partnerProfile?.display_name || partnerState.partnerProfile?.email || 'your partner'}
+                  </h3>
+                  <p className="text-body text-white/70 mb-8">
+                    Waiting for them to join and accept your invitation.
+                  </p>
+                  {partnerState.friendshipId && (
+                    <button
+                      onClick={() => handleRequestCancellationAttempt(partnerState.friendshipId!)}
+                      className="btn-secondary mx-auto"
+                    >
+                      Cancel invite
+                    </button>
+                  )}
+                </div>
+              </BaseCard>
+            ) : partnerState.state === 'INVITE_RECEIVED' ? (
+              <BaseCard>
+                <div className="text-center py-12">
+                  <Mail size={64} className="mx-auto mb-6 text-blue-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">
+                    {partnerState.partnerProfile?.display_name || 'Someone'} invited you to connect
+                  </h3>
+                  {partnerState.partnerProfile && (
+                    <div className="flex items-center justify-center gap-3 mb-6">
+                      <img 
+                        src={partnerState.partnerProfile.avatar_url || '/default-avatar.png'} 
+                        alt={partnerState.partnerProfile.display_name || 'partner'} 
+                        className="w-16 h-16 rounded-full border-2 border-teal-400"
+                      />
+                      <div className="text-left">
+                        <p className="text-subtitle text-white font-semibold">
+                          {partnerState.partnerProfile.display_name || partnerState.partnerProfile.email}
+                        </p>
+                        <p className="text-body text-white/70 text-sm">{partnerState.partnerProfile.email}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    {partnerState.friendshipId && (
+                      <>
+                        <button
+                          onClick={() => handleAcceptRequest(partnerState.friendshipId!)}
+                          className="btn-primary flex items-center justify-center gap-2"
+                        >
+                          <CheckCircle size={20} />
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(partnerState.friendshipId!)}
+                          className="btn-secondary flex items-center justify-center gap-2"
+                        >
+                          <XCircle size={20} />
+                          Decline
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </BaseCard>
+            ) : partnerState.state === 'PARTNERED' && partnerState.partnerProfile ? (
+              <BaseCard>
+                <div className="text-center py-8">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <img 
+                      src={partnerState.partnerProfile.avatar_url || '/default-avatar.png'} 
+                      alt={partnerState.partnerProfile.display_name || 'partner'} 
+                      className="w-24 h-24 rounded-full border-4 border-teal-400"
+                    />
+                    <Heart size={32} className="text-teal-400" />
+                    {user && (
+                      <img 
+                        src={user.user_metadata?.avatar_url || '/default-avatar.png'} 
+                        alt={user.email || 'you'} 
+                        className="w-24 h-24 rounded-full border-4 border-teal-400"
+                      />
+                    )}
+                  </div>
+                  <h3 className="text-subtitle text-white/90 mb-2 font-semibold">
+                    {partnerState.partnerProfile.display_name || partnerState.partnerProfile.email}
+                  </h3>
+                  <p className="text-body text-white/70 mb-8">{partnerState.partnerProfile.email}</p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => navigate('/issued')}
+                      className="btn-primary flex items-center justify-center gap-2"
+                    >
+                      Create request
+                    </button>
+                    <button
+                      onClick={() => navigate('/rewards-store')}
+                      className="btn-secondary flex items-center justify-center gap-2"
+                    >
+                      Create gift
+                    </button>
+                  </div>
+                </div>
+              </BaseCard>
+            ) : null}
+
+            {/* Search/Invite form for Couple Mode - only show if NO_PARTNER or INVITE_SENT */}
+            {(partnerState.state === 'NO_PARTNER' || partnerState.state === 'INVITE_SENT') && (
+              <div className="relative mb-6 mt-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Search by name or email..."
+                    className="w-full pl-4 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-emerald-500 focus:outline-none text-white"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin h-5 w-5 border-2 border-emerald-500 border-t-transparent rounded-full" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Dropdown Results */}
+                {showDropdown && (
+                  <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {searchResults.map((userResult) => (
+                      <button
+                        key={userResult.id}
+                        onClick={() => sendFriendRequest(userResult)}
+                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={userResult.avatar_url || '/default-avatar.png'} 
+                            alt={userResult.display_name || 'user avatar'} 
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <span className="font-medium">{userResult.display_name}</span>
+                        </div>
+                        <UserPlus className="w-5 h-5 text-emerald-500" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Confirmation Modal for Cancelling Sent Request */}
+            {showCancelModal && (
+              <ConfirmDeleteModal
+                isOpen={showCancelModal}
+                onClose={handleCloseCancelModal}
+                onConfirm={handleConfirmCancelRequest}
+                title="Cancel Invite"
+                message="Are you sure you want to cancel this invitation?"
+                confirmText="Cancel Invite"
+                isConfirming={isCancelling}
+              />
+            )}
+          </PageBody>
+        </PageContainer>
+      </PullToRefresh>
+    );
+  }
+
+  // For Guild/Family modes, show regular friends UI
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
@@ -195,49 +432,50 @@ export default function Friends() {
           subtitle={t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')} 
         />
 
-        {/* Add Friend Form */}
-        <div className="relative mb-6">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder={t('friends.searchPlaceholder')}
-              className="w-full pl-4 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-emerald-500 focus:outline-none text-white"
-            />
-            {isSearching && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin h-5 w-5 border-2 border-emerald-500 border-t-transparent rounded-full" />
+        <PageBody>
+          {/* Add Friend Form */}
+          <div className="relative mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder={t('friends.searchPlaceholder')}
+                className="w-full pl-4 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-emerald-500 focus:outline-none text-white"
+              />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin h-5 w-5 border-2 border-emerald-500 border-t-transparent rounded-full" />
+                </div>
+              )}
+            </div>
+            
+            {/* Dropdown Results */}
+            {showDropdown && (
+              <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                {searchResults.map((userResult) => (
+                  <button
+                    key={userResult.id}
+                    onClick={() => sendFriendRequest(userResult)}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={userResult.avatar_url || '/default-avatar.png'} 
+                        alt={userResult.display_name || 'user avatar'} 
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <span className="font-medium">{userResult.display_name}</span>
+                    </div>
+                    <UserPlus className="w-5 h-5 text-emerald-500" />
+                  </button>
+                ))}
               </div>
             )}
           </div>
-          
-          {/* Dropdown Results */}
-          {showDropdown && (
-            <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-              {searchResults.map((userResult) => (
-                <button
-                  key={userResult.id}
-                  onClick={() => sendFriendRequest(userResult)}
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={userResult.avatar_url || '/default-avatar.png'} 
-                      alt={userResult.display_name || 'user avatar'}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <span className="font-medium">{userResult.display_name}</span>
-                  </div>
-                  <UserPlus className="w-5 h-5 text-emerald-500" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-white/10 mb-6">
+          {/* Tabs */}
+          <div className="flex border-b border-white/10 mb-6">
           <button
             className={`px-4 py-2 font-medium text-sm flex-1 text-center ${
               activeTab === 'friends'
@@ -427,18 +665,19 @@ export default function Friends() {
           </div>
         )}
 
-        {/* Confirmation Modal for Cancelling Sent Request */}
-        {showCancelModal && (
-          <ConfirmDeleteModal
-            isOpen={showCancelModal}
-            onClose={handleCloseCancelModal}
-            onConfirm={handleConfirmCancelRequest}
-            title={t('friends.cancelRequestTitle')}
-            message={t('friends.cancelRequestMessage')}
-            confirmText={t('friends.cancelRequestConfirm')}
-            isConfirming={isCancelling}
-          />
-        )}
+          {/* Confirmation Modal for Cancelling Sent Request */}
+          {showCancelModal && (
+            <ConfirmDeleteModal
+              isOpen={showCancelModal}
+              onClose={handleCloseCancelModal}
+              onConfirm={handleConfirmCancelRequest}
+              title={t('friends.cancelRequestTitle')}
+              message={t('friends.cancelRequestMessage')}
+              confirmText={t('friends.cancelRequestConfirm')}
+              isConfirming={isCancelling}
+            />
+          )}
+        </PageBody>
       </PageContainer>
     </PullToRefresh>
   );
