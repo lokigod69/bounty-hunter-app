@@ -1615,7 +1615,8 @@ body {
   
   /* Navigation Layer: 30-39 */
   --z-header: 30;
-  --z-mobile-menu: 35;
+  /* Phase 8: Mobile menu z-index raised above modals to ensure it's always clickable */
+  --z-mobile-menu: 20000;
   
   /* UI Controls Layer: 40-99 */
   --z-mobile-menu-close: 45;

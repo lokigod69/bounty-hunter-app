@@ -218,7 +218,7 @@ export default function Layout() {
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("[MobileMenu] Hamburger clicked, current state:", isMobileMenuOpen);
+                  console.log("[Layout] hamburger clicked, activeLayer:", activeLayer, "isMobileMenuOpen:", isMobileMenuOpen);
                   if (isMobileMenuOpen) {
                     closeMobileMenu();
                   } else {

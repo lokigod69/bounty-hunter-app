@@ -2,8 +2,19 @@
 // Phase 2: Extended with activeLayer coordination to manage overlay conflicts (menu vs modal vs critical).
 // Centralizes overlay state and ensures only one layer is active at a time.
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { lockScroll, unlockScroll } from '../lib/scrollLock';
+
+// Phase 8: Hard cleanup guarantee for overlay-root
+// Ensures no zombie overlays remain when activeLayer === 'none'
+function clearOverlayRoot(): void {
+  const el = document.getElementById('overlay-root');
+  if (!el) return;
+  // Brutal but safe: remove all child nodes
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+}
 
 // Define the active overlay layer type
 export type ActiveLayer = 'none' | 'menu' | 'modal' | 'critical';
@@ -29,12 +40,13 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('none');
 
-  // Sync scroll lock with activeLayer
+  // Phase 8: Sync scroll lock with activeLayer and ensure overlay-root cleanup
   useEffect(() => {
     if (activeLayer !== 'none') {
       lockScroll();
     } else {
       unlockScroll();
+      clearOverlayRoot(); // Phase 8: Ensure no zombie overlays when layer is cleared
     }
     
     // Cleanup on unmount
@@ -44,6 +56,11 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       }
     };
   }, [activeLayer]);
+
+  // Phase 8: Minimal logging to verify state changes
+  useEffect(() => {
+    console.log('[UIContext] activeLayer:', activeLayer, 'isMobileMenuOpen:', isMobileMenuOpen);
+  }, [activeLayer, isMobileMenuOpen]);
 
   // Function to toggle the mobile menu state
   const toggleMobileMenu = () => {
@@ -103,11 +120,11 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setActiveLayer('critical');
   };
 
-  // Clear all layers
-  const clearLayer = () => {
+  // Phase 8: Clear all layers - always sets activeLayer to 'none' with no conditionals
+  const clearLayer = useCallback(() => {
     setMobileMenuOpen(false);
     setActiveLayer('none');
-  };
+  }, []);
 
   const value = {
     isMobileMenuOpen,

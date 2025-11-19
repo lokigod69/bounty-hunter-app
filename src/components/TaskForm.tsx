@@ -61,7 +61,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const { openModal, clearLayer } = useUI();
   const hasOpenedModalRef = useRef(false);
   
-  // Phase 7: Use UIContext to coordinate overlay layers and scroll locking
+  // Phase 8: Use UIContext to coordinate overlay layers and scroll locking
   // Only call openModal() once when component mounts, prevent duplicate calls
   useEffect(() => {
     if (!hasOpenedModalRef.current) {
@@ -69,10 +69,16 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       hasOpenedModalRef.current = true;
     }
     return () => {
-      clearLayer(); // Phase 7: Clear layer when modal unmounts
+      clearLayer(); // Phase 8: Clear layer when modal unmounts
       hasOpenedModalRef.current = false;
     };
   }, [openModal, clearLayer]);
+
+  // Phase 8: Ensure clearLayer() is called on every close path
+  const handleClose = () => {
+    clearLayer(); // Phase 8: Clear layer state before closing
+    onClose(); // This controls isTaskFormOpen in IssuedPage
+  };
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state
@@ -173,7 +179,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         soundManager.play('create');
       }
       // Close modal after successful submission
-      onClose();
+      handleClose();
     } catch (error: unknown) {
       console.error('Task submission error:', error);
       let errorMessage = t('taskForm.submissionError');
@@ -211,7 +217,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
       onClick={() => {
         console.log("[TaskFormModal] Backdrop clicked, closing");
-        onClose();
+        handleClose();
       }}
     >
       {/* Enhanced responsive close button with better touch targets */}
@@ -219,7 +225,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         onClick={(e) => {
           e.stopPropagation();
           console.log("[TaskFormModal] Close button clicked");
-          onClose();
+          handleClose();
         }}
         className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label={t('taskForm.closeButton')}
