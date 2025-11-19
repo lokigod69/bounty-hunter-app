@@ -30,13 +30,13 @@ import { ThemeProvider } from './context/ThemeContext';
 // Protected route component - handles authentication only
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // ALL HOOKS AT TOP LEVEL
-  const { user, session, profileLoading } = useAuth();
+  const { user, session, authLoading } = useAuth();
   const location = useLocation();
   
   // NO HOOKS BELOW THIS LINE - only conditional returns
   
-  // Wait for profile to load
-  if (profileLoading) {
+  // Wait for Supabase session initialization to complete
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass-card p-6 text-center">
@@ -52,7 +52,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // Authenticated and profile loaded - render children
+  // Authenticated - render children (profile loading is handled by individual components if needed)
   return <>{children}</>;
 }
 

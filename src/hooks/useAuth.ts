@@ -13,10 +13,13 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); // Session initialization
+  const [profileLoading, setProfileLoading] = useState(false); // Profile fetching
   const [error, setError] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<Error | null>(null);
+  
+  // Track which user ID we're currently ensuring profile for to prevent duplicate calls
+  const [ensuringUserId, setEnsuringUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -27,11 +30,13 @@ export function useAuth() {
       
       setSession(session);
       setUser(session?.user ?? null);
+      setAuthLoading(false); // Session initialization complete
+      
       if (session?.user) {
         ensureProfile(session.user);
       } else {
-        setLoading(false);
         setProfileLoading(false);
+        setEnsuringUserId(null);
       }
     });
 
@@ -42,13 +47,15 @@ export function useAuth() {
         
         setSession(session);
         setUser(session?.user ?? null);
+        setAuthLoading(false); // Session state change complete
+        
         if (session?.user) {
           ensureProfile(session.user);
         } else {
           setProfile(null);
           setProfileLoading(false);
           setProfileError(null);
-          setLoading(false);
+          setEnsuringUserId(null);
         }
       }
     );
@@ -59,12 +66,18 @@ export function useAuth() {
     };
   }, []);
 
-  const ensureProfile = async (user: User) => {
+  const ensureProfile = async (user: User, forceRefresh = false) => {
+    // Prevent duplicate calls - if already ensuring profile for this user, skip
+    // Unless forceRefresh is true (for refreshProfile)
+    if (!forceRefresh && ensuringUserId === user.id) {
+      return;
+    }
+
     try {
+      setEnsuringUserId(user.id);
       console.log('[useAuth] Starting profile ensure for user:', user.id);
       setProfileLoading(true);
       setProfileError(null);
-      setLoading(true);
       
       const profile = await ensureProfileForUser(supabase, user);
       
@@ -79,14 +92,14 @@ export function useAuth() {
     } finally {
       console.log('[useAuth] Profile loading complete, setting profileLoading to false');
       setProfileLoading(false);
-      setLoading(false);
+      setEnsuringUserId(null);
     }
   };
 
 
   const signOut = async () => {
     try {
-      setLoading(true);
+      setAuthLoading(true);
       setError(null);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -94,21 +107,25 @@ export function useAuth() {
       setError((error as Error).message);
       console.error('Error signing out:', error);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const refreshProfile = async () => {
     if (user) {
-      await ensureProfile(user);
+      await ensureProfile(user, true); // Force refresh even if profile exists
     }
   };
+
+  // Combined loading state: true if auth is initializing OR profile is loading
+  const loading = authLoading || profileLoading;
 
   return {
     user,
     profile,
     session,
     loading,
+    authLoading,
     profileLoading,
     error,
     profileError,
