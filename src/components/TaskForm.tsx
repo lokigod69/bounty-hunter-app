@@ -246,6 +246,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
       <div 
         className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative animate-fade-in overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-mobile-fade sm:modal-fade-in"
+        style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Original close button removed from here */}

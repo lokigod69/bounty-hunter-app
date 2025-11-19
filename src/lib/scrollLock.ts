@@ -23,9 +23,12 @@ export function lockScroll(): void {
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     
-    // Prevent iOS bounce scrolling
+    // Phase UX-1: Prevent iOS bounce scrolling and pull-to-refresh
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
+    document.body.style.overscrollBehavior = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.touchAction = 'none';
   }
 }
 
@@ -43,6 +46,9 @@ export function unlockScroll(): void {
     document.documentElement.style.overflow = originalOverflow.html;
     document.body.style.position = '';
     document.body.style.width = '';
+    document.body.style.overscrollBehavior = '';
+    document.documentElement.style.overscrollBehavior = '';
+    document.body.style.touchAction = '';
   }
 }
 
@@ -56,5 +62,8 @@ export function forceUnlockScroll(): void {
   document.documentElement.style.overflow = originalOverflow.html;
   document.body.style.position = '';
   document.body.style.width = '';
+  document.body.style.overscrollBehavior = '';
+  document.documentElement.style.overscrollBehavior = '';
+  document.body.style.touchAction = '';
 }
 

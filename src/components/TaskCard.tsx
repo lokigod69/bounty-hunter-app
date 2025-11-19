@@ -479,7 +479,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </p>
             </div>
 
-            <div className="flex-1 space-y-6 mb-6 overflow-y-auto overflow-x-hidden pr-2">
+            <div className="flex-1 space-y-6 mb-6 overflow-y-auto overflow-x-hidden pr-2" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
               <div className="py-4 px-4 rounded-lg bg-slate-800/40 border border-slate-700/60 flex items-center justify-between w-full text-base">
                 <div
                   className="flex items-center flex-shrink-0 mr-4"

@@ -28,6 +28,7 @@ import { soundManager as sm } from '../utils/soundManager';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
+import { useUI } from '../context/UIContext';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
 import { updateMissionStatus, uploadProof } from '../domain/missions';
@@ -35,6 +36,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { activeLayer } = useUI();
   const { contracts: assignedContracts, loading, error, refetch: refetchAssignedContracts } = useAssignedContracts();
   const { contracts: issuedContracts } = useIssuedContracts();
   const { credits: userCredits } = useUserCredits();
@@ -290,8 +292,213 @@ export default function Dashboard() {
   };
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <PageContainer>
+    <>
+      {/* Phase UX-1: Disable PullToRefresh when modal is open to prevent gesture interference */}
+      {activeLayer === 'modal' ? (
+        <PageContainer>
+          <PageHeader 
+            title={theme.strings.inboxTitle} 
+            subtitle={t('contracts.description')} 
+          />
+
+          <StatsRow
+            stats={[
+              {
+                icon: <ScrollText size={32} />,
+                value: pendingCount,
+                label: t('contracts.open'),
+                iconColor: 'text-red-400',
+              },
+              {
+                icon: <Clock size={32} />,
+                value: reviewCount,
+                label: t('contracts.review'),
+                iconColor: 'text-yellow-400',
+              },
+              {
+                icon: <CheckCircle size={32} />,
+                value: completedCount,
+                label: t('contracts.done'),
+                iconColor: 'text-green-400',
+              },
+            ]}
+          />
+
+          <PageBody>
+            {/* P3: Section 1 - Do this now */}
+            <div className="space-y-4">
+              <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionDoNowTitle}</h2>
+              {doNowMissions.length === 0 ? (
+                <BaseCard>
+                  <div className="text-center py-8">
+                    <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+                    <h3 className="text-subtitle text-white/90 mb-2">
+                      {theme.id === 'guild' && 'No missions right now. Create one or check the store.'}
+                      {theme.id === 'family' && 'No chores assigned. You\'re all clear for now.'}
+                      {theme.id === 'couple' && 'No requests pending. Maybe create one?'}
+                    </h3>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                      <button
+                        onClick={() => navigate('/issued')}
+                        className="btn-primary flex items-center justify-center gap-2"
+                      >
+                        <PlusCircle size={20} />
+                        Create new {theme.strings.missionSingular}
+                      </button>
+                      <button
+                        onClick={() => navigate('/rewards-store')}
+                        className="btn-secondary flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart size={20} />
+                        Visit {theme.strings.storeTitle}
+                      </button>
+                    </div>
+                  </div>
+                </BaseCard>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                  {doNowMissions.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      isCreatorView={false}
+                      onStatusUpdate={handleStatusUpdate}
+                      onProofUpload={handleProofUpload}
+                      uploadProgress={0}
+                      onDeleteTaskRequest={handleDeleteTaskRequest}
+                      refetchTasks={refetchAssignedContracts}
+                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* P3: Section 2 - Waiting for approval */}
+            <div className="space-y-4">
+              <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionWaitingApprovalTitle}</h2>
+              {waitingApprovalMissions.length === 0 ? (
+                <BaseCard>
+                  <div className="text-center py-6">
+                    <p className="text-body text-white/70">Nothing waiting for approval.</p>
+                  </div>
+                </BaseCard>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                  {waitingApprovalMissions.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      isCreatorView={false}
+                      onStatusUpdate={handleStatusUpdate}
+                      onProofUpload={handleProofUpload}
+                      uploadProgress={0}
+                      onDeleteTaskRequest={handleDeleteTaskRequest}
+                      refetchTasks={refetchAssignedContracts}
+                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* P3: Section 3 - Recently completed */}
+            <div className="space-y-4">
+              <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionCompletedTitle}</h2>
+              {completedMissions.length === 0 ? (
+                <BaseCard>
+                  <div className="text-center py-6">
+                    <p className="text-body text-white/70">You haven't completed any {theme.strings.missionPlural} yet.</p>
+                  </div>
+                </BaseCard>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                  {completedMissions.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      isCreatorView={false}
+                      onStatusUpdate={handleStatusUpdate}
+                      onProofUpload={handleProofUpload}
+                      uploadProgress={0}
+                      onDeleteTaskRequest={handleDeleteTaskRequest}
+                      refetchTasks={refetchAssignedContracts}
+                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* P3: Section 4 - Issued missions summary */}
+            {issuedContracts.length > 0 && (
+              <div className="space-y-4">
+                <BaseCard>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-subtitle text-white font-semibold mb-2">
+                        {theme.strings.sectionIssuedSummaryTitle}
+                      </h3>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {issuedStats.awaitingProof > 0 && (
+                          <span className="text-white/70">
+                            {issuedStats.awaitingProof} {theme.strings.missionPlural} awaiting proof
+                          </span>
+                        )}
+                        {issuedStats.pendingApproval > 0 && (
+                          <span className="text-white/70">
+                            {issuedStats.pendingApproval} {theme.strings.missionPlural} pending your approval
+                          </span>
+                        )}
+                        {issuedStats.awaitingProof === 0 && issuedStats.pendingApproval === 0 && (
+                          <span className="text-white/70">All {theme.strings.missionPlural} are up to date</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/issued')}
+                      className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+                    >
+                      Manage {theme.strings.missionsLabel}
+                      <ArrowRight size={20} />
+                    </button>
+                  </div>
+                </BaseCard>
+              </div>
+            )}
+
+            {/* P4: Reward Store prompt - only show if user has credits */}
+            {(userCredits ?? 0) > 0 && (
+              <div className="space-y-4">
+                <BaseCard className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/20">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-subtitle text-white font-semibold mb-1">
+                        Visit {theme.strings.storeTitle}
+                      </h3>
+                      <p className="text-body text-white/70 text-sm">
+                        You have {userCredits} {userCredits === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural} to spend. Check out available {theme.strings.rewardPlural}!
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate('/rewards-store')}
+                      className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <ShoppingCart size={20} />
+                      Go to {theme.strings.storeTitle}
+                    </button>
+                  </div>
+                </BaseCard>
+              </div>
+            )}
+
+            {/* Hunter's Creed Section */}
+            <HuntersCreed quote={dailyQuote} />
+          </PageBody>
+        </PageContainer>
+      ) : (
+        <PullToRefresh onRefresh={handleRefresh}>
+          <PageContainer>
         <PageHeader 
           title={theme.strings.inboxTitle} 
           subtitle={t('contracts.description')} 
@@ -493,5 +700,7 @@ export default function Dashboard() {
         </PageBody>
       </PageContainer>
     </PullToRefresh>
+      )}
+    </>
   );
 }
