@@ -29,7 +29,16 @@ interface OnboardingState {
 
 export default function Onboarding() {
   // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
-  const { session, profile, profileLoading, profileError, refreshProfile } = useAuth();
+  const { 
+    session, 
+    profile, 
+    authLoading,
+    profileLoading, 
+    profileError, 
+    hasSession,
+    hasProfile,
+    refreshProfile 
+  } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
@@ -42,21 +51,16 @@ export default function Onboarding() {
 
   // DEBUG: Log state on every render (keep for debugging)
   console.log('[Onboarding DEBUG]', {
-    hasSession: !!session,
+    hasSession,
     profileLoading,
-    hasProfile: !!profile,
+    hasProfile,
     profileError: profileError ? String(profileError) : null,
   });
 
   // NO HOOKS BELOW THIS LINE - only conditional returns and handlers
 
-  // Auth guard - redirect if not logged in
-  if (!session) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Profile loading state
-  if (profileLoading) {
+  // Wait for auth initialization or profile loading
+  if (authLoading || profileLoading) {
     return (
       <PageContainer>
         <PageBody>
@@ -69,6 +73,11 @@ export default function Onboarding() {
         </PageBody>
       </PageContainer>
     );
+  }
+
+  // Auth guard - redirect if not logged in
+  if (!hasSession) {
+    return <Navigate to="/login" replace />;
   }
 
   // Profile error state
@@ -98,8 +107,9 @@ export default function Onboarding() {
     );
   }
 
-  // Failsafe: if profile is null but loading is false, show error
-  if (!profile) {
+  // Failsafe: if profile is null but loading is false and no error, show error state
+  // This handles the case where ensureProfile failed silently or profile creation failed
+  if (!hasProfile && !profileLoading && !profileError) {
     return (
       <PageContainer>
         <PageBody>
