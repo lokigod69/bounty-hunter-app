@@ -58,7 +58,7 @@ import { StatsRow } from '../components/layout/StatsRow';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 
 export default function IssuedPage() {
-  const { isMobileMenuOpen, forceCloseMobileMenu } = useUI();
+  const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
