@@ -55,6 +55,11 @@ export default function Layout() {
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Debug logging
+  useEffect(() => {
+    console.log("[MobileMenu] State changed, isOpen:", isMobileMenuOpen);
+  }, [isMobileMenuOpen]);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
@@ -213,6 +218,7 @@ export default function Layout() {
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
+                  console.log("[MobileMenu] Hamburger clicked, current state:", isMobileMenuOpen);
                   if (isMobileMenuOpen) {
                     closeMobileMenu();
                   } else {
@@ -232,22 +238,21 @@ export default function Layout() {
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 z-mobile-menu"
-          onClick={(e) => {
-            // Close menu when clicking backdrop (outside menu content)
-            if (e.target === e.currentTarget) {
-              closeMobileMenu();
-            }
+          className="md:hidden fixed inset-0 z-mobile-menu bg-indigo-950/95 backdrop-blur-lg"
+          onClick={() => {
+            console.log("[MobileMenu] Backdrop clicked, closing menu");
+            closeMobileMenu();
           }}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-indigo-950/95 backdrop-blur-lg" />
-          
           {/* Menu Content */}
-          <div className="glass-card fixed inset-0 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+          <div 
+            className="glass-card fixed inset-0 pt-16 bg-indigo-950/95 backdrop-blur-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                console.log("[MobileMenu] Close button clicked");
                 closeMobileMenu();
               }}
               className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
@@ -255,10 +260,7 @@ export default function Layout() {
             >
               <X size={24} />
             </button>
-            <div 
-              className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto"
-              onClick={(e) => e.stopPropagation()} // Prevent clicks inside menu from closing it
-            >
+            <div className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto">
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
                   <>
@@ -273,11 +275,6 @@ export default function Layout() {
             {/* User Profile */}
             <button
               onClick={() => {
-                setProfileModalOpen(true);
-                closeMobileMenu();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
                 setProfileModalOpen(true);
                 closeMobileMenu();
               }}
@@ -310,11 +307,6 @@ export default function Layout() {
                       : ''
                   }`}
                   onClick={(e) => {
-                    e.stopPropagation();
-                    if (item.sound) soundManager.play(item.sound);
-                    closeMobileMenu();
-                  }}
-                  onTouchEnd={(e) => {
                     e.stopPropagation();
                     if (item.sound) soundManager.play(item.sound);
                     closeMobileMenu();
@@ -367,7 +359,7 @@ export default function Layout() {
               </button>
             </div>
           </div>
-          </div>
+        </div>
         </div>
       )}
 

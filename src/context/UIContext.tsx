@@ -47,6 +47,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   // Function to toggle the mobile menu state
   const toggleMobileMenu = () => {
+    console.log("[UIContext] toggleMobileMenu called, current state:", isMobileMenuOpen);
     if (isMobileMenuOpen) {
       closeMobileMenu();
     } else {
@@ -56,6 +57,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   // Function to explicitly close the mobile menu
   const closeMobileMenu = () => {
+    console.log("[UIContext] closeMobileMenu called");
     setMobileMenuOpen(false);
     if (activeLayer === 'menu') {
       setActiveLayer('none');
@@ -72,12 +74,14 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   // Open menu layer (closes modals/critical if open)
   const openMenu = () => {
+    console.log("[UIContext] openMenu called, current activeLayer:", activeLayer);
     if (activeLayer === 'modal' || activeLayer === 'critical') {
       setActiveLayer('menu');
     } else {
       setActiveLayer('menu');
     }
     setMobileMenuOpen(true);
+    console.log("[UIContext] Menu opened, isMobileMenuOpen set to true");
   };
 
   // Open modal layer (closes menu, but allows critical to stay)
