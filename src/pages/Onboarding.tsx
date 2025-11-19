@@ -59,15 +59,15 @@ export default function Onboarding() {
 
   // NO HOOKS BELOW THIS LINE - only conditional returns and handlers
 
-  // Wait for auth initialization or profile loading
-  if (authLoading || profileLoading) {
+  // 1. While auth is still initializing, show a generic loading state
+  if (authLoading) {
     return (
       <PageContainer>
         <PageBody>
           <div className="min-h-screen flex items-center justify-center">
             <div className="glass-card p-6 text-center">
               <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Loading profile...</p>
+              <p>Checking your session...</p>
             </div>
           </div>
         </PageBody>
@@ -75,42 +75,15 @@ export default function Onboarding() {
     );
   }
 
-  // Auth guard - redirect if not logged in
+  // 2. No session → go to login
   if (!hasSession) {
     return <Navigate to="/login" replace />;
   }
 
-  // Profile error state - only show if there's an actual error
-  // If profile is null but no error, we'll proceed with onboarding (Option A: treat as empty default)
-  if (profileError) {
-    return (
-      <PageContainer>
-        <PageBody>
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="glass-card p-6 text-center max-w-md">
-              <div className="text-red-500 mb-4">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">We couldn't load your profile</h3>
-              <p className="text-white/70 mb-4">Try again. If it keeps failing, contact support.</p>
-              <button
-                onClick={() => refreshProfile()}
-                className="btn-primary"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </PageBody>
-      </PageContainer>
-    );
-  }
-
-  // If profile is null but no error and not loading, proceed with onboarding
-  // The onboarding wizard will help create/fill in profile data
-  // This is Option A: treat missing profile as "empty default" and continue
+  // 3. DO NOT block on profileLoading anymore.
+  //    Profile is nice-to-have for prefilling, but not required to render the wizard.
+  //    The wizard will render regardless of profile state.
+  //    Profile bootstrap continues in the background via useAuth effect.
 
   // Step handlers
   const handleStep1Complete = (themeId: ThemeId) => {
@@ -214,10 +187,18 @@ export default function Onboarding() {
           </button>
         </div>
 
+        {/* Optional: Show non-blocking notice if profile is still loading */}
+        {profileLoading && (
+          <div className="mb-4 text-center">
+            <p className="text-sm text-white/50">Loading your profile...</p>
+          </div>
+        )}
+
         {/* Step content */}
+        {/* Profile is optional - used only for prefilling, wizard works without it */}
         {currentStep === 1 && (
           <OnboardingStep1Mode
-            currentThemeId={state.themeId}
+            currentThemeId={state.themeId || (profile?.theme as ThemeId | undefined) || null}
             onComplete={handleStep1Complete}
           />
         )}
