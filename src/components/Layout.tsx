@@ -53,7 +53,7 @@ export default function Layout() {
   const { theme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer, activeLayer } = useUI();
+  const { isMobileMenuOpen, toggleMenu, closeMenu, openMenu, forceCloseMobileMenu, clearLayer, activeLayer } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -71,14 +71,19 @@ export default function Layout() {
   // Phase 2: Scroll locking is now handled by UIContext via activeLayer
   // Removed manual scroll lock management here
 
-  // Track previous pathname to only close menu on actual navigation
+  // Phase UX-2: Route change behavior - only close menu on actual navigation, not on same render
   const previousPathname = useRef(location.pathname);
   useEffect(() => {
+    // Only close if pathname actually changed AND menu is open
     if (previousPathname.current !== location.pathname && isMobileMenuOpen) {
-      clearLayer(); // Phase 2: Use clearLayer to reset all overlay state on route change
+      console.log("[Layout] Route changed from", previousPathname.current, "to", location.pathname, "- closing menu");
+      closeMenu(); // Use closeMenu instead of clearLayer for menu-specific close
+      previousPathname.current = location.pathname;
+    } else if (previousPathname.current !== location.pathname) {
+      // Path changed but menu wasn't open - just update ref
       previousPathname.current = location.pathname;
     }
-  }, [location.pathname, isMobileMenuOpen, clearLayer]);
+  }, [location.pathname, isMobileMenuOpen, closeMenu]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -217,18 +222,13 @@ export default function Layout() {
             {/* Mobile Menu Button */}
             <div className="md:hidden ml-4">
               <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("[Layout] hamburger clicked, activeLayer:", activeLayer, "isMobileMenuOpen:", isMobileMenuOpen);
-                  // Phase 10: Debug logging
+                type="button"
+                onClick={() => {
+                  console.log("[Layout] Hamburger clicked, toggling menu");
                   if (import.meta.env.DEV) {
                     logOverlayRootState('Hamburger clicked');
                   }
-                  if (isMobileMenuOpen) {
-                    closeMobileMenu();
-                  } else {
-                    openMenu();
-                  }
+                  toggleMenu();
                 }} 
                 className="text-white p-2" 
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
@@ -243,22 +243,26 @@ export default function Layout() {
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 z-mobile-menu bg-indigo-950/95 backdrop-blur-lg"
-          onClick={() => {
-            console.log("[MobileMenu] Backdrop clicked, closing menu");
-            closeMobileMenu();
-          }}
+          className="md:hidden fixed inset-0 z-[var(--z-mobile-menu)]"
         >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => {
+              console.log("[Layout] MobileMenu backdrop clicked, closing menu");
+              closeMenu();
+            }}
+          />
           {/* Menu Content */}
           <div 
             className="glass-card fixed inset-0 pt-16 bg-indigo-950/95 backdrop-blur-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log("[MobileMenu] Close button clicked");
-                closeMobileMenu();
+              type="button"
+              onClick={() => {
+                console.log("[Layout] MobileMenu close button clicked");
+                closeMenu();
               }}
               className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
               aria-label="Close menu"
@@ -279,9 +283,11 @@ export default function Layout() {
 
             {/* User Profile */}
             <button
+              type="button"
               onClick={() => {
+                console.log("[Layout] Profile button clicked in mobile menu");
                 setProfileModalOpen(true);
-                closeMobileMenu();
+                closeMenu();
               }}
               className="w-full flex items-center space-x-3 p-4 mb-6 glass-card text-left transition-colors hover:bg-white/5"
             >
@@ -313,8 +319,9 @@ export default function Layout() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
+                    console.log("[Layout] Nav link clicked in mobile menu:", item.path);
                     if (item.sound) soundManager.play(item.sound);
-                    closeMobileMenu();
+                    closeMenu();
                   }}
                 >
                   {item.icon}
@@ -340,7 +347,10 @@ export default function Layout() {
                       ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 text-teal-400' 
                       : 'hover:bg-white/5'
                   }`}
-                  onClick={closeMobileMenu}
+                  onClick={() => {
+                    console.log("[Layout] User menu item clicked in mobile menu");
+                    closeMenu();
+                  }}
                 >
                   {item.icon}
                   <span className="text-lg">{item.name}</span>

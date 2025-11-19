@@ -2,7 +2,7 @@
 // Phase 2: Extended with activeLayer coordination to manage overlay conflicts (menu vs modal vs critical).
 // Centralizes overlay state and ensures only one layer is active at a time.
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { lockScroll, unlockScroll } from '../lib/scrollLock';
 import { logOverlayRootState } from '../lib/overlayDebug';
 
@@ -12,11 +12,11 @@ export type ActiveLayer = 'none' | 'menu' | 'modal' | 'critical';
 // Define the shape of the context's value
 interface UIContextType {
   isMobileMenuOpen: boolean;
-  toggleMobileMenu: () => void;
-  closeMobileMenu: () => void;
-  forceCloseMobileMenu: () => void; // Immediate force close for critical scenarios
-  activeLayer: ActiveLayer;
+  toggleMenu: () => void;
+  closeMenu: () => void;
   openMenu: () => void;
+  forceCloseMobileMenu: () => void; // Kept for backward compatibility, but should be avoided
+  activeLayer: ActiveLayer;
   openModal: () => void;
   openCriticalOverlay: () => void;
   clearLayer: () => void;
@@ -27,7 +27,7 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 
 // Create the provider component
 export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('none');
 
   // Phase 2: Scroll locking is now handled by UIContext via activeLayer
@@ -55,77 +55,68 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, [activeLayer, isMobileMenuOpen]);
 
-  // Function to toggle the mobile menu state
-  const toggleMobileMenu = () => {
-    console.log("[UIContext] toggleMobileMenu called, current state:", isMobileMenuOpen);
-    if (isMobileMenuOpen) {
-      closeMobileMenu();
-    } else {
-      openMenu();
-    }
-  };
+  // Phase UX-2: Deterministic menu functions using useCallback
+  const openMenu = useCallback(() => {
+    console.log("[UIContext] openMenu called");
+    setIsMobileMenuOpen(true);
+    setActiveLayer('menu');
+  }, []);
 
-  // Function to explicitly close the mobile menu
-  const closeMobileMenu = () => {
-    console.log("[UIContext] closeMobileMenu called");
-    setMobileMenuOpen(false);
-    if (activeLayer === 'menu') {
-      setActiveLayer('none');
-    }
-  };
+  const closeMenu = useCallback(() => {
+    console.log("[UIContext] closeMenu called");
+    setIsMobileMenuOpen(false);
+    setActiveLayer('none');
+  }, []);
 
-  // Function to force immediate close for critical scenarios (navigation, modal conflicts)
-  const forceCloseMobileMenu = () => {
-    setMobileMenuOpen(false);
-    if (activeLayer === 'menu') {
-      setActiveLayer('none');
-    }
-  };
+  const toggleMenu = useCallback(() => {
+    console.log("[UIContext] toggleMenu called, current state:", isMobileMenuOpen);
+    setIsMobileMenuOpen((prev) => {
+      const next = !prev;
+      setActiveLayer(next ? 'menu' : 'none');
+      return next;
+    });
+  }, [isMobileMenuOpen]);
 
-  // Open menu layer (closes modals/critical if open)
-  const openMenu = () => {
-    console.log("[UIContext] openMenu called, current activeLayer:", activeLayer);
-    if (activeLayer === 'modal' || activeLayer === 'critical') {
-      setActiveLayer('menu');
-    } else {
-      setActiveLayer('menu');
-    }
-    setMobileMenuOpen(true);
-    console.log("[UIContext] Menu opened, isMobileMenuOpen set to true");
-  };
+  // Function to force immediate close for critical scenarios (kept as thin alias)
+  const forceCloseMobileMenu = useCallback(() => {
+    console.log("[UIContext] forceCloseMobileMenu called (alias of closeMenu)");
+    closeMenu();
+  }, [closeMenu]);
 
   // Open modal layer (closes menu, but allows critical to stay)
-  const openModal = () => {
+  const openModal = useCallback(() => {
     if (activeLayer === 'menu') {
-      setMobileMenuOpen(false);
+      setIsMobileMenuOpen(false);
     }
     // Modal can coexist with critical, but critical takes precedence visually
     if (activeLayer !== 'critical') {
       setActiveLayer('modal');
     }
-  };
+  }, [activeLayer]);
 
   // Open critical overlay (closes menu and modal)
-  const openCriticalOverlay = () => {
+  const openCriticalOverlay = useCallback(() => {
     if (activeLayer === 'menu') {
-      setMobileMenuOpen(false);
+      setIsMobileMenuOpen(false);
     }
     setActiveLayer('critical');
-  };
+  }, [activeLayer]);
 
   // Clear all layers
-  const clearLayer = () => {
-    setMobileMenuOpen(false);
+  const clearLayer = useCallback(() => {
+    console.log("[UIContext] clearLayer called");
     setActiveLayer('none');
-  };
+    // Do NOT touch the menu directly here.
+    // If we ever need to clear overlays + menu, call closeMenu() explicitly at the call site instead.
+  }, []);
 
   const value = {
     isMobileMenuOpen,
-    toggleMobileMenu,
-    closeMobileMenu,
-    forceCloseMobileMenu,
-    activeLayer,
+    toggleMenu,
+    closeMenu,
     openMenu,
+    forceCloseMobileMenu, // Kept for backward compatibility
+    activeLayer,
     openModal,
     openCriticalOverlay,
     clearLayer,

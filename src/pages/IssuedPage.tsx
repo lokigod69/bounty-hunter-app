@@ -261,6 +261,7 @@ export default function IssuedPage() {
   const handleCreateNewContract = () => {
     // If mobile menu is open, close it first
     if (isMobileMenuOpen) {
+      console.log("[IssuedPage] handleCreateNewContract - closing mobile menu first");
       forceCloseMobileMenu();
       // Add a small delay to ensure state propagation before opening modal
       setTimeout(() => {
@@ -313,9 +314,11 @@ export default function IssuedPage() {
         <TaskForm
           userId={user.id}
           onClose={() => {
+            console.log("[IssuedPage] TaskForm onClose - checking mobile menu state");
             setIsTaskFormOpen(false);
             // Ensure mobile menu can be opened after modal closes
             if (isMobileMenuOpen) {
+              console.log("[IssuedPage] TaskForm onClose - closing mobile menu");
               forceCloseMobileMenu();
             }
           }}
