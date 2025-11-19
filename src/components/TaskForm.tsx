@@ -14,13 +14,15 @@
 // PHASE 1 FIX: Enhanced mobile menu coordination and improved modal behavior to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized positioning logic.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { createPortal } from 'react-dom';
 import { useFriends } from '../hooks/useFriends';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
+import { getOverlayRoot } from '../lib/overlayRoot';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -57,12 +59,18 @@ interface TaskFormProps {
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   const { t } = useTranslation();
   const { openModal, clearLayer } = useUI();
+  const hasOpenedModalRef = useRef(false);
   
-  // Phase 2: Use UIContext to coordinate overlay layers and scroll locking
+  // Phase 7: Use UIContext to coordinate overlay layers and scroll locking
+  // Only call openModal() once when component mounts, prevent duplicate calls
   useEffect(() => {
-    openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+    if (!hasOpenedModalRef.current) {
+      openModal();
+      hasOpenedModalRef.current = true;
+    }
     return () => {
-      clearLayer(); // Phase 2: Clear layer when modal unmounts
+      clearLayer(); // Phase 7: Clear layer when modal unmounts
+      hasOpenedModalRef.current = false;
     };
   }, [openModal, clearLayer]);
   const { friends, loading } = useFriends(userId);
@@ -191,7 +199,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   console.log("[TaskFormModal] Rendering modal");
 
-  return (
+  // Phase 7: Portal TaskForm to overlay-root to fix stacking context issues
+  const overlayRoot = getOverlayRoot();
+  if (!overlayRoot) {
+    console.error("[TaskFormModal] Overlay root not found");
+    return null;
+  }
+
+  const modalContent = (
     <div 
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
       onClick={() => {
@@ -407,4 +422,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       </div>
     </div>
   );
+
+  return createPortal(modalContent, overlayRoot);
 }

@@ -124,16 +124,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [tooltipContent, setTooltipContent] = useState<React.ReactNode>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
-  useEffect(() => {
-    if (isExpanded) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isExpanded]);
+  // Phase 7: Removed duplicate scroll lock - UIContext handles scroll locking via activeLayer
+  // Scroll lock is now managed exclusively by UIContext when openModal() is called
 
   const handleShowTooltip = (content: React.ReactNode, target: HTMLElement | null) => {
     if (target) {

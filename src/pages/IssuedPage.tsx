@@ -306,33 +306,35 @@ export default function IssuedPage() {
   };
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <PageContainer>
-        <PageHeader 
-          title={t('contracts.myMissions')} 
-          subtitle={t('contracts.myMissionsDescription')} 
+    <>
+      {/* Phase 7: TaskForm rendered outside PullToRefresh to prevent gesture interference */}
+      {/* Since TaskForm portals to overlay-root, its DOM position doesn't matter */}
+      {isTaskFormOpen && user && (
+        <TaskForm
+          userId={user.id}
+          onClose={() => {
+            setIsTaskFormOpen(false);
+            // Ensure mobile menu can be opened after modal closes
+            if (isMobileMenuOpen) {
+              forceCloseMobileMenu();
+            }
+          }}
+          onSubmit={handleCreateContract}
         />
-        
-        {dailyQuote && (
-          <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
-            &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
-          </p>
-        )}
+      )}
 
-        {/* New Contract Form Modal triggered by FAB */}
-        {isTaskFormOpen && user && (
-          <TaskForm
-            userId={user.id}
-            onClose={() => {
-              setIsTaskFormOpen(false);
-              // Ensure mobile menu can be opened after modal closes
-              if (isMobileMenuOpen) {
-                forceCloseMobileMenu();
-              }
-            }}
-            onSubmit={handleCreateContract}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <PageContainer>
+          <PageHeader 
+            title={t('contracts.myMissions')} 
+            subtitle={t('contracts.myMissionsDescription')} 
           />
-        )}
+          
+          {dailyQuote && (
+            <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
+              &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
+            </p>
+          )}
 
         {/* Enhanced Floating Action Button - only show when missions exist */}
         {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
@@ -416,5 +418,6 @@ export default function IssuedPage() {
         />
       </PageContainer>
     </PullToRefresh>
+    </>
   );
 }
