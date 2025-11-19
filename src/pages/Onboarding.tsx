@@ -80,7 +80,8 @@ export default function Onboarding() {
     return <Navigate to="/login" replace />;
   }
 
-  // Profile error state
+  // Profile error state - only show if there's an actual error
+  // If profile is null but no error, we'll proceed with onboarding (Option A: treat as empty default)
   if (profileError) {
     return (
       <PageContainer>
@@ -107,33 +108,9 @@ export default function Onboarding() {
     );
   }
 
-  // Failsafe: if profile is null but loading is false and no error, show error state
-  // This handles the case where ensureProfile failed silently or profile creation failed
-  if (!hasProfile && !profileLoading && !profileError) {
-    return (
-      <PageContainer>
-        <PageBody>
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="glass-card p-6 text-center max-w-md">
-              <div className="text-red-500 mb-4">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">No profile found</h3>
-              <p className="text-white/70 mb-4">We couldn't create your profile. Try again.</p>
-              <button
-                onClick={() => refreshProfile()}
-                className="btn-primary"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </PageBody>
-      </PageContainer>
-    );
-  }
+  // If profile is null but no error and not loading, proceed with onboarding
+  // The onboarding wizard will help create/fill in profile data
+  // This is Option A: treat missing profile as "empty default" and continue
 
   // Step handlers
   const handleStep1Complete = (themeId: ThemeId) => {

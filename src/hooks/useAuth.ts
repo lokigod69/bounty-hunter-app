@@ -91,18 +91,26 @@ export function useAuth() {
         
         const profile = await ensureProfileForUser(supabase, session.user);
         
-        if (!cancelled) {
+        if (cancelled) return;
+        
+        if (profile) {
           console.log('[useAuth] Profile ensured successfully:', profile.id);
           setProfile(profile);
           setProfileError(null);
+        } else {
+          // Profile creation failed or returned null
+          console.warn('[useAuth] No profile returned for user:', session.user.id);
+          setProfile(null);
+          // Don't set profileError here - null profile is acceptable, let onboarding handle it
+          setProfileError(null);
         }
       } catch (err) {
-        if (!cancelled) {
-          const error = err instanceof Error ? err : new Error(String(err));
-          console.error('[useAuth] Error ensuring profile:', error);
-          setProfileError(error);
-          setProfile(null); // Clear profile on error
-        }
+        if (cancelled) return;
+        
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error('[useAuth] ensureProfile threw unexpected error:', error);
+        setProfileError(error);
+        setProfile(null);
       } finally {
         if (!cancelled) {
           console.log('[useAuth] Profile loading complete, setting profileLoading to false');
@@ -137,9 +145,15 @@ export function useAuth() {
       
       const profile = await ensureProfileForUser(supabase, session.user);
       
-      console.log('[useAuth] Profile refreshed successfully:', profile.id);
-      setProfile(profile);
-      setProfileError(null);
+      if (profile) {
+        console.log('[useAuth] Profile refreshed successfully:', profile.id);
+        setProfile(profile);
+        setProfileError(null);
+      } else {
+        console.warn('[useAuth] Profile refresh returned null for user:', session.user.id);
+        setProfile(null);
+        setProfileError(null);
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error('[useAuth] Error refreshing profile:', error);
