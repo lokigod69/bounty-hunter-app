@@ -59,6 +59,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
   return (
     <div 
+      data-overlay="ProofModal"
       className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" 
       onClick={() => {
         console.log("[ProofModal] Backdrop clicked, closing");

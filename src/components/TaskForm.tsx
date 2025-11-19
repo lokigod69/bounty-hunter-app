@@ -23,6 +23,7 @@ import { useFriends } from '../hooks/useFriends';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
+import { logOverlayRootState } from '../lib/overlayDebug';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -61,23 +62,32 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const { openModal, clearLayer } = useUI();
   const hasOpenedModalRef = useRef(false);
   
-  // Phase 8: Use UIContext to coordinate overlay layers and scroll locking
+  // Phase 7: Use UIContext to coordinate overlay layers and scroll locking
   // Only call openModal() once when component mounts, prevent duplicate calls
   useEffect(() => {
     if (!hasOpenedModalRef.current) {
       openModal();
       hasOpenedModalRef.current = true;
     }
+    // Phase 10: Debug logging
+    if (import.meta.env.DEV) {
+      logOverlayRootState('TaskForm mounted');
+    }
     return () => {
-      clearLayer(); // Phase 8: Clear layer when modal unmounts
+      clearLayer(); // Phase 7: Clear layer when modal unmounts
       hasOpenedModalRef.current = false;
+      // Phase 10: Debug logging
+      if (import.meta.env.DEV) {
+        logOverlayRootState('TaskForm unmounted');
+      }
     };
   }, [openModal, clearLayer]);
 
-  // Phase 8: Ensure clearLayer() is called on every close path
+  // Phase 9: Simplified close handler - let cleanup effect handle clearLayer()
   const handleClose = () => {
-    clearLayer(); // Phase 8: Clear layer state before closing
-    onClose(); // This controls isTaskFormOpen in IssuedPage
+    // Local state controls mount/unmount via IssuedPage
+    onClose(); // this sets isTaskFormOpen = false
+    // clearLayer() will run in the useEffect cleanup when the component unmounts
   };
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
@@ -214,6 +224,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   const modalContent = (
     <div 
+      data-overlay="TaskForm"
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
       onClick={() => {
         console.log("[TaskFormModal] Backdrop clicked, closing");

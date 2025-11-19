@@ -26,6 +26,7 @@ import { useRewardShimmerDuration } from '../hooks/useShimmerDuration';
 import DoubleCoinValue from './coin/DoubleCoinValue';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
+import { logOverlayRootState } from '../lib/overlayDebug';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 
@@ -155,6 +156,15 @@ const TaskCard: React.FC<TaskCardProps> = ({
   useEffect(() => {
     if (isExpanded) {
       openModal(); // Phase 2: Use UIContext to coordinate overlay layers
+      // Phase 10: Debug logging
+      if (import.meta.env.DEV) {
+        logOverlayRootState('TaskCard expanded modal opened');
+      }
+    } else {
+      // Phase 10: Debug logging
+      if (import.meta.env.DEV) {
+        logOverlayRootState('TaskCard expanded modal closed');
+      }
     }
   }, [isExpanded, openModal]);
 
@@ -447,6 +457,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
       {isExpanded && createPortal(
         <div 
+          data-overlay="TaskCardExpanded"
           className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}
           onClick={() => {
             console.log("[TaskCardModal] Backdrop clicked, closing");

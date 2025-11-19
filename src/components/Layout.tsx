@@ -27,6 +27,7 @@ import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
+import { logOverlayRootState } from '../lib/overlayDebug';
 import {
   Home,
   Send,
@@ -52,7 +53,7 @@ export default function Layout() {
   const { theme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer } = useUI();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, forceCloseMobileMenu, openMenu, clearLayer, activeLayer } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -219,6 +220,10 @@ export default function Layout() {
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log("[Layout] hamburger clicked, activeLayer:", activeLayer, "isMobileMenuOpen:", isMobileMenuOpen);
+                  // Phase 10: Debug logging
+                  if (import.meta.env.DEV) {
+                    logOverlayRootState('Hamburger clicked');
+                  }
                   if (isMobileMenuOpen) {
                     closeMobileMenu();
                   } else {
