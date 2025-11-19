@@ -18,6 +18,7 @@ export interface CreateRewardParams {
   data: Database['public']['Functions']['create_reward_store_item']['Args'];
   userId: string;
   supabaseClient?: SupabaseClient<Database>;
+  isOnboarding?: boolean; // If true, allows creating unassigned rewards without friendship check
 }
 
 export interface UpdateRewardParams {
@@ -94,12 +95,45 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
 /**
  * Creates a new reward in the store.
  * 
- * Uses RPC: create_reward_store_item
+ * Uses RPC: create_reward_store_item for normal creation (requires friendship).
+ * For onboarding, inserts directly into rewards_store table to allow unassigned rewards.
  */
 export async function createReward(params: CreateRewardParams): Promise<CreateRewardResult> {
-  const { data: rewardData, userId, supabaseClient = supabase } = params;
+  const { data: rewardData, userId, supabaseClient = supabase, isOnboarding = false } = params;
 
-  // Ensure creator_id matches userId
+  // During onboarding, insert directly into table to bypass friendship requirement
+  // This allows creating unassigned rewards (assigned_to = null) for later assignment
+  if (isOnboarding) {
+    // Type assertion needed because TypeScript types may not reflect nullable assigned_to
+    // but the database schema should allow it for unassigned rewards
+    const { data: inserted, error: insertError } = await (supabaseClient as any)
+      .from('rewards_store')
+      .insert({
+        name: rewardData.p_name,
+        description: rewardData.p_description || null,
+        image_url: rewardData.p_image_url || null,
+        credit_cost: rewardData.p_credit_cost,
+        creator_id: userId,
+        assigned_to: null, // Unassigned during onboarding - can be assigned later
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      return {
+        success: false,
+        message: insertError.message || 'Failed to create reward during onboarding.',
+      };
+    }
+
+    return {
+      success: true,
+      reward_id: inserted.id,
+      message: 'Reward created successfully! You can assign it to someone after inviting them.',
+    };
+  }
+
+  // Normal flow: use RPC (requires friendship)
   const rpcArgs = {
     ...rewardData,
     p_creator_id: userId,
@@ -114,12 +148,12 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
     throw rpcError;
   }
 
-  const rpcResponse = rawData as { success?: boolean; reward_id?: string; message?: string };
+  const rpcResponse = rawData as { success?: boolean; reward_id?: string; message?: string; error?: string };
 
   if (rpcResponse && rpcResponse.success === false) {
     return {
       success: false,
-      message: rpcResponse.message || 'Reward creation failed.',
+      message: rpcResponse.error || rpcResponse.message || 'Reward creation failed.',
     };
   }
 

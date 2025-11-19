@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useCreateBounty } from '../../hooks/useCreateBounty';
 import { useTheme } from '../../context/ThemeContext';
+import { createReward } from '../../domain/rewards';
 import { BaseCard } from '../ui/BaseCard';
 import { ArrowRight, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -20,10 +20,10 @@ export default function OnboardingStep2Reward({
 }: OnboardingStep2RewardProps) {
   const { user } = useAuth();
   const { theme } = useTheme();
-  const { createBounty, isLoading, error } = useCreateBounty();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>(10);
+  const [isLoading, setIsLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,33 +34,44 @@ export default function OnboardingStep2Reward({
       return;
     }
 
-    // Note: create_reward_store_item RPC requires p_assigned_to to be a friend.
-    // For onboarding, we'll try to create a self-assigned reward, but if it fails,
-    // we'll allow the user to skip and create rewards later.
-    // In a future update, we could create a self-friendship or modify the RPC.
-    const result = await createBounty({
-      p_name: name,
-      p_description: description,
-      p_image_url: '🎁', // Default emoji
-      p_credit_cost: Number(creditCost),
-      p_assigned_to: user.id, // Try assigning to self
-    });
+    setIsLoading(true);
+    setCreateError(null);
 
-    if (result && result.success && result.reward_id) {
-      toast.success(`${theme.strings.rewardSingular} created!`);
-      setCreateError(null);
-      onComplete(result.reward_id);
-    } else {
-      // If creation fails (likely due to friendship requirement), allow skip
-      const errorMsg = result?.message || error || 'Reward creation failed. You can create rewards later after inviting someone.';
+    try {
+      // Use domain function with isOnboarding flag to allow unassigned rewards
+      const result = await createReward({
+        data: {
+          p_name: name,
+          p_description: description,
+          p_image_url: '🎁', // Default emoji
+          p_credit_cost: Number(creditCost),
+          p_assigned_to: null, // Will be set to null during onboarding
+        },
+        userId: user.id,
+        isOnboarding: true, // This bypasses friendship requirement
+      });
+
+      if (result.success && result.reward_id) {
+        toast.success(`${theme.strings.rewardSingular} created!`);
+        setCreateError(null);
+        onComplete(result.reward_id);
+      } else {
+        const errorMsg = result.message || 'Reward creation failed. You can create rewards later after inviting someone.';
+        setCreateError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create reward. You can create rewards later.';
       setCreateError(errorMsg);
       toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSkip = () => {
-    // Allow skipping reward creation - user can create rewards later
-    toast.info(`You can create ${theme.strings.rewardPlural} later from the ${theme.strings.storeTitle}.`);
+    // Skip reward creation - just proceed to next step
+    // No network call needed, just move forward
     setCreateError(null);
     onComplete(''); // Pass empty string to indicate skip
   };
