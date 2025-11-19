@@ -454,11 +454,30 @@ const TaskCard: React.FC<TaskCardProps> = ({
       </BaseCard>
 
       {isExpanded && createPortal(
-        <div className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
+        <div 
+          className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleClose();
+            }
+          }}
+          onTouchStart={(e) => {
+            // Handle touch events for mobile backdrop
+            if (e.target === e.currentTarget) {
+              handleClose();
+            }
+          }}
+        >
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
+            onClick={handleClose}
+            onTouchStart={handleClose}
+          />
           <div
             className={`relative z-modal-content w-[95vw] sm:w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col ${isAnimatingOut ? 'modal-slide-down' : 'modal-slide-up'} ${modalBgColor}`}
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
           >
             <div className="mb-6 pb-4 border-b border-slate-600/50 flex-shrink-0 text-center">
               <h3 className="text-3xl sm:text-4xl font-bold text-slate-100 break-words max-w-full overflow-hidden font-mandalore" title={title}>{title}</h3>

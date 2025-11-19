@@ -210,11 +210,20 @@ export default function Layout() {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden ml-4">
-              {!isMobileMenuOpen && (
-                <button onClick={toggleMobileMenu} className="text-white" aria-label="Open menu">
-                  <Menu size={24} />
-                </button>
-              )}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isMobileMenuOpen) {
+                    closeMobileMenu();
+                  } else {
+                    openMenu();
+                  }
+                }} 
+                className="text-white p-2" 
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
             </div>
           </div>
         </div>
@@ -222,15 +231,34 @@ export default function Layout() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden glass-card fixed inset-0 z-mobile-menu pt-16 bg-indigo-950/95 backdrop-blur-lg">
-          <button
-            onClick={toggleMobileMenu}
-            className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
-            aria-label="Close menu"
-          >
-            <X size={24} />
-          </button>
-          <div className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto">
+        <div 
+          className="md:hidden fixed inset-0 z-mobile-menu"
+          onClick={(e) => {
+            // Close menu when clicking backdrop (outside menu content)
+            if (e.target === e.currentTarget) {
+              closeMobileMenu();
+            }
+          }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-indigo-950/95 backdrop-blur-lg" />
+          
+          {/* Menu Content */}
+          <div className="glass-card fixed inset-0 pt-16 bg-indigo-950/95 backdrop-blur-lg">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeMobileMenu();
+              }}
+              className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
+              aria-label="Close menu"
+            >
+              <X size={24} />
+            </button>
+            <div 
+              className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto"
+              onClick={(e) => e.stopPropagation()} // Prevent clicks inside menu from closing it
+            >
                 {/* Credits Display - Placed prominently at the top */}
                 {profile && (
                   <>
@@ -276,12 +304,18 @@ export default function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`relative nav-item-galactic flex items-center space-x-3 px-4 py-3 rounded-xl ${
+                  className={`relative nav-item-galactic flex items-center space-x-3 px-4 py-3 rounded-xl min-h-[44px] ${
                     location.pathname === item.path
                       ? 'nav-item-galactic-active'
                       : ''
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (item.sound) soundManager.play(item.sound);
+                    closeMobileMenu();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
                     if (item.sound) soundManager.play(item.sound);
                     closeMobileMenu();
                   }}
@@ -332,6 +366,7 @@ export default function Layout() {
                 <span>{t('auth.signOut')}</span>
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}

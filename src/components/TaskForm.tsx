@@ -164,7 +164,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       } else {
         soundManager.play('create');
       }
-      onClose(); // Only close if onSubmit was successful
+      // Close modal after successful submission
+      handleClose();
     } catch (error: unknown) {
       console.error('Task submission error:', error);
       let errorMessage = t('taskForm.submissionError');
@@ -188,19 +189,35 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   // const rewardTypes array is no longer directly used for the primary selector, but parts might be reused or adapted if old types are still supported elsewhere.
   // For now, it's superseded by the new contractType logic.
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking the backdrop itself, not modal content
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleClose = () => {
+    onClose();
+  };
+
   return (
     <div 
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
-      onClick={(e) => { // Click outside to dismiss
+      onClick={handleBackdropClick}
+      onTouchStart={(e) => {
+        // Handle touch events for mobile
         if (e.target === e.currentTarget) {
-          onClose();
+          handleClose();
         }
       }}
     >
       {/* Enhanced responsive close button with better touch targets */}
       <button
-        onClick={onClose}
-        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClose();
+        }}
+        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
         aria-label={t('taskForm.closeButton')}
       >
         <X size={20} />
@@ -209,6 +226,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       <div 
         className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative animate-fade-in overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-mobile-fade sm:modal-fade-in"
         onClick={(e) => e.stopPropagation()} // Prevent clicks on modal content from closing modal
+        onTouchStart={(e) => e.stopPropagation()} // Prevent touch events from bubbling to backdrop
       >
         {/* Original close button removed from here */}
         

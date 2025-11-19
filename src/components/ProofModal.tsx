@@ -55,10 +55,36 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
     await onSubmit(file, textDescription.trim() || undefined);
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} title="Close" className="absolute top-3 right-3 text-slate-400 hover:text-white z-modal-controls">
+    <div 
+      className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" 
+      onClick={handleBackdropClick}
+      onTouchStart={(e) => {
+        // Handle touch events for mobile backdrop
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content" 
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }} 
+          title="Close" 
+          className="absolute top-3 right-3 text-slate-400 hover:text-white z-modal-controls p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+        >
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-white mb-4">Submit Proof</h2>

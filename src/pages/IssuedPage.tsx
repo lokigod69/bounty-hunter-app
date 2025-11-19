@@ -323,7 +323,13 @@ export default function IssuedPage() {
         {isTaskFormOpen && user && (
           <TaskForm
             userId={user.id}
-            onClose={() => setIsTaskFormOpen(false)}
+            onClose={() => {
+              setIsTaskFormOpen(false);
+              // Ensure mobile menu can be opened after modal closes
+              if (isMobileMenuOpen) {
+                forceCloseMobileMenu();
+              }
+            }}
             onSubmit={handleCreateContract}
           />
         )}
