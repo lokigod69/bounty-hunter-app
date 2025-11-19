@@ -1,18 +1,18 @@
 // src/pages/Onboarding.tsx
 // P2: First-Time Experience wizard - guides new users through setup
+// Rebuilt with proper hook order - all hooks at top level
 
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../context/ThemeContext';
 import { ThemeId } from '../theme/theme.types';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
-import { BaseCard } from '../components/ui/BaseCard';
-import { markOnboardingCompleted } from '../lib/ftxGate';
-import { Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Check } from 'lucide-react';
 
-// Step components will be imported
+// Step components
 import OnboardingStep1Mode from '../components/onboarding/OnboardingStep1Mode';
 import OnboardingStep2Reward from '../components/onboarding/OnboardingStep2Reward';
 import OnboardingStep3Invite from '../components/onboarding/OnboardingStep3Invite';
@@ -28,7 +28,9 @@ interface OnboardingState {
 }
 
 export default function Onboarding() {
-  const { user, session, profile, profileLoading, profileError, refreshProfile } = useAuth();
+  // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
+  const { session, profile, profileLoading, profileError, refreshProfile } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
   const [state, setState] = useState<OnboardingState>({
@@ -38,48 +40,92 @@ export default function Onboarding() {
     assigneeChoice: null,
   });
 
-  // Redirect if not logged in - use Navigate component instead of useEffect for declarative routing
+  // DEBUG: Log state on every render (keep for debugging)
+  console.log('[Onboarding DEBUG]', {
+    hasSession: !!session,
+    profileLoading,
+    hasProfile: !!profile,
+    profileError: profileError ? String(profileError) : null,
+  });
 
-  // Handle profile loading states
-  if (profileLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="glass-card p-6 text-center">
-          <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
+  // NO HOOKS BELOW THIS LINE - only conditional returns and handlers
 
-  // If there's an error, show an error UI with retry
-  if (profileError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="glass-card p-6 text-center max-w-md">
-          <div className="text-red-500 mb-4">
-            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Profile Error</h3>
-          <p className="text-white/70 mb-4">{profileError.message}</p>
-          <button
-            onClick={() => refreshProfile()}
-            className="btn-primary"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure we have a user before proceeding
-  if (!user || !session) {
+  // Auth guard - redirect if not logged in
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
 
+  // Profile loading state
+  if (profileLoading) {
+    return (
+      <PageContainer>
+        <PageBody>
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="glass-card p-6 text-center">
+              <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
+              <p>Loading profile...</p>
+            </div>
+          </div>
+        </PageBody>
+      </PageContainer>
+    );
+  }
+
+  // Profile error state
+  if (profileError) {
+    return (
+      <PageContainer>
+        <PageBody>
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="glass-card p-6 text-center max-w-md">
+              <div className="text-red-500 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">We couldn't load your profile</h3>
+              <p className="text-white/70 mb-4">Try again. If it keeps failing, contact support.</p>
+              <button
+                onClick={() => refreshProfile()}
+                className="btn-primary"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </PageBody>
+      </PageContainer>
+    );
+  }
+
+  // Failsafe: if profile is null but loading is false, show error
+  if (!profile) {
+    return (
+      <PageContainer>
+        <PageBody>
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="glass-card p-6 text-center max-w-md">
+              <div className="text-red-500 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">No profile found</h3>
+              <p className="text-white/70 mb-4">We couldn't create your profile. Try again.</p>
+              <button
+                onClick={() => refreshProfile()}
+                className="btn-primary"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </PageBody>
+      </PageContainer>
+    );
+  }
+
+  // Step handlers
   const handleStep1Complete = (themeId: ThemeId) => {
     setState(prev => ({ ...prev, themeId }));
     setCurrentStep(2);
@@ -92,24 +138,25 @@ export default function Onboarding() {
   };
 
   const handleStep3Complete = (invitedUserId: string | null) => {
-    setState(prev => ({ ...prev, invitedUserId, assigneeChoice: invitedUserId ? 'invited' : 'self' }));
+    setState(prev => ({ 
+      ...prev, 
+      invitedUserId, 
+      assigneeChoice: invitedUserId ? 'invited' : 'self' 
+    }));
     setCurrentStep(4);
   };
 
   const handleStep4Complete = () => {
-    // P6: Always mark onboarding as completed, even if steps were skipped
-    markOnboardingCompleted();
-    navigate('/');
+    // Mark onboarding as completed
+    localStorage.setItem('bounty_onboarding_completed', 'true');
+    // Navigate to Mission Inbox (Dashboard)
+    navigate('/', { replace: true });
   };
 
-  // P6: Add a "Skip All" option that marks onboarding complete and navigates away
   const handleSkipAll = () => {
-    markOnboardingCompleted();
-    navigate('/');
-  };
-
-  const handleSkipStep3 = () => {
-    handleStep3Complete(null);
+    // Skip all steps - mark onboarding complete and go to dashboard
+    localStorage.setItem('bounty_onboarding_completed', 'true');
+    navigate('/', { replace: true });
   };
 
   const handleBack = () => {
@@ -118,6 +165,7 @@ export default function Onboarding() {
     }
   };
 
+  // Step titles and descriptions
   const stepTitles = [
     'Choose Your World',
     'Create Your First Reward',
@@ -132,6 +180,7 @@ export default function Onboarding() {
     'Create your first mission to get started.',
   ];
 
+  // Render onboarding wizard
   return (
     <PageContainer>
       <PageHeader
@@ -168,7 +217,7 @@ export default function Onboarding() {
       </div>
 
       <PageBody>
-        {/* P6: Skip all option */}
+        {/* Skip all option */}
         <div className="mb-4 text-center">
           <button
             onClick={handleSkipAll}
@@ -196,7 +245,7 @@ export default function Onboarding() {
         {currentStep === 3 && (
           <OnboardingStep3Invite
             onComplete={handleStep3Complete}
-            onSkip={handleSkipStep3}
+            onSkip={() => handleStep3Complete(null)}
             onBack={handleBack}
           />
         )}
@@ -214,4 +263,3 @@ export default function Onboarding() {
     </PageContainer>
   );
 }
-

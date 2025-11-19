@@ -19,20 +19,27 @@ export function useAuth() {
   const [profileError, setProfileError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         ensureProfile(session.user);
       } else {
         setLoading(false);
+        setProfileLoading(false);
       }
     });
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -47,23 +54,30 @@ export function useAuth() {
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const ensureProfile = async (user: User) => {
     try {
+      console.log('[useAuth] Starting profile ensure for user:', user.id);
       setProfileLoading(true);
       setProfileError(null);
+      setLoading(true);
+      
       const profile = await ensureProfileForUser(supabase, user);
       
+      console.log('[useAuth] Profile ensured successfully:', profile.id);
       setProfile(profile);
       setProfileError(null);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
+      console.error('[useAuth] Error ensuring profile:', error);
       setProfileError(error);
-      console.error('Error ensuring profile:', error);
+      setProfile(null); // Clear profile on error
     } finally {
+      console.log('[useAuth] Profile loading complete, setting profileLoading to false');
       setProfileLoading(false);
       setLoading(false);
     }

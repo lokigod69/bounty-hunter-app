@@ -8,7 +8,7 @@
 // P2: Added onboarding route and FTXGate component to check if new users should see onboarding flow.
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
 import Layout from './components/Layout';
@@ -21,17 +21,21 @@ import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyS
 import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed from MyCollectedBountiesPage
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import Onboarding from './pages/Onboarding'; // P2: First-Time Experience onboarding flow
+import FTXGate from './components/FTXGate'; // P2: First-Time Experience gate
 import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
-import FTXGate from './components/FTXGate';
 
-// Protected route component
+// Protected route component - handles authentication only
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, session, profileLoading, profileError } = useAuth();
+  // ALL HOOKS AT TOP LEVEL
+  const { user, session, profileLoading } = useAuth();
+  const location = useLocation();
   
-  // Wait for profile to load (but don't block on profile error for onboarding)
+  // NO HOOKS BELOW THIS LINE - only conditional returns
+  
+  // Wait for profile to load
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -43,12 +47,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
+  // Not authenticated - redirect to login
   if (!user || !session) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // For onboarding route, allow even if profileError (let Onboarding handle it)
-  // For other routes, profile should exist (handled by FTXGate)
+  // Authenticated and profile loaded - render children
   return <>{children}</>;
 }
 
@@ -59,25 +63,39 @@ export default function App() {
         <UIProvider>
           <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <FTXGate>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  {/* Routes below are protected and use the Layout component */}
-                  <Route index element={<Dashboard />} />
-                  <Route path="friends" element={<Friends />} />
-                  <Route path="archive" element={<ArchivePage />} />
-                  <Route path="profile/edit" element={<ProfileEdit />} />
-                  <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
-                  <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
-                  <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
-                  {/* Add other protected routes here */}
-                </Route>
-                {/* Fallback for any other route, could be a 404 page */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </FTXGate>
+            <Routes>
+              {/* Public route */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Onboarding route - requires auth, but NOT blocked by FTXGate */}
+              <Route path="/onboarding" element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              } />
+              
+              {/* Main app routes - wrapped by ProtectedRoute + FTXGate */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <FTXGate>
+                    <Layout />
+                  </FTXGate>
+                </ProtectedRoute>
+              }>
+                {/* Routes below are protected and use the Layout component */}
+                <Route index element={<Dashboard />} />
+                <Route path="friends" element={<Friends />} />
+                <Route path="archive" element={<ArchivePage />} />
+                <Route path="profile/edit" element={<ProfileEdit />} />
+                <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
+                <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
+                <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
+                {/* Add other protected routes here */}
+              </Route>
+              
+              {/* Fallback for any other route, could be a 404 page */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </BrowserRouter>
         </UIProvider>
       </ThemeProvider>
