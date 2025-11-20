@@ -29,12 +29,12 @@ export function StatsRow({ stats, className, ...props }: StatsRowProps) {
       {...props}
     >
       {stats.map((stat, index) => (
-        <div key={index} className="text-center flex flex-col items-center">
-          <div className={cn('mb-2', stat.iconColor || 'text-slate-400')}>
+        <div key={index} className="text-center flex flex-col items-center min-w-[80px]">
+          <div className={cn('mb-2 [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8', stat.iconColor || 'text-slate-400')}>
             {stat.icon}
           </div>
-          <div className="text-title font-bold text-slate-100">{stat.value}</div>
-          <div className="text-meta text-slate-400">{stat.label}</div>
+          <div className="text-lg sm:text-title font-bold text-slate-100">{stat.value}</div>
+          <div className="text-xs sm:text-meta text-slate-400">{stat.label}</div>
         </div>
       ))}
     </div>

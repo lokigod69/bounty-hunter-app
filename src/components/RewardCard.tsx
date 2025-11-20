@@ -48,7 +48,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
 
     if (displayUrl && !imageError) {
       return (
-        <div className="w-full h-40 md:h-48 relative overflow-hidden">
+        <div className="w-full h-full relative overflow-hidden">
           <img 
             src={image_url!} 
             alt={name} 
@@ -57,7 +57,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           />
           {!canAfford && view === 'available' && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <span className="text-white/80 text-sm font-semibold">{theme.strings.storeCantAffordLabel}</span>
+              <span className="text-white/80 text-xs sm:text-sm font-semibold px-2 text-center">{theme.strings.storeCantAffordLabel}</span>
             </div>
           )}
         </div>
@@ -65,46 +65,48 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
     }
     
     return (
-      <div className={`w-full h-40 md:h-48 flex items-center justify-center ${canAfford || view !== 'available' ? 'bg-gradient-to-br from-teal-500/20 to-cyan-500/20' : 'bg-gray-700/50'}`}>
-        <span className="text-5xl md:text-6xl">{displayUrl ? defaultEmoji : image_url || defaultEmoji}</span>
+      <div className={`w-full h-full flex items-center justify-center ${canAfford || view !== 'available' ? 'bg-gradient-to-br from-teal-500/20 to-cyan-500/20' : 'bg-gray-700/50'}`}>
+        <span className="text-4xl sm:text-5xl md:text-6xl">{displayUrl ? defaultEmoji : image_url || defaultEmoji}</span>
       </div>
     );
   };
 
   return (
     <BaseCard variant="solid" className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg hover:scale-[1.02]'}`}>
-      {/* P4: Top area - Image/emoji */}
-      {renderImageOrEmoji()}
+      {/* Top area - Image/emoji - mobile optimized height */}
+      <div className="h-32 sm:h-40 md:h-48">
+        {renderImageOrEmoji()}
+      </div>
       
-      {/* P4: Middle - Title and description */}
-      <div className="p-4 md:p-5 flex-grow flex flex-col">
-        <h3 className="text-title font-bold text-white mb-2 line-clamp-2" title={name}>{name}</h3>
+      {/* Middle - Title and description - mobile optimized padding */}
+      <div className="p-3 sm:p-4 md:p-5 flex-grow flex flex-col min-h-0">
+        <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 sm:mb-2 line-clamp-2" title={name}>{name}</h3>
         {description && (
-          <p className="text-body text-white/70 text-sm line-clamp-2 flex-grow">{description}</p>
+          <p className="text-sm text-white/70 line-clamp-2 flex-grow">{description}</p>
         )}
       </div>
       
-      {/* P4: Bottom - Price and action */}
-      <div className="p-4 md:p-5 border-t border-gray-700/50 space-y-3">
-        {/* Price badge - prominent */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-meta text-white/60">Cost:</span>
+      {/* Bottom - Price and action - mobile optimized */}
+      <div className="p-3 sm:p-4 md:p-5 border-t border-gray-700/50 space-y-2 sm:space-y-3">
+        {/* Price badge - prominent, mobile friendly */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">Cost:</span>
             <CreditDisplay amount={cost} size="medium" shimmerType="premium" />
           </div>
           {!canAfford && view === 'available' && creditsNeeded > 0 && (
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-white/50 whitespace-nowrap">
               Need {creditsNeeded} more {creditsNeeded === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural}
             </span>
           )}
         </div>
         
-        {/* Action button */}
+        {/* Action button - mobile optimized tap target */}
         {view === 'created' ? (
-          <div className="flex space-x-2">
+          <div className="flex gap-2">
             <button 
               onClick={() => onEdit?.(reward)}
-              className="flex-1 px-3 py-2 flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
+              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
               title={t('rewards.rewardCard.editButton')}
             >
               <Pencil size={16} />
@@ -112,7 +114,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             </button>
             <button 
               onClick={() => onDelete?.(id)}
-              className="flex-1 px-3 py-2 flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
+              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
               title={t('rewards.rewardCard.deleteButton')}
             >
               <Trash2 size={16} />
@@ -122,7 +124,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
         ) : (
           <button 
             onClick={() => onAction?.(id)}
-            className={`w-full px-4 py-3 text-base font-bold rounded-lg transition-all ${
+            className={`w-full px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold rounded-lg transition-all ${
               canAfford && view === 'available'
                 ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-black hover:from-teal-600 hover:to-cyan-600 shadow-lg'
                 : 'bg-gray-600 text-gray-400 cursor-not-allowed'

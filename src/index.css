@@ -1606,6 +1606,41 @@ body {
 
 /* Enhanced z-index hierarchy system */
 /* PHASE 2 FIX: Bulletproof z-index hierarchy to prevent all layering conflicts */
+/* 
+ * Z-INDEX STACKING ORDER (from bottom to top):
+ * 
+ * Background/Content (0-20):
+ *   --z-background: 0        - Base page content
+ *   --z-content: 10          - Regular content elements
+ *   --z-elevated: 20         - Elevated content (cards, etc.)
+ * 
+ * Header & Navigation (30-50):
+ *   --z-header: 30           - Main header (sticky)
+ *   --z-mobile-menu: 35      - Mobile menu backdrop/panel (when open)
+ *   --z-mobile-menu-close: 45 - Mobile menu close button
+ *   --z-fab: 50              - Floating Action Button (FAB)
+ * 
+ * Dropdowns & Tooltips (55-60):
+ *   --z-dropdown: 55         - Dropdown menus
+ *   --z-tooltip: 60          - Tooltips
+ * 
+ * Modals (10000+):
+ *   --z-modal-backdrop: 10000    - Modal backdrop (covers everything below)
+ *   --z-modal-content: 10100      - Modal content (above backdrop)
+ *   --z-modal-controls: 10200     - Modal controls (close buttons, etc.)
+ * 
+ * Critical Overlays (99000+):
+ *   --z-critical-overlay: 99000   - Critical system overlays
+ *   --z-critical-content: 99100   - Critical content
+ *   --z-critical-controls: 99200  - Critical controls
+ * 
+ * IMPORTANT NOTES:
+ * - Mobile menu (35) is BELOW modals (10000+) - modals can open over menu
+ * - FAB (50) is above header (30) but below modals (10000+)
+ * - All modals use portals to #overlay-root to avoid stacking context issues
+ * - When mobile menu is open, backdrop taps close it reliably
+ * - Backdrop z-index must be lower than content z-index within same layer
+ */
 
 :root {
   /* Z-Index Hierarchy System */

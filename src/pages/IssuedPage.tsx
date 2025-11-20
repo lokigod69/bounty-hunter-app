@@ -74,6 +74,8 @@ export default function IssuedPage() {
   const [selectedContract, setSelectedContract] = useState<IssuedContract | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // Enabled for delete functionality
+  const [approvingTaskId, setApprovingTaskId] = useState<string | null>(null);
+  const [rejectingTaskId, setRejectingTaskId] = useState<string | null>(null);
   const dailyQuote = useDailyQuote();
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
 
@@ -138,6 +140,15 @@ export default function IssuedPage() {
       return;
     }
 
+    // Prevent double-submission
+    if (approvingTaskId === taskId) {
+      return;
+    }
+
+    setApprovingTaskId(taskId);
+    const toastId = `approve-${taskId}`;
+    toast.loading('Approving proof...', { id: toastId });
+
     try {
       const result = await approveMission({
         missionId: taskId,
@@ -148,22 +159,21 @@ export default function IssuedPage() {
       soundManager.play('success');
       soundManager.play('coin');
 
-      if (result.streakCount && result.streakCount > 1) {
-        toast.success(t('contracts.approveSuccess') + ` (${result.streakCount}-day streak bonus!)`);
-      } else {
-        toast.success(t('contracts.approveSuccess'));
-      }
-
+      const successMessage = result.streakCount && result.streakCount > 1
+        ? t('contracts.approveSuccess') + ` (${result.streakCount}-day streak bonus!)`
+        : t('contracts.approveSuccess');
+      
+      toast.success(successMessage, { id: toastId });
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
       console.error('Failed to approve contract:', error);
-      if (error && typeof error === 'object' && 'message' in error) {
-        const errorMessage = (error as { message: string }).message;
-        toast.error(t('contracts.approvalFailed', { message: errorMessage }));
-      } else {
-        toast.error(t('contracts.approvalFailedUnknown'));
-      }
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : t('contracts.approvalFailedUnknown');
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setApprovingTaskId(null);
     }
   };
 
@@ -173,23 +183,32 @@ export default function IssuedPage() {
       return;
     }
 
+    // Prevent double-submission
+    if (rejectingTaskId === taskId) {
+      return;
+    }
+
+    setRejectingTaskId(taskId);
+    const toastId = `reject-${taskId}`;
+    toast.loading('Rejecting proof...', { id: toastId });
+
     try {
       await rejectMission({
         missionId: taskId,
         issuerId: user.id,
       });
 
-      toast.success(t('contracts.rejectSuccess'));
+      toast.success(t('contracts.rejectSuccess'), { id: toastId });
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
       console.error('Failed to reject contract:', error);
-      if (error && typeof error === 'object' && 'message' in error) {
-        const errorMessage = (error as { message: string }).message;
-        toast.error(t('contracts.rejectionFailed', { message: errorMessage }));
-      } else {
-        toast.error(t('contracts.rejectionFailedUnknown'));
-      }
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : t('contracts.rejectionFailedUnknown');
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setRejectingTaskId(null);
     }
   };
 
@@ -335,9 +354,11 @@ export default function IssuedPage() {
           />
           
           {dailyQuote && (
-            <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
-              &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
-            </p>
+            <div className="mb-6">
+              <p className="text-xs italic text-slate-500 border-l-2 border-teal-500 pl-3 py-2">
+                &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
+              </p>
+            </div>
           )}
 
           {/* Enhanced Floating Action Button - only show when missions exist */}
@@ -380,19 +401,26 @@ export default function IssuedPage() {
 
           <PageBody>
             {sortedIssuedContracts.length === 0 && !loading ? (
-              <div className="text-center py-10">
-                <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                <p className="text-subtitle text-slate-300 mb-6">{t('contracts.noMissions')}</p>
-                <button
-                  onClick={handleCreateNewContract}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-                  data-testid="missions-empty-cta"
-                  aria-label={t('contracts.createNewMission')}
-                >
-                  <PlusCircle size={20} />
-                  {t('contracts.createNewMission')}
-                </button>
-              </div>
+              <BaseCard className="transition-all duration-200 hover:shadow-lg">
+                <div className="text-center py-10">
+                  <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
+                  <h3 className="text-subtitle text-white/90 mb-2">{t('contracts.noMissions')}</h3>
+                  <p className="text-body text-white/70 mb-6">
+                    {theme.id === 'guild' && 'Create your first mission to get started.'}
+                    {theme.id === 'family' && 'Create your first chore to get started.'}
+                    {theme.id === 'couple' && 'Create your first request to get started.'}
+                  </p>
+                  <button
+                    onClick={handleCreateNewContract}
+                    className="inline-flex items-center gap-2 px-6 py-3 min-h-[44px] bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+                    data-testid="missions-empty-cta"
+                    aria-label={t('contracts.createNewMission')}
+                  >
+                    <PlusCircle size={20} />
+                    {t('contracts.createNewMission')}
+                  </button>
+                </div>
+              </BaseCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                 {sortedIssuedContracts.map(task => (
@@ -406,6 +434,7 @@ export default function IssuedPage() {
                     onProofUpload={handleProofUpload}
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
+                    actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
                   />
                 ))}
               </div>
@@ -501,6 +530,7 @@ export default function IssuedPage() {
                       onProofUpload={handleProofUpload}
                       uploadProgress={0}
                       onDeleteTaskRequest={handleDeleteTaskRequest}
+                      actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
                     />
                   ))}
                 </div>

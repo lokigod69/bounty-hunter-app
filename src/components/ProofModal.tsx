@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone, FileRejection } from 'react-dropzone';
 import { X, UploadCloud, File as FileIcon } from 'lucide-react';
 import { useUI } from '../context/UIContext';
+import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES } from '../lib/proofConfig';
 
 interface ProofModalProps {
   taskId: string;
@@ -17,6 +18,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
   const [file, setFile] = useState<File | null>(null);
   const [textDescription, setTextDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     openModal(); // Phase 2: Use UIContext to coordinate overlay layers
@@ -27,32 +29,62 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     if (rejectedFiles.length > 0) {
-      setError('File type not supported. Please upload an image or PDF.');
+      const rejection = rejectedFiles[0];
+      if (rejection.errors.some(e => e.code === 'file-too-large')) {
+        setError(`File is too large. Maximum size is ${PROOF_MAX_FILE_SIZE_MB}MB.`);
+      } else {
+        setError('File type not supported. Please upload an image (JPG, PNG) or PDF.');
+      }
       return;
     }
     if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
+      const selectedFile = acceptedFiles[0];
+      // Validate file size
+      if (selectedFile.size > PROOF_MAX_FILE_SIZE) {
+        setError(`File is too large. Maximum size is ${PROOF_MAX_FILE_SIZE_MB}MB.`);
+        return;
+      }
+      setFile(selectedFile);
       setError(null);
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'image/jpeg': [],
-      'image/png': [],
-      'application/pdf': [],
-    },
+    accept: PROOF_ALLOWED_FILE_TYPES,
     multiple: false,
+    maxSize: PROOF_MAX_FILE_SIZE,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear previous errors
+    setError(null);
+    
+    // Validation
     if (!file && !textDescription.trim()) {
       setError('Please provide a file or text description.');
       return;
     }
-    await onSubmit(file, textDescription.trim() || undefined);
+
+    // File size validation (double-check)
+    if (file && file.size > PROOF_MAX_FILE_SIZE) {
+      setError(`File is too large. Maximum size is ${PROOF_MAX_FILE_SIZE_MB}MB.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(file, textDescription.trim() || undefined);
+      // Success - modal will close via parent component
+    } catch (err) {
+      console.error('[ProofModal] Submit error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit proof. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   console.log("[ProofModal] Rendering modal");
@@ -129,21 +161,33 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          {uploadProgress > 0 && (
-            <div className="w-full bg-slate-700 rounded-full h-2.5">
-              <div
-                className="bg-indigo-500 h-2.5 rounded-full"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
+          {/* Error display */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
+          
+          {/* Upload progress */}
+          {uploadProgress > 0 && (
+            <div className="space-y-2">
+              <div className="w-full bg-slate-700 rounded-full h-2.5">
+                <div
+                  className="bg-indigo-500 h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-slate-400 text-center">Uploading... {uploadProgress}%</p>
+            </div>
+          )}
+          
+          {/* Submit button */}
           <button 
             type="submit" 
-            className="btn-primary w-full py-2" 
-            disabled={(!file && !textDescription.trim()) || uploadProgress > 0}
+            className="btn-primary w-full py-3 min-h-[44px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all" 
+            disabled={(!file && !textDescription.trim()) || uploadProgress > 0 || isSubmitting}
           >
-            {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submit for Review'}
+            {isSubmitting ? 'Submitting...' : uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submit for Review'}
           </button>
         </form>
       </div>

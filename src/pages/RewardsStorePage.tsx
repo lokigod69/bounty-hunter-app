@@ -12,6 +12,7 @@ import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
 import { useDeleteBounty } from '../hooks/useDeleteBounty';
 import { useAuth } from '../hooks/useAuth';
 import { useUserCredits } from '../hooks/useUserCredits';
+import { useCollectedRewards } from '../hooks/useCollectedRewards';
 import RewardCard, { Reward } from '../components/RewardCard';
 import CreateBountyModal from '../components/CreateBountyModal';
 import EditBountyModal from '../components/EditBountyModal';
@@ -34,6 +35,7 @@ const RewardsStorePage: React.FC = () => {
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
   const { deleteBounty, isLoading: isDeleting } = useDeleteBounty();
   const { credits: userCredits, loading: creditsLoading } = useUserCredits();
+  const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards } = useCollectedRewards();
 
   // State for modals
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -48,6 +50,12 @@ const RewardsStorePage: React.FC = () => {
   useEffect(() => {
     fetchRewards();
   }, [fetchRewards]);
+
+  useEffect(() => {
+    if (activeTab === 'collected') {
+      fetchCollectedRewards();
+    }
+  }, [activeTab, fetchCollectedRewards]);
 
   // P4: Calculate affordable rewards and distance to next reward
   const { affordableCount, cheapestUnaffordable } = useMemo(() => {
@@ -76,6 +84,9 @@ const RewardsStorePage: React.FC = () => {
 
   const handleRefresh = async () => {
     await fetchRewards();
+    if (activeTab === 'collected') {
+      await fetchCollectedRewards();
+    }
   };
 
   const handleClaim = async (rewardId: string) => {
@@ -137,6 +148,79 @@ const RewardsStorePage: React.FC = () => {
       );
     }
 
+    // Handle collected tab separately (uses different data source)
+    if (activeTab === 'collected') {
+      if (isLoadingCollected) {
+        return (
+          <BaseCard className="transition-all duration-200">
+            <div className="text-center py-12">
+              <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-body text-white/70">Loading collected {theme.strings.rewardPlural}...</p>
+            </div>
+          </BaseCard>
+        );
+      }
+
+      if (collectedRewards.length === 0) {
+        return (
+          <BaseCard className="transition-all duration-200 hover:shadow-lg">
+            <div className="text-center py-12">
+              <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
+              <h3 className="text-subtitle text-white/90 mb-2">No collected {theme.strings.rewardPlural} yet</h3>
+              <p className="text-body text-white/70 mb-6">
+                {theme.id === 'guild' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
+                {theme.id === 'family' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
+                {theme.id === 'couple' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
+              </p>
+              <button
+                onClick={() => setActiveTab('available')}
+                className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
+              >
+                <ShoppingCart size={20} />
+                Browse {theme.strings.rewardPlural}
+              </button>
+            </div>
+          </BaseCard>
+        );
+      }
+
+      return (
+        <div className="space-y-4">
+          {collectedRewards.map((reward) => (
+            <BaseCard key={reward.collection_id} className="transition-all duration-200 hover:shadow-lg">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="text-subtitle text-white font-semibold mb-1">{reward.name}</h3>
+                  {reward.description && (
+                    <p className="text-body text-white/70 mb-2 line-clamp-2">{reward.description}</p>
+                  )}
+                  <p className="text-meta text-white/60">
+                    Collected {new Date(reward.collected_at).toLocaleDateString(undefined, { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+                {reward.image_url && (
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
+                    <img 
+                      src={reward.image_url} 
+                      alt={reward.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </BaseCard>
+          ))}
+        </div>
+      );
+    }
+
+    // Handle available and created tabs (use rewards from rewards_store)
     const filteredRewards = rewards.filter(reward => {
       if (activeTab === 'available') {
         // Bounties assigned to the current user by others
@@ -146,16 +230,12 @@ const RewardsStorePage: React.FC = () => {
         // Bounties created by the current user for others
         return reward.creator_id === user?.id;
       }
-      if (activeTab === 'collected') {
-        // TODO: This will require fetching from the 'collected_rewards' table.
-        return false;
-      }
       return false;
     });
 
     if (filteredRewards.length === 0) {
       return (
-        <BaseCard>
+        <BaseCard className="transition-all duration-200 hover:shadow-lg">
           <div className="text-center py-12">
             <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
             <h3 className="text-subtitle text-white/90 mb-2">{theme.strings.storeEmptyTitle}</h3>
@@ -163,7 +243,7 @@ const RewardsStorePage: React.FC = () => {
             {user && (
               <button
                 onClick={() => setCreateModalOpen(true)}
-                className="btn-primary flex items-center justify-center gap-2 mx-auto"
+                className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
               >
                 <Plus size={20} />
                 Create first {theme.strings.rewardSingular}
@@ -199,34 +279,34 @@ const RewardsStorePage: React.FC = () => {
           subtitle={theme.strings.storeSubtitle}
         />
 
-        {/* P4: Credits Summary */}
+        {/* Credits Summary */}
         {!creditsLoading && (
           <div className="mb-6">
-            <BaseCard className={`${(userCredits ?? 0) > 0 ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-teal-500/30' : 'bg-gray-800/50 border-gray-700/50'}`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <BaseCard className={`transition-all duration-200 ${(userCredits ?? 0) > 0 ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-teal-500/30' : 'bg-gray-800/50 border-gray-700/50'}`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl">🪙</div>
+                  <div className="text-3xl sm:text-4xl">🪙</div>
                   <div>
-                    <p className="text-meta text-white/70 mb-1">{theme.strings.storeCreditsLabel}</p>
+                    <p className="text-xs sm:text-sm text-white/70 mb-1">{theme.strings.storeCreditsLabel}</p>
                     <div className="flex items-center gap-2">
                       <CreditDisplay amount={userCredits ?? 0} size="large" />
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right w-full sm:w-auto">
                   {(userCredits ?? 0) === 0 ? (
-                    <p className="text-body text-white/70">
+                    <p className="text-sm text-white/70">
                       Complete {theme.strings.missionPlural} to earn {theme.strings.tokenPlural}
                     </p>
                   ) : (
                     <>
                       {affordableCount > 0 && (
-                        <p className="text-body text-white/90 mb-1">
+                        <p className="text-sm sm:text-base text-white/90 mb-1 font-medium">
                           {theme.strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? theme.strings.rewardSingular : theme.strings.rewardPlural}
                         </p>
                       )}
                       {cheapestUnaffordable && (
-                        <p className="text-meta text-white/70">
+                        <p className="text-xs sm:text-sm text-white/70">
                           {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} {theme.strings.tokenPlural} away from "{cheapestUnaffordable.name}"
                         </p>
                       )}
@@ -239,10 +319,39 @@ const RewardsStorePage: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="mb-8 flex justify-center border-b border-gray-700">
-          <button onClick={() => setActiveTab('available')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'available' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.available')}</button>
-          <button onClick={() => setActiveTab('created')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'created' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.created')}</button>
-          <button onClick={() => setActiveTab('collected')} className={`px-4 py-2 text-lg font-medium ${activeTab === 'collected' ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-400'}`}>{t('rewards.tabs.collected')}</button>
+        <div className="mb-6 sm:mb-8 flex justify-center border-b border-gray-700 overflow-x-auto">
+          <div className="flex gap-1 sm:gap-0">
+            <button 
+              onClick={() => setActiveTab('available')} 
+              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'available' 
+                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  : 'text-slate-400 hover:text-slate-300'
+              }`}
+            >
+              {t('rewards.tabs.available')}
+            </button>
+            <button 
+              onClick={() => setActiveTab('created')} 
+              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'created' 
+                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  : 'text-slate-400 hover:text-slate-300'
+              }`}
+            >
+              {t('rewards.tabs.created')}
+            </button>
+            <button 
+              onClick={() => setActiveTab('collected')} 
+              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'collected' 
+                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  : 'text-slate-400 hover:text-slate-300'
+              }`}
+            >
+              {t('rewards.tabs.collected')}
+            </button>
+          </div>
         </div>
 
         <PageBody>
@@ -251,10 +360,12 @@ const RewardsStorePage: React.FC = () => {
 
       <button 
         onClick={() => setCreateModalOpen(true)}
-        className="fixed bottom-8 right-8 bg-teal-500 text-black rounded-full p-4 shadow-lg hover:bg-teal-600 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500"
+        className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white rounded-full p-4 sm:p-3 md:p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center z-fab"
         aria-label={t('rewards.createBountyButton')}
       >
-        <Plus size={28} />
+        <Plus size={24} className="sm:hidden" />
+        <Plus size={20} className="hidden sm:block md:hidden" />
+        <Plus size={24} className="hidden md:block" />
       </button>
 
       <CreateBountyModal 

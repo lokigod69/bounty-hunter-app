@@ -3,6 +3,7 @@
 // It includes workarounds like a click delay, file size validation, and specific attributes for camera access.
 
 import React, { useRef } from 'react';
+import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB } from '../lib/proofConfig';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -27,8 +28,8 @@ export function FileUpload({ onFileSelect, accept = "image/*", className, childr
     const file = e.target.files?.[0];
     if (file) {
       // Validate file size for Android
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        alert('File too large. Please choose a smaller image.');
+      if (file.size > PROOF_MAX_FILE_SIZE) {
+        alert(`File too large. Maximum size is ${PROOF_MAX_FILE_SIZE_MB}MB.`);
         return;
       }
       onFileSelect(file);

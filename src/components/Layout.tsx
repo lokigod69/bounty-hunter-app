@@ -241,6 +241,15 @@ export default function Layout() {
       </header>
 
       {/* Mobile Navigation Menu */}
+      {/* 
+       * MOBILE MENU BACKDROP & STACKING:
+       * - Backdrop uses z-index: 35 (--z-mobile-menu) - below modals (10000+)
+       * - Backdrop click handler explicitly calls closeMenu() - no global handlers
+       * - Menu panel uses stopPropagation() to prevent backdrop clicks when interacting inside
+       * - Close button and nav links explicitly call closeMenu() for deterministic behavior
+       * - When modal opens, it renders above menu (modals use z-index: 10000+)
+       * - See UIContext.tsx and index.css for complete documentation
+       */}
       {isMobileMenuOpen && (
         <div 
           className="md:hidden fixed inset-0 z-[var(--z-mobile-menu)]"

@@ -475,43 +475,45 @@ export default function Friends() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10 mb-6">
-          <button
-            className={`px-4 py-2 font-medium text-sm flex-1 text-center ${
-              activeTab === 'friends'
-                ? 'text-teal-400 border-b-2 border-teal-400'
-                : 'text-white/70 hover:text-white/90'
-            }`}
-            onClick={() => setActiveTab('friends')}
-          >
-            <Users size={16} className="inline mr-1" />
-            {t('friends.tabGuildMembers')}
-            {friends.length > 0 && (
-              <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
-                {friends.length}
-              </span>
-            )}
-          </button>
-          <button
-            className={`px-4 py-2 font-medium text-sm flex-1 text-center ${
-              activeTab === 'requests'
-                ? 'text-teal-400 border-b-2 border-teal-400'
-                : 'text-white/70 hover:text-white/90'
-            }`}
-            onClick={() => setActiveTab('requests')}
-          >
-            <UserPlus size={16} className="inline mr-1" />
-            {t('friends.tabRequests')}
-            {(pendingRequests.length > 0 || sentRequests.length > 0) && (
-              <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
-                {pendingRequests.length + sentRequests.length}
-              </span>
-            )}
-            {pendingRequests.length > 0 && (
-              <span className="ml-1 bg-amber-500 rounded-full h-2 w-2 inline-block"></span>
-            )}
-          </button>
-        </div>
+          <div className="flex border-b border-white/10 mb-6 overflow-x-auto">
+            <div className="flex gap-1 sm:gap-0 w-full">
+              <button
+                className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap ${
+                  activeTab === 'friends'
+                    ? 'text-teal-400 border-b-2 border-teal-400'
+                    : 'text-white/70 hover:text-white/90'
+                }`}
+                onClick={() => setActiveTab('friends')}
+              >
+                <Users size={16} className="inline mr-1" />
+                {t('friends.tabGuildMembers')}
+                {friends.length > 0 && (
+                  <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
+                    {friends.length}
+                  </span>
+                )}
+              </button>
+              <button
+                className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap relative ${
+                  activeTab === 'requests'
+                    ? 'text-teal-400 border-b-2 border-teal-400'
+                    : 'text-white/70 hover:text-white/90'
+                }`}
+                onClick={() => setActiveTab('requests')}
+              >
+                <UserPlus size={16} className="inline mr-1" />
+                {t('friends.tabRequests')}
+                {(pendingRequests.length > 0 || sentRequests.length > 0) && (
+                  <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
+                    {pendingRequests.length + sentRequests.length}
+                  </span>
+                )}
+                {pendingRequests.length > 0 && (
+                  <span className="ml-1 bg-amber-500 rounded-full h-2 w-2 inline-block absolute top-2 right-2 sm:top-3 sm:right-3"></span>
+                )}
+              </button>
+            </div>
+          </div>
 
         {/* Loading State */}
         {loading && (
@@ -550,19 +552,28 @@ export default function Friends() {
 
         {/* Friends List */}
         {!loading && !error && activeTab === 'friends' && (
-          <div className="space-y-4">
+          <section className="space-y-4">
             {friends.length > 0 ? (
-              friends.map((friendship) => (
-                <FriendCard
-                  key={friendship.id}
-                  profile={friendship.friend}
-                  friendshipId={friendship.id}
-                  status="accepted"
-                  onRemove={handleRemoveFriend}
-                />
-              ))
+              <>
+                <h2 className="text-subtitle text-white font-semibold mb-4">
+                  {theme.id === 'guild' && 'Your Crew'}
+                  {theme.id === 'family' && 'Your Family'}
+                  {theme.id === 'couple' && 'Your Partner'}
+                </h2>
+                <div className="space-y-3">
+                  {friends.map((friendship) => (
+                    <FriendCard
+                      key={friendship.id}
+                      profile={friendship.friend}
+                      friendshipId={friendship.id}
+                      status="accepted"
+                      onRemove={handleRemoveFriend}
+                    />
+                  ))}
+                </div>
+              </>
             ) : (
-              <BaseCard>
+              <BaseCard className="transition-all duration-200 hover:shadow-lg">
                 <div className="text-center py-8">
                   <Users size={48} className="mx-auto mb-4 text-teal-400" />
                   <h3 className="text-subtitle text-white/90 mb-2">{theme.strings.friendsTitle}</h3>
@@ -580,7 +591,7 @@ export default function Friends() {
                           searchInput.focus();
                         }
                       }}
-                      className="btn-primary flex items-center justify-center gap-2"
+                      className="btn-primary flex items-center justify-center gap-2 min-h-[44px] transition-all duration-200 hover:scale-105"
                     >
                       <UserPlus size={20} />
                       Invite someone
@@ -588,7 +599,7 @@ export default function Friends() {
                     {pendingRequests.length > 0 && (
                       <button
                         onClick={() => setActiveTab('requests')}
-                        className="btn-secondary"
+                        className="btn-secondary min-h-[44px] transition-all duration-200 hover:scale-105"
                       >
                         View requests ({pendingRequests.length})
                       </button>
@@ -597,17 +608,17 @@ export default function Friends() {
                 </div>
               </BaseCard>
             )}
-          </div>
+          </section>
         )}
 
         {/* Requests List */}
         {!loading && !error && activeTab === 'requests' && (
-          <div>
+          <section className="space-y-6">
             {/* Incoming Requests */}
             {pendingRequests.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-medium mb-3 text-white/90">{t('friends.incomingRequests')}</h2>
-                <div className="space-y-4">
+              <div>
+                <h2 className="text-subtitle text-white font-semibold mb-4">{t('friends.incomingRequests')}</h2>
+                <div className="space-y-3">
                   {pendingRequests.map((friendship) => (
                     <FriendCard
                       key={friendship.id}
@@ -626,8 +637,8 @@ export default function Friends() {
             {/* Sent Requests */}
             {sentRequests.length > 0 && (
               <div>
-                <h2 className="text-lg font-medium mb-3 text-white/90">{t('friends.sentRequests')}</h2>
-                <div className="space-y-4">
+                <h2 className="text-subtitle text-white font-semibold mb-4">{t('friends.sentRequests')}</h2>
+                <div className="space-y-3">
                   {sentRequests.map((request) => (
                     <FriendCard
                       key={request.id}
@@ -635,7 +646,7 @@ export default function Friends() {
                       friendshipId={request.id}
                       status="pending"
                       isIncoming={false}
-                      onCancelSentRequest={handleRequestCancellationAttempt} // Pass the handler
+                      onCancelSentRequest={handleRequestCancellationAttempt}
                     />
                   ))}
                 </div>
@@ -644,25 +655,27 @@ export default function Friends() {
 
             {/* Empty State */}
             {pendingRequests.length === 0 && sentRequests.length === 0 && (
-              <div className="glass-card p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                  <UserPlus size={24} className="text-white/50" />
+              <BaseCard className="transition-all duration-200">
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                    <UserPlus size={24} className="text-white/50" />
+                  </div>
+                  <h3 className="text-subtitle text-white/90 mb-2">{t('friends.noRequestsTitle')}</h3>
+                  <p className="text-body text-white/70 mb-6">
+                    {t('friends.noRequestsMessage')}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => setActiveTab('friends')}
+                      className="btn-secondary min-h-[44px] transition-all duration-200 hover:scale-105"
+                    >
+                      {t('friends.viewFriends')}
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-xl font-medium mb-2">{t('friends.noRequestsTitle')}</h3>
-                <p className="text-white/70 mb-4">
-                  {t('friends.noRequestsMessage')}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    onClick={() => setActiveTab('friends')}
-                    className="btn-secondary"
-                  >
-                    {t('friends.viewFriends')}
-                  </button>
-                </div>
-              </div>
+              </BaseCard>
             )}
-          </div>
+          </section>
         )}
 
           {/* Confirmation Modal for Cancelling Sent Request */}

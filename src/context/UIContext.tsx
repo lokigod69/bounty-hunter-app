@@ -1,6 +1,14 @@
 // src/context/UIContext.tsx
 // Phase 2: Extended with activeLayer coordination to manage overlay conflicts (menu vs modal vs critical).
 // Centralizes overlay state and ensures only one layer is active at a time.
+//
+// MOBILE MENU BACKDROP HANDLING:
+// - Mobile menu backdrop is rendered in Layout.tsx with z-index: 35 (--z-mobile-menu)
+// - Backdrop taps reliably close the menu via explicit closeMenu() call
+// - Menu panel uses stopPropagation() to prevent backdrop clicks when interacting inside
+// - When a modal opens (z-index: 10000+), it renders above the mobile menu
+// - Menu state is managed here; DOM rendering happens in Layout.tsx
+// - See index.css for complete z-index hierarchy documentation
 
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { lockScroll, unlockScroll } from '../lib/scrollLock';

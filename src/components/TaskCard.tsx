@@ -29,6 +29,7 @@ import { getOverlayRoot } from '../lib/overlayRoot';
 import { logOverlayRootState } from '../lib/overlayDebug';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
+import { isValidUrl, safeUrlRender } from '../lib/proofConfig';
 
 import ProofModal from './ProofModal';
 import './TaskCard.css'; // Import custom CSS for TaskCard
@@ -268,8 +269,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const renderProofLink = (url: string, className: string, withIcon: boolean = false) => {
+    // Validate URL before rendering as link
+    const { isValid, url: safeUrl } = safeUrlRender(url);
+    if (!isValid || !safeUrl) {
+      // Render as plain text if URL is invalid
+      return (
+        <span className={className}>
+          {withIcon && <Link size={20} className="mr-2" />}
+          Proof URL (invalid)
+        </span>
+      );
+    }
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className={className}>
+      <a href={safeUrl} target="_blank" rel="noopener noreferrer" className={className}>
         {withIcon && <Link size={20} className="mr-2" />}
         View Submitted Proof
       </a>
@@ -289,19 +301,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
     try {
       setViewingProof(true);
       
-      // Enhanced proof URL validation
+      // Enhanced proof URL validation using centralized helper
       const proofUrl = task.proof_url!; // Non-null assertion since we checked above
       
-      // Validate URL format
+      // Validate URL format using centralized helper
+      if (!isValidUrl(proofUrl)) {
+        console.error('[TaskCard] Invalid proof URL format:', proofUrl);
+        toast.error(t('errorViewing') + ' - Invalid proof URL', { duration: 6000 });
+        return;
+      }
+      
+      // Log for debugging
+      console.log('[TaskCard] Opening proof URL:', proofUrl);
+      
       try {
-        const url = new URL(proofUrl);
-        if (!url.protocol.startsWith('http')) {
-          throw new Error('Invalid URL protocol');
-        }
-        
-        // Log for debugging
-        console.log('[TaskCard] Opening proof URL:', proofUrl);
-        
         // Try to fetch the URL to verify it's accessible
         const response = await fetch(proofUrl, { method: 'HEAD' });
         if (!response.ok) {
@@ -315,30 +328,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
         soundManager.play('click1');
         
       } catch (urlError) {
-        console.error('[TaskCard] Invalid or inaccessible proof URL:', proofUrl, urlError);
-        
-        // Try fallback - reconstruct URL if it looks like a path
-        if (!proofUrl.startsWith('http')) {
-          console.log('[TaskCard] Attempting to reconstruct proof URL from path:', proofUrl);
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const fallbackUrl = `${supabaseUrl}/storage/v1/object/public/bounty-proofs/${proofUrl}`;
-          
-          try {
-            const fallbackResponse = await fetch(fallbackUrl, { method: 'HEAD' });
-            if (fallbackResponse.ok) {
-              console.log('[TaskCard] Fallback URL successful:', fallbackUrl);
-              window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
-              soundManager.play('click1');
-            } else {
-              throw new Error('Fallback URL also failed');
-            }
-          } catch (fallbackError) {
-            console.error('[TaskCard] Fallback URL also failed:', fallbackError);
-            toast.error(t('errorViewing') + ' - Proof file not found', { duration: 6000 });
-          }
-        } else {
-          toast.error(t('errorViewing') + ' - Proof file not accessible', { duration: 6000 });
-        }
+        console.error('[TaskCard] Proof URL not accessible:', proofUrl, urlError);
+        toast.error(t('errorViewing') + ' - Proof file not accessible', { duration: 6000 });
       }
       
     } catch (error) {
@@ -412,41 +403,66 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
       <BaseCard
         variant="glass"
-        className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor}`}
+        className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor} p-4 sm:p-5`}
         hover={true}
       >
         <div
           {...swipeHandlers}
           onClick={() => !isAnimatingOut && setIsExpanded(true)}
+          className="min-h-[60px] flex flex-col"
         >
-          <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              <h3 className={`text-subtitle font-bold mb-2 pr-4 ${titleColorClass} min-w-0`}>
-                <span className="block truncate" title={title}>{title}</span>
+          {/* Top row: Status chip + Title + Deadline */}
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div className="flex-1 min-w-0 flex items-start gap-2">
+              {/* Status chip - mobile optimized */}
+              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
+                isArchived
+                  ? 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
+                  : status === 'pending'
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                  : status === 'review'
+                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
+                  : status === 'completed'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                  : 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
+              }`}>
+                {isArchived ? 'Archived' : 
+                 status === 'pending' ? 'Pending' :
+                 status === 'review' ? 'In Review' :
+                 status === 'completed' ? 'Done' :
+                 status === 'rejected' ? 'Rejected' :
+                 status}
+              </span>
+              <h3 className={`text-base sm:text-lg font-bold ${titleColorClass} min-w-0 line-clamp-2`} title={title}>
+                {title}
               </h3>
-              {/* P5: Daily badge and streak */}
-              {task.is_daily && (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                    {theme.strings.dailyLabel}
-                  </span>
-                  {streakCount !== undefined && streakCount > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs text-orange-400">
-                      🔥 {streakCount}-day {theme.strings.streakLabel}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
             <div className="flex-shrink-0 text-right">
               <CountdownTimer deadline={deadline} />
             </div>
           </div>
-          <div className="flex justify-between items-center mt-2">
-            <p className="text-meta text-slate-400 flex items-center">
-              <User size={16} className="mr-2" /> {actorName}
+
+          {/* Daily badge and streak - mobile optimized */}
+          {task.is_daily && (
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                {theme.strings.dailyLabel}
+              </span>
+              {streakCount !== undefined && streakCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs text-orange-400">
+                  🔥 {streakCount}-day {theme.strings.streakLabel}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Bottom row: Actor + Status icons */}
+          <div className="flex justify-between items-center mt-auto pt-2 border-t border-slate-700/30">
+            <p className="text-sm text-slate-400 flex items-center min-w-0">
+              <User size={14} className="mr-1.5 flex-shrink-0" />
+              <span className="truncate">{actorName}</span>
             </p>
-            <div className="flex items-center">
+            <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
               {status === 'review' && <Eye size={16} className="text-yellow-400" />}
               {status === 'completed' && <CheckCircle size={16} className="text-green-400" />}
               {isArchived && <Archive size={16} className="text-slate-500" />}
@@ -554,8 +570,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <div className="mt-auto pt-6 flex flex-col gap-4">
               {isCreatorView && status === 'review' && (
                 <div className="flex justify-center gap-4">
-                  <button onClick={() => onApprove && onApprove(id)} className="btn-success flex-1 py-2 text-lg">Approve</button>
-                  <button onClick={() => onReject && onReject(id)} className="btn-danger flex-1 py-2 text-lg">Reject</button>
+                  <button 
+                    onClick={() => onApprove && onApprove(id)} 
+                    className="btn-success flex-1 py-2 text-lg min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? 'Processing...' : 'Approve'}
+                  </button>
+                  <button 
+                    onClick={() => onReject && onReject(id)} 
+                    className="btn-danger flex-1 py-2 text-lg min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? 'Processing...' : 'Reject'}
+                  </button>
                 </div>
               )}
 
