@@ -55,10 +55,13 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
+import { BaseCard } from '../components/ui/BaseCard';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
+import { useTheme } from '../context/ThemeContext';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook

@@ -28,7 +28,7 @@ interface ProfileEditModalProps {
 
 export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const { t } = useTranslation();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { openModal, clearLayer } = useUI();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -98,7 +98,14 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       soundManager.play('saveProfile');
 
       toast.success(t('profile.saveSuccess'), { id: toastId });
-      window.location.reload();
+
+      // Refresh profile in context instead of hard reload
+      if (refreshProfile) {
+        await refreshProfile();
+      }
+
+      // Close modal after successful save
+      onClose();
     } catch (err) {
       console.error('Upload failed:', err);
       toast.error(t('profile.saveError'), { id: toastId });
@@ -157,7 +164,8 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 onChange={(e) => setDisplayName(e.target.value)}
                 className="input-field w-full text-white text-base"
                 placeholder={t('profile.usernamePlaceholder')}
-                disabled={authLoading || isUploading}
+                disabled={isUploading}
+                autoComplete="off"
               />
             </div>
 
@@ -196,7 +204,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full py-3 sm:py-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] mt-6" disabled={isUploading || authLoading}>
+            <button type="submit" className="btn-primary w-full py-3 sm:py-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] mt-6" disabled={isUploading}>
               {isUploading ? t('profile.saving') : t('profile.save')}
             </button>
           </form>

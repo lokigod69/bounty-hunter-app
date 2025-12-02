@@ -405,10 +405,22 @@ const TaskCard: React.FC<TaskCardProps> = ({
         variant="glass"
         className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor} p-4 sm:p-5`}
         hover={true}
+        onClick={() => {
+          console.log('[TaskCard] Card clicked, expanding task:', id);
+          setIsExpanded(true);
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(true);
+          }
+        }}
+        aria-label={`View details for task: ${title}`}
       >
         <div
           {...swipeHandlers}
-          onClick={() => !isAnimatingOut && setIsExpanded(true)}
           className="min-h-[60px] flex flex-col"
         >
           {/* Top row: Status chip + Title + Deadline */}

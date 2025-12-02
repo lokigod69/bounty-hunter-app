@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "plugins": {
+    "brand-guidelines@awesome-claude-skills": {
+      "version": "unknown",
+      "installedAt": "2025-11-25T15:20:04.010Z",
+      "lastUpdated": "2025-11-25T15:20:04.010Z",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\brand-guidelines",
+      "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
+      "isLocal": true
+    },
+    "internal-comms@awesome-claude-skills": {
+      "version": "unknown",
+      "installedAt": "2025-11-25T15:28:26.452Z",
+      "lastUpdated": "2025-11-25T15:28:26.452Z",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\internal-comms",
+      "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
+      "isLocal": true
+    },
+    "canvas-design@awesome-claude-skills": {
+      "version": "unknown",
+      "installedAt": "2025-11-25T15:29:52.882Z",
+      "lastUpdated": "2025-11-25T15:29:52.882Z",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\canvas-design",
+      "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
+      "isLocal": true
+    },
+    "webapp-testing@awesome-claude-skills": {
+      "version": "unknown",
+      "installedAt": "2025-11-25T15:31:00.246Z",
+      "lastUpdated": "2025-11-25T15:31:00.246Z",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\webapp-testing",
+      "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
+      "isLocal": true
+    }
+  }
+}
