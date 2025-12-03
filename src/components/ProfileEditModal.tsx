@@ -100,8 +100,17 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       toast.success(t('profile.saveSuccess'), { id: toastId });
 
       // Refresh profile in context instead of hard reload
+      console.log('[ProfileEditModal] About to call refreshProfile, current profile:', {
+        id: profile?.id,
+        display_name: profile?.display_name,
+        avatar_url: profile?.avatar_url,
+      });
+
       if (refreshProfile) {
         await refreshProfile();
+        console.log('[ProfileEditModal] refreshProfile completed');
+      } else {
+        console.warn('[ProfileEditModal] refreshProfile is undefined!');
       }
 
       // Close modal after successful save

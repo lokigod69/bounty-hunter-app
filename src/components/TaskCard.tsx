@@ -422,6 +422,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <div
           {...swipeHandlers}
           className="min-h-[60px] flex flex-col"
+          onClick={(e) => {
+            // Explicit click handler on inner div - belt-and-suspenders fix
+            // This ensures clicks work even if swipeable handlers intercept
+            console.log('[TaskCard] Inner div clicked, expanding task:', id);
+            setIsExpanded(true);
+          }}
         >
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">

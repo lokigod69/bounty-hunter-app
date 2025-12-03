@@ -35,14 +35,26 @@ import { BaseCard } from '../components/ui/BaseCard';
 export default function Friends() {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
-  
+
   // For Couple Mode, use partner state; for other modes, use friends
   const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(user?.id);
-  
+
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
+
+  // Unified identity values for current user with cache-busting
+  const myDisplayName =
+    profile?.display_name ??
+    user?.email?.split('@')[0] ??
+    'You';
+
+  const myAvatarUrlBase = profile?.avatar_url ?? null;
+  const myAvatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
+  const myAvatarUrl = myAvatarUrlBase
+    ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
+    : '/default-avatar.png';
 
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -333,9 +345,9 @@ export default function Friends() {
                     />
                     <Heart size={32} className="text-teal-400" />
                     {user && (
-                      <img 
-                        src={user.user_metadata?.avatar_url || '/default-avatar.png'} 
-                        alt={user.email || 'you'} 
+                      <img
+                        src={myAvatarUrl}
+                        alt={myDisplayName}
                         className="w-24 h-24 rounded-full border-4 border-teal-400"
                       />
                     )}

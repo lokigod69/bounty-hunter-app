@@ -57,10 +57,37 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Debug logging
+  // Debug logging for mobile menu
   useEffect(() => {
     console.log("[MobileMenu] State changed, isOpen:", isMobileMenuOpen);
   }, [isMobileMenuOpen]);
+
+  // Debug logging for identity pipeline - helps verify profile propagation in production
+  useEffect(() => {
+    console.log("[Layout] Identity state:", {
+      userId: user?.id,
+      userEmail: user?.email,
+      profileId: profile?.id,
+      profileDisplayName: profile?.display_name,
+      profileAvatarUrl: profile?.avatar_url,
+      hasProfile: !!profile,
+    });
+  }, [user, profile]);
+
+  // Unified identity values - single source of truth for current user display
+  // This ensures consistent display across header, mobile menu, and all identity surfaces
+  const displayName =
+    profile?.display_name ??
+    (user?.user_metadata as Record<string, unknown> | undefined)?.full_name as string | undefined ??
+    user?.email?.split('@')[0] ??
+    'Unknown user';
+
+  // Cache-busting for avatar: append updated_at timestamp to prevent stale cached images
+  const avatarUrlBase = profile?.avatar_url ?? null;
+  const avatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
+  const avatarUrl = avatarUrlBase
+    ? `${avatarUrlBase}${avatarCacheBuster}`
+    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
@@ -200,13 +227,13 @@ export default function Layout() {
                 <div onClick={() => setProfileModalOpen(true)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-white/5">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/50">
                     <img
-                      src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user.email || 'user')}
-                      alt={profile?.display_name || 'User'}
+                      src={avatarUrl}
+                      alt={displayName}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <span className="text-sm font-medium">
-                    {profile?.display_name || user.email?.split('@')[0]}
+                    {displayName}
                   </span>
                 </div>
                 <button
@@ -302,14 +329,14 @@ export default function Layout() {
             >
               <div className="w-12 h-12 rounded-full overflow-hidden">
                 <img
-                  src={profile?.avatar_url || 'https://avatar.iran.liara.run/public/boy?username=' + (user?.email || 'defaultUser')}
-                  alt={profile?.display_name || 'User'}
+                  src={avatarUrl}
+                  alt={displayName}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div>
                 <p className="font-medium text-lg">
-                  {profile?.display_name || user.email?.split('@')[0]}
+                  {displayName}
                 </p>
                 <p className="text-white/70 text-sm">{user.email}</p>
               </div>
