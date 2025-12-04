@@ -1,13 +1,14 @@
 // src/hooks/useFriends.ts
 // Custom hook for managing friendships
-// Changes:
-// - Added `cancelSentRequest` function to allow users to cancel their own pending sent friend requests.
-// - Updated respondToFriendRequest to re-fetch friendships on success for immediate UI update.
-// - Addressed lint errors: removed unused FriendshipStatus, fixed useEffect dependencies, handled unused variables, reordered function for 'used before declaration'.
+// R8 FIX: Fixed Supabase realtime subscription to prevent "subscribe multiple times" error
+// - Use unique channel name per user
+// - Only unsubscribe this specific channel on cleanup (not removeAllChannels)
+// - Create channel once per userId change
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Database } from '../types/database'; // Removed FriendshipStatus
+import { Database } from '../types/database';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // Define type aliases locally
 type Friendship = Database['public']['Tables']['friendships']['Row'];
@@ -24,69 +25,40 @@ export function useFriends(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize setupRealtimeSubscription to stabilize its reference for useEffect
-  // Moved before useEffect to prevent 'used before declaration' error.
-  const setupRealtimeSubscription = useCallback(() => {
-    supabase // Removed 'const friendshipsChannel =' assignment
-      .channel('friendships-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'friendships',
-        },
-        () => { // Removed _payload as it's unused and assuming the signature allows a no-arg callback
-          // Refresh friendships when there's any change
-          if (userId) {
-            fetchFriendships(userId);
-          }
-        }
-      )
-      .subscribe();
-  }, [userId]); // Added userId as a dependency for useCallback as fetchFriendships (called inside) depends on it
+  // R8 FIX: Track channel ref to properly cleanup only this channel
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
-  useEffect(() => {
-    if (userId) {
-      fetchFriendships(userId);
-      setupRealtimeSubscription();
-    }
-
-    return () => {
-      supabase.removeAllChannels();
-    };
-  }, [userId, setupRealtimeSubscription]); // Added setupRealtimeSubscription to dependencies
-
-  const fetchFriendships = async (userId: string) => {
+  // Memoize fetchFriendships so it can be called from subscription callback
+  const fetchFriendships = useCallback(async (uid: string) => {
     try {
       setLoading(true);
       setError(null);
 
       // Get all friendships where user is involved
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('friendships')
         .select('*')
-        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+        .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
       // Process friendships
       const acceptedFriends: FriendWithProfile[] = [];
       const received: FriendWithProfile[] = [];
       const sent: FriendWithProfile[] = [];
 
-      for (const friendship of data) {
+      for (const friendship of data || []) {
         // Determine which user is the friend
-        const friendId = friendship.user1_id === userId ? friendship.user2_id : friendship.user1_id;
+        const friendId = friendship.user1_id === uid ? friendship.user2_id : friendship.user1_id;
         if (!friendId) continue;
-        
+
         // Get friend's profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', friendId)
           .single();
-          
+
         if (profileError) continue;
 
         const friendWithProfile = {
@@ -98,7 +70,7 @@ export function useFriends(userId: string | undefined) {
         if (friendship.status === 'accepted') {
           acceptedFriends.push(friendWithProfile);
         } else if (friendship.status === 'pending') {
-          if (friendship.requested_by === userId) {
+          if (friendship.requested_by === uid) {
             sent.push(friendWithProfile);
           } else {
             received.push(friendWithProfile);
@@ -109,7 +81,7 @@ export function useFriends(userId: string | undefined) {
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
-    } catch (e) { // Changed 'error' to 'e' for clarity
+    } catch (e) {
       let errorMessage: string | null = null;
       if (e instanceof Error) {
         errorMessage = e.message;
@@ -119,11 +91,53 @@ export function useFriends(userId: string | undefined) {
         errorMessage = 'An unexpected error occurred while fetching friendships.';
       }
       setError(errorMessage);
-      console.error('Error fetching friendships:', e); // Log the original error object
+      console.error('Error fetching friendships:', e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // R8 FIX: Single useEffect for data fetching and subscription
+  useEffect(() => {
+    if (!userId) {
+      setFriends([]);
+      setPendingRequests([]);
+      setSentRequests([]);
+      setLoading(false);
+      return;
+    }
+
+    // Initial fetch
+    fetchFriendships(userId);
+
+    // R8 FIX: Create unique channel name for this user to avoid conflicts
+    const channelName = `friendships-${userId}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'friendships',
+        },
+        () => {
+          // Refresh friendships when there's any change
+          fetchFriendships(userId);
+        }
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+
+    // R8 FIX: Cleanup only this specific channel, not all channels
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [userId, fetchFriendships]);
 
   const sendFriendRequest = async (friendEmail: string) => {
     try {

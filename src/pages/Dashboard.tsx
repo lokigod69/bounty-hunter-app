@@ -291,243 +291,17 @@ export default function Dashboard() {
     }
   };
 
+  // R8 FIX: Single render path - no conditional tree swap based on activeLayer
+  // The old pattern caused TaskCard to unmount/remount, losing isExpanded state (double-click bug)
+  // Now we just disable PullToRefresh gesture when modal is open, keeping the tree stable
+  const isPullToRefreshDisabled = activeLayer === 'modal';
+
   return (
-    <>
-      {/* Phase UX-1: Disable PullToRefresh when modal is open to prevent gesture interference */}
-      {activeLayer === 'modal' ? (
-        <PageContainer>
-          <PageHeader 
-            title={theme.strings.inboxTitle} 
-            subtitle={t('contracts.description')} 
-          />
-
-          <StatsRow
-            stats={[
-              {
-                icon: <ScrollText size={32} />,
-                value: pendingCount,
-                label: t('contracts.open'),
-                iconColor: 'text-red-400',
-              },
-              {
-                icon: <Clock size={32} />,
-                value: reviewCount,
-                label: t('contracts.review'),
-                iconColor: 'text-yellow-400',
-              },
-              {
-                icon: <CheckCircle size={32} />,
-                value: completedCount,
-                label: t('contracts.done'),
-                iconColor: 'text-green-400',
-              },
-            ]}
-          />
-
-          <PageBody>
-            {/* Section 1 - Do this now */}
-            <section className="space-y-4 mb-8">
-              <h2 className="text-subtitle text-white font-semibold mb-4">{theme.strings.sectionDoNowTitle}</h2>
-              {doNowMissions.length === 0 ? (
-                <BaseCard className="transition-all duration-200 hover:shadow-lg">
-                  <div className="text-center py-8">
-                    <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
-                    <h3 className="text-subtitle text-white/90 mb-2">
-                      {theme.id === 'guild' && `No ${theme.strings.missionPlural} right now. Create one or check the store.`}
-                      {theme.id === 'family' && `No ${theme.strings.missionPlural} assigned. You're all clear for now.`}
-                      {theme.id === 'couple' && `No ${theme.strings.missionPlural} pending. Maybe create one?`}
-                    </h3>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-                      <button
-                        onClick={() => navigate('/issued')}
-                        className="btn-primary flex items-center justify-center gap-2 min-h-[44px] transition-all duration-200 hover:scale-105"
-                      >
-                        <PlusCircle size={20} />
-                        Create new {theme.strings.missionSingular}
-                      </button>
-                      <button
-                        onClick={() => navigate('/rewards-store')}
-                        className="btn-secondary flex items-center justify-center gap-2 min-h-[44px] transition-all duration-200 hover:scale-105"
-                      >
-                        <ShoppingCart size={20} />
-                        Visit {theme.strings.storeTitle}
-                      </button>
-                    </div>
-                  </div>
-                </BaseCard>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                  {doNowMissions.map(task => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreatorView={false}
-                      onStatusUpdate={handleStatusUpdate}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={0}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      refetchTasks={refetchAssignedContracts}
-                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Section 2 - Waiting for approval */}
-            <section className="space-y-4 mb-8">
-              <h2 className="text-subtitle text-white font-semibold mb-4">{theme.strings.sectionWaitingApprovalTitle}</h2>
-              {waitingApprovalMissions.length === 0 ? (
-                <BaseCard className="transition-all duration-200">
-                  <div className="text-center py-8">
-                    <Clock size={48} className="mx-auto mb-4 text-yellow-400/50" />
-                    <p className="text-body text-white/70">Nothing waiting for approval right now.</p>
-                  </div>
-                </BaseCard>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                  {waitingApprovalMissions.map(task => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreatorView={false}
-                      onStatusUpdate={handleStatusUpdate}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={0}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      refetchTasks={refetchAssignedContracts}
-                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Section 3 - Recently completed */}
-            <section className="space-y-4">
-              <h2 className="text-subtitle text-white font-semibold mb-4">{theme.strings.sectionCompletedTitle}</h2>
-              {completedMissions.length === 0 ? (
-                <BaseCard className="transition-all duration-200">
-                  <div className="text-center py-8">
-                    <CheckCircle size={48} className="mx-auto mb-4 text-green-400/50" />
-                    <p className="text-body text-white/70">You haven't completed any {theme.strings.missionPlural} yet.</p>
-                  </div>
-                </BaseCard>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                  {completedMissions.map(task => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreatorView={false}
-                      onStatusUpdate={handleStatusUpdate}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={0}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      refetchTasks={refetchAssignedContracts}
-                      streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Section 4 - Issued missions summary */}
-            <section className="mb-8">
-              <h2 className="text-subtitle text-white font-semibold mb-4">{theme.strings.sectionIssuedSummaryTitle}</h2>
-              {issuedContracts.length === 0 ? (
-                <BaseCard className="transition-all duration-200">
-                  <div className="text-center py-8">
-                    <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400/50" />
-                    <h3 className="text-subtitle text-white/90 mb-2">
-                      {theme.id === 'guild' && `You haven't issued any ${theme.strings.missionPlural} yet.`}
-                      {theme.id === 'family' && `You haven't assigned any ${theme.strings.missionPlural} yet.`}
-                      {theme.id === 'couple' && `You haven't made any ${theme.strings.missionPlural} yet.`}
-                    </h3>
-                    <p className="text-body text-white/70 mb-6">
-                      {theme.id === 'guild' && `Create ${theme.strings.missionPlural} for your crew to get started.`}
-                      {theme.id === 'family' && `Assign ${theme.strings.missionPlural} to family members to get started.`}
-                      {theme.id === 'couple' && `Make ${theme.strings.missionPlural} for your partner to get started.`}
-                    </p>
-                    <button
-                      onClick={() => navigate('/issued')}
-                      className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px]"
-                    >
-                      <PlusCircle size={20} />
-                      Create {theme.strings.missionSingular}
-                    </button>
-                  </div>
-                </BaseCard>
-              ) : (
-                <BaseCard className="transition-all duration-200">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap gap-4 text-sm mb-2">
-                        {issuedStats.awaitingProof > 0 && (
-                          <span className="text-white/70">
-                            {issuedStats.awaitingProof} {theme.strings.missionPlural} awaiting proof
-                          </span>
-                        )}
-                        {issuedStats.pendingApproval > 0 && (
-                          <span className="text-white/70">
-                            {issuedStats.pendingApproval} {theme.strings.missionPlural} pending your approval
-                          </span>
-                        )}
-                        {issuedStats.awaitingProof === 0 && issuedStats.pendingApproval === 0 && (
-                          <span className="text-white/70">All {theme.strings.missionPlural} are up to date</span>
-                        )}
-                      </div>
-                      <p className="text-meta text-white/60">
-                        {issuedContracts.length} total {issuedContracts.length === 1 ? theme.strings.missionSingular : theme.strings.missionPlural} issued
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate('/issued')}
-                      className="btn-secondary flex items-center gap-2 whitespace-nowrap min-h-[44px] transition-all duration-200 hover:scale-105"
-                    >
-                      Manage {theme.strings.missionsLabel}
-                      <ArrowRight size={20} />
-                    </button>
-                  </div>
-                </BaseCard>
-              )}
-            </section>
-
-            {/* P4: Reward Store prompt - only show if user has credits */}
-            {(userCredits ?? 0) > 0 && (
-              <div className="space-y-4">
-                <BaseCard className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/20">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-subtitle text-white font-semibold mb-1">
-                        Visit {theme.strings.storeTitle}
-                      </h3>
-                      <p className="text-body text-white/70 text-sm">
-                        You have {userCredits} {userCredits === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural} to spend. Check out available {theme.strings.rewardPlural}!
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate('/rewards-store')}
-                      className="btn-primary flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <ShoppingCart size={20} />
-                      Go to {theme.strings.storeTitle}
-                    </button>
-                  </div>
-                </BaseCard>
-              </div>
-            )}
-
-            {/* Hunter's Creed Section */}
-            <HuntersCreed quote={dailyQuote} />
-          </PageBody>
-        </PageContainer>
-      ) : (
-        <PullToRefresh onRefresh={handleRefresh}>
-          <PageContainer>
-        <PageHeader 
-          title={theme.strings.inboxTitle} 
-          subtitle={t('contracts.description')} 
+    <PullToRefresh onRefresh={handleRefresh} isPullable={!isPullToRefreshDisabled}>
+      <PageContainer>
+        <PageHeader
+          title={theme.strings.inboxTitle}
+          subtitle={t('contracts.description')}
         />
 
         <StatsRow
@@ -554,7 +328,7 @@ export default function Dashboard() {
         />
 
         <PageBody>
-          {/* P3: Section 1 - Do this now */}
+          {/* Section 1 - Do this now */}
           <div className="space-y-4">
             <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionDoNowTitle}</h2>
             {doNowMissions.length === 0 ? (
@@ -603,7 +377,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* P3: Section 2 - Waiting for approval */}
+          {/* Section 2 - Waiting for approval */}
           <div className="space-y-4">
             <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionWaitingApprovalTitle}</h2>
             {waitingApprovalMissions.length === 0 ? (
@@ -631,7 +405,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* P3: Section 3 - Recently completed */}
+          {/* Section 3 - Recently completed */}
           <div className="space-y-4">
             <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionCompletedTitle}</h2>
             {completedMissions.length === 0 ? (
@@ -659,7 +433,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* P3: Section 4 - Issued missions summary */}
+          {/* Section 4 - Issued missions summary */}
           {issuedContracts.length > 0 && (
             <div className="space-y-4">
               <BaseCard>
@@ -696,7 +470,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* P4: Reward Store prompt - only show if user has credits */}
+          {/* Reward Store prompt - only show if user has credits */}
           {(userCredits ?? 0) > 0 && (
             <div className="space-y-4">
               <BaseCard className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/20">
@@ -726,7 +500,5 @@ export default function Dashboard() {
         </PageBody>
       </PageContainer>
     </PullToRefresh>
-      )}
-    </>
   );
 }

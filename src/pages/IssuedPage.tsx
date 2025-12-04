@@ -348,20 +348,18 @@ export default function IssuedPage() {
         />
       )}
 
-      {/* Phase UX-1: Disable PullToRefresh when modal is open to prevent gesture interference */}
-      {activeLayer === 'modal' ? (
+      {/* R8 FIX: Single render path - no conditional tree swap based on activeLayer */}
+      <PullToRefresh onRefresh={handleRefresh} isPullable={activeLayer !== 'modal'}>
         <PageContainer>
-          <PageHeader 
-            title={t('contracts.myMissions')} 
-            subtitle={t('contracts.myMissionsDescription')} 
+          <PageHeader
+            title={t('contracts.myMissions')}
+            subtitle={t('contracts.myMissionsDescription')}
           />
-          
+
           {dailyQuote && (
-            <div className="mb-6">
-              <p className="text-xs italic text-slate-500 border-l-2 border-teal-500 pl-3 py-2">
-                &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
-              </p>
-            </div>
+            <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
+              &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
+            </p>
           )}
 
           {/* Enhanced Floating Action Button - only show when missions exist */}
@@ -404,26 +402,19 @@ export default function IssuedPage() {
 
           <PageBody>
             {sortedIssuedContracts.length === 0 && !loading ? (
-              <BaseCard className="transition-all duration-200 hover:shadow-lg">
-                <div className="text-center py-10">
-                  <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                  <h3 className="text-subtitle text-white/90 mb-2">{t('contracts.noMissions')}</h3>
-                  <p className="text-body text-white/70 mb-6">
-                    {theme.id === 'guild' && 'Create your first mission to get started.'}
-                    {theme.id === 'family' && 'Create your first chore to get started.'}
-                    {theme.id === 'couple' && 'Create your first request to get started.'}
-                  </p>
-                  <button
-                    onClick={handleCreateNewContract}
-                    className="inline-flex items-center gap-2 px-6 py-3 min-h-[44px] bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-                    data-testid="missions-empty-cta"
-                    aria-label={t('contracts.createNewMission')}
-                  >
-                    <PlusCircle size={20} />
-                    {t('contracts.createNewMission')}
-                  </button>
-                </div>
-              </BaseCard>
+              <div className="text-center py-10">
+                <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
+                <p className="text-subtitle text-slate-300 mb-6">{t('contracts.noMissions')}</p>
+                <button
+                  onClick={handleCreateNewContract}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+                  data-testid="missions-empty-cta"
+                  aria-label={t('contracts.createNewMission')}
+                >
+                  <PlusCircle size={20} />
+                  {t('contracts.createNewMission')}
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                 {sortedIssuedContracts.map(task => (
@@ -453,104 +444,7 @@ export default function IssuedPage() {
             isConfirming={isDeleting}
           />
         </PageContainer>
-      ) : (
-        <PullToRefresh onRefresh={handleRefresh}>
-          <PageContainer>
-            <PageHeader 
-              title={t('contracts.myMissions')} 
-              subtitle={t('contracts.myMissionsDescription')} 
-            />
-            
-            {dailyQuote && (
-              <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
-                &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
-              </p>
-            )}
-
-            {/* Enhanced Floating Action Button - only show when missions exist */}
-            {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
-              <button
-                onClick={handleCreateNewContract}
-                className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
-                aria-label={t('contracts.createNewMission')}
-                title={t('contracts.createNewMission')}
-                data-testid="missions-fab"
-              >
-                <PlusCircle size={28} className="sm:hidden" />
-                <PlusCircle size={24} className="hidden sm:block md:hidden" />
-                <PlusCircle size={28} className="hidden md:block" />
-              </button>
-            )}
-
-            <StatsRow
-              stats={[
-                {
-                  icon: <AlertTriangle size={32} />,
-                  value: stats.pending,
-                  label: t('contracts.open'),
-                  iconColor: 'text-orange-400',
-                },
-                {
-                  icon: <Clock size={32} />,
-                  value: stats.review,
-                  label: t('contracts.review'),
-                  iconColor: 'text-yellow-400',
-                },
-                {
-                  icon: <CheckCircle size={32} />,
-                  value: stats.completed,
-                  label: t('contracts.completed'),
-                  iconColor: 'text-green-400',
-                },
-              ]}
-            />
-
-            <PageBody>
-              {sortedIssuedContracts.length === 0 && !loading ? (
-                <div className="text-center py-10">
-                  <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                  <p className="text-subtitle text-slate-300 mb-6">{t('contracts.noMissions')}</p>
-                  <button
-                    onClick={handleCreateNewContract}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
-                    data-testid="missions-empty-cta"
-                    aria-label={t('contracts.createNewMission')}
-                  >
-                    <PlusCircle size={20} />
-                    {t('contracts.createNewMission')}
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                  {sortedIssuedContracts.map(task => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      isCreatorView={true}
-                      onStatusUpdate={() => {}} // No-op; handled by approve/reject
-                      onApprove={() => handleApprove(task.id)}
-                      onReject={() => handleReject(task.id)}
-                      onProofUpload={handleProofUpload}
-                      uploadProgress={0}
-                      onDeleteTaskRequest={handleDeleteTaskRequest}
-                      actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                    />
-                  ))}
-                </div>
-              )}
-            </PageBody>
-
-            <ConfirmDeleteModal
-              isOpen={isDeleteModalOpen}
-              onClose={handleCloseDeleteModal}
-              onConfirm={handleConfirmDeleteTask}
-              title="Confirm Delete Contract"
-              message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
-              isConfirming={isDeleting}
-            />
-          </PageContainer>
-        </PullToRefresh>
-      )}
+      </PullToRefresh>
     </>
   );
 }
