@@ -197,8 +197,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: handleArchive,
-    trackMouse: true,
+    // Removed trackMouse: true - was potentially intercepting click events on desktop
     preventScrollOnSwipe: true,
+    // Ensure swipe doesn't block taps
+    delta: 10, // Minimum swipe distance before triggering
+    swipeDuration: 500, // Max duration for a swipe
   });
 
   const handleAction = async (newStatus: TaskStatus) => {
@@ -425,8 +428,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
           onClick={(e) => {
             // Explicit click handler on inner div - belt-and-suspenders fix
             // This ensures clicks work even if swipeable handlers intercept
+            e.stopPropagation(); // Prevent double-firing from BaseCard onClick
             console.log('[TaskCard] Inner div clicked, expanding task:', id);
             setIsExpanded(true);
+          }}
+          onTouchEnd={(e) => {
+            // Explicit touch handler for mobile - some mobile browsers have click issues
+            // Only trigger if this wasn't a swipe (swipe handlers will have been invoked already)
+            const touch = e.changedTouches?.[0];
+            if (touch) {
+              console.log('[TaskCard] Touch end on inner div, expanding task:', id);
+              // Small delay to let swipe handlers complete first
+              setTimeout(() => {
+                if (!isExpanded) {
+                  setIsExpanded(true);
+                }
+              }, 50);
+            }
           }}
         >
           {/* Top row: Status chip + Title + Deadline */}

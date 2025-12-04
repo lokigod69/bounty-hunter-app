@@ -285,7 +285,7 @@ const RewardsStorePage: React.FC = () => {
             <BaseCard className={`transition-all duration-200 ${(userCredits ?? 0) > 0 ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-teal-500/30' : 'bg-gray-800/50 border-gray-700/50'}`}>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl sm:text-4xl">🪙</div>
+                  {/* Removed duplicate static coin - CreditDisplay already shows a coin */}
                   <div>
                     <p className="text-xs sm:text-sm text-white/70 mb-1">{theme.strings.storeCreditsLabel}</p>
                     <div className="flex items-center gap-2">

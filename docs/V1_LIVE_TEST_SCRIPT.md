@@ -1,6 +1,6 @@
 # V1 Live Test Script
 **Target**: Verify identity pipeline and TaskCard modal flow with real data
-**Updated**: 2025-12-02 R4 - P0 Regression Fixes
+**Updated**: 2025-12-02 R5 - Runtime Regression Fixes
 
 ---
 
@@ -17,10 +17,12 @@
    - `profileAvatarUrl` shows URL if avatar was set
 
 4. Open ProfileEditModal (click avatar in header/menu)
-5. Change display name to something unique (e.g., "TestR4-[timestamp]")
+5. Change display name to something unique (e.g., "TestR5-[timestamp]")
 6. Click Save
 7. Watch console for:
    - `[ProfileEditModal] About to call refreshProfile`
+   - `[useAuth] Force refreshing profile for user: ...`
+   - `[useAuth] Profile refreshed successfully: ...`
    - `[ProfileEditModal] refreshProfile completed`
    - `[Layout] Identity state:` should show NEW display_name
 
@@ -28,17 +30,17 @@
 - [ ] Header immediately shows new name after save
 - [ ] Mobile menu shows new name after save
 - [ ] No page reload occurred (modal just closes)
-- [ ] Console logs confirm profile refresh
+- [ ] Console logs confirm complete refresh chain
 
 ---
 
-### P0-2: TaskCard Click → Modal
+### P0-2: TaskCard Click → Modal (Desktop)
 
 **Test Steps**:
 1. Go to Dashboard (/)
 2. Ensure at least one task card is visible
 3. Open DevTools Console (F12)
-4. Click/tap on any TaskCard
+4. Click on any TaskCard
 
 **Expected Console Output**:
 ```
@@ -52,14 +54,40 @@
 - [ ] Clicking backdrop closes modal
 - [ ] Clicking Close button closes modal
 
-5. Go to IssuedPage (/issued)
-6. Ensure at least one task card is visible
-7. Click/tap on any TaskCard
+---
+
+### P0-3: TaskCard Tap → Modal (Mobile)
+
+**Test Steps**:
+1. Go to Dashboard on mobile device or Chrome DevTools mobile emulation
+2. Ensure at least one task card is visible
+3. Open DevTools Console (F12)
+4. TAP on any TaskCard
+
+**Expected Console Output**:
+```
+[TaskCard] Touch end on inner div, expanding task: [uuid]
+```
 
 **Pass Criteria**:
-- [ ] Same console log appears
+- [ ] Console log appears on tap
+- [ ] Modal opens (may have slight delay of ~50ms)
+- [ ] Swiping left should still trigger archive (if applicable)
+
+---
+
+### P0-4: IssuedPage Card Interaction
+
+**Test Steps**:
+1. Go to IssuedPage (/issued)
+2. Ensure at least one task card is visible (under "Missions you have created")
+3. Click/tap on any TaskCard
+
+**Pass Criteria**:
+- [ ] Console log appears
 - [ ] Modal opens showing Creator View
 - [ ] If task is in "review" status, Approve/Reject buttons visible
+- [ ] Edit/Delete available for pending tasks
 - [ ] Modal closes properly
 
 ---
@@ -239,6 +267,7 @@
 **TaskCard Modal Flow**:
 ```
 [TaskCard] Inner div clicked, expanding task: [uuid]
+[TaskCard] Touch end on inner div, expanding task: [uuid]
 [UIContext] activeLayer: modal isMobileMenuOpen: false
 ```
 
@@ -250,26 +279,55 @@
 
 ---
 
-## Common Issues & Fixes (Updated R4)
+## P1 VISUAL CHECKS
 
-| Symptom | Cause | Fix Applied |
-|---------|-------|-------------|
-| Name doesn't update in header | Profile null or display_name null | Added unified displayName with fallback chain |
-| Avatar shows old image | Browser cache | Added cache-busting via `?v=updated_at` |
-| TaskCard doesn't open modal | swipeHandlers intercepting clicks | Added explicit onClick to inner div |
-| Mobile menu conflicts with modal | Layer management issue | UIContext coordinates layers |
-| Header shows email | profile.display_name is falsy | Fallback chain: profile → user_metadata → email |
+### P1-1: Store Token Display
+
+**Test Steps**:
+1. Go to Rewards Store (/rewards-store)
+2. Look at the Credits Summary section at the top
+
+**Pass Criteria**:
+- [ ] Only ONE coin icon visible (spinning, from CreditDisplay)
+- [ ] Number + coin are clearly separated, not overlapping
+- [ ] Balance is readable
+
+### P1-2: My Bounties Layout
+
+**Test Steps**:
+1. Go to Rewards Store → "Created" tab (My Bounties)
+2. Look at any reward card
+
+**Pass Criteria**:
+- [ ] Cost shows as "Cost: [number] 🪙"
+- [ ] Edit and Delete buttons are side-by-side with proper spacing
+- [ ] Number doesn't overlap with coin
+
+---
+
+## Common Issues & Fixes (Updated R5)
+
+| Symptom | Cause | Fix Applied (R5) |
+|---------|-------|------------------|
+| Name doesn't update in header | Profile null or display_name null | Unified displayName with fallback chain |
+| Avatar shows old image | Browser cache | Cache-busting via `?v=updated_at` |
+| TaskCard click does nothing (desktop) | `trackMouse: true` intercepting | Removed trackMouse from swipeHandlers |
+| TaskCard tap does nothing (mobile) | Touch events not handled | Added explicit `onTouchEnd` handler |
+| Store shows double coin | Static emoji + CreditDisplay | Removed static emoji |
+| Header shows email | profile.display_name is falsy | Fallback: profile → user_metadata → email |
+| Mobile menu conflicts | Layer management | UIContext coordinates layers |
 
 ---
 
 ## Sign-Off
 
 - [ ] **P0-1: Identity Pipeline PASSES**
-- [ ] **P0-2: TaskCard Click → Modal PASSES**
-- [ ] All Test 1 steps pass
-- [ ] All Test 2 steps pass
-- [ ] All Test 3 steps pass
-- [ ] All Test 4 steps pass
+- [ ] **P0-2: TaskCard Click (Desktop) PASSES**
+- [ ] **P0-3: TaskCard Tap (Mobile) PASSES**
+- [ ] **P0-4: IssuedPage Cards PASS**
+- [ ] **P1-1: Store Token Display PASSES**
+- [ ] **P1-2: My Bounties Layout PASSES**
+- [ ] All detailed test steps pass
 - [ ] All Test 5 steps pass
 
 **Tester**: _____________
