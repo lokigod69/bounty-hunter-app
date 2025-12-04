@@ -53,8 +53,8 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
       >
         {selectedFriendProfile ? (
           <div className="flex items-center gap-3">
-            <img 
-              src={selectedFriendProfile.avatar_url || '/default-avatar.png'} 
+            <img
+              src={selectedFriendProfile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(selectedFriendProfile.email || 'user')}`}
               alt={selectedFriendProfile.display_name || 'user avatar'}
               className="w-8 h-8 rounded-full"
             />
@@ -85,8 +85,8 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
                     role="option"
                     aria-selected={selectedFriend === friend.id}
                   >
-                    <img 
-                      src={friend.avatar_url || '/default-avatar.png'} 
+                    <img
+                      src={friend.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(friend.email || 'user')}`}
                       alt={friend.display_name || 'user avatar'}
                       className="w-8 h-8 rounded-full"
                     />

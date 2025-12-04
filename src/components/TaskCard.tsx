@@ -404,13 +404,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
         getOverlayRoot() // Phase 2: Portal into overlay-root (tooltips can use overlay-root too)
       )}
 
+      {/*
+        R6 FIX: Simplified click handling
+        - Removed swipeHandlers from click path - was interfering with touch/click events
+        - Single click handler on BaseCard only
+        - Swipe for archive is a nice-to-have, prioritizing core click functionality
+      */}
       <BaseCard
         variant="glass"
         className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor} p-4 sm:p-5`}
         hover={true}
-        onClick={() => {
-          console.log('[TaskCard] Card clicked, expanding task:', id);
-          setIsExpanded(true);
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('[TaskCard] BaseCard clicked, expanding task:', id, 'isExpanded:', isExpanded);
+          if (!isExpanded) {
+            setIsExpanded(true);
+          }
         }}
         role="button"
         tabIndex={0}
@@ -423,29 +433,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         aria-label={`View details for task: ${title}`}
       >
         <div
-          {...swipeHandlers}
           className="min-h-[60px] flex flex-col"
-          onClick={(e) => {
-            // Explicit click handler on inner div - belt-and-suspenders fix
-            // This ensures clicks work even if swipeable handlers intercept
-            e.stopPropagation(); // Prevent double-firing from BaseCard onClick
-            console.log('[TaskCard] Inner div clicked, expanding task:', id);
-            setIsExpanded(true);
-          }}
-          onTouchEnd={(e) => {
-            // Explicit touch handler for mobile - some mobile browsers have click issues
-            // Only trigger if this wasn't a swipe (swipe handlers will have been invoked already)
-            const touch = e.changedTouches?.[0];
-            if (touch) {
-              console.log('[TaskCard] Touch end on inner div, expanding task:', id);
-              // Small delay to let swipe handlers complete first
-              setTimeout(() => {
-                if (!isExpanded) {
-                  setIsExpanded(true);
-                }
-              }, 50);
-            }
-          }}
         >
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">

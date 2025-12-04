@@ -88,6 +88,10 @@ export default function Layout() {
   const avatarUrl = avatarUrlBase
     ? `${avatarUrlBase}${avatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
+
+  // R6: Log every render to trace identity propagation issues
+  console.log('[Layout] RENDER:', { displayName, hasAvatar: !!avatarUrlBase, hasProfile: !!profile });
+
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);

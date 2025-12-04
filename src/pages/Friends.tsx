@@ -52,9 +52,13 @@ export default function Friends() {
 
   const myAvatarUrlBase = profile?.avatar_url ?? null;
   const myAvatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
+  // R6 FIX: Use actual avatar placeholder, not non-existent /default-avatar.png
   const myAvatarUrl = myAvatarUrlBase
     ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
-    : '/default-avatar.png';
+    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
+
+  // R6: Log identity for debugging
+  console.log('[Friends] Current user identity:', { myDisplayName, myAvatarUrl: myAvatarUrl?.substring(0, 50), hasProfile: !!profile });
 
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -299,9 +303,9 @@ export default function Friends() {
                   </h3>
                   {partnerState.partnerProfile && (
                     <div className="flex items-center justify-center gap-3 mb-6">
-                      <img 
-                        src={partnerState.partnerProfile.avatar_url || '/default-avatar.png'} 
-                        alt={partnerState.partnerProfile.display_name || 'partner'} 
+                      <img
+                        src={partnerState.partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(partnerState.partnerProfile.email || 'partner')}`}
+                        alt={partnerState.partnerProfile.display_name || 'partner'}
                         className="w-16 h-16 rounded-full border-2 border-teal-400"
                       />
                       <div className="text-left">
@@ -338,9 +342,9 @@ export default function Friends() {
               <BaseCard>
                 <div className="text-center py-8">
                   <div className="flex items-center justify-center gap-4 mb-6">
-                    <img 
-                      src={partnerState.partnerProfile.avatar_url || '/default-avatar.png'} 
-                      alt={partnerState.partnerProfile.display_name || 'partner'} 
+                    <img
+                      src={partnerState.partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(partnerState.partnerProfile.email || 'partner')}`}
+                      alt={partnerState.partnerProfile.display_name || 'partner'}
                       className="w-24 h-24 rounded-full border-4 border-teal-400"
                     />
                     <Heart size={32} className="text-teal-400" />
@@ -402,9 +406,9 @@ export default function Friends() {
                         className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={userResult.avatar_url || '/default-avatar.png'} 
-                            alt={userResult.display_name || 'user avatar'} 
+                          <img
+                            src={userResult.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(userResult.email || 'user')}`}
+                            alt={userResult.display_name || 'user avatar'}
                             className="w-10 h-10 rounded-full"
                           />
                           <span className="font-medium">{userResult.display_name}</span>
@@ -472,9 +476,9 @@ export default function Friends() {
                     className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={userResult.avatar_url || '/default-avatar.png'} 
-                        alt={userResult.display_name || 'user avatar'} 
+                      <img
+                        src={userResult.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(userResult.email || 'user')}`}
+                        alt={userResult.display_name || 'user avatar'}
                         className="w-10 h-10 rounded-full"
                       />
                       <span className="font-medium">{userResult.display_name}</span>
