@@ -37,14 +37,13 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
 
   // Phase 2: Use UIContext to coordinate overlay layers and scroll locking
+  // R7 FIX: Only setup overlay when THIS modal is open. Don't call clearLayer in else branch
+  // as it would cancel other modals (e.g., TaskCard expansion) when this component re-renders.
   useEffect(() => {
-    if (isOpen) {
-      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-    } else {
-      clearLayer();
-    }
+    if (!isOpen) return; // Early exit - no effect if not open
+    openModal();
     return () => {
-      clearLayer(); // Phase 2: Cleanup on unmount
+      clearLayer(); // Only cleanup when THIS modal closes
     };
   }, [isOpen, openModal, clearLayer]);
 

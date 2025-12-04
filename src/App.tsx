@@ -22,7 +22,7 @@ import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed 
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import Onboarding from './pages/Onboarding'; // P2: First-Time Experience onboarding flow
 import FTXGate from './components/FTXGate'; // P2: First-Time Experience gate
-import { useAuth } from './hooks/useAuth';
+import { useAuth, AuthProvider } from './context/AuthContext'; // R6: Use shared context
 import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -59,7 +59,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <SessionContextProvider supabaseClient={supabase}>
-      <ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
         <UIProvider>
           <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -98,7 +99,8 @@ export default function App() {
             </Routes>
           </BrowserRouter>
         </UIProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </SessionContextProvider>
   );
 }

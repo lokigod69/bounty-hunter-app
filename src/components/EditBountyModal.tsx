@@ -51,12 +51,13 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
     }
   }, [bounty]);
 
+  // R7 FIX: Only setup overlay when THIS modal is open
   useEffect(() => {
-    if (isOpen) {
-      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-    } else {
+    if (!isOpen) return;
+    openModal();
+    return () => {
       clearLayer();
-    }
+    };
   }, [isOpen, openModal, clearLayer]);
 
   const validateImageUrl = (url: string) => {

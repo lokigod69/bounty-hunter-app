@@ -31,12 +31,13 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 }) => {
   const { openCriticalOverlay, clearLayer } = useUI();
 
+  // R7 FIX: Only setup overlay when THIS modal is open
   useEffect(() => {
-    if (isOpen) {
-      openCriticalOverlay(); // Phase 2: Use UIContext for critical overlay coordination
-    } else {
+    if (!isOpen) return;
+    openCriticalOverlay();
+    return () => {
       clearLayer();
-    }
+    };
   }, [isOpen, openCriticalOverlay, clearLayer]);
 
   if (!isOpen) {

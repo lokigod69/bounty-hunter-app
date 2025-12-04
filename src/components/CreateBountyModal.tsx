@@ -70,12 +70,13 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
     }
   };
 
+  // R7 FIX: Only setup overlay when THIS modal is open
   useEffect(() => {
-    if (isOpen) {
-      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-    } else {
-      clearLayer(); // Phase 2: Clear layer when modal closes
-    }
+    if (!isOpen) return;
+    openModal();
+    return () => {
+      clearLayer();
+    };
   }, [isOpen, openModal, clearLayer]);
 
   if (!isOpen) return null;

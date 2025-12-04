@@ -31,12 +31,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 }) => {
   const { openModal, clearLayer } = useUI();
 
+  // R7 FIX: Only setup overlay when THIS modal is open
   useEffect(() => {
-    if (isOpen) {
-      openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-    } else {
+    if (!isOpen) return;
+    openModal();
+    return () => {
       clearLayer();
-    }
+    };
   }, [isOpen, openModal, clearLayer]);
 
   if (!isOpen) return null;
