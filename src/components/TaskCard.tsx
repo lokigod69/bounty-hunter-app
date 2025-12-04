@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 
-import { Archive, CheckCircle, CircleDollarSign, Clock, Eye, FileText, Link, Trash2, XCircle, User } from 'lucide-react';
+import { Archive, CheckCircle, Clock, Eye, Link, User } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { IssuedContract } from '../hooks/useIssuedContracts';
 import { useTasks } from '../hooks/useTasks';
@@ -32,6 +32,8 @@ import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for d
 import { isValidUrl, safeUrlRender } from '../lib/proofConfig';
 
 import ProofModal from './ProofModal';
+import MissionModalShell from './modals/MissionModalShell';
+import { mapTaskStatusToModalState, ModalRole } from '../theme/modalTheme';
 import './TaskCard.css'; // Import custom CSS for TaskCard
 
 interface TaskCardProps {
@@ -118,8 +120,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [showProofModal, setShowProofModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-  const [viewingProof, setViewingProof] = useState(false);
 
   const { t } = useTranslation();
 
@@ -144,13 +144,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
     setTooltipContent(null);
   };
 
+  // R9: Simplified handleClose - MissionModalShell handles its own animation
   const handleClose = () => {
-    setIsAnimatingOut(true);
-    setTimeout(() => {
-      setIsExpanded(false);
-      setIsAnimatingOut(false);
-      clearLayer(); // Phase 2: Clear overlay layer when modal closes
-    }, 300);
+    setIsExpanded(false);
+    clearLayer();
   };
 
   // Phase 2: Sync expanded state with UIContext
@@ -291,10 +288,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
     );
   };
 
+  // R9: handleViewProof simplified - viewingProof state removed
   const handleViewProof = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log('[TaskCard] View proof clicked for task:', task.id);
-    
+
     if (!task.proof_url) {
       console.error('[TaskCard] No proof URL available for task:', task.id);
       toast.error(t('errorViewing'), { duration: 4000 });
@@ -302,60 +300,38 @@ const TaskCard: React.FC<TaskCardProps> = ({
     }
 
     try {
-      setViewingProof(true);
-      
-      // Enhanced proof URL validation using centralized helper
-      const proofUrl = task.proof_url!; // Non-null assertion since we checked above
-      
-      // Validate URL format using centralized helper
+      const proofUrl = task.proof_url;
+
       if (!isValidUrl(proofUrl)) {
         console.error('[TaskCard] Invalid proof URL format:', proofUrl);
         toast.error(t('errorViewing') + ' - Invalid proof URL', { duration: 6000 });
         return;
       }
-      
-      // Log for debugging
+
       console.log('[TaskCard] Opening proof URL:', proofUrl);
-      
+
       try {
-        // Try to fetch the URL to verify it's accessible
         const response = await fetch(proofUrl, { method: 'HEAD' });
         if (!response.ok) {
           throw new Error(`Proof file not accessible: ${response.status} ${response.statusText}`);
         }
-        
-        // Open in new tab/window
+
         window.open(proofUrl, '_blank', 'noopener,noreferrer');
-        
-        // Play success sound
         soundManager.play('click1');
-        
+
       } catch (urlError) {
         console.error('[TaskCard] Proof URL not accessible:', proofUrl, urlError);
         toast.error(t('errorViewing') + ' - Proof file not accessible', { duration: 6000 });
       }
-      
+
     } catch (error) {
       console.error('[TaskCard] Error viewing proof:', error);
       const errorMessage = getErrorMessage(error, 'proof-viewing');
       toast.error(errorMessage, { duration: 6000 });
-    } finally {
-      setViewingProof(false);
     }
   }, [task.id, task.proof_url, t]);
 
-  const renderActionButtonsInModal = () => {
-    if (isArchived) return null;
-    if (status === 'completed') return null;
-
-    if (!isCreatorView && assigned_to === user?.id) {
-      if ((status === 'pending' || status === 'in_progress')) {
-        // Always show proof modal for "Complete Task" - allows text or file proof
-        return <button onClick={(e) => { e.stopPropagation(); setShowProofModal(true); }} className="btn-primary py-2 px-8 text-md" disabled={actionLoading}>{actionLoading ? 'Submitting...' : 'Complete Task'}</button>;
-      }
-    }
-    return null;
-  };
+  // R9: renderActionButtonsInModal removed - actions now handled by MissionModalShell
 
   const collapsedCardBgColor = isArchived
     ? 'bg-slate-700/20 border-slate-600/50 hover:border-slate-500'
@@ -365,19 +341,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
     ? 'bg-yellow-500/10 border-yellow-500/50 hover:border-yellow-400'
     : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
 
-  const modalBgColor = isArchived
-    ? 'bg-slate-900 border-2 border-slate-700'
-    : status === 'pending'
-    ? 'bg-red-900 border-2 border-red-500'
-    : status === 'in_progress'
-    ? 'bg-blue-900 border-2 border-blue-500'
-    : status === 'review'
-    ? 'bg-yellow-900 border-2 border-yellow-500'
-    : status === 'completed'
-    ? 'bg-green-900 border-2 border-green-500'
-    : status === 'rejected'
-    ? 'bg-rose-900 border-2 border-rose-500'
-    : 'bg-slate-800 border border-slate-700';
+  // R9: Map task status to modal state for MissionModalShell
+  const modalState = mapTaskStatusToModalState(status, isArchived, deadline);
+  const modalRole: ModalRole = isCreatorView ? 'creator' : 'assignee';
 
   const titleColorClass = isArchived
     ? 'text-slate-500'
@@ -495,147 +461,101 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </BaseCard>
 
-      {isExpanded && createPortal(
-        <div 
-          data-overlay="TaskCardExpanded"
-          className={`fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 ${isAnimatingOut ? 'modal-fade-out' : 'modal-fade-in'}`}
-          onClick={() => {
-            console.log("[TaskCardModal] Backdrop clicked, closing");
-            handleClose();
-          }}
-        >
-          <div 
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
-            onClick={handleClose}
-          />
-          <div
-            className={`relative z-modal-content w-[95vw] sm:w-full max-w-2xl shadow-2xl rounded-lg p-6 max-h-[90vh] flex flex-col ${isAnimatingOut ? 'modal-slide-down' : 'modal-slide-up'} ${modalBgColor}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-6 pb-4 border-b border-slate-600/50 flex-shrink-0 text-center">
-              <h3 className="text-3xl sm:text-4xl font-bold text-slate-100 break-words max-w-full overflow-hidden font-mandalore" title={title}>{title}</h3>
-              <p className="text-md text-slate-400 mt-2 flex items-center justify-center">
-                <User size={18} className="mr-2" /> {isCreatorView ? actorName : fromName}
-              </p>
+      {/* R9: Use MissionModalShell for expanded view */}
+      <MissionModalShell
+        isOpen={isExpanded}
+        onClose={handleClose}
+        mode={theme.id}
+        role={modalRole}
+        state={modalState}
+        title={title}
+        description={description || 'No further details provided for this mission.'}
+        fromUser={creator ? { name: creator.display_name || 'Unknown', avatar: creator.avatar_url || undefined } : undefined}
+        toUser={assignee ? { name: assignee.display_name || 'Unknown', avatar: assignee.avatar_url || undefined } : undefined}
+        reward={reward_text ? {
+          type: reward_type === 'credit' ? 'credit' : task.image_url ? 'image' : 'text',
+          value: reward_type === 'credit' ? parseInt(reward_text, 10) : reward_text,
+          imageUrl: task.image_url || undefined,
+        } : undefined}
+        isDaily={task.is_daily}
+        streakCount={streakCount}
+        // Actions based on role and state
+        primaryAction={
+          // Assignee: Complete Task button (for pending/in_progress)
+          !isCreatorView && (status === 'pending' || status === 'in_progress') && !isArchived
+            ? {
+                label: actionLoading ? 'Submitting...' : 'Complete Task',
+                onClick: () => setShowProofModal(true),
+                loading: actionLoading,
+              }
+            // Creator in review: Approve button
+            : isCreatorView && status === 'review'
+            ? {
+                label: actionLoading ? 'Processing...' : 'Approve',
+                onClick: () => onApprove && onApprove(id),
+                loading: actionLoading,
+                variant: 'success',
+              }
+            : undefined
+        }
+        secondaryAction={
+          // Creator in review: Reject button
+          isCreatorView && status === 'review'
+            ? {
+                label: actionLoading ? 'Processing...' : 'Reject',
+                onClick: () => onReject && onReject(id),
+                loading: actionLoading,
+                variant: 'danger',
+              }
+            : undefined
+        }
+        deleteAction={
+          isCreatorView && !isArchived
+            ? {
+                onClick: () => {
+                  handleClose();
+                  onDeleteTaskRequest(id);
+                },
+                loading: actionLoading,
+              }
+            : undefined
+        }
+      >
+        {/* Proof section for assignee (viewing submitted proof) */}
+        {task.proof_url && ['review', 'completed', 'archived'].includes(status) && !isCreatorView && (
+          <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center text-white/60 mb-3 justify-center">
+              <Eye size={16} className="mr-2 text-indigo-400" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Submitted Proof</span>
             </div>
-
-            <div className="flex-1 space-y-6 mb-6 overflow-y-auto overflow-x-hidden pr-2" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
-              <div className="py-4 px-4 rounded-lg bg-slate-800/40 border border-slate-700/60 flex items-center justify-between w-full text-base">
-                <div
-                  className="flex items-center flex-shrink-0 mr-4"
-                  onMouseEnter={(e) => handleShowTooltip(deadline ? <CountdownTimer deadline={deadline} baseColor='text-purple-400' /> : <span className="text-slate-500">Not set</span>, e.currentTarget)}
-                  onMouseLeave={handleHideTooltip}
-                >
-                  <Clock size={24} className="text-purple-400 flex-shrink-0" />
-                </div>
-                <div className="flex-grow text-center mx-4 min-w-0">
-                  <p className="text-sm text-slate-300 whitespace-normal break-words task-card-description">
-                    <FileText size={20} className="mr-2 text-sky-400 inline-block relative -top-px" /> {description || 'No further details provided for this mission.'}
-                  </p>
-                </div>
-                <div
-                  className="flex items-center flex-shrink-0 ml-4"
-                  onMouseEnter={(e) => handleShowTooltip(status ? (status === 'pending' ? (deadline && new Date(deadline) < new Date() ? 'OVERDUE' : 'OPEN') : status.replace('_', ' ').toUpperCase()) : 'UNKNOWN', e.currentTarget)}
-                  onMouseLeave={handleHideTooltip}
-                >
-                  {status === 'pending' ? <CircleDollarSign size={24} className="text-red-400 flex-shrink-0" /> : status === 'review' ? <Eye size={24} className="text-yellow-400 flex-shrink-0" /> : status === 'completed' ? <CheckCircle size={24} className="text-green-400 flex-shrink-0" /> : <XCircle size={24} className="text-slate-400 flex-shrink-0" />}
-                </div>
-              </div>
-
-              <div className="py-4 rounded-lg bg-slate-700/30 border border-slate-600/50 text-center w-3/4 mx-auto overflow-x-hidden">
-                {reward_text ? (
-                  <div className="flex flex-col items-center justify-center min-h-[50px]">
-                    {reward_type === 'credit' ? (
-                      <div className="flex items-center justify-center py-1" data-testid="mission-cost">
-                        <DoubleCoinValue value={parseInt(reward_text || '0', 10)} />
-                      </div>
-                    ) : task.image_url ? (
-                      <div className="relative w-48 h-48 group mx-auto">
-                        <img src={task.image_url} alt={reward_text || 'Reward'} className="w-full h-full object-cover rounded-lg border-2 border-slate-600" />
-                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-black/70 p-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-lg">
-                          <span className="text-white text-center text-sm font-semibold break-words">{reward_text}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-2xl font-bold py-1 px-3 break-all max-w-full relative overflow-hidden flex items-center justify-center">
-                        <span className="animate-pulsate-present mr-2">🎁</span> 
-                        <RewardTextWithShimmer rewardText={reward_text} />
-                      </div>
-                    )}
-                  </div>
-                ) : <span className="text-slate-400 text-lg">No bounty specified</span>}
-              </div>
-
-              {task.proof_url && ['review', 'completed', 'archived'].includes(status) && !isCreatorView && (
-                <div className="py-4 px-4 mt-1 rounded-lg bg-slate-800/40 border border-slate-700/60 w-2/3 mx-auto">
-                  <div className="flex items-center text-slate-400 mb-3 justify-center">
-                    <Eye size={18} className="mr-2 text-indigo-400" />
-                    <span className="font-semibold">SUBMITTED PROOF</span>
-                  </div>
-                  <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {task.proof_url && renderProofLink(task.proof_url!, 'proof-link')}
-                  </div>
-                </div>
-              )}
-
-              {isCreatorView && status === 'review' && task.proof_url && (
-                <div className="py-4 px-4 mt-1 rounded-lg bg-slate-800/40 border border-slate-700/60 w-2/3 mx-auto">
-                  <div className="flex items-center justify-center text-slate-400 mb-3">
-                    <Eye size={18} className="mr-2 text-indigo-400" />
-                    <span className="font-semibold">PROOF FOR REVIEW</span>
-                  </div>
-                  <div className="rounded-md bg-slate-900/50 p-3 border border-slate-700 text-center">
-                    {task.proof_url && renderProofLink(task.proof_url!, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-base font-semibold py-2 px-4 rounded-md transition-colors duration-150 ease-in-out hover:bg-teal-700/20', true)}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="mt-auto pt-6 flex flex-col gap-4">
-              {isCreatorView && status === 'review' && (
-                <div className="flex justify-center gap-4">
-                  <button 
-                    onClick={() => onApprove && onApprove(id)} 
-                    className="btn-success flex-1 py-2 text-lg min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed" 
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? 'Processing...' : 'Approve'}
-                  </button>
-                  <button 
-                    onClick={() => onReject && onReject(id)} 
-                    className="btn-danger flex-1 py-2 text-lg min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed" 
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? 'Processing...' : 'Reject'}
-                  </button>
-                </div>
-              )}
-
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-full flex justify-center">
-                  {renderActionButtonsInModal()}
-                </div>
-                <button onClick={handleClose} className="btn-secondary py-2 px-8 text-md">Close</button>
-                {isCreatorView && !isArchived && (
-                  <button
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      handleClose(); // Close the TaskCard modal first
-                      onDeleteTaskRequest(id); 
-                    }}
-                    className="p-2 rounded-full hover:bg-red-500/20 transition-colors duration-200"
-                    disabled={actionLoading}
-                    title="Delete Task"
-                  >
-                    <Trash2 size={20} className="text-slate-400 hover:text-red-400" />
-                  </button>
-                )}
-              </div>
+            <div className="text-center">
+              {renderProofLink(task.proof_url!, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-sm font-medium')}
             </div>
           </div>
-        </div>,
-        getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
-      )}
+        )}
+
+        {/* Proof section for creator (reviewing proof) */}
+        {isCreatorView && status === 'review' && task.proof_url && (
+          <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center justify-center text-white/60 mb-3">
+              <Eye size={16} className="mr-2 text-indigo-400" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Proof for Review</span>
+            </div>
+            <div className="text-center">
+              {renderProofLink(task.proof_url!, 'inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 underline text-sm font-medium py-2 px-4 rounded-lg hover:bg-teal-500/10 transition-colors', true)}
+            </div>
+          </div>
+        )}
+
+        {/* Deadline info */}
+        {deadline && (
+          <div className="mt-4 flex items-center justify-center gap-2 text-white/50 text-sm">
+            <Clock size={14} />
+            <span>Deadline: </span>
+            <CountdownTimer deadline={deadline} baseColor="text-white/70" />
+          </div>
+        )}
+      </MissionModalShell>
 
       {showProofModal && createPortal(
         <ProofModal

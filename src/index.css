@@ -1882,3 +1882,156 @@ body {
 }
 
 /* End of Unified Shimmer System */
+
+/* =============================================================================
+   R9: MISSION MODAL SHELL ANIMATIONS & TOKENS
+   ============================================================================= */
+
+/* Modal CSS Custom Properties */
+:root {
+  /* Modal Shell Tokens */
+  --modal-bg: rgba(12, 18, 40, 0.92);
+  --modal-border: rgba(255, 255, 255, 0.1);
+  --modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --modal-radius: 16px;
+  --modal-blur-desktop: 24px;
+  --modal-blur-mobile: 16px;
+
+  /* Semantic Colors for States */
+  --color-success: #22c55e;
+  --color-success-rgb: 34, 197, 94;
+  --color-warning: #f59e0b;
+  --color-warning-rgb: 245, 158, 11;
+  --color-danger: #ef4444;
+  --color-danger-rgb: 239, 68, 68;
+  --color-info: #8b5cf6;
+  --color-info-rgb: 139, 92, 246;
+
+  /* Default mode colors (Guild) - can be overridden via data-mode */
+  --mode-accent: #20F9D2;
+  --mode-accent-rgb: 32, 249, 210;
+  --mode-accent-soft: rgba(32, 249, 210, 0.12);
+  --mode-accent-muted: rgba(32, 249, 210, 0.5);
+}
+
+/* Mode-specific color overrides */
+[data-mode="family"] {
+  --mode-accent: #F5D76E;
+  --mode-accent-rgb: 245, 215, 110;
+  --mode-accent-soft: rgba(245, 215, 110, 0.12);
+  --mode-accent-muted: rgba(245, 215, 110, 0.5);
+}
+
+[data-mode="couple"] {
+  --mode-accent: #FF6FAE;
+  --mode-accent-rgb: 255, 111, 174;
+  --mode-accent-soft: rgba(255, 111, 174, 0.12);
+  --mode-accent-muted: rgba(255, 111, 174, 0.5);
+}
+
+/* === MODAL ANIMATIONS === */
+
+/* Fade animations */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: modal-fade-in 0.2s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: modal-fade-out 0.15s ease-in forwards;
+}
+
+/* Mobile: Bottom-sheet slide-up animation */
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+.animate-modal-slide-up {
+  animation: modal-slide-up 0.25s ease-out forwards;
+}
+
+.animate-modal-slide-down {
+  animation: modal-slide-down 0.2s ease-in forwards;
+}
+
+/* Desktop: Scale-up animation */
+@keyframes modal-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-scale-down {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.animate-modal-scale-up {
+  animation: modal-scale-up 0.2s ease-out forwards;
+}
+
+.animate-modal-scale-down {
+  animation: modal-scale-down 0.15s ease-in forwards;
+}
+
+/* Reduced motion support for modal animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-modal-slide-up,
+  .animate-modal-slide-down,
+  .animate-modal-scale-up,
+  .animate-modal-scale-down,
+  .animate-fade-in,
+  .animate-fade-out {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* End of R9 Modal System */
