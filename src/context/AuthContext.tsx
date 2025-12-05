@@ -102,7 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const profileData = await ensureProfileForUser(supabase, session.user);
 
-        if (cancelled) return;
+        if (cancelled) {
+          console.log('[AuthContext] Profile load cancelled, ignoring result');
+          return;
+        }
 
         if (profileData) {
           console.log('[AuthContext] Profile loaded successfully:', {
@@ -118,18 +121,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfileError(null);
         }
       } catch (err) {
-        if (cancelled) return;
+        if (cancelled) {
+          console.log('[AuthContext] Profile load error ignored (cancelled)');
+          return;
+        }
 
         const error = err instanceof Error ? err : new Error(String(err));
         console.error('[AuthContext] Error loading profile:', error);
         setProfileError(error);
         setProfile(null);
       } finally {
-        if (!cancelled) {
-          console.log('[AuthContext] Profile loading complete');
-          setProfileLoading(false);
-          ensuringUserIdRef.current = null;
-        }
+        // R12 FIX: Always set profileLoading to false and reset ref
+        // Previously, if cancelled=true, profileLoading stayed stuck at true
+        console.log('[AuthContext] Profile loading complete, cancelled:', cancelled);
+        setProfileLoading(false);
+        ensuringUserIdRef.current = null;
       }
     }
 

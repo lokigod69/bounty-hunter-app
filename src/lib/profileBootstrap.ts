@@ -10,19 +10,26 @@ export async function ensureProfileForUser(
   supabase: SupabaseClient,
   user: User
 ): Promise<Profile | null> {
-  console.log('[ensureProfile] enter', user.id);
+  // R12: Enhanced logging for debugging profile pipeline
+  console.log('[ensureProfile] enter', {
+    userId: user.id,
+    userEmail: user.email,
+    hasMetadata: !!user.user_metadata
+  });
 
   try {
     // 1. Try to load existing profile
+    console.log('[ensureProfile] Querying profiles table...');
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();   // Returns null data when no row found, not an error
 
-    console.log('[ensureProfile] select result', { 
-      hasData: !!profile, 
-      error: error ? { code: error.code, message: error.message } : null 
+    console.log('[ensureProfile] select result', {
+      hasData: !!profile,
+      displayName: profile?.display_name,
+      error: error ? { code: error.code, message: error.message, details: error.details } : null
     });
 
     // .maybeSingle() returns null data when no rows found, not an error
@@ -38,32 +45,34 @@ export async function ensureProfileForUser(
     }
 
     // 2. No profile exists → create default
-    console.log('[ensureProfile] No profile found, creating new one for user:', user.id);
-    
     const baseName =
       (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) ||
       (user.email ? user.email.split('@')[0] : 'New Hunter');
 
+    const insertPayload = {
+      id: user.id,
+      email: user.email || '',
+      display_name: baseName,
+      avatar_url: null,
+      role: null,
+    };
+
+    console.log('[ensureProfile] No profile found, creating:', insertPayload);
+
     const { data: inserted, error: insertError } = await supabase
       .from('profiles')
-      .insert({
-        id: user.id,
-        email: user.email || '',
-        display_name: baseName,
-        // Optional fields can be null/undefined
-        avatar_url: null,
-        role: null,
-      })
+      .insert(insertPayload)
       .select('*')
       .single();
 
-    console.log('[ensureProfile] insert result', { 
-      hasData: !!inserted, 
-      error: insertError ? { code: insertError.code, message: insertError.message } : null 
+    console.log('[ensureProfile] insert result', {
+      hasData: !!inserted,
+      insertedId: inserted?.id,
+      error: insertError ? { code: insertError.code, message: insertError.message, details: insertError.details } : null
     });
 
     if (insertError) {
-      console.error('[ensureProfile] insert error', insertError);
+      console.error('[ensureProfile] INSERT FAILED:', insertError);
       return null;
     }
 

@@ -97,18 +97,25 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      // R10: Enhanced logging before save
+      // R12: Enhanced logging before save
       console.log('[ProfileEditModal] Saving profile', {
         userId: user.id,
+        userEmail: user.email,
         display_name: displayName,
         avatar_url: avatarUrl?.substring(0, 50),
       });
 
-      // R10: Use upsert to handle both insert and update cases
+      // R12: Upsert must include `email` since it's required for INSERT
+      // If profile doesn't exist, upsert will INSERT which requires email
       const { data: upsertData, error: updateError } = await supabase
         .from('profiles')
         .upsert(
-          { id: user.id, display_name: displayName, avatar_url: avatarUrl },
+          {
+            id: user.id,
+            email: user.email || '',  // Required for INSERT
+            display_name: displayName || null,
+            avatar_url: avatarUrl || null,
+          },
           { onConflict: 'id' }
         )
         .select('*')
@@ -127,6 +134,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
           // RLS policy violation
           errorMessage = 'Profile update blocked by database security rules. Please contact support.';
           console.error('[ProfileEditModal] RLS policy violation - INSERT/UPDATE blocked on profiles table');
+        } else if (updateError.code === '23502') {
+          // NOT NULL violation - likely missing required field
+          errorMessage = 'Missing required profile data. Please try again.';
+          console.error('[ProfileEditModal] NOT NULL violation:', updateError.message);
         } else if (updateError.code === '23505') {
           // Unique constraint violation
           errorMessage = 'This profile already exists. Please try again.';
