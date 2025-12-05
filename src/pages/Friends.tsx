@@ -39,18 +39,20 @@ export default function Friends() {
   const { user, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
 
-  // R10: Log identity for debugging with hasProfile
-  console.log('[Friends] Current user identity:', {
+  // R10/R11: Enhanced logging for debugging profile/friends loading
+  const userIdForFriends = profile ? user?.id : undefined;
+  console.log('[Friends] Render state:', {
     userId: user?.id?.substring(0, 8),
     hasProfile: !!profile,
-    profileLoading
+    profileLoading,
+    willCallUseFriends: !!userIdForFriends,
   });
 
   // For Couple Mode, use partner state; for other modes, use friends
   const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
   // R10: Only call useFriends when profile is loaded to avoid subscribe issues
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(
-    profile ? user?.id : undefined
+    userIdForFriends
   );
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');

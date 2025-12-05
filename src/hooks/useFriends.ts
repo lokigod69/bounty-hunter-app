@@ -78,6 +78,13 @@ export function useFriends(userId: string | undefined) {
         }
       }
 
+      // R11: Log fetch results for debugging
+      console.log(`[useFriends] Fetch complete:`, {
+        acceptedFriends: acceptedFriends.length,
+        pendingReceived: received.length,
+        pendingSent: sent.length,
+      });
+
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
@@ -99,7 +106,9 @@ export function useFriends(userId: string | undefined) {
 
   // R8 FIX: Single useEffect for data fetching and subscription
   useEffect(() => {
+    // R11: Enhanced logging for debugging profile/friends loading issues
     if (!userId) {
+      console.log('[useFriends] No userId provided - clearing state and skipping subscription');
       setFriends([]);
       setPendingRequests([]);
       setSentRequests([]);
@@ -108,12 +117,13 @@ export function useFriends(userId: string | undefined) {
     }
 
     // Initial fetch
+    console.log(`[useFriends] Starting initial fetch for userId: ${userId.substring(0, 8)}...`);
     fetchFriendships(userId);
 
     // R8 FIX: Create unique channel name for this user to avoid conflicts
-    // R10: Added logging for debugging subscribe issues
+    // R10/R11: Enhanced logging for debugging subscribe issues
     const channelName = `friendships-${userId}`;
-    console.log(`[useFriends] subscribing to channel ${channelName}`);
+    console.log(`[useFriends] Setting up realtime channel: ${channelName}`);
 
     const channel = supabase
       .channel(channelName)

@@ -118,9 +118,25 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       console.log('[ProfileEditModal] Upsert result', { data: upsertData, error: updateError });
 
       if (updateError) {
-        toast.error(t('profile.saveError'), { id: toastId });
         console.error('[ProfileEditModal] Upsert error:', updateError);
-        return; // Don't proceed on error
+
+        // R11: Show specific error messages for known error codes
+        let errorMessage = t('profile.saveError');
+
+        if (updateError.code === '42501') {
+          // RLS policy violation
+          errorMessage = 'Profile update blocked by database security rules. Please contact support.';
+          console.error('[ProfileEditModal] RLS policy violation - INSERT/UPDATE blocked on profiles table');
+        } else if (updateError.code === '23505') {
+          // Unique constraint violation
+          errorMessage = 'This profile already exists. Please try again.';
+        } else if (updateError.code?.startsWith('4') || updateError.code?.startsWith('5')) {
+          // Other 4xx/5xx database errors
+          errorMessage = `Database error: ${updateError.message || 'Unknown error'}`;
+        }
+
+        toast.error(errorMessage, { id: toastId, duration: 6000 });
+        return; // Don't proceed on error - don't pretend save succeeded
       }
 
       soundManager.play('saveProfile');
@@ -139,9 +155,22 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
 
       // Close modal after successful save
       onClose();
-    } catch (err) {
-      console.error('Upload failed:', err);
-      toast.error(t('profile.saveError'), { id: toastId });
+    } catch (err: unknown) {
+      console.error('[ProfileEditModal] Operation failed:', err);
+
+      // R11: Better error messages for caught exceptions
+      let errorMessage = t('profile.saveError');
+
+      if (err && typeof err === 'object') {
+        const error = err as { code?: string; message?: string };
+        if (error.code === '42501') {
+          errorMessage = 'Profile update blocked by database security rules. Please contact support.';
+        } else if (error.message) {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+
+      toast.error(errorMessage, { id: toastId, duration: 6000 });
     } finally {
       setIsUploading(false);
     }
