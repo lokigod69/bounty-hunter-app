@@ -60,7 +60,7 @@ export interface RoleConfig {
 export const roleConfigByMode: Record<ThemeId, Record<ModalRole, RoleConfig>> = {
   guild: {
     assignee: { headerLabel: 'Your mission', headerIcon: 'Target' },
-    creator: { headerLabel: 'You issued this contract', headerIcon: 'Stamp' },
+    creator: { headerLabel: 'Your contract', headerIcon: 'Stamp' },
     store: { headerLabel: 'Bounty reward', headerIcon: 'Gift' },
   },
   family: {

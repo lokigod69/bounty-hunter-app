@@ -48,6 +48,7 @@ export interface NewTaskData {
 }
 import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
 import { useDailyQuote } from '../hooks/useDailyQuote';
+import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
@@ -356,11 +357,7 @@ export default function IssuedPage() {
             subtitle={t('contracts.myMissionsDescription')}
           />
 
-          {dailyQuote && (
-            <p className="mt-2 text-xs italic text-slate-500 border-l-2 border-teal-500 pl-2 mb-6">
-              &ldquo;{dailyQuote.text}&rdquo; - {dailyQuote.author}
-            </p>
-          )}
+          {/* R11: Moved quote to bottom of page for consistency */}
 
           {/* Enhanced Floating Action Button - only show when missions exist */}
           {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
@@ -432,6 +429,11 @@ export default function IssuedPage() {
                   />
                 ))}
               </div>
+            )}
+
+            {/* R11: Unified quote placement at bottom */}
+            {dailyQuote && (
+              <PageQuote text={dailyQuote.text} author={dailyQuote.author} />
             )}
           </PageBody>
 

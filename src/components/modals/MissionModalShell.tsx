@@ -319,17 +319,22 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
           style={{ overscrollBehavior: 'contain' }}
         >
-          {/* Two-column layout on desktop, stacked on mobile */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-            {/* Description Column - R10: max-height with scroll for long descriptions */}
-            <div className={reward ? 'sm:w-2/3' : 'w-full'}>
+          {/* R11: CSS Grid layout for aligned columns */}
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: isMobile
+                ? '1fr'
+                : reward
+                ? 'minmax(0, 2fr) minmax(0, 1fr)'
+                : '1fr',
+              maxHeight: isMobile ? '60vh' : '50vh',
+            }}
+          >
+            {/* Description Column */}
+            <div className="h-full flex flex-col">
               {description && (
-                <div
-                  className="p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
-                  style={{
-                    maxHeight: isMobile ? '50vh' : '40vh',
-                  }}
-                >
+                <div className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto">
                   <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
                     {description}
                   </p>
@@ -342,9 +347,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
             {/* Reward Column */}
             {reward && (
-              <div className="sm:w-1/3">
+              <div className="h-full">
                 <div
-                  className="p-4 rounded-xl text-center"
+                  className="h-full p-4 rounded-xl text-center flex flex-col justify-center"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,

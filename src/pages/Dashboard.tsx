@@ -22,7 +22,7 @@ import { AlertTriangle, CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, S
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import HuntersCreed from '../components/HuntersCreed';
+import { PageQuote } from '../components/layout/PageQuote';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { soundManager as sm } from '../utils/soundManager';
 import { PageContainer } from '../components/layout/PageContainer';
@@ -497,8 +497,10 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Hunter's Creed Section */}
-          <HuntersCreed quote={dailyQuote} />
+          {/* R11: Unified quote placement */}
+          {dailyQuote && (
+            <PageQuote text={dailyQuote.text} author={dailyQuote.author} />
+          )}
         </PageBody>
       </PageContainer>
     </PullToRefresh>

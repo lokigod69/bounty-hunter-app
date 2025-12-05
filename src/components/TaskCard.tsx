@@ -333,13 +333,15 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   // R9: renderActionButtonsInModal removed - actions now handled by MissionModalShell
 
+  // R11: Dark card backgrounds with subtle accent borders
+  // Changed from bright tinted backgrounds (bg-red-500/10) to dark unified surface
   const collapsedCardBgColor = isArchived
-    ? 'bg-slate-700/20 border-slate-600/50 hover:border-slate-500'
+    ? 'bg-slate-800/60 border-slate-600/40 hover:border-slate-500'
     : status === 'pending'
-    ? 'bg-red-500/10 border-red-500/50 hover:border-red-400'
+    ? 'bg-[#1a1625]/80 border-red-500/40 hover:border-red-400'
     : status === 'review'
-    ? 'bg-yellow-500/10 border-yellow-500/50 hover:border-yellow-400'
-    : 'bg-green-500/10 border-green-500/50 hover:border-green-400';
+    ? 'bg-[#1a1625]/80 border-yellow-500/40 hover:border-yellow-400'
+    : 'bg-[#1a1625]/80 border-green-500/40 hover:border-green-400';
 
   // R9: Map task status to modal state for MissionModalShell
   const modalState = mapTaskStatusToModalState(status, isArchived, deadline);
