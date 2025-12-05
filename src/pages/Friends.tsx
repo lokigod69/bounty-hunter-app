@@ -35,12 +35,23 @@ import { BaseCard } from '../components/ui/BaseCard';
 export default function Friends() {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { user, profile } = useAuth();
+  // R10: Use profileLoading to show skeleton while profile loads
+  const { user, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
+
+  // R10: Log identity for debugging with hasProfile
+  console.log('[Friends] Current user identity:', {
+    userId: user?.id?.substring(0, 8),
+    hasProfile: !!profile,
+    profileLoading
+  });
 
   // For Couple Mode, use partner state; for other modes, use friends
   const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
-  const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(user?.id);
+  // R10: Only call useFriends when profile is loaded to avoid subscribe issues
+  const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(
+    profile ? user?.id : undefined
+  );
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
 
@@ -57,8 +68,7 @@ export default function Friends() {
     ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
 
-  // R6: Log identity for debugging
-  console.log('[Friends] Current user identity:', { myDisplayName, myAvatarUrl: myAvatarUrl?.substring(0, 50), hasProfile: !!profile });
+  // R10: Removed duplicate log - now in single location above
 
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -211,6 +221,30 @@ export default function Friends() {
       await refreshFriends();
     }
   };
+
+  // R10: Show loading skeleton while profile loads
+  if (profileLoading) {
+    return (
+      <PageContainer>
+        <PageHeader title={theme.strings.friendsTitle} />
+        <PageBody>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-card p-5 animate-pulse">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-white/10 mr-4"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-white/10 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </PageBody>
+      </PageContainer>
+    );
+  }
 
   // For Couple Mode, show partner-specific UI
   if (theme.id === 'couple') {

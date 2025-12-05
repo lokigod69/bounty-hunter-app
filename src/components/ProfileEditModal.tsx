@@ -12,13 +12,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { UserCircle, UploadCloud, X, Volume2, VolumeX } from 'lucide-react';
+import { UserCircle, UploadCloud, X, Volume2, VolumeX, Shield, Home, Heart } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useUI } from '../context/UIContext';
+import { useTheme } from '../context/ThemeContext';
+import type { ThemeId } from '../theme/theme.types';
 
 
 interface ProfileEditModalProps {
@@ -26,10 +28,18 @@ interface ProfileEditModalProps {
   onClose: () => void;
 }
 
+// R10: Mode switcher configuration
+const modeOptions: { id: ThemeId; label: string; icon: typeof Shield }[] = [
+  { id: 'guild', label: 'Guild', icon: Shield },
+  { id: 'family', label: 'Family', icon: Home },
+  { id: 'couple', label: 'Couple', icon: Heart },
+];
+
 export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const { t } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
   const { openModal, clearLayer } = useUI();
+  const { themeId, setThemeId } = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -87,23 +97,38 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ display_name: displayName, avatar_url: avatarUrl })
-        .eq('id', user.id);
+      // R10: Enhanced logging before save
+      console.log('[ProfileEditModal] Saving profile', {
+        userId: user.id,
+        display_name: displayName,
+        avatar_url: avatarUrl?.substring(0, 50),
+      });
 
-      if (updateError) throw updateError;
+      // R10: Use upsert to handle both insert and update cases
+      const { data: upsertData, error: updateError } = await supabase
+        .from('profiles')
+        .upsert(
+          { id: user.id, display_name: displayName, avatar_url: avatarUrl },
+          { onConflict: 'id' }
+        )
+        .select('*')
+        .single();
+
+      // R10: Log upsert result
+      console.log('[ProfileEditModal] Upsert result', { data: upsertData, error: updateError });
+
+      if (updateError) {
+        toast.error(t('profile.saveError'), { id: toastId });
+        console.error('[ProfileEditModal] Upsert error:', updateError);
+        return; // Don't proceed on error
+      }
 
       soundManager.play('saveProfile');
 
       toast.success(t('profile.saveSuccess'), { id: toastId });
 
-      // Refresh profile in context instead of hard reload
-      console.log('[ProfileEditModal] About to call refreshProfile, current profile:', {
-        id: profile?.id,
-        display_name: profile?.display_name,
-        avatar_url: profile?.avatar_url,
-      });
+      // Refresh profile in context
+      console.log('[ProfileEditModal] About to call refreshProfile');
 
       if (refreshProfile) {
         await refreshProfile();
@@ -209,6 +234,39 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium">{t('profile.language')}</label>
                 <LanguageSwitcher />
+              </div>
+
+              {/* R10: Mode Switcher */}
+              <div className="p-4 bg-gray-800/50 rounded-lg">
+                <label className="text-sm font-medium block mb-3">{t('profile.mode') || 'App Mode'}</label>
+                <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
+                  {modeOptions.map((option) => {
+                    const Icon = option.icon;
+                    const isActive = themeId === option.id;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          console.log('[ProfileEditModal] Mode switched to:', option.id);
+                          setThemeId(option.id);
+                          soundManager.play('toggleOn');
+                        }}
+                        className={`
+                          flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md
+                          text-sm font-medium transition-all duration-200
+                          ${isActive
+                            ? 'bg-cyan-500/20 text-cyan-400 shadow-sm'
+                            : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                          }
+                        `}
+                      >
+                        <Icon size={16} className={isActive ? 'text-cyan-400' : ''} />
+                        <span className="hidden sm:inline">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

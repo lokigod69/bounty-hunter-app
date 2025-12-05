@@ -111,7 +111,10 @@ export function useFriends(userId: string | undefined) {
     fetchFriendships(userId);
 
     // R8 FIX: Create unique channel name for this user to avoid conflicts
+    // R10: Added logging for debugging subscribe issues
     const channelName = `friendships-${userId}`;
+    console.log(`[useFriends] subscribing to channel ${channelName}`);
+
     const channel = supabase
       .channel(channelName)
       .on(
@@ -131,8 +134,10 @@ export function useFriends(userId: string | undefined) {
     channelRef.current = channel;
 
     // R8 FIX: Cleanup only this specific channel, not all channels
+    // R10: Added logging for debugging
     return () => {
       if (channelRef.current) {
+        console.log(`[useFriends] cleanup channel ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }

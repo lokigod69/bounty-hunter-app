@@ -32,6 +32,14 @@
       "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\webapp-testing",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
+    },
+    "file-organizer@awesome-claude-skills": {
+      "version": "0178590715b9",
+      "installedAt": "2025-12-05T02:05:55.087Z",
+      "lastUpdated": "2025-12-05T02:05:55.087Z",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\file-organizer",
+      "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
+      "isLocal": true
     }
   }
 }

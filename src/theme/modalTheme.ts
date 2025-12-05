@@ -48,28 +48,41 @@ export const modeColors: Record<ThemeId, ModeColors> = {
 };
 
 // ============================================================================
-// Role Configuration
+// Role Configuration - Mode-aware role labels (R10)
 // ============================================================================
 
 export interface RoleConfig {
   headerLabel: string;
-  headerIcon: 'Target' | 'Stamp' | 'Coins';
+  headerIcon: 'Target' | 'Stamp' | 'Coins' | 'ListChecks' | 'ClipboardList' | 'Heart' | 'PenSquare' | 'Gift';
 }
 
-export const roleConfig: Record<ModalRole, RoleConfig> = {
-  assignee: {
-    headerLabel: 'Assigned to you',
-    headerIcon: 'Target',
+// R10: Mode-aware role labels for different contexts
+export const roleConfigByMode: Record<ThemeId, Record<ModalRole, RoleConfig>> = {
+  guild: {
+    assignee: { headerLabel: 'Your mission', headerIcon: 'Target' },
+    creator: { headerLabel: 'You issued this contract', headerIcon: 'Stamp' },
+    store: { headerLabel: 'Bounty reward', headerIcon: 'Gift' },
   },
-  creator: {
-    headerLabel: 'You created this',
-    headerIcon: 'Stamp',
+  family: {
+    assignee: { headerLabel: 'Your task', headerIcon: 'ListChecks' },
+    creator: { headerLabel: 'You set this task', headerIcon: 'ClipboardList' },
+    store: { headerLabel: 'Family reward', headerIcon: 'Gift' },
   },
-  store: {
-    headerLabel: 'Reward',
-    headerIcon: 'Coins',
+  couple: {
+    assignee: { headerLabel: 'For you', headerIcon: 'Heart' },
+    creator: { headerLabel: 'You asked for this', headerIcon: 'PenSquare' },
+    store: { headerLabel: 'Shared treat', headerIcon: 'Gift' },
   },
 };
+
+// R10: Get role config for a specific mode
+export function getRoleConfig(mode: ThemeId, role: ModalRole): RoleConfig {
+  const forMode = roleConfigByMode[mode] ?? roleConfigByMode.guild;
+  return forMode[role];
+}
+
+// Legacy flat roleConfig for backwards compatibility
+export const roleConfig: Record<ModalRole, RoleConfig> = roleConfigByMode.guild;
 
 // ============================================================================
 // State Configuration

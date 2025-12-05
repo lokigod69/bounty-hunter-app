@@ -13,13 +13,17 @@ import {
   Home,
   Heart,
   User,
+  ListChecks,
+  ClipboardList,
+  PenSquare,
+  Gift,
 } from 'lucide-react';
 import { ThemeId } from '../../theme/theme.types';
 import {
   ModalRole,
   ModalState,
   modeColors,
-  roleConfig,
+  getRoleConfig,
   stateConfig,
   getModeStyleVars,
 } from '../../theme/modalTheme';
@@ -89,13 +93,18 @@ interface MissionModalShellProps {
 }
 
 // ============================================================================
-// Icon Maps
+// Icon Maps - R10: Extended for mode-aware role icons
 // ============================================================================
 
 const roleIconMap = {
   Target,
   Stamp,
   Coins,
+  ListChecks,
+  ClipboardList,
+  PenSquare,
+  Heart,
+  Gift,
 };
 
 const modeIconMap = {
@@ -161,9 +170,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
   if (!isOpen) return null;
 
-  // Get configurations
+  // Get configurations - R10: Use mode-aware getRoleConfig
   const modeConfig = modeColors[mode];
-  const roleConf = roleConfig[role];
+  const roleConf = getRoleConfig(mode, role);
   const stateConf = stateConfig[state];
   const RoleIcon = roleIconMap[roleConf.headerIcon];
   const ModeIcon = modeIconMap[modeConfig.icon];
@@ -312,10 +321,15 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         >
           {/* Two-column layout on desktop, stacked on mobile */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-            {/* Description Column */}
+            {/* Description Column - R10: max-height with scroll for long descriptions */}
             <div className={reward ? 'sm:w-2/3' : 'w-full'}>
               {description && (
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                <div
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
+                  style={{
+                    maxHeight: isMobile ? '50vh' : '40vh',
+                  }}
+                >
                   <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
                     {description}
                   </p>

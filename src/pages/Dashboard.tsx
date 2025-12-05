@@ -18,7 +18,7 @@ import { fetchStreaksForContracts } from '../hooks/useDailyMissionStreak';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-hot-toast';
-import { AlertTriangle, CheckCircle, Clock, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -381,8 +381,9 @@ export default function Dashboard() {
           <div className="space-y-4">
             <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionWaitingApprovalTitle}</h2>
             {waitingApprovalMissions.length === 0 ? (
-              <BaseCard>
+              <BaseCard className="border-yellow-500/20">
                 <div className="text-center py-6">
+                  <Clock3 size={40} className="mx-auto mb-3 text-yellow-400/60" />
                   <p className="text-body text-white/70">Nothing waiting for approval.</p>
                 </div>
               </BaseCard>
@@ -409,8 +410,9 @@ export default function Dashboard() {
           <div className="space-y-4">
             <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionCompletedTitle}</h2>
             {completedMissions.length === 0 ? (
-              <BaseCard>
+              <BaseCard className="border-green-500/20">
                 <div className="text-center py-6">
+                  <CheckCircle2 size={40} className="mx-auto mb-3 text-green-400/60" />
                   <p className="text-body text-white/70">You haven't completed any {theme.strings.missionPlural} yet.</p>
                 </div>
               </BaseCard>
