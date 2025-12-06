@@ -23,7 +23,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import CreditDisplay from '../components/CreditDisplay';
+// R14: CreditDisplay removed - using simplified balance layout with just the number
 
 type Tab = 'available' | 'created' | 'collected';
 
@@ -254,14 +254,33 @@ const RewardsStorePage: React.FC = () => {
       );
     }
 
+    // R14: "created" (My Bounties) tab uses centered column layout; "available" uses grid
+    if (activeTab === 'created') {
+      return (
+        <div className="max-w-xl mx-auto flex flex-col gap-3">
+          {filteredRewards.map(reward => (
+            <RewardCard
+              key={reward.id}
+              reward={reward}
+              view={activeTab}
+              onAction={handleClaim}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              currentCredits={userCredits ?? 0}
+            />
+          ))}
+        </div>
+      );
+    }
+
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
         {filteredRewards.map(reward => (
-          <RewardCard 
-            key={reward.id} 
-            reward={reward} 
-            view={activeTab} 
-            onAction={handleClaim} 
+          <RewardCard
+            key={reward.id}
+            reward={reward}
+            view={activeTab}
+            onAction={handleClaim}
             onEdit={handleEdit}
             onDelete={handleDelete}
             currentCredits={userCredits ?? 0}
@@ -279,41 +298,34 @@ const RewardsStorePage: React.FC = () => {
           subtitle={theme.strings.storeSubtitle}
         />
 
-        {/* Credits Summary */}
+        {/* R14: Simplified Balance Card - number is the focal point */}
         {!creditsLoading && (
           <div className="mb-6">
-            <BaseCard className={`transition-all duration-200 ${(userCredits ?? 0) > 0 ? 'bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-teal-500/30' : 'bg-gray-800/50 border-gray-700/50'}`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5">
-                <div className="flex items-center gap-3">
-                  {/* Removed duplicate static coin - CreditDisplay already shows a coin */}
-                  <div>
-                    <p className="text-xs sm:text-sm text-white/70 mb-1">{theme.strings.storeCreditsLabel}</p>
-                    <div className="flex items-center gap-2">
-                      <CreditDisplay amount={userCredits ?? 0} size="large" />
-                    </div>
-                  </div>
-                </div>
-                <div className="text-left sm:text-right w-full sm:w-auto">
-                  {(userCredits ?? 0) === 0 ? (
-                    <p className="text-sm text-white/70">
-                      Complete {theme.strings.missionPlural} to earn {theme.strings.tokenPlural}
-                    </p>
-                  ) : (
-                    <>
-                      {affordableCount > 0 && (
-                        <p className="text-sm sm:text-base text-white/90 mb-1 font-medium">
-                          {theme.strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? theme.strings.rewardSingular : theme.strings.rewardPlural}
-                        </p>
-                      )}
-                      {cheapestUnaffordable && (
-                        <p className="text-xs sm:text-sm text-white/70">
-                          {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} {theme.strings.tokenPlural} away from "{cheapestUnaffordable.name}"
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
+            <BaseCard className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="flex flex-col">
+                <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
+                  {theme.strings.storeCreditsLabel}
+                </span>
+                <span className="text-3xl sm:text-4xl font-semibold text-white">
+                  {userCredits ?? 0}
+                </span>
+                {/* R14: Contextual hint below balance */}
+                {(userCredits ?? 0) === 0 ? (
+                  <span className="text-xs text-white/50 mt-1">
+                    Complete {theme.strings.missionPlural} to earn {theme.strings.tokenPlural}
+                  </span>
+                ) : affordableCount > 0 ? (
+                  <span className="text-xs text-teal-400/80 mt-1">
+                    {theme.strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? theme.strings.rewardSingular : theme.strings.rewardPlural}
+                  </span>
+                ) : cheapestUnaffordable ? (
+                  <span className="text-xs text-white/50 mt-1">
+                    {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} more to "{cheapestUnaffordable.name}"
+                  </span>
+                ) : null}
               </div>
+              {/* R14: Single coin visual, scaled down */}
+              <div className="text-4xl sm:text-5xl animate-proper-spin">🪙</div>
             </BaseCard>
           </div>
         )}
@@ -358,14 +370,13 @@ const RewardsStorePage: React.FC = () => {
           {renderContent()}
         </PageBody>
 
-      <button 
+      {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
+      <button
         onClick={() => setCreateModalOpen(true)}
-        className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white rounded-full p-4 sm:p-3 md:p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center z-fab"
+        className="fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 bg-teal-500 hover:bg-teal-600 text-white p-4 min-w-[56px] min-h-[56px] flex items-center justify-center bottom-4 right-4 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto"
         aria-label={t('rewards.createBountyButton')}
       >
-        <Plus size={24} className="sm:hidden" />
-        <Plus size={20} className="hidden sm:block md:hidden" />
-        <Plus size={24} className="hidden md:block" />
+        <Plus size={24} />
       </button>
 
       <CreateBountyModal 

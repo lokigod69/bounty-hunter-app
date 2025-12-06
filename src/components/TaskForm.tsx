@@ -22,6 +22,7 @@ import { createPortal } from 'react-dom';
 import { useFriends } from '../hooks/useFriends';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
+import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { logOverlayRootState } from '../lib/overlayDebug';
 import type { Database } from '../types/database';
@@ -59,6 +60,7 @@ interface TaskFormProps {
 
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   const { t } = useTranslation();
+  const { theme } = useTheme(); // R14: For couple mode self-assignment prevention
   const { openModal, clearLayer } = useUI();
   const hasOpenedModalRef = useRef(false);
   
@@ -141,21 +143,27 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!title.trim()) {
       newErrors.title = t('taskForm.validation.titleRequired');
     }
-    
+
     if (!assignedTo) {
       newErrors.assignedTo = t('taskForm.validation.assigneeRequired');
     }
-    
+
+    // R14: Prevent self-assignment in couple mode
+    if (theme.id === 'couple' && assignedTo === userId) {
+      newErrors.assignedTo = `In partner mode, ${theme.strings.missionPlural} are meant for your ${theme.strings.crewLabel}.`;
+      toast.error(`You can't assign a ${theme.strings.missionSingular} to yourself in partner mode.`);
+    }
+
     if (contractType === 'bounty' && !rewardText.trim()) {
       newErrors.rewardText = t('taskForm.validation.bountyRequired');
     } else if (contractType === 'credit' && !rewardText) { // rewardText for credit will be the selected value, e.g., '1', '5'
       newErrors.rewardText = t('taskForm.validation.creditRequired');
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

@@ -352,25 +352,26 @@ export default function IssuedPage() {
       {/* R8 FIX: Single render path - no conditional tree swap based on activeLayer */}
       <PullToRefresh onRefresh={handleRefresh} isPullable={activeLayer !== 'modal'}>
         <PageContainer>
+          {/* R14: Use theme.strings.missionsLabel for mode-aware title (e.g., "Moments" in couple mode) */}
           <PageHeader
-            title={t('contracts.myMissions')}
-            subtitle={t('contracts.myMissionsDescription')}
+            title={`My ${theme.strings.missionsLabel}`}
+            subtitle={theme.id === 'couple'
+              ? `Create ${theme.strings.missionPlural} for your ${theme.strings.crewLabel}`
+              : t('contracts.myMissionsDescription')}
           />
 
           {/* R11: Moved quote to bottom of page for consistency */}
 
-          {/* Enhanced Floating Action Button - only show when missions exist */}
+          {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
           {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
             <button
               onClick={handleCreateNewContract}
-              className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 bg-teal-500 hover:bg-teal-600 text-white p-4 sm:p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 z-fab focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 min-w-[56px] min-h-[56px] sm:min-w-[48px] sm:min-h-[48px] md:min-w-[56px] md:min-h-[56px] flex items-center justify-center"
-              aria-label={t('contracts.createNewMission')}
-              title={t('contracts.createNewMission')}
+              className="fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 bg-teal-500 hover:bg-teal-600 text-white p-4 min-w-[56px] min-h-[56px] flex items-center justify-center bottom-4 right-4 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto"
+              aria-label={`Create new ${theme.strings.missionSingular}`}
+              title={`Create new ${theme.strings.missionSingular}`}
               data-testid="missions-fab"
             >
-              <PlusCircle size={28} className="sm:hidden" />
-              <PlusCircle size={24} className="hidden sm:block md:hidden" />
-              <PlusCircle size={28} className="hidden md:block" />
+              <PlusCircle size={28} />
             </button>
           )}
 
@@ -401,15 +402,20 @@ export default function IssuedPage() {
             {sortedIssuedContracts.length === 0 && !loading ? (
               <div className="text-center py-10">
                 <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                <p className="text-subtitle text-slate-300 mb-6">{t('contracts.noMissions')}</p>
+                {/* R14: Mode-aware empty state */}
+                <p className="text-subtitle text-slate-300 mb-6">
+                  {theme.id === 'couple'
+                    ? `No ${theme.strings.missionsLabel.toLowerCase()} yet. Create one for your ${theme.strings.crewLabel}!`
+                    : t('contracts.noMissions')}
+                </p>
                 <button
                   onClick={handleCreateNewContract}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
                   data-testid="missions-empty-cta"
-                  aria-label={t('contracts.createNewMission')}
+                  aria-label={`Create new ${theme.strings.missionSingular}`}
                 >
                   <PlusCircle size={20} />
-                  {t('contracts.createNewMission')}
+                  Create new {theme.strings.missionSingular}
                 </button>
               </div>
             ) : (

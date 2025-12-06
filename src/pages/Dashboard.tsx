@@ -335,26 +335,45 @@ export default function Dashboard() {
               <BaseCard>
                 <div className="text-center py-8">
                   <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
+                  {/* R14: Mode-aware empty state copy for inbox */}
                   <h3 className="text-subtitle text-white/90 mb-2">
-                    {theme.id === 'guild' && 'No missions right now. Create one or check the store.'}
-                    {theme.id === 'family' && 'No chores assigned. You\'re all clear for now.'}
-                    {theme.id === 'couple' && 'No requests pending. Maybe create one?'}
+                    {theme.id === 'guild' && 'No missions right now'}
+                    {theme.id === 'family' && 'No chores assigned'}
+                    {theme.id === 'couple' && 'No requests yet'}
                   </h3>
+                  <p className="text-body text-white/60 mb-4">
+                    {theme.id === 'guild' && 'Create a mission or check the store.'}
+                    {theme.id === 'family' && 'You\'re all clear for now.'}
+                    {theme.id === 'couple' && 'When your partner sends you a request, it will show up here.'}
+                  </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
-                    <button
-                      onClick={() => navigate('/issued')}
-                      className="btn-primary flex items-center justify-center gap-2"
-                    >
-                      <PlusCircle size={20} />
-                      Create new {theme.strings.missionSingular}
-                    </button>
-                    <button
-                      onClick={() => navigate('/rewards-store')}
-                      className="btn-secondary flex items-center justify-center gap-2"
-                    >
-                      <ShoppingCart size={20} />
-                      Visit {theme.strings.storeTitle}
-                    </button>
+                    {/* R14: In couple mode, primary CTA is to create for partner */}
+                    {theme.id === 'couple' ? (
+                      <button
+                        onClick={() => navigate('/issued')}
+                        className="btn-secondary flex items-center justify-center gap-2"
+                      >
+                        <PlusCircle size={20} />
+                        Create {theme.strings.missionSingular} for your {theme.strings.crewLabel}
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => navigate('/issued')}
+                          className="btn-primary flex items-center justify-center gap-2"
+                        >
+                          <PlusCircle size={20} />
+                          Create new {theme.strings.missionSingular}
+                        </button>
+                        <button
+                          onClick={() => navigate('/rewards-store')}
+                          className="btn-secondary flex items-center justify-center gap-2"
+                        >
+                          <ShoppingCart size={20} />
+                          Visit {theme.strings.storeTitle}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </BaseCard>
