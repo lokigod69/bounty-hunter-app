@@ -82,15 +82,22 @@ export default function Layout() {
     user?.email?.split('@')[0] ??
     'Unknown user';
 
-  // Cache-busting for avatar: append updated_at timestamp to prevent stale cached images
-  const avatarUrlBase = profile?.avatar_url ?? null;
+  // R15: RENDERING FALLBACKS - These are for DISPLAY ONLY, never written to DB
+  // avatarUrlBase: The actual DB value (null if user hasn't set one)
+  // avatarUrl: For rendering - uses placeholder when avatarUrlBase is null
+  const avatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
   const avatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
   const avatarUrl = avatarUrlBase
     ? `${avatarUrlBase}${avatarCacheBuster}`
-    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
+    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
 
-  // R6: Log every render to trace identity propagation issues
-  console.log('[Layout] RENDER:', { displayName, hasAvatar: !!avatarUrlBase, hasProfile: !!profile });
+  // R15: Enhanced logging to trace profile pipeline issues
+  console.log('[Layout] RENDER:', {
+    displayName,
+    avatarUrlBase: avatarUrlBase?.substring(0, 40) || 'NULL (using placeholder)',
+    hasProfile: !!profile,
+    profileId: profile?.id?.substring(0, 8),
+  });
 
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);

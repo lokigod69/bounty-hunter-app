@@ -88,12 +88,20 @@ export default function ProfileEdit() {
     e.preventDefault();
     if (!user) return;
 
+    // R15: Guard against saving when profile hasn't loaded yet
+    if (!profile) {
+      console.warn('[ProfileEdit] Cannot save - profile not yet loaded');
+      toast.error('Profile not loaded. Please wait and try again.');
+      return;
+    }
+
     setIsUploading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      let avatarUrl = profile?.avatar_url;
+      // R15: Start with EXISTING avatar_url from profile
+      let avatarUrl = profile.avatar_url;
 
       if (avatarFile) {
         const filePath = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
@@ -109,6 +117,15 @@ export default function ProfileEdit() {
         avatarUrl = publicUrlData.publicUrl;
       }
 
+      // R15: Log what we're about to save
+      console.log('[ProfileEdit] Saving profile', {
+        userId: user.id.substring(0, 8),
+        display_name: displayName,
+        avatarUrl: avatarUrl?.substring(0, 50) || null,
+        avatarChanged: !!avatarFile,
+        previousAvatarUrl: profile.avatar_url?.substring(0, 50) || null,
+      });
+
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
         .update({ display_name: displayName, avatar_url: avatarUrl })
@@ -121,8 +138,12 @@ export default function ProfileEdit() {
         throw updateError;
       }
 
-      // Log success for debugging
-      console.log('[ProfileEdit] Profile updated successfully:', updatedProfile);
+      // R15: Log successful save with result
+      console.log('[ProfileEdit] Profile updated successfully:', {
+        id: updatedProfile?.id?.substring(0, 8),
+        display_name: updatedProfile?.display_name,
+        avatar_url: updatedProfile?.avatar_url?.substring(0, 50),
+      });
 
       // Refresh profile in useAuth to update header and other components immediately
       setSuccess('Profile updated successfully!');

@@ -85,11 +85,21 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     e.preventDefault();
     if (!user) return;
 
+    // R15: Guard against saving when profile hasn't loaded yet
+    // This prevents accidentally overwriting avatar_url with null
+    if (!profile) {
+      console.warn('[ProfileEditModal] Cannot save - profile not yet loaded');
+      toast.error('Profile not loaded. Please wait and try again.');
+      return;
+    }
+
     setIsUploading(true);
     const toastId = toast.loading(t('profile.saving'));
 
     try {
-      let avatarUrl = profile?.avatar_url;
+      // R15: Start with EXISTING values from profile
+      // This ensures we never accidentally null out user-set values
+      let avatarUrl = profile.avatar_url; // Guaranteed defined since we checked profile above
 
       if (avatarFile) {
         const filePath = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
@@ -105,12 +115,13 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      // R12: Enhanced logging before save
+      // R15: Enhanced logging before save - track what's being preserved vs changed
       console.log('[ProfileEditModal] Saving profile', {
-        userId: user.id,
-        userEmail: user.email,
+        userId: user.id.substring(0, 8),
         display_name: displayName,
-        avatar_url: avatarUrl?.substring(0, 50),
+        avatarUrl: avatarUrl?.substring(0, 50) || null,
+        avatarChanged: !!avatarFile, // R15: Track if avatar was changed
+        previousAvatarUrl: profile.avatar_url?.substring(0, 50) || null,
       });
 
       // R12: Upsert must include `email` since it's required for INSERT

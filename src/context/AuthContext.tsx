@@ -108,15 +108,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (profileData) {
+          // R15: Enhanced logging to track avatar_url through pipeline
           console.log('[AuthContext] Profile loaded successfully:', {
-            id: profileData.id,
+            id: profileData.id.substring(0, 8),
             display_name: profileData.display_name,
-            avatar_url: profileData.avatar_url?.substring(0, 30),
+            avatar_url: profileData.avatar_url?.substring(0, 50) || 'NULL',
+            hasAvatar: !!profileData.avatar_url,
+            updated_at: profileData.updated_at,
           });
           setProfile(profileData);
           setProfileError(null);
         } else {
-          console.warn('[AuthContext] No profile returned for user:', session.user.id);
+          console.warn('[AuthContext] No profile returned for user:', session.user.id.substring(0, 8));
           setProfile(null);
           setProfileError(null);
         }
@@ -162,10 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profileData = await ensureProfileForUser(supabase, session.user);
 
       if (profileData) {
+        // R15: Enhanced logging to track avatar_url through pipeline
         console.log('[AuthContext] Profile refreshed successfully:', {
-          id: profileData.id,
+          id: profileData.id.substring(0, 8),
           display_name: profileData.display_name,
-          avatar_url: profileData.avatar_url?.substring(0, 30),
+          avatar_url: profileData.avatar_url?.substring(0, 50) || 'NULL',
+          hasAvatar: !!profileData.avatar_url,
+          updated_at: profileData.updated_at,
         });
         setProfile(profileData);
         setProfileError(null);

@@ -72,12 +72,14 @@ export default function Friends() {
     user?.email?.split('@')[0] ??
     'You';
 
-  const myAvatarUrlBase = profile?.avatar_url ?? null;
+  // R15: RENDERING FALLBACKS - These are for DISPLAY ONLY, never written to DB
+  // myAvatarUrlBase: The actual DB value (null if user hasn't set one)
+  // myAvatarUrl: For rendering - uses placeholder when DB value is null
+  const myAvatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
   const myAvatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
-  // R6 FIX: Use actual avatar placeholder, not non-existent /default-avatar.png
   const myAvatarUrl = myAvatarUrlBase
     ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
-    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`;
+    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
 
   // R10: Removed duplicate log - now in single location above
 
