@@ -104,7 +104,8 @@ export function useFriends(userId: string | undefined) {
     }
   }, []);
 
-  // R8 FIX: Single useEffect for data fetching and subscription
+  // R8/R13 FIX: Single useEffect for data fetching and subscription
+  // R13: Fixed StrictMode double-subscribe crash
   useEffect(() => {
     // R11: Enhanced logging for debugging profile/friends loading issues
     if (!userId) {
@@ -116,39 +117,63 @@ export function useFriends(userId: string | undefined) {
       return;
     }
 
+    // R13: Clean up any existing channel BEFORE creating a new one
+    // This prevents "tried to subscribe multiple times" in StrictMode
+    if (channelRef.current) {
+      console.log('[useFriends] Cleaning up existing channel before re-subscribing');
+      try {
+        channelRef.current.unsubscribe();
+      } catch (e) {
+        console.warn('[useFriends] Error unsubscribing old channel:', e);
+      }
+      channelRef.current = null;
+    }
+
     // Initial fetch
     console.log(`[useFriends] Starting initial fetch for userId: ${userId.substring(0, 8)}...`);
     fetchFriendships(userId);
 
-    // R8 FIX: Create unique channel name for this user to avoid conflicts
-    // R10/R11: Enhanced logging for debugging subscribe issues
-    const channelName = `friendships-${userId}`;
+    // R13: Use a unique channel name with timestamp to avoid StrictMode conflicts
+    const channelName = `friendships-${userId}-${Date.now()}`;
     console.log(`[useFriends] Setting up realtime channel: ${channelName}`);
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'friendships',
-        },
-        () => {
-          // Refresh friendships when there's any change
-          fetchFriendships(userId);
-        }
-      )
-      .subscribe();
+    // R13: Wrap subscription in try-catch to prevent crashes
+    try {
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'friendships',
+          },
+          () => {
+            // Refresh friendships when there's any change
+            fetchFriendships(userId);
+          }
+        )
+        .subscribe((status) => {
+          console.log(`[useFriends] Channel ${channelName} status:`, status);
+        });
 
-    channelRef.current = channel;
+      channelRef.current = channel;
+    } catch (err) {
+      console.error('[useFriends] Failed to subscribe to friendships channel:', err);
+      channelRef.current = null;
+      // Still allow the UI to show the initial fetch results
+    }
 
-    // R8 FIX: Cleanup only this specific channel, not all channels
-    // R10: Added logging for debugging
+    // Cleanup on unmount or userId change
     return () => {
       if (channelRef.current) {
         console.log(`[useFriends] cleanup channel ${channelName}`);
-        supabase.removeChannel(channelRef.current);
+        try {
+          channelRef.current.unsubscribe();
+          supabase.removeChannel(channelRef.current);
+        } catch (e) {
+          console.warn('[useFriends] Error during channel cleanup:', e);
+        }
         channelRef.current = null;
       }
     };

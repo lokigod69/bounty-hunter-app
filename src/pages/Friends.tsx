@@ -39,7 +39,7 @@ export default function Friends() {
   const { user, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
 
-  // R10/R11: Enhanced logging for debugging profile/friends loading
+  // R10/R11/R13: Enhanced logging for debugging profile/friends loading
   const userIdForFriends = profile ? user?.id : undefined;
   console.log('[Friends] Render state:', {
     userId: user?.id?.substring(0, 8),
@@ -54,6 +54,15 @@ export default function Friends() {
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(
     userIdForFriends
   );
+
+  // R13: Log render data for debugging blank screen issues
+  console.log('[Friends] Render data:', {
+    friendsCount: friends?.length ?? 0,
+    pendingCount: pendingRequests?.length ?? 0,
+    sentCount: sentRequests?.length ?? 0,
+    loading,
+    error: error || null,
+  });
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
 
@@ -375,15 +384,27 @@ export default function Friends() {
                 </div>
               </BaseCard>
             ) : partnerState.state === 'PARTNERED' && partnerState.partnerProfile ? (
+              // R13: Log partner render for debugging avatar issues
+              (() => {
+                console.log('[Friends] Partner render:', {
+                  meDisplayName: profile?.display_name,
+                  meAvatarUrl: profile?.avatar_url,
+                  partnerDisplayName: partnerState.partnerProfile?.display_name,
+                  partnerAvatarUrl: partnerState.partnerProfile?.avatar_url,
+                });
+                return null;
+              })() || (
               <BaseCard>
                 <div className="text-center py-8">
                   <div className="flex items-center justify-center gap-4 mb-6">
+                    {/* R13: Partner avatar - use their profile data */}
                     <img
                       src={partnerState.partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(partnerState.partnerProfile.email || 'partner')}`}
                       alt={partnerState.partnerProfile.display_name || 'partner'}
                       className="w-24 h-24 rounded-full border-4 border-teal-400"
                     />
                     <Heart size={32} className="text-teal-400" />
+                    {/* R13: Your avatar - use useAuth profile data (same as header) */}
                     {user && (
                       <img
                         src={myAvatarUrl}
@@ -412,6 +433,7 @@ export default function Friends() {
                   </div>
                 </div>
               </BaseCard>
+              )
             ) : null}
 
             {/* Search/Invite form for Couple Mode - only show if NO_PARTNER or INVITE_SENT */}

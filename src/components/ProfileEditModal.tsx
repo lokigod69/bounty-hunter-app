@@ -57,12 +57,20 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     };
   }, [isOpen, openModal, clearLayer]);
 
+  // R13: Hydrate form state from profile when modal opens
+  // This ensures the form always shows current profile data
   useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.display_name || '');
-      setAvatarPreview(profile.avatar_url || null);
-    }
-  }, [profile, isOpen]);
+    if (!isOpen) return; // Only hydrate when modal is open
+
+    console.log('[ProfileEditModal] Hydrating from profile:', {
+      displayName: profile?.display_name,
+      avatarUrl: profile?.avatar_url?.substring(0, 50),
+    });
+
+    setDisplayName(profile?.display_name || '');
+    setAvatarPreview(profile?.avatar_url || null);
+    setAvatarFile(null); // Reset file selection when reopening
+  }, [isOpen, profile]);
 
   const handleFileSelect = (file: File) => {
     setAvatarFile(file);
