@@ -151,6 +151,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       cancelled = true;
+      // R18 FIX: Clear the ref in cleanup so that if the effect re-runs
+      // (due to React Strict Mode double-mount or actual session changes),
+      // the guard doesn't incorrectly block the new run.
+      // Without this, Strict Mode causes: run1 sets ref → cleanup → run2 sees ref → returns early → profile never loads
+      ensuringUserIdRef.current = null;
     };
   }, [session]);
 
