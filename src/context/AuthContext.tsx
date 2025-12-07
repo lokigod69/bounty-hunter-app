@@ -96,7 +96,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function loadProfile() {
       try {
         ensuringUserIdRef.current = session.user.id;
-        console.log('[AuthContext] Loading profile for user:', session.user.id);
+        // R17: Log before calling ensureProfileForUser
+        console.log('[AuthContext] loadProfile start', {
+          userId: session.user.id,
+          userEmail: session.user.email,
+        });
         setProfileLoading(true);
         setProfileError(null);
 
@@ -108,11 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (profileData) {
-          // R15: Enhanced logging to track avatar_url through pipeline
-          console.log('[AuthContext] Profile loaded successfully:', {
-            id: profileData.id.substring(0, 8),
+          // R17: Enhanced logging to track avatar_url through pipeline - log FULL URL
+          console.log('[AuthContext] Profile loaded successfully', {
+            id: profileData.id,
             display_name: profileData.display_name,
-            avatar_url: profileData.avatar_url?.substring(0, 50) || 'NULL',
+            avatar_url: profileData.avatar_url, // R17: Log FULL URL
+            avatar_url_short: profileData.avatar_url?.substring(0, 60) || 'NULL',
             hasAvatar: !!profileData.avatar_url,
             updated_at: profileData.updated_at,
           });
@@ -165,11 +170,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profileData = await ensureProfileForUser(supabase, session.user);
 
       if (profileData) {
-        // R15: Enhanced logging to track avatar_url through pipeline
-        console.log('[AuthContext] Profile refreshed successfully:', {
-          id: profileData.id.substring(0, 8),
+        // R17: Enhanced logging to track avatar_url through pipeline - log FULL URL
+        console.log('[AuthContext] Profile refreshed successfully', {
+          id: profileData.id,
           display_name: profileData.display_name,
-          avatar_url: profileData.avatar_url?.substring(0, 50) || 'NULL',
+          avatar_url: profileData.avatar_url, // R17: Log FULL URL
+          avatar_url_short: profileData.avatar_url?.substring(0, 60) || 'NULL',
           hasAvatar: !!profileData.avatar_url,
           updated_at: profileData.updated_at,
         });

@@ -48,6 +48,9 @@ import ProfileEditModal from './ProfileEditModal';
 
 import { soundManager } from '../utils/soundManager';
 
+// R17: Temporary debug component for profile reality check
+import { ProfileDebugger } from './dev/ProfileDebugger';
+
 export default function Layout() {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -91,12 +94,14 @@ export default function Layout() {
     ? `${avatarUrlBase}${avatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
 
-  // R15: Enhanced logging to trace profile pipeline issues
-  console.log('[Layout] RENDER:', {
+  // R17: Enhanced logging to trace profile pipeline issues
+  console.log('[Layout] RENDER identity', {
     displayName,
-    avatarUrlBase: avatarUrlBase?.substring(0, 40) || 'NULL (using placeholder)',
+    avatarUrlBase: avatarUrlBase ?? 'NULL',
+    avatarUrlBaseShort: avatarUrlBase?.substring(0, 60) || 'NULL (using placeholder)',
     hasProfile: !!profile,
-    profileId: profile?.id?.substring(0, 8),
+    profileId: profile?.id,
+    profileUpdatedAt: profile?.updated_at,
   });
 
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
@@ -431,6 +436,9 @@ export default function Layout() {
       </main>
 
       <ProfileEditModal isOpen={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />
+
+      {/* R17: Temporary debug component - remove after profile pipeline is stable */}
+      {import.meta.env.DEV && <ProfileDebugger />}
     </div>
   );
 }

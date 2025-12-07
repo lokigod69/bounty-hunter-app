@@ -33,11 +33,13 @@ export async function ensureProfileForUser(
       .eq('id', user.id)
       .maybeSingle();   // Returns null data when no row found, not an error
 
-    // R15: Log ALL profile fields including avatar_url
+    // R17: Log FULL profile row for debugging - this is what ensureProfile sees from DB
     console.log(`[ensureProfile:${callId}] select result`, {
       hasData: !!profile,
+      id: profile?.id,
       displayName: profile?.display_name,
-      avatarUrl: profile?.avatar_url?.substring(0, 60) || null, // R15: Track avatar
+      avatarUrl: profile?.avatar_url, // R17: Log FULL URL for comparison
+      avatarUrlShort: profile?.avatar_url?.substring(0, 60) || null,
       updatedAt: profile?.updated_at,
       error: error ? { code: error.code, message: error.message } : null,
     });
