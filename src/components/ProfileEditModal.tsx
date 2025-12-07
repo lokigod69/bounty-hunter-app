@@ -35,9 +35,16 @@ const modeOptions: { id: ThemeId; label: string; icon: typeof Shield }[] = [
   { id: 'couple', label: 'Couple', icon: Heart },
 ];
 
+// R16: Helper to derive display name from email
+function deriveDisplayNameFromEmail(email: string | undefined): string {
+  if (!email) return 'New User';
+  return email.split('@')[0] || 'New User';
+}
+
 export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const { t } = useTranslation();
-  const { user, profile, refreshProfile } = useAuth();
+  // R16: Also pull profileLoading to handle first-time profile scenario
+  const { user, profile, profileLoading, refreshProfile } = useAuth();
   const { openModal, clearLayer } = useUI();
   const { themeId, setThemeId } = useTheme();
   const [displayName, setDisplayName] = useState('');
@@ -57,20 +64,41 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     };
   }, [isOpen, openModal, clearLayer]);
 
-  // R13: Hydrate form state from profile when modal opens
-  // This ensures the form always shows current profile data
+  // R16: Log when modal opens for debugging
+  useEffect(() => {
+    if (!isOpen) return;
+    console.log('[ProfileEditModal] OPEN', {
+      profileNull: !profile,
+      profileLoading,
+      userId: user?.id?.substring(0, 8),
+    });
+  }, [isOpen, profile, profileLoading, user]);
+
+  // R16: Hydrate form state when modal opens - handles both existing profile and first-time scenarios
   useEffect(() => {
     if (!isOpen) return; // Only hydrate when modal is open
 
-    console.log('[ProfileEditModal] Hydrating from profile:', {
-      displayName: profile?.display_name,
-      avatarUrl: profile?.avatar_url?.substring(0, 50),
-    });
-
-    setDisplayName(profile?.display_name || '');
-    setAvatarPreview(profile?.avatar_url || null);
-    setAvatarFile(null); // Reset file selection when reopening
-  }, [isOpen, profile]);
+    if (profile) {
+      // Existing user with profile - use profile values
+      console.log('[ProfileEditModal] Hydrating from profile:', {
+        displayName: profile.display_name,
+        avatarUrl: profile.avatar_url?.substring(0, 50),
+      });
+      setDisplayName(profile.display_name ?? '');
+      setAvatarPreview(profile.avatar_url ?? null);
+    } else if (!profileLoading && user) {
+      // R16: First-time profile scenario - derive defaults from user
+      const baseName = deriveDisplayNameFromEmail(user.email);
+      console.log('[ProfileEditModal] Hydrating from user (no profile yet):', {
+        baseName,
+        userId: user.id.substring(0, 8),
+      });
+      setDisplayName(baseName);
+      setAvatarPreview(null);
+    }
+    // Always reset file selection when modal opens
+    setAvatarFile(null);
+  }, [isOpen, profile, profileLoading, user]);
 
   const handleFileSelect = (file: File) => {
     setAvatarFile(file);
@@ -85,11 +113,19 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     e.preventDefault();
     if (!user) return;
 
-    // R15: Guard against saving when profile hasn't loaded yet
-    // This prevents accidentally overwriting avatar_url with null
-    if (!profile) {
-      console.warn('[ProfileEditModal] Cannot save - profile not yet loaded');
-      toast.error('Profile not loaded. Please wait and try again.');
+    // R16: Log submit attempt for debugging
+    console.log('[ProfileEditModal] SUBMIT CLICK', {
+      profileNull: !profile,
+      profileLoading,
+      displayName,
+      hasAvatarFile: !!avatarFile,
+    });
+
+    // R16: Only block if profile is still actively loading
+    // If profile is null but not loading, this is first-time creation - allow it
+    if (!profile && profileLoading) {
+      console.warn('[ProfileEditModal] Cannot save - profile still loading');
+      toast.error('Profile is still loading. Please wait a moment and try again.');
       return;
     }
 
@@ -97,9 +133,14 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     const toastId = toast.loading(t('profile.saving'));
 
     try {
-      // R15: Start with EXISTING values from profile
-      // This ensures we never accidentally null out user-set values
-      let avatarUrl = profile.avatar_url; // Guaranteed defined since we checked profile above
+      // R16: Build display name with fallbacks for first-time profile
+      const baseDisplayName =
+        displayName?.trim() ||
+        profile?.display_name ||
+        deriveDisplayNameFromEmail(user.email);
+
+      // R16: Start with existing avatar if profile exists, otherwise null
+      let avatarUrl = profile?.avatar_url ?? null;
 
       if (avatarFile) {
         const filePath = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
@@ -121,7 +162,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         display_name: displayName,
         avatarUrl: avatarUrl?.substring(0, 50) || null,
         avatarChanged: !!avatarFile, // R15: Track if avatar was changed
-        previousAvatarUrl: profile.avatar_url?.substring(0, 50) || null,
+        previousAvatarUrl: profile?.avatar_url?.substring(0, 50) || null,
       });
 
       // R12: Upsert must include `email` since it's required for INSERT

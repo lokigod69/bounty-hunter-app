@@ -20,8 +20,15 @@ import { ThemeId } from '../theme/theme.types';
 import { useNavigate } from 'react-router-dom';
 import { clearOnboardingFlag } from '../lib/ftxGate';
 
+// R16: Helper to derive display name from email
+function deriveDisplayNameFromEmail(email: string | undefined): string {
+  if (!email) return 'New User';
+  return email.split('@')[0] || 'New User';
+}
+
 export default function ProfileEdit() {
-  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  // R16: Also pull profileLoading to handle first-time profile scenario
+  const { user, profile, loading: authLoading, profileLoading, refreshProfile } = useAuth();
   const { themeId, setThemeId } = useTheme();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
@@ -39,12 +46,18 @@ export default function ProfileEdit() {
     toast.success(`Theme changed to ${themesById[newThemeId].label}`);
   };
 
+  // R16: Hydrate form state - handles both existing profile and first-time scenarios
   useEffect(() => {
     if (profile) {
+      // Existing user with profile - use profile values
       setDisplayName(profile.display_name || '');
       setAvatarPreview(profile.avatar_url || null);
+    } else if (!profileLoading && user) {
+      // R16: First-time profile scenario - derive defaults from user
+      setDisplayName(deriveDisplayNameFromEmail(user.email));
+      setAvatarPreview(null);
     }
-  }, [profile]);
+  }, [profile, profileLoading, user]);
 
   // P6: Check Supabase health
   useEffect(() => {
@@ -88,20 +101,29 @@ export default function ProfileEdit() {
     e.preventDefault();
     if (!user) return;
 
-    // R15: Guard against saving when profile hasn't loaded yet
-    if (!profile) {
-      console.warn('[ProfileEdit] Cannot save - profile not yet loaded');
-      toast.error('Profile not loaded. Please wait and try again.');
+    // R16: Only block if profile is still actively loading
+    // If profile is null but not loading, this is first-time creation - allow it
+    if (!profile && profileLoading) {
+      console.warn('[ProfileEdit] Cannot save - profile still loading');
+      toast.error('Profile is still loading. Please wait a moment and try again.');
       return;
     }
+
+    // R16: Log submit attempt for debugging
+    console.log('[ProfileEdit] SUBMIT CLICK', {
+      profileNull: !profile,
+      profileLoading,
+      displayName,
+      hasAvatarFile: !!avatarFile,
+    });
 
     setIsUploading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      // R15: Start with EXISTING avatar_url from profile
-      let avatarUrl = profile.avatar_url;
+      // R16: Start with existing avatar if profile exists, otherwise null
+      let avatarUrl = profile?.avatar_url ?? null;
 
       if (avatarFile) {
         const filePath = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
@@ -123,14 +145,22 @@ export default function ProfileEdit() {
         display_name: displayName,
         avatarUrl: avatarUrl?.substring(0, 50) || null,
         avatarChanged: !!avatarFile,
-        previousAvatarUrl: profile.avatar_url?.substring(0, 50) || null,
+        previousAvatarUrl: profile?.avatar_url?.substring(0, 50) || null,
       });
 
+      // R16: Use UPSERT to handle both existing profiles and first-time creation
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
-        .update({ display_name: displayName, avatar_url: avatarUrl })
-        .eq('id', user.id)
-        .select()
+        .upsert(
+          {
+            id: user.id,
+            email: user.email || '',  // Required for INSERT
+            display_name: displayName || null,
+            avatar_url: avatarUrl || null,
+          },
+          { onConflict: 'id' }
+        )
+        .select('*')
         .single();
 
       if (updateError) {
