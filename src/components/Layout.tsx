@@ -41,7 +41,6 @@ import {
   // R20: Mode-specific icons
   ScrollText,
   Heart,
-  ListTodo
 } from 'lucide-react'; 
 import logo from '../assets/logo5.png'; 
 import useClickOutside from '../hooks/useClickOutside';
@@ -171,13 +170,9 @@ export default function Layout() {
     }
   };
 
+  // R21: Tab 2 is always "Missions" now, so use Send icon for all modes
   const getMissionsIcon = () => {
-    switch (theme.id) {
-      case 'family': return <ListTodo size={20} />;
-      case 'guild':
-      case 'couple':
-      default: return <Send size={20} />;
-    }
+    return <Send size={20} />;
   };
 
   // Navigation items - using theme strings and mode-specific icons

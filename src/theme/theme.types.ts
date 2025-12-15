@@ -13,11 +13,15 @@ export interface ThemeStrings {
   tokenSingular: string;
   tokenPlural: string;
   inboxTitle: string; // e.g. "Mission Inbox", "Chore Inbox"
-  friendsTitle: string; // e.g. "Your Crew", "Your Family", "Your Partner"
-  storeTitle: string; // e.g. "Reward Store", "Loot Vault"
-  contractsLabel: string; // Navigation label for contracts/missions inbox
-  missionsLabel: string; // Navigation label for issued missions
+  inboxSubtitle: string; // R21: e.g. "Contracts assigned to you for completion."
+  friendsTitle: string; // e.g. "Guild", "Family", "Partner"
+  storeTitle: string; // e.g. "Rewards", "Loot Vault", "Gifts"
+  contractsLabel: string; // Navigation label for contracts/missions inbox (Tab 1)
+  missionsLabel: string; // Navigation label for issued missions (Tab 2) - always "Missions"
   historyLabel: string; // Navigation label for archive/history
+  // R21: IssuedPage (Tab 2 destination) titles
+  issuedPageTitle: string; // e.g. "My Missions"
+  issuedPageSubtitle: string; // e.g. "Missions you've created for others to complete."
   // P3: Mission Inbox section titles
   sectionDoNowTitle: string; // e.g. "Do this now", "Today's chores", "Do this for your partner"
   sectionWaitingApprovalTitle: string; // e.g. "Waiting for approval"

@@ -352,14 +352,10 @@ export default function IssuedPage() {
       {/* R8 FIX: Single render path - no conditional tree swap based on activeLayer */}
       <PullToRefresh onRefresh={handleRefresh} isPullable={activeLayer !== 'modal'}>
         <PageContainer>
-          {/* R14/R20: Mode-aware title - avoid duplicating "My" if already in label */}
+          {/* R21: Use theme strings directly for page title and subtitle */}
           <PageHeader
-            title={theme.strings.missionsLabel.startsWith('My ')
-              ? theme.strings.missionsLabel
-              : `My ${theme.strings.missionsLabel}`}
-            subtitle={theme.id === 'couple'
-              ? `Create ${theme.strings.missionPlural} for your ${theme.strings.crewLabel}`
-              : t('contracts.myMissionsDescription')}
+            title={theme.strings.issuedPageTitle}
+            subtitle={theme.strings.issuedPageSubtitle}
           />
 
           {/* R11: Moved quote to bottom of page for consistency */}
@@ -369,8 +365,8 @@ export default function IssuedPage() {
             <button
               onClick={handleCreateNewContract}
               className="fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 bg-teal-500 hover:bg-teal-600 text-white p-4 min-w-[56px] min-h-[56px] flex items-center justify-center bottom-4 right-4 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto"
-              aria-label={`Create new ${theme.strings.missionSingular}`}
-              title={`Create new ${theme.strings.missionSingular}`}
+              aria-label="Create new mission"
+              title="Create new mission"
               data-testid="missions-fab"
             >
               <PlusCircle size={28} />
@@ -404,20 +400,18 @@ export default function IssuedPage() {
             {sortedIssuedContracts.length === 0 && !loading ? (
               <div className="text-center py-10">
                 <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                {/* R14: Mode-aware empty state */}
+                {/* R21: Simplified empty state - uses theme strings */}
                 <p className="text-subtitle text-slate-300 mb-6">
-                  {theme.id === 'couple'
-                    ? `No ${theme.strings.missionsLabel.toLowerCase()} yet. Create one for your ${theme.strings.crewLabel}!`
-                    : t('contracts.noMissions')}
+                  No missions yet. Create one for your {theme.strings.crewLabel}!
                 </p>
                 <button
                   onClick={handleCreateNewContract}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
                   data-testid="missions-empty-cta"
-                  aria-label={`Create new ${theme.strings.missionSingular}`}
+                  aria-label="Create new mission"
                 >
                   <PlusCircle size={20} />
-                  Create new {theme.strings.missionSingular}
+                  Create new mission
                 </button>
               </div>
             ) : (

@@ -17,11 +17,14 @@ export const guildTheme: ThemeDefinition = {
     tokenSingular: 'credit',
     tokenPlural: 'credits',
     inboxTitle: 'Mission Inbox',
-    friendsTitle: 'Guild Roster',
+    inboxSubtitle: 'Contracts assigned to you for completion.',
+    friendsTitle: 'Guild',  // R21: Simplified from "Guild Roster"
     storeTitle: 'Loot Vault',
     contractsLabel: 'Contracts',
     missionsLabel: 'Missions',
     historyLabel: 'History',
+    issuedPageTitle: 'My Missions',
+    issuedPageSubtitle: 'Missions you\'ve created for others to complete.',
     sectionDoNowTitle: 'Do this now',
     sectionWaitingApprovalTitle: 'Waiting for approval',
     sectionCompletedTitle: 'Recently completed',
@@ -51,11 +54,14 @@ export const familyTheme: ThemeDefinition = {
     tokenSingular: 'star',
     tokenPlural: 'stars',
     inboxTitle: 'Chore Inbox',
-    friendsTitle: 'Your Family',
-    storeTitle: 'Reward Store',
+    inboxSubtitle: 'Chores assigned to you for completion.',
+    friendsTitle: 'Family',  // R21: Simplified from "Your Family"
+    storeTitle: 'Rewards',   // R21: Simplified from "Reward Store"
     contractsLabel: 'Chores',
-    missionsLabel: 'My Chores',  // R20: Changed from 'Tasks' - clearer that these are chores you've assigned
+    missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"
     historyLabel: 'History',
+    issuedPageTitle: 'My Missions',
+    issuedPageSubtitle: 'Missions you\'ve created for your family to complete.',
     sectionDoNowTitle: 'Today\'s chores',
     sectionWaitingApprovalTitle: 'Waiting for approval',
     sectionCompletedTitle: 'Recently completed',
@@ -85,11 +91,14 @@ export const coupleTheme: ThemeDefinition = {
     tokenSingular: 'token',
     tokenPlural: 'tokens',
     inboxTitle: 'Request Inbox',
-    friendsTitle: 'Your Partner',
-    storeTitle: 'Gift Store',
+    inboxSubtitle: 'Requests your partner has sent you.',
+    friendsTitle: 'Partner',  // R21: Simplified from "Your Partner"
+    storeTitle: 'Gifts',      // R21: Simplified from "Gift Store"
     contractsLabel: 'Requests',
-    missionsLabel: 'Moments',
+    missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"
     historyLabel: 'History',
+    issuedPageTitle: 'My Missions',
+    issuedPageSubtitle: 'Missions you\'ve created for your partner to complete.',
     sectionDoNowTitle: 'Assigned to you',
     sectionWaitingApprovalTitle: 'Waiting for approval',
     sectionCompletedTitle: 'Recently completed',

@@ -301,7 +301,7 @@ export default function Dashboard() {
       <PageContainer>
         <PageHeader
           title={theme.strings.inboxTitle}
-          subtitle={t('contracts.description')}
+          subtitle={theme.strings.inboxSubtitle}
         />
 
         <StatsRow

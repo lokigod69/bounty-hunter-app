@@ -361,9 +361,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <LanguageSwitcher />
               </div>
 
-              {/* R10/R20: Mode Switcher with helper text */}
+              {/* R10/R20/R21: Mode Switcher with helper text */}
               <div className="p-4 bg-gray-800/50 rounded-lg">
-                <label className="text-sm font-medium block mb-3">{t('profile.mode') || 'App Mode'}</label>
+                <label className="text-sm font-medium block mb-3">Mode</label>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
                   {modeOptions.map((option) => {
                     const Icon = option.icon;
