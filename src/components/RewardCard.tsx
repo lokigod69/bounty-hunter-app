@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { Database } from '../types/database';
-import CreditDisplay from './CreditDisplay';
+import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
 
 export type Reward = Database['public']['Tables']['rewards_store']['Row'];
@@ -88,11 +88,11 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       
       {/* Bottom - Price and action - mobile optimized */}
       <div className="p-3 sm:p-4 md:p-5 border-t border-gray-700/50 space-y-2 sm:space-y-3">
-        {/* Price badge - prominent, mobile friendly */}
+        {/* R20: Simplified cost display - static coin + number, no animation */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">Cost:</span>
-            <CreditDisplay amount={cost} size="medium" shimmerType="premium" />
+            <Coin size="sm" variant="static" value={cost} />
           </div>
           {!canAfford && view === 'available' && creditsNeeded > 0 && (
             <span className="text-xs text-white/50 whitespace-nowrap">

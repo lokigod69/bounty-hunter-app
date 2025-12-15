@@ -352,9 +352,11 @@ export default function IssuedPage() {
       {/* R8 FIX: Single render path - no conditional tree swap based on activeLayer */}
       <PullToRefresh onRefresh={handleRefresh} isPullable={activeLayer !== 'modal'}>
         <PageContainer>
-          {/* R14: Use theme.strings.missionsLabel for mode-aware title (e.g., "Moments" in couple mode) */}
+          {/* R14/R20: Mode-aware title - avoid duplicating "My" if already in label */}
           <PageHeader
-            title={`My ${theme.strings.missionsLabel}`}
+            title={theme.strings.missionsLabel.startsWith('My ')
+              ? theme.strings.missionsLabel
+              : `My ${theme.strings.missionsLabel}`}
             subtitle={theme.id === 'couple'
               ? `Create ${theme.strings.missionPlural} for your ${theme.strings.crewLabel}`
               : t('contracts.myMissionsDescription')}

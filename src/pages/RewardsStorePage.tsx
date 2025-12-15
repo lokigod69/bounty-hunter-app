@@ -325,8 +325,8 @@ const RewardsStorePage: React.FC = () => {
                   </span>
                 ) : null}
               </div>
-              {/* R19: Single coin visual using unified Coin component */}
-              <Coin size="lg" variant="subtle-spin" showValue={false} />
+              {/* R20: Coin shows actual balance value */}
+              <Coin size="lg" variant="subtle-spin" value={userCredits ?? 0} />
             </BaseCard>
           </div>
         )}

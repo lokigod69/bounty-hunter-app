@@ -37,7 +37,11 @@ import {
   LogOut,
   Menu,
   X,
-  Users
+  Users,
+  // R20: Mode-specific icons
+  ScrollText,
+  Heart,
+  ListTodo
 } from 'lucide-react'; 
 import logo from '../assets/logo5.png'; 
 import useClickOutside from '../hooks/useClickOutside';
@@ -157,10 +161,29 @@ export default function Layout() {
     }
   });
 
-  // Navigation items - using theme strings
+  // R20: Mode-specific icons for navigation
+  const getContractsIcon = () => {
+    switch (theme.id) {
+      case 'guild': return <ScrollText size={20} />;
+      case 'couple': return <Heart size={20} />;
+      case 'family':
+      default: return <Home size={20} />;
+    }
+  };
+
+  const getMissionsIcon = () => {
+    switch (theme.id) {
+      case 'family': return <ListTodo size={20} />;
+      case 'guild':
+      case 'couple':
+      default: return <Send size={20} />;
+    }
+  };
+
+  // Navigation items - using theme strings and mode-specific icons
   const navItems = [
-    { name: theme.strings.contractsLabel, path: '/', icon: <Home size={20} />, sound: 'click1a' },
-    { name: theme.strings.missionsLabel, path: '/issued', icon: <Send size={20} />, sound: 'click1b' },
+    { name: theme.strings.contractsLabel, path: '/', icon: getContractsIcon(), sound: 'click1a' },
+    { name: theme.strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
     { name: theme.strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
     { name: theme.strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
     { name: theme.strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },

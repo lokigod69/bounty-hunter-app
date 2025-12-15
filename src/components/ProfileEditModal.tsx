@@ -28,11 +28,11 @@ interface ProfileEditModalProps {
   onClose: () => void;
 }
 
-// R10: Mode switcher configuration
-const modeOptions: { id: ThemeId; label: string; icon: typeof Shield }[] = [
-  { id: 'guild', label: 'Guild', icon: Shield },
-  { id: 'family', label: 'Family', icon: Home },
-  { id: 'couple', label: 'Couple', icon: Heart },
+// R10/R20: Mode switcher configuration with descriptions
+const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: string }[] = [
+  { id: 'guild', label: 'Guild', icon: Shield, hint: 'For friends & gaming groups' },
+  { id: 'family', label: 'Family', icon: Home, hint: 'For household chores' },
+  { id: 'couple', label: 'Couple', icon: Heart, hint: 'For partners & loved ones' },
 ];
 
 // R16: Helper to derive display name from email
@@ -361,7 +361,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <LanguageSwitcher />
               </div>
 
-              {/* R10: Mode Switcher */}
+              {/* R10/R20: Mode Switcher with helper text */}
               <div className="p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium block mb-3">{t('profile.mode') || 'App Mode'}</label>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
@@ -392,6 +392,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                     );
                   })}
                 </div>
+                {/* R20: Show hint for currently selected mode */}
+                <p className="text-xs text-white/50 mt-2 text-center">
+                  {modeOptions.find(o => o.id === themeId)?.hint}
+                </p>
               </div>
             </div>
 

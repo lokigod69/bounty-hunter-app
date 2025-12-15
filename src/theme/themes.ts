@@ -54,7 +54,7 @@ export const familyTheme: ThemeDefinition = {
     friendsTitle: 'Your Family',
     storeTitle: 'Reward Store',
     contractsLabel: 'Chores',
-    missionsLabel: 'Tasks',
+    missionsLabel: 'My Chores',  // R20: Changed from 'Tasks' - clearer that these are chores you've assigned
     historyLabel: 'History',
     sectionDoNowTitle: 'Today\'s chores',
     sectionWaitingApprovalTitle: 'Waiting for approval',
