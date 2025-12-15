@@ -62,7 +62,11 @@ export default function App() {
       <AuthProvider>
         <ThemeProvider>
         <UIProvider>
-          <Toaster toastOptions={{ style: { background: '#333', color: '#fff' } }} />
+          {/* R19: Toast container z-index must be above modals (10200) to appear above blur */}
+          <Toaster
+            containerStyle={{ zIndex: 10500 }}
+            toastOptions={{ style: { background: '#333', color: '#fff' } }}
+          />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
               {/* Public route */}

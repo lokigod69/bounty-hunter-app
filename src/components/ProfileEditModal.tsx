@@ -9,7 +9,7 @@
 // PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { UserCircle, UploadCloud, X, Volume2, VolumeX, Shield, Home, Heart } from 'lucide-react';
@@ -52,6 +52,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
+
+  // R19: Track if mousedown occurred on backdrop (not inside modal content)
+  // This prevents closing the modal when user is selecting text and drags outside
+  const mouseDownOnBackdropRef = useRef(false);
 
   // Phase 2: Use UIContext to coordinate overlay layers and scroll locking
   // R7 FIX: Only setup overlay when THIS modal is open. Don't call clearLayer in else branch
@@ -249,13 +253,34 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
 
   if (!isOpen) return null;
 
+  // R19: Handle backdrop click - only close if mousedown also started on backdrop
+  const handleBackdropMouseDown = (e: React.MouseEvent) => {
+    // If the target is the backdrop itself (not a child), record it
+    if (e.target === e.currentTarget) {
+      mouseDownOnBackdropRef.current = true;
+    } else {
+      mouseDownOnBackdropRef.current = false;
+    }
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if both mousedown AND click occurred on the backdrop
+    // This prevents closing when user selects text and drags outside
+    if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) {
+      onClose();
+    }
+    mouseDownOnBackdropRef.current = false;
+  };
+
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-modal-backdrop p-2 sm:p-4"
-      onClick={onClose} // Click outside to close
+      onMouseDown={handleBackdropMouseDown}
+      onClick={handleBackdropClick}
     >
-      <div 
+      <div
         className="glass-card w-full max-w-md mx-2 sm:mx-4 bg-gray-900/80 rounded-xl sm:rounded-2xl border border-gray-700 flex flex-col animate-fade-in-up max-h-[95vh] sm:max-h-[90vh] z-modal-content"
+        onMouseDown={(e) => e.stopPropagation()} // Prevent mousedown inside from being tracked as backdrop
         onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
       >
         {/* Modal Header with enhanced mobile touch targets */}

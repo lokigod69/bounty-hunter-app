@@ -1,9 +1,11 @@
 // src/components/CreditDisplay.tsx
 // A reusable component for displaying credits with a sophisticated, dynamic shimmer animation
 // Updated to use the new unified shimmer system with content-length-aware duration
+// R19: Updated to use unified Coin component instead of emoji
 
 import React from 'react';
 import { useCreditShimmerDuration } from '../hooks/useShimmerDuration';
+import { Coin, CoinSize } from './visual/Coin';
 
 interface CreditDisplayProps {
   amount: number;
@@ -11,10 +13,10 @@ interface CreditDisplayProps {
   shimmerType?: 'standard' | 'premium' | 'credit';
 }
 
-const CreditDisplay: React.FC<CreditDisplayProps> = ({ 
-  amount, 
-  size = 'medium', 
-  shimmerType = 'credit' 
+const CreditDisplay: React.FC<CreditDisplayProps> = ({
+  amount,
+  size = 'medium',
+  shimmerType = 'credit'
 }) => {
   const { shimmerStyle, setElementRef } = useCreditShimmerDuration(amount);
 
@@ -24,10 +26,11 @@ const CreditDisplay: React.FC<CreditDisplayProps> = ({
     large: 'text-2xl',
   };
 
-  const coinSizeClasses = {
-    small: 'text-2xl',
-    medium: 'text-3xl',
-    large: 'text-4xl',
+  // R19: Map display sizes to Coin sizes
+  const coinSizeMap: Record<'small' | 'medium' | 'large', CoinSize> = {
+    small: 'sm',
+    medium: 'md',
+    large: 'lg',
   };
 
   // Dynamic shimmer class based on type
@@ -42,7 +45,7 @@ const CreditDisplay: React.FC<CreditDisplayProps> = ({
 
   return (
     <div className="flex items-center font-bold">
-      <span 
+      <span
         ref={setElementRef}
         className={`${shimmerClasses[shimmerType]} ${sizeClasses[size]} ${fallbackGradient} bg-clip-text text-transparent`}
         style={shimmerStyle}
@@ -50,7 +53,7 @@ const CreditDisplay: React.FC<CreditDisplayProps> = ({
       >
         {amount}
       </span>
-      <span className={`${coinSizeClasses[size]} animate-proper-spin ml-2`}>🪙</span>
+      <Coin size={coinSizeMap[size]} variant="subtle-spin" showValue={false} className="ml-2" />
     </div>
   );
 };

@@ -23,6 +23,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
+import { Coin } from '../components/visual/Coin';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
 
 type Tab = 'available' | 'created' | 'collected';
@@ -324,8 +325,8 @@ const RewardsStorePage: React.FC = () => {
                   </span>
                 ) : null}
               </div>
-              {/* R14: Single coin visual, scaled down */}
-              <div className="text-4xl sm:text-5xl animate-proper-spin">🪙</div>
+              {/* R19: Single coin visual using unified Coin component */}
+              <Coin size="lg" variant="subtle-spin" showValue={false} />
             </BaseCard>
           </div>
         )}

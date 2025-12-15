@@ -30,7 +30,7 @@ import {
 import { StateChip } from './StateChip';
 import { useUI } from '../../context/UIContext';
 import { getOverlayRoot } from '../../lib/overlayRoot';
-import DoubleCoinValue from '../coin/DoubleCoinValue';
+import { Coin } from '../visual/Coin';
 
 // ============================================================================
 // Types
@@ -361,12 +361,15 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
                   {reward.type === 'credit' ? (
                     <div className="flex items-center justify-center py-2">
-                      <DoubleCoinValue
+                      {/* R19: Unified Coin component with value on face */}
+                      <Coin
                         value={
                           typeof reward.value === 'number'
                             ? reward.value
                             : parseInt(String(reward.value), 10) || 0
                         }
+                        size="lg"
+                        variant="subtle-spin"
                       />
                     </div>
                   ) : reward.imageUrl ? (
