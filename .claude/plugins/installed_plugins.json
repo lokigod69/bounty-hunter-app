@@ -5,7 +5,7 @@
       "version": "unknown",
       "installedAt": "2025-11-25T15:20:04.010Z",
       "lastUpdated": "2025-11-25T15:20:04.010Z",
-      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\brand-guidelines",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\cache\\awesome-claude-skills\\brand-guidelines\\unknown",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
     },
@@ -13,7 +13,7 @@
       "version": "unknown",
       "installedAt": "2025-11-25T15:28:26.452Z",
       "lastUpdated": "2025-11-25T15:28:26.452Z",
-      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\internal-comms",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\cache\\awesome-claude-skills\\internal-comms\\unknown",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
     },
@@ -21,7 +21,7 @@
       "version": "unknown",
       "installedAt": "2025-11-25T15:29:52.882Z",
       "lastUpdated": "2025-11-25T15:29:52.882Z",
-      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\canvas-design",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\cache\\awesome-claude-skills\\canvas-design\\unknown",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
     },
@@ -29,7 +29,7 @@
       "version": "unknown",
       "installedAt": "2025-11-25T15:31:00.246Z",
       "lastUpdated": "2025-11-25T15:31:00.246Z",
-      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\webapp-testing",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\cache\\awesome-claude-skills\\webapp-testing\\unknown",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
     },
@@ -37,7 +37,7 @@
       "version": "0178590715b9",
       "installedAt": "2025-12-05T02:05:55.087Z",
       "lastUpdated": "2025-12-05T02:05:55.087Z",
-      "installPath": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills\\file-organizer",
+      "installPath": "C:\\Users\\micha\\.claude\\plugins\\cache\\awesome-claude-skills\\file-organizer\\0178590715b9",
       "gitCommitSha": "0178590715b95da89ad521b1f1e9df28a7bfea9b",
       "isLocal": true
     }
