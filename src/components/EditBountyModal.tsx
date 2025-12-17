@@ -1,16 +1,27 @@
 // src/components/EditBountyModal.tsx
 // Phase 2: Updated to use overlay-root, UIContext, and standardized z-index classes.
+// R22: Added file upload option for reward images.
 // A modal for editing an existing bounty.
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import EmojiPicker from './EmojiPicker';
-import { X } from 'lucide-react';
+import { FileUpload } from './FileUpload';
+import { X, Upload, Trash2 } from 'lucide-react';
 import { useUpdateBounty } from '../hooks/useUpdateBounty';
 import { Reward } from './RewardCard';
 import { useUI } from '../context/UIContext';
+import { useAuth } from '../hooks/useAuth';
 import { getOverlayRoot } from '../lib/overlayRoot';
+import {
+  uploadRewardImage,
+  validateRewardImage,
+  isRewardImageStorageUrl,
+  REWARD_IMAGE_MAX_SIZE_MB,
+  REWARD_IMAGE_ALLOWED_EXTENSIONS,
+} from '../lib/rewardImageUpload';
 
 interface EditBountyModalProps {
   isOpen: boolean;
@@ -21,33 +32,65 @@ interface EditBountyModalProps {
 
 const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSuccess, bounty }) => {
   const { t } = useTranslation();
+  const supabase = useSupabaseClient();
+  const { user } = useAuth();
   const { updateBounty, isLoading } = useUpdateBounty();
   const { openModal, clearLayer } = useUI();
-  
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>('');
-  const [imageType, setImageType] = useState<'emoji' | 'url'>('emoji');
+
+  // R22: Image state - now includes 'upload' option
+  const [imageType, setImageType] = useState<'emoji' | 'url' | 'upload'>('emoji');
   const [selectedEmoji, setSelectedEmoji] = useState('🎁');
   const [imageUrl, setImageUrl] = useState('');
   const [imageUrlError, setImageUrlError] = useState<string | null>(null);
+
+  // R22: File upload state
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (bounty) {
       setName(bounty.name);
       setDescription(bounty.description || '');
       setCreditCost(bounty.credit_cost || '');
-      
-      const isUrl = bounty.image_url && (bounty.image_url.startsWith('http') || bounty.image_url.includes('/'));
-      if (isUrl) {
-        setImageType('url');
-        setImageUrl(bounty.image_url || '');
-        setSelectedEmoji('🎁');
-      } else {
-        setImageType('emoji');
-        setSelectedEmoji(bounty.image_url || '🎁');
+
+      // R22: Determine image type from existing data
+      const imgUrl = bounty.image_url;
+      const isHttpUrl = imgUrl && (imgUrl.startsWith('http') || imgUrl.includes('/'));
+      const isStorageUrl = imgUrl && isRewardImageStorageUrl(imgUrl);
+
+      if (isStorageUrl) {
+        // It's an uploaded image
+        setImageType('upload');
+        setExistingImageUrl(imgUrl);
+        setUploadPreview(imgUrl);
         setImageUrl('');
+        setSelectedEmoji('🎁');
+      } else if (isHttpUrl) {
+        // It's an external URL
+        setImageType('url');
+        setImageUrl(imgUrl || '');
+        setSelectedEmoji('🎁');
+        setExistingImageUrl(null);
+        setUploadPreview(null);
+      } else {
+        // It's an emoji
+        setImageType('emoji');
+        setSelectedEmoji(imgUrl || '🎁');
+        setImageUrl('');
+        setExistingImageUrl(null);
+        setUploadPreview(null);
       }
+
+      // Reset upload file when bounty changes
+      setUploadFile(null);
+      setUploadError(null);
     }
   }, [bounty]);
 
@@ -71,27 +114,90 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
     return true;
   };
 
+  // R22: Handle file selection
+  const handleFileSelect = (file: File) => {
+    const validation = validateRewardImage(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'Invalid file');
+      return;
+    }
+
+    setUploadError(null);
+    setUploadFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // R22: Clear uploaded file
+  const handleClearUpload = () => {
+    setUploadFile(null);
+    setUploadPreview(null);
+    setExistingImageUrl(null);
+    setUploadError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bounty) return;
+    if (!bounty || !user) return;
 
     if (imageType === 'url' && !validateImageUrl(imageUrl)) {
       return;
     }
 
-    const finalImageUrl = imageType === 'emoji' ? selectedEmoji : imageUrl;
+    setIsUploading(true);
+    let finalImageUrl = '';
 
-    const result = await updateBounty({
-      p_bounty_id: bounty.id,
-      p_name: name,
-      p_description: description,
-      p_image_url: finalImageUrl,
-      p_credit_cost: Number(creditCost),
-    });
+    try {
+      // R22: Handle different image types
+      if (imageType === 'emoji') {
+        finalImageUrl = selectedEmoji;
+      } else if (imageType === 'url') {
+        finalImageUrl = imageUrl;
+      } else if (imageType === 'upload') {
+        if (uploadFile) {
+          // New file to upload
+          const uploadResult = await uploadRewardImage(
+            supabase,
+            uploadFile,
+            user.id,
+            bounty.id
+          );
 
-    if (result?.success) {
-      onSuccess();
-      onClose();
+          if (!uploadResult.success) {
+            setUploadError(uploadResult.error || 'Upload failed');
+            setIsUploading(false);
+            return;
+          }
+
+          finalImageUrl = uploadResult.publicUrl || '';
+        } else if (existingImageUrl) {
+          // Keep existing uploaded image
+          finalImageUrl = existingImageUrl;
+        }
+      }
+
+      const result = await updateBounty({
+        p_bounty_id: bounty.id,
+        p_name: name,
+        p_description: description,
+        p_image_url: finalImageUrl,
+        p_credit_cost: Number(creditCost),
+      });
+
+      if (result?.success) {
+        onSuccess();
+        onClose();
+      }
+    } catch (err) {
+      console.error('[EditBountyModal] Submit error:', err);
+      setUploadError('Failed to update bounty. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -135,14 +241,20 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
               required
             />
 
+            {/* R22: Image selection with three options */}
             <div>
-              <div className="flex items-center justify-center space-x-4 mb-3">
-                <button type="button" onClick={() => setImageType('emoji')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
-                <button type="button" onClick={() => setImageType('url')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'url' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useImageUrl')}</button>
+              <label className="block text-sm font-medium text-white/70 mb-2">Reward Image</label>
+              <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
+                <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
+                <button type="button" onClick={() => setImageType('url')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'url' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useImageUrl')}</button>
+                <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>Upload</button>
               </div>
-              {imageType === 'emoji' ? (
+
+              {imageType === 'emoji' && (
                 <EmojiPicker selectedEmoji={selectedEmoji} onSelect={setSelectedEmoji} />
-              ) : (
+              )}
+
+              {imageType === 'url' && (
                 <div>
                   <input
                     type="text"
@@ -154,14 +266,50 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
                   {imageUrlError && <p className="text-red-500 text-sm mt-1">{imageUrlError}</p>}
                 </div>
               )}
+
+              {imageType === 'upload' && (
+                <div className="space-y-3">
+                  {uploadPreview ? (
+                    <div className="relative">
+                      <div className="w-full h-40 rounded-lg overflow-hidden border border-gray-700">
+                        <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleClearUpload}
+                        className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-500 rounded-full text-white transition"
+                        aria-label="Remove image"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      {uploadFile && <p className="text-xs text-white/50 mt-1 text-center">{uploadFile.name}</p>}
+                      {existingImageUrl && !uploadFile && <p className="text-xs text-teal-400/70 mt-1 text-center">Current uploaded image</p>}
+                    </div>
+                  ) : (
+                    <FileUpload
+                      onFileSelect={handleFileSelect}
+                      accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+                    >
+                      <div className="w-full p-6 border-2 border-dashed border-gray-600 rounded-lg hover:border-teal-500 transition cursor-pointer text-center">
+                        <Upload size={32} className="mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-white/70">Click to upload image</p>
+                        <p className="text-xs text-white/50 mt-1">
+                          {REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase()} - Max {REWARD_IMAGE_MAX_SIZE_MB}MB
+                        </p>
+                      </div>
+                    </FileUpload>
+                  )}
+                  {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Footer */}
           <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex justify-end space-x-4 flex-shrink-0">
-            <button type="button" onClick={onClose} className="px-6 py-3 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold">{t('rewards.editModal.cancelButton')}</button>
-            <button type="submit" disabled={isLoading} className="px-6 py-3 rounded-lg bg-teal-500 text-black font-bold hover:bg-teal-600 transition disabled:bg-gray-500">
-              {isLoading ? t('rewards.editModal.submittingButton') : t('rewards.editModal.submitButton')}
+            <button type="button" onClick={onClose} disabled={isLoading || isUploading} className="px-6 py-3 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold disabled:opacity-50">{t('rewards.editModal.cancelButton')}</button>
+            <button type="submit" disabled={isLoading || isUploading} className="px-6 py-3 rounded-lg bg-teal-500 text-black font-bold hover:bg-teal-600 transition disabled:bg-gray-500">
+              {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.editModal.submittingButton')) : t('rewards.editModal.submitButton')}
             </button>
           </div>
         </form>
