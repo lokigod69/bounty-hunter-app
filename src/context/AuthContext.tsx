@@ -5,8 +5,9 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { Profile } from '../types/database';
+import { Profile } from '../types/custom';  // R25: Use custom Profile type with partner_user_id
 import { ensureProfileForUser } from '../lib/profileBootstrap';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +22,7 @@ interface AuthContextType {
   profileError: Error | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  setPartner: (partnerId: string | null) => Promise<boolean>;  // R25: Set partner for couple mode
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -203,6 +205,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // R25: Set partner_user_id for couple mode
+  const setPartner = async (partnerId: string | null): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in to set a partner.');
+      return false;
+    }
+
+    try {
+      console.log('[AuthContext] Setting partner:', partnerId);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ partner_user_id: partnerId })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('[AuthContext] Error setting partner:', error);
+        toast.error('Failed to set partner. Please try again.');
+        return false;
+      }
+
+      // Update local profile state immediately
+      if (profile) {
+        setProfile({ ...profile, partner_user_id: partnerId });
+      }
+
+      toast.success(partnerId ? 'Partner selected!' : 'Partner cleared.');
+      return true;
+    } catch (err) {
+      console.error('[AuthContext] Unexpected error setting partner:', err);
+      toast.error('Failed to set partner. Please try again.');
+      return false;
+    }
+  };
+
   const signOut = async () => {
     try {
       setAuthLoading(true);
@@ -234,6 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profileError,
     signOut,
     refreshProfile,
+    setPartner,  // R25
   };
 
   return (

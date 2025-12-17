@@ -1,9 +1,10 @@
 // src/components/FriendCard.tsx
 // Phase 1: Updated to use BaseCard for consistent styling.
+// R25: Added partner badge and "Set as Partner" action.
 // Card component for displaying friend information.
 
-import { Profile } from '../types/database';
-import { CheckCircle, X, UserX, Trash2, Check } from 'lucide-react';
+import { Profile } from '../types/custom';  // R25: Use custom Profile type
+import { CheckCircle, X, UserX, Trash2, Check, Heart } from 'lucide-react';
 import { BaseCard } from './ui/BaseCard';
 
 interface FriendCardProps {
@@ -11,10 +12,12 @@ interface FriendCardProps {
   friendshipId?: string;
   status?: 'accepted' | 'pending';
   isIncoming?: boolean;
+  isPartner?: boolean;  // R25: Whether this friend is the current partner
   onAccept?: (friendshipId: string) => void;
   onReject?: (friendshipId: string) => void;
   onRemove?: (friendshipId: string) => void;
-  onCancelSentRequest?: (friendshipId: string) => void; // Added prop for cancelling sent request
+  onCancelSentRequest?: (friendshipId: string) => void;
+  onSetPartner?: (friendId: string) => void;  // R25: Callback to set as partner
 }
 
 export default function FriendCard({
@@ -22,10 +25,12 @@ export default function FriendCard({
   friendshipId,
   status = 'accepted',
   isIncoming = false,
+  isPartner = false,  // R25
   onAccept,
   onReject,
   onRemove,
-  onCancelSentRequest, // Destructure new prop
+  onCancelSentRequest,
+  onSetPartner,  // R25
 }: FriendCardProps) {
   // Get initials from display name or email
   const getInitials = () => {
@@ -70,10 +75,27 @@ export default function FriendCard({
       <div className="ml-4 flex items-center space-x-2">
         {status === 'accepted' && (
           <>
-            <span className="text-green-400 flex items-center mr-2 text-sm">
-              <CheckCircle size={16} className="mr-1" />
-              Friend
-            </span>
+            {/* R25: Show Partner badge or Set as Partner action */}
+            {isPartner ? (
+              <span className="text-teal-400 flex items-center mr-2 text-sm bg-teal-500/10 px-2 py-1 rounded-full">
+                <Heart size={14} className="mr-1" />
+                Partner
+              </span>
+            ) : onSetPartner ? (
+              <button
+                onClick={() => onSetPartner(profile.id)}
+                className="text-white/50 hover:text-teal-400 flex items-center mr-2 text-sm transition-colors"
+                title="Set as partner"
+              >
+                <Heart size={14} className="mr-1" />
+                Set as Partner
+              </button>
+            ) : (
+              <span className="text-green-400 flex items-center mr-2 text-sm">
+                <CheckCircle size={16} className="mr-1" />
+                Friend
+              </span>
+            )}
             {onRemove && friendshipId && (
               <button
                 onClick={() => onRemove(friendshipId)}

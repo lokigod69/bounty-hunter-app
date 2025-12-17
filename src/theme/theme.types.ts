@@ -15,6 +15,8 @@ export interface ThemeStrings {
   inboxTitle: string; // e.g. "Mission Inbox", "Chore Inbox"
   inboxSubtitle: string; // R21: e.g. "Contracts assigned to you for completion."
   friendsTitle: string; // e.g. "Guild", "Family", "Partner"
+  friendsSubtitle: string; // R24: Mode-aware description for Friends page
+  friendsTabLabel: string; // R24: Tab label e.g. "Guild Members", "Family Members", "Partner"
   storeTitle: string; // e.g. "Rewards", "Loot Vault", "Gifts"
   contractsLabel: string; // Navigation label for contracts/missions inbox (Tab 1)
   missionsLabel: string; // Navigation label for issued missions (Tab 2) - always "Missions"

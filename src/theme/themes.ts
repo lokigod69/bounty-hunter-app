@@ -19,6 +19,8 @@ export const guildTheme: ThemeDefinition = {
     inboxTitle: 'Mission Inbox',
     inboxSubtitle: 'Contracts assigned to you for completion.',
     friendsTitle: 'Guild',  // R21: Simplified from "Guild Roster"
+    friendsSubtitle: 'Manage your guild members, send invitations, and review pending requests.',
+    friendsTabLabel: 'Guild Members',
     storeTitle: 'Loot Vault',
     contractsLabel: 'Contracts',
     missionsLabel: 'Missions',
@@ -51,11 +53,13 @@ export const familyTheme: ThemeDefinition = {
     crewLabel: 'family',
     rewardSingular: 'reward',
     rewardPlural: 'rewards',
-    tokenSingular: 'star',
-    tokenPlural: 'stars',
+    tokenSingular: 'credit',  // R24: Unified to 'credits' for consistency
+    tokenPlural: 'credits',
     inboxTitle: 'Chore Inbox',
     inboxSubtitle: 'Chores assigned to you for completion.',
     friendsTitle: 'Family',  // R21: Simplified from "Your Family"
+    friendsSubtitle: 'Manage your family members, send invitations, and review pending requests.',
+    friendsTabLabel: 'Family Members',
     storeTitle: 'Rewards',   // R21: Simplified from "Reward Store"
     contractsLabel: 'Chores',
     missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"
@@ -66,8 +70,8 @@ export const familyTheme: ThemeDefinition = {
     sectionWaitingApprovalTitle: 'Waiting for approval',
     sectionCompletedTitle: 'Recently completed',
     sectionIssuedSummaryTitle: 'Chores you\'ve assigned',
-    storeSubtitle: 'Exchange stars for rewards',
-    storeCreditsLabel: 'Your Stars',
+    storeSubtitle: 'Exchange credits for rewards',  // R24: Changed from 'stars'
+    storeCreditsLabel: 'Your Credits',  // R24: Changed from 'Your Stars'
     storeCanAffordLabel: 'Within reach',
     storeCantAffordLabel: 'Keep earning',
     storeEmptyTitle: 'No rewards yet',
@@ -93,6 +97,8 @@ export const coupleTheme: ThemeDefinition = {
     inboxTitle: 'Request Inbox',
     inboxSubtitle: 'Requests your partner has sent you.',
     friendsTitle: 'Partner',  // R21: Simplified from "Your Partner"
+    friendsSubtitle: 'Connect with your partner to share requests and gifts.',
+    friendsTabLabel: 'Partner',
     storeTitle: 'Gifts',      // R21: Simplified from "Gift Store"
     contractsLabel: 'Requests',
     missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"

@@ -5,10 +5,13 @@
 import type { Database } from './database';
 
 // Base table types
-export type Task = Database['public']['Tables']['tasks']['Row'] & { 
-  updated_at?: string | null; 
+export type Task = Database['public']['Tables']['tasks']['Row'] & {
+  updated_at?: string | null;
 };
-export type Profile = Database['public']['Tables']['profiles']['Row'];
+// R25: Extended Profile type to include partner_user_id (added to DB by backend)
+export type Profile = Database['public']['Tables']['profiles']['Row'] & {
+  partner_user_id?: string | null;
+};
 export type NewTaskData = Database['public']['Tables']['tasks']['Insert'];
 export type UpdateTaskData = Database['public']['Tables']['tasks']['Update'];
 

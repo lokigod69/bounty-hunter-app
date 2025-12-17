@@ -10,14 +10,14 @@
 // - Passed cancel handler to FriendCard for sent requests.
 // P1: Updated page header title to use theme strings.
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
 import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import { UserPlus, Users, AlertTriangle, Heart, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { UserPlus, Users, AlertTriangle, Heart, Mail, CheckCircle, XCircle, UserCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
@@ -36,7 +36,8 @@ export default function Friends() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   // R10: Use profileLoading to show skeleton while profile loads
-  const { user, profile, profileLoading } = useAuth();
+  // R25: Added setPartner for couple mode partner selection
+  const { user, profile, profileLoading, setPartner } = useAuth();
   const navigate = useNavigate();
 
   // R10/R11/R13: Enhanced logging for debugging profile/friends loading
@@ -63,6 +64,38 @@ export default function Friends() {
     loading,
     error: error || null,
   });
+
+  // R25: Get accepted friends list
+  const acceptedFriends = useMemo(() =>
+    friends.filter(f => f.status === 'accepted'),
+    [friends]
+  );
+
+  // R25: Compute partner profile from profile.partner_user_id
+  const selectedPartnerProfile = useMemo(() => {
+    if (!profile?.partner_user_id) return null;
+    const partnerFriend = acceptedFriends.find(f => f.friend?.id === profile.partner_user_id);
+    return partnerFriend?.friend || null;
+  }, [profile?.partner_user_id, acceptedFriends]);
+
+  // R25: Auto-clear partner_user_id if partner is no longer in friends list
+  useEffect(() => {
+    if (!profile?.partner_user_id || loading) return;
+
+    // Only run when friends have loaded
+    if (friends.length === 0 && loading) return;
+
+    const isPartnerStillFriend = acceptedFriends.some(f => f.friend?.id === profile.partner_user_id);
+    if (!isPartnerStillFriend && acceptedFriends.length > 0) {
+      console.log('[Friends] Partner no longer in friends list, clearing partner_user_id');
+      setPartner(null);
+    }
+  }, [profile?.partner_user_id, acceptedFriends, loading, setPartner, friends.length]);
+
+  // R25: Handle partner selection
+  const handleSelectPartner = async (friendId: string) => {
+    await setPartner(friendId);
+  };
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
 
@@ -259,69 +292,119 @@ export default function Friends() {
     );
   }
 
-  // For Couple Mode, show partner-specific UI
+  // R25: For Couple Mode, show partner based on profile.partner_user_id
   if (theme.id === 'couple') {
     return (
       <PullToRefresh onRefresh={handleRefresh}>
         <PageContainer>
-          <PageHeader 
-            title={theme.strings.friendsTitle} 
-            subtitle="Connect with your partner to share requests and moments." 
+          <PageHeader
+            title={theme.strings.friendsTitle}
+            subtitle={theme.strings.friendsSubtitle}
           />
 
           <PageBody>
-            {partnerState.isLoading ? (
+            {/* Loading state */}
+            {(loading || partnerState.isLoading) ? (
               <BaseCard>
                 <div className="text-center py-8">
                   <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-body text-white/70">Loading partner status...</p>
+                  <p className="text-body text-white/70">Loading...</p>
                 </div>
               </BaseCard>
-            ) : partnerState.error ? (
+            ) : error ? (
               <BaseCard className="bg-red-900/20 border-red-500/30">
                 <div className="text-center py-8">
                   <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-                  <h3 className="text-subtitle text-white font-semibold mb-2">Error loading partner</h3>
-                  <p className="text-body text-white/70 mb-4">{partnerState.error}</p>
+                  <h3 className="text-subtitle text-white font-semibold mb-2">Error loading</h3>
+                  <p className="text-body text-white/70 mb-4">{error}</p>
                   <button
-                    onClick={() => partnerState.refresh()}
+                    onClick={() => refreshFriends?.()}
                     className="btn-primary flex items-center justify-center gap-2 mx-auto"
                   >
                     Retry
                   </button>
                 </div>
               </BaseCard>
-            ) : partnerState.state === 'NO_PARTNER' ? (
+            ) : selectedPartnerProfile ? (
+              /* R25: Partner is selected - show partner card */
               <BaseCard>
-                <div className="text-center py-12">
-                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">You haven't connected with a partner yet</h3>
-                  <p className="text-body text-white/70 mb-8">
-                    Invite your partner to start sharing requests and moments together.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="text-center py-8">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <img
+                      src={selectedPartnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(selectedPartnerProfile.email || 'partner')}`}
+                      alt={selectedPartnerProfile.display_name || 'partner'}
+                      className="w-24 h-24 rounded-full border-4 border-teal-400"
+                    />
+                    <Heart size={32} className="text-teal-400" />
+                    {user && (
+                      <img
+                        src={myAvatarUrl}
+                        alt={myDisplayName}
+                        className="w-24 h-24 rounded-full border-4 border-teal-400"
+                      />
+                    )}
+                  </div>
+                  <h3 className="text-subtitle text-white/90 mb-2 font-semibold">
+                    {selectedPartnerProfile.display_name || selectedPartnerProfile.email}
+                  </h3>
+                  <p className="text-body text-white/70 mb-6">{selectedPartnerProfile.email}</p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
                     <button
-                      onClick={() => {
-                        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                        if (searchInput) {
-                          searchInput.focus();
-                        }
-                      }}
+                      onClick={() => navigate('/issued')}
                       className="btn-primary flex items-center justify-center gap-2"
                     >
-                      <UserPlus size={20} />
-                      Invite your partner
+                      Create request
                     </button>
                     <button
-                      onClick={() => navigate('/onboarding')}
+                      onClick={() => navigate('/rewards-store')}
                       className="btn-secondary flex items-center justify-center gap-2"
                     >
-                      Complete onboarding
+                      Create gift
                     </button>
+                  </div>
+                  <button
+                    onClick={() => setPartner(null)}
+                    className="text-sm text-white/50 hover:text-white/70 transition"
+                  >
+                    Change partner
+                  </button>
+                </div>
+              </BaseCard>
+            ) : acceptedFriends.length > 0 ? (
+              /* R25: No partner selected, but have friends - show picker */
+              <BaseCard>
+                <div className="text-center py-8">
+                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">Select your partner</h3>
+                  <p className="text-body text-white/70 mb-6">
+                    Choose who you want to share requests and gifts with.
+                  </p>
+                  <div className="space-y-2 max-w-sm mx-auto">
+                    {acceptedFriends.map(({ friend }) => {
+                      if (!friend) return null;
+                      return (
+                        <button
+                          key={friend.id}
+                          onClick={() => handleSelectPartner(friend.id)}
+                          className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center justify-between transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={friend.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(friend.email || 'user')}`}
+                              alt={friend.display_name || 'user'}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <span className="font-medium">{friend.display_name}</span>
+                          </div>
+                          <UserCheck size={20} className="text-teal-400" />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </BaseCard>
             ) : partnerState.state === 'INVITE_SENT' ? (
+              /* Pending invite sent */
               <BaseCard>
                 <div className="text-center py-12">
                   <Mail size={64} className="mx-auto mb-6 text-yellow-400" />
@@ -329,7 +412,7 @@ export default function Friends() {
                     Invite sent to {partnerState.partnerProfile?.display_name || partnerState.partnerProfile?.email || 'your partner'}
                   </h3>
                   <p className="text-body text-white/70 mb-8">
-                    Waiting for them to join and accept your invitation.
+                    Waiting for them to accept your invitation.
                   </p>
                   {partnerState.friendshipId && (
                     <button
@@ -342,6 +425,7 @@ export default function Friends() {
                 </div>
               </BaseCard>
             ) : partnerState.state === 'INVITE_RECEIVED' ? (
+              /* Pending invite received */
               <BaseCard>
                 <div className="text-center py-12">
                   <Mail size={64} className="mx-auto mb-6 text-blue-400" />
@@ -385,61 +469,21 @@ export default function Friends() {
                   </div>
                 </div>
               </BaseCard>
-            ) : partnerState.state === 'PARTNERED' && partnerState.partnerProfile ? (
-              // R13: Log partner render for debugging avatar issues
-              (() => {
-                console.log('[Friends] Partner render:', {
-                  meDisplayName: profile?.display_name,
-                  meAvatarUrl: profile?.avatar_url,
-                  partnerDisplayName: partnerState.partnerProfile?.display_name,
-                  partnerAvatarUrl: partnerState.partnerProfile?.avatar_url,
-                });
-                return null;
-              })() || (
+            ) : (
+              /* No friends at all - show invite UI */
               <BaseCard>
-                <div className="text-center py-8">
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    {/* R13: Partner avatar - use their profile data */}
-                    <img
-                      src={partnerState.partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(partnerState.partnerProfile.email || 'partner')}`}
-                      alt={partnerState.partnerProfile.display_name || 'partner'}
-                      className="w-24 h-24 rounded-full border-4 border-teal-400"
-                    />
-                    <Heart size={32} className="text-teal-400" />
-                    {/* R13: Your avatar - use useAuth profile data (same as header) */}
-                    {user && (
-                      <img
-                        src={myAvatarUrl}
-                        alt={myDisplayName}
-                        className="w-24 h-24 rounded-full border-4 border-teal-400"
-                      />
-                    )}
-                  </div>
-                  <h3 className="text-subtitle text-white/90 mb-2 font-semibold">
-                    {partnerState.partnerProfile.display_name || partnerState.partnerProfile.email}
-                  </h3>
-                  <p className="text-body text-white/70 mb-8">{partnerState.partnerProfile.email}</p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button
-                      onClick={() => navigate('/issued')}
-                      className="btn-primary flex items-center justify-center gap-2"
-                    >
-                      Create request
-                    </button>
-                    <button
-                      onClick={() => navigate('/rewards-store')}
-                      className="btn-secondary flex items-center justify-center gap-2"
-                    >
-                      Create gift
-                    </button>
-                  </div>
+                <div className="text-center py-12">
+                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
+                  <h3 className="text-subtitle text-white/90 mb-2">Invite your partner</h3>
+                  <p className="text-body text-white/70 mb-8">
+                    Search for your partner to start sharing requests and moments together.
+                  </p>
                 </div>
               </BaseCard>
-              )
-            ) : null}
+            )}
 
-            {/* Search/Invite form for Couple Mode - only show if NO_PARTNER or INVITE_SENT */}
-            {(partnerState.state === 'NO_PARTNER' || partnerState.state === 'INVITE_SENT') && (
+            {/* Search/Invite form for Couple Mode - show when no accepted friends */}
+            {acceptedFriends.length === 0 && !selectedPartnerProfile && (
               <div className="relative mb-6 mt-6">
                 <div className="relative">
                   <input
@@ -455,7 +499,7 @@ export default function Friends() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Dropdown Results */}
                 {showDropdown && (
                   <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
@@ -503,9 +547,9 @@ export default function Friends() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
-        <PageHeader 
-          title={theme.strings.friendsTitle} 
-          subtitle={t('friends.description', 'Manage your guild members, send invitations, and review pending requests.')} 
+        <PageHeader
+          title={theme.strings.friendsTitle}
+          subtitle={theme.strings.friendsSubtitle}
         />
 
         <PageBody>
@@ -562,7 +606,7 @@ export default function Friends() {
                 onClick={() => setActiveTab('friends')}
               >
                 <Users size={16} className="inline mr-1" />
-                {t('friends.tabGuildMembers')}
+                {theme.strings.friendsTabLabel}
                 {friends.length > 0 && (
                   <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
                     {friends.length}
@@ -643,7 +687,9 @@ export default function Friends() {
                       profile={friendship.friend}
                       friendshipId={friendship.id}
                       status="accepted"
+                      isPartner={profile?.partner_user_id === friendship.friend?.id}  // R25
                       onRemove={handleRemoveFriend}
+                      onSetPartner={handleSelectPartner}  // R25
                     />
                   ))}
                 </div>
