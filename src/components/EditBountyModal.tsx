@@ -143,6 +143,8 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // R23 debug log (remove later)
+    console.log('[EditBountyModal] bounty.id', bounty?.id, bounty);
     if (!bounty || !user) return;
 
     if (imageType === 'url' && !validateImageUrl(imageUrl)) {

@@ -20,7 +20,7 @@ export const useUpdateBounty = () => {
       return { success: false, error: 'Not authenticated' };
     }
 
-    if (!updates.p_reward_id) {
+    if (!updates.p_bounty_id) {
       toast.error('Reward ID is required.');
       return { success: false, error: 'Missing reward ID' };
     }
@@ -28,7 +28,7 @@ export const useUpdateBounty = () => {
     setIsLoading(true);
     try {
       await updateReward({
-        rewardId: updates.p_reward_id,
+        rewardId: updates.p_bounty_id,
         updates,
         userId: user.id,
       });

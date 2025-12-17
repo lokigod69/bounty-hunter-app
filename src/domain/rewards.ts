@@ -177,7 +177,7 @@ export async function updateReward(params: UpdateRewardParams): Promise<void> {
 
   const rpcArgs = {
     ...updates,
-    p_reward_id: rewardId,
+    p_bounty_id: rewardId,
   };
 
   const { error } = await (supabaseClient as any).rpc(
