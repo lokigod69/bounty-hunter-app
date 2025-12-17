@@ -246,7 +246,8 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
                 <div className="space-y-3">
                   {uploadPreview ? (
                     <div className="relative">
-                      <div className="w-full h-40 rounded-lg overflow-hidden border border-gray-700">
+                      {/* R26: Square aspect ratio preview to match RewardCard */}
+                      <div className="w-full aspect-square rounded-lg overflow-hidden border border-gray-700">
                         <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                       <button

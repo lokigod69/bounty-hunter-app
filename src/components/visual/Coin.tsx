@@ -1,5 +1,6 @@
 // src/components/visual/Coin.tsx
 // R19: Unified coin component with consistent styling and animation variants
+// R26: Coins with values/labels use 2D rotation (rotateZ) to prevent text mirroring
 // Single source of truth for all coin visuals in the app
 
 import React from 'react';
@@ -30,11 +31,18 @@ const sizeConfig = {
   xl: { dimension: 80, fontSize: 22, strokeWidth: 3, emblemSize: 24 },
 };
 
-// Animation class mapping
-const animationClasses: Record<CoinVariant, string> = {
+// Animation class mapping for 3D animations (decorative coins without values)
+const animationClasses3D: Record<CoinVariant, string> = {
   'static': '',
   'subtle-spin': 'animate-coin-subtle-spin',
   'flip-loop': 'animate-coin-flip',
+};
+
+// R26: 2D-safe animation for coins with text content (never mirrors)
+const animationClasses2D: Record<CoinVariant, string> = {
+  'static': '',
+  'subtle-spin': 'animate-coin-spin-2d',
+  'flip-loop': 'animate-coin-spin-2d', // Force 2D for flip-loop when showing values
 };
 
 /**
@@ -61,6 +69,11 @@ const Coin: React.FC<CoinProps> = ({
 
   // Determine what to display on coin face
   const displayText = label ?? (showValue && value !== undefined ? String(value) : 'B');
+
+  // R26: Coins showing a value or custom label should use 2D animation to prevent mirroring
+  // Decorative coins (just "B" emblem) can use 3D animations
+  const hasTextContent = label !== undefined || (showValue && value !== undefined);
+  const animationClasses = hasTextContent ? animationClasses2D : animationClasses3D;
 
   // Adjust font size for longer numbers
   const numChars = displayText.length;

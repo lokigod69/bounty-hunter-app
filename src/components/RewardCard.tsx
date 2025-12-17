@@ -73,8 +73,8 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
 
   return (
     <BaseCard variant="solid" className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg hover:scale-[1.02]'}`}>
-      {/* Top area - Image/emoji - mobile optimized height */}
-      <div className="h-32 sm:h-40 md:h-48">
+      {/* R26: Top area - Image/emoji - always square aspect ratio */}
+      <div className="aspect-square">
         {renderImageOrEmoji()}
       </div>
       

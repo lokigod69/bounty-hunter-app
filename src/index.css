@@ -1431,6 +1431,12 @@ body {
   100% { transform: rotateY(360deg) scale(1); }
 }
 
+/* R26: 2D-safe animation for coins with text (value/label) - rotateZ keeps face readable */
+@keyframes coin-spin-2d {
+  0% { transform: rotateZ(0deg); }
+  100% { transform: rotateZ(360deg); }
+}
+
 .animate-coin-subtle-spin {
   animation: coin-subtle-spin 4s linear infinite;
   transform-style: preserve-3d;
@@ -1439,6 +1445,11 @@ body {
 .animate-coin-flip {
   animation: coin-flip 2s ease-in-out infinite;
   transform-style: preserve-3d;
+}
+
+/* R26: 2D spin for coins with values - never mirrors text */
+.animate-coin-spin-2d {
+  animation: coin-spin-2d 4s linear infinite;
 }
 
 /* Enhanced mobile responsiveness and touch targets */
