@@ -1,5 +1,6 @@
 // src/components/modals/MissionModalShell.tsx
 // R9: Unified modal shell for mission-related modals
+// R27: Fixed height layout with internal scroll, reward thumbnail + lightbox
 // Implements glassmorphism design with mode/role/state theming
 
 import React, { useEffect, useState } from 'react';
@@ -31,6 +32,7 @@ import { StateChip } from './StateChip';
 import { useUI } from '../../context/UIContext';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 import { Coin } from '../visual/Coin';
+import { RewardImageLightbox } from './RewardImageLightbox';
 
 // ============================================================================
 // Types
@@ -138,6 +140,8 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   const { openModal, clearLayer } = useUI();
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // R27: Lightbox state for reward images
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Check if mobile
   useEffect(() => {
@@ -314,40 +318,42 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           </div>
         </div>
 
-        {/* Body - Scrollable */}
+        {/* R27: Body - Fixed height with internal scroll */}
         <div
-          className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
+          className="flex-1 overflow-hidden px-4 sm:px-6 py-4"
           style={{ overscrollBehavior: 'contain' }}
         >
-          {/* R11: CSS Grid layout for aligned columns */}
+          {/* R27: CSS Grid layout - fixed height, description scrolls internally */}
           <div
-            className="grid gap-4"
+            className="grid gap-4 h-full"
             style={{
               gridTemplateColumns: isMobile
                 ? '1fr'
                 : reward
-                ? 'minmax(0, 2fr) minmax(0, 1fr)'
+                ? 'minmax(0, 2fr) minmax(200px, 1fr)'
                 : '1fr',
-              maxHeight: isMobile ? '60vh' : '50vh',
+              gridTemplateRows: isMobile ? 'minmax(0, 1fr) auto' : '1fr',
             }}
           >
-            {/* Description Column */}
-            <div className="h-full flex flex-col">
+            {/* Description Column - scrolls internally */}
+            <div className="min-h-0 flex flex-col overflow-hidden">
               {description && (
                 <div className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto">
-                  <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
+                  <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap break-words">
                     {description}
                   </p>
                 </div>
               )}
 
               {/* Custom children content */}
-              {children}
+              {children && (
+                <div className="mt-4 flex-shrink-0">{children}</div>
+              )}
             </div>
 
-            {/* Reward Column */}
+            {/* R27: Reward Column - fixed, doesn't scroll */}
             {reward && (
-              <div className="h-full">
+              <div className={isMobile ? 'flex-shrink-0' : 'min-h-0'}>
                 <div
                   className="h-full p-4 rounded-xl text-center flex flex-col justify-center"
                   style={{
@@ -373,29 +379,60 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                       />
                     </div>
                   ) : reward.imageUrl ? (
-                    <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-white/20">
+                    // R27: Square thumbnail with click to open lightbox
+                    <button
+                      type="button"
+                      onClick={() => setLightboxOpen(true)}
+                      className="relative aspect-square w-24 mx-auto rounded-xl overflow-hidden border border-white/20 cursor-pointer hover:border-white/40 transition-colors group"
+                      aria-label="View full image"
+                    >
                       <img
                         src={reward.imageUrl}
                         alt={String(reward.value)}
                         className="w-full h-full object-cover"
                       />
-                    </div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium transition-opacity">
+                          View
+                        </span>
+                      </div>
+                    </button>
                   ) : (
                     <div className="flex items-center justify-center gap-2 py-2">
                       <span className="text-2xl">🎁</span>
                       <span
-                        className="text-lg font-semibold"
+                        className="text-lg font-semibold break-words max-w-full"
                         style={{ color: modeConfig.accent }}
                       >
                         {reward.value}
                       </span>
                     </div>
                   )}
+
+                  {/* R27: Reward label for image/text rewards */}
+                  {reward.type !== 'credit' && reward.imageUrl && (
+                    <p
+                      className="text-sm font-medium mt-2 break-words line-clamp-2"
+                      style={{ color: modeConfig.accent }}
+                    >
+                      {reward.value}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* R27: Lightbox for reward images */}
+        {reward?.imageUrl && (
+          <RewardImageLightbox
+            isOpen={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+            imageUrl={reward.imageUrl}
+            alt={String(reward.value)}
+          />
+        )}
 
         {/* Footer */}
         <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-white/10 space-y-3">

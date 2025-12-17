@@ -25,6 +25,8 @@ import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { logOverlayRootState } from '../lib/overlayDebug';
+import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
+import { CharacterCounter } from './ui/CharacterCounter';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -146,6 +148,13 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
     if (!title.trim()) {
       newErrors.title = t('taskForm.validation.titleRequired');
+    } else if (!isWithinLimit(title, TEXT_LIMITS.missionTitle)) {
+      newErrors.title = `Title must be ${TEXT_LIMITS.missionTitle} characters or less`;
+    }
+
+    // R27: Validate description length
+    if (!isWithinLimit(description, TEXT_LIMITS.missionDescription)) {
+      newErrors.description = `Description must be ${TEXT_LIMITS.missionDescription} characters or less`;
     }
 
     if (!assignedTo) {
@@ -160,6 +169,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
     if (contractType === 'bounty' && !rewardText.trim()) {
       newErrors.rewardText = t('taskForm.validation.bountyRequired');
+    } else if (contractType === 'bounty' && !isWithinLimit(rewardText, TEXT_LIMITS.rewardLabel)) {
+      newErrors.rewardText = `Reward must be ${TEXT_LIMITS.rewardLabel} characters or less`;
     } else if (contractType === 'credit' && !rewardText) { // rewardText for credit will be the selected value, e.g., '1', '5'
       newErrors.rewardText = t('taskForm.validation.creditRequired');
     }
@@ -262,11 +273,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
         
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-          {/* Task Title */}
+          {/* Task Title - R27: Added character counter */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              {t('taskForm.contractTitleLabel')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)]">
+                {t('taskForm.contractTitleLabel')}
+              </label>
+              <CharacterCounter current={title.length} max={TEXT_LIMITS.missionTitle} />
+            </div>
             <input
               type="text"
               id="title"
@@ -274,30 +288,34 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               onChange={(e) => setTitle(e.target.value)}
               className={`input-field w-full ${errors.title ? 'border-red-500 focus:ring-red-500' : ''}`}
               placeholder={t('taskForm.contractTitlePlaceholder')}
-              maxLength={50}
+              maxLength={TEXT_LIMITS.missionTitle}
             />
             {errors.title && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.title}</p>}
           </div>
 
-          {/* Task Description */}
+          {/* Task Description - R27: Added character counter */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              {t('taskForm.descriptionLabel')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)]">
+                {t('taskForm.descriptionLabel')}
+              </label>
+              <CharacterCounter current={description?.length ?? 0} max={TEXT_LIMITS.missionDescription} />
+            </div>
             <textarea
               id="description"
               value={description ?? ''}
               onChange={(e) => setDescription(e.target.value)}
-              className="input-field w-full min-h-[40px] resize-none"
+              className={`input-field w-full min-h-[40px] resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : ''}`}
               placeholder={t('taskForm.descriptionPlaceholder')}
               rows={1}
+              maxLength={TEXT_LIMITS.missionDescription}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
                 target.style.height = `${target.scrollHeight}px`;
               }}
             />
-            {/* No error message for description as it's optional */}
+            {errors.description && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.description}</p>}
           </div>
           
           {/* Assign To */}
@@ -370,12 +388,15 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             </select>
           </div>
 
-          {/* Conditional Reward Inputs based on Contract Type */}
+          {/* Conditional Reward Inputs based on Contract Type - R27: Added character counter */}
           {contractType === 'bounty' ? (
             <div>
-              <label htmlFor="rewardTextBounty" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                {t('taskForm.bountyDescriptionLabel')}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="rewardTextBounty" className="block text-sm font-medium text-[var(--text-secondary)]">
+                  {t('taskForm.bountyDescriptionLabel')}
+                </label>
+                <CharacterCounter current={rewardText.length} max={TEXT_LIMITS.rewardLabel} />
+              </div>
               <input
                 type="text"
                 id="rewardTextBounty"
@@ -383,6 +404,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 onChange={(e) => setRewardText(e.target.value)}
                 className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
                 placeholder={t('taskForm.bountyDescriptionPlaceholder')}
+                maxLength={TEXT_LIMITS.rewardLabel}
               />
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
             </div>

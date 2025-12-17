@@ -1,6 +1,7 @@
 // src/components/RewardCard.tsx
 // Phase 1: Updated to use BaseCard for consistent styling.
 // P4: Redesigned for aspirational feel with clearer visual hierarchy and affordability hints.
+// R27: Added per-card accent variants and lightbox for images
 // A component to display a single reward or bounty item.
 
 import React, { useState, useEffect } from 'react';
@@ -10,6 +11,8 @@ import { Pencil, Trash2 } from 'lucide-react';
 import type { Database } from '../types/database';
 import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
+import { RewardImageLightbox } from './modals/RewardImageLightbox';
+import { getAccentVariant } from '../theme/accentVariants';
 
 export type Reward = Database['public']['Tables']['rewards_store']['Row'];
 
@@ -24,14 +27,19 @@ interface RewardCardProps {
 
 const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0 }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
+  const { theme, themeId } = useTheme();
   const { id, name, description, image_url, credit_cost } = reward;
   const [imageError, setImageError] = useState(false);
-  
+  // R27: Lightbox state for full image view
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   // P4: Calculate affordability
   const cost = credit_cost || 0;
   const canAfford = currentCredits >= cost;
   const creditsNeeded = Math.max(0, cost - currentCredits);
+
+  // R27: Get per-card accent variant
+  const accentVariant = getAccentVariant(themeId, id);
 
   useEffect(() => {
     setImageError(false);
@@ -48,11 +56,17 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
 
     if (displayUrl && !imageError) {
       return (
-        <div className="w-full h-full relative overflow-hidden">
-          <img 
-            src={image_url!} 
-            alt={name} 
-            className="w-full h-full object-cover"
+        // R27: Clickable image opens lightbox
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="w-full h-full relative overflow-hidden cursor-pointer group"
+          aria-label="View full image"
+        >
+          <img
+            src={image_url!}
+            alt={name}
+            className="w-full h-full object-cover transition-transform group-hover:scale-105"
             onError={() => setImageError(true)}
           />
           {!canAfford && view === 'available' && (
@@ -60,23 +74,38 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
               <span className="text-white/80 text-xs sm:text-sm font-semibold px-2 text-center">{theme.strings.storeCantAffordLabel}</span>
             </div>
           )}
-        </div>
+          {/* R27: Hover overlay for clickable indication */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+        </button>
       );
     }
-    
+
+    // R27: Emoji fallback with mode-aware accent gradient
     return (
-      <div className={`w-full h-full flex items-center justify-center ${canAfford || view !== 'available' ? 'bg-gradient-to-br from-teal-500/20 to-cyan-500/20' : 'bg-gray-700/50'}`}>
+      <div
+        className={`w-full h-full flex items-center justify-center ${canAfford || view !== 'available' ? '' : 'bg-gray-700/50'}`}
+        style={canAfford || view !== 'available' ? { background: accentVariant.backgroundGradient } : undefined}
+      >
         <span className="text-4xl sm:text-5xl md:text-6xl">{displayUrl ? defaultEmoji : image_url || defaultEmoji}</span>
       </div>
     );
   };
 
   return (
-    <BaseCard variant="solid" className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg hover:scale-[1.02]'}`}>
-      {/* R26: Top area - Image/emoji - always square aspect ratio */}
-      <div className="aspect-square">
-        {renderImageOrEmoji()}
-      </div>
+    <>
+      {/* R27: Apply subtle accent border glow based on mode */}
+      <BaseCard
+        variant="solid"
+        className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg hover:scale-[1.02]'}`}
+        style={{
+          borderColor: accentVariant.borderColor,
+          boxShadow: canAfford || view !== 'available' ? `0 0 12px ${accentVariant.glowColor}` : undefined,
+        }}
+      >
+        {/* R26: Top area - Image/emoji - always square aspect ratio */}
+        <div className="aspect-square">
+          {renderImageOrEmoji()}
+        </div>
       
       {/* Middle - Title and description - mobile optimized padding */}
       <div className="p-3 sm:p-4 md:p-5 flex-grow flex flex-col min-h-0">
@@ -135,7 +164,18 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </button>
         )}
       </div>
-    </BaseCard>
+      </BaseCard>
+
+      {/* R27: Lightbox for full image view */}
+      {image_url && isUrl(image_url) && (
+        <RewardImageLightbox
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          imageUrl={image_url}
+          alt={name}
+        />
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 // src/components/CreateBountyModal.tsx
 // Phase 2: Updated to use overlay-root and UIContext activeLayer coordination.
 // R22: Added file upload option for reward images.
+// R27: Added character limits and counters
 // A modal form for creating a new bounty and assigning it to a friend.
 
 import React, { useState, useEffect } from 'react';
@@ -15,6 +16,8 @@ import { useCreateBounty } from '../hooks/useCreateBounty';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
 import { getOverlayRoot } from '../lib/overlayRoot';
+import { TEXT_LIMITS } from '../config/textLimits';
+import { CharacterCounter } from './ui/CharacterCounter';
 import {
   uploadRewardImage,
   validateRewardImage,
@@ -181,24 +184,39 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
           {/* Form Content (scrollable) with enhanced mobile spacing */}
           <div className="flex-grow overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
-            
-            <input
-              type="text"
-              placeholder={t('rewards.createModal.bountyNamePlaceholder')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition text-base"
-              required
-              maxLength={100}
-            />
 
-            <textarea
-              placeholder={t('rewards.createModal.descriptionPlaceholder')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition h-24 text-base"
-              required
-            />
+            {/* R27: Name field with character counter */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium text-white/70">{t('rewards.createModal.bountyNamePlaceholder')}</label>
+                <CharacterCounter current={name.length} max={TEXT_LIMITS.rewardName} />
+              </div>
+              <input
+                type="text"
+                placeholder={t('rewards.createModal.bountyNamePlaceholder')}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition text-base"
+                required
+                maxLength={TEXT_LIMITS.rewardName}
+              />
+            </div>
+
+            {/* R27: Description field with character counter */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium text-white/70">{t('rewards.createModal.descriptionPlaceholder')}</label>
+                <CharacterCounter current={description.length} max={TEXT_LIMITS.rewardDescription} />
+              </div>
+              <textarea
+                placeholder={t('rewards.createModal.descriptionPlaceholder')}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition h-24 text-base"
+                required
+                maxLength={TEXT_LIMITS.rewardDescription}
+              />
+            </div>
 
             <input
               type="number"
