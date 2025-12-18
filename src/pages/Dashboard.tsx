@@ -315,7 +315,7 @@ export default function Dashboard() {
             {
               icon: <Clock size={32} />,
               value: reviewCount,
-              label: t('contracts.review'),
+              label: t('contracts.inReview'),
               iconColor: 'text-yellow-400',
             },
             {

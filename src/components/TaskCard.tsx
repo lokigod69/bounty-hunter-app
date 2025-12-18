@@ -30,6 +30,7 @@ import { logOverlayRootState } from '../lib/overlayDebug';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 import { isValidUrl, safeUrlRender } from '../lib/proofConfig';
+import { getAccentVariant } from '../theme/accentVariants'; // R28: Mode-aware card accents
 
 import ProofModal from './ProofModal';
 import MissionModalShell from './modals/MissionModalShell';
@@ -116,8 +117,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const { user } = useAuth();
   const { openModal, clearLayer } = useUI();
-  const { theme } = useTheme(); // P5: Get theme for daily label
+  const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
   const [showProofModal, setShowProofModal] = useState(false);
+
+  // R28: Get mode-aware accent variant for this card
+  const accentVariant = getAccentVariant(themeId, task.id);
   const [actionLoading, setActionLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -333,29 +337,28 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   // R9: renderActionButtonsInModal removed - actions now handled by MissionModalShell
 
-  // R11: Dark card backgrounds with subtle accent borders
-  // Changed from bright tinted backgrounds (bg-red-500/10) to dark unified surface
+  // R28: Mode-aware card backgrounds with accent borders from accentVariants
+  // Archived/completed/review have specific colors, pending uses mode accent
   const collapsedCardBgColor = isArchived
     ? 'bg-slate-800/60 border-slate-600/40 hover:border-slate-500'
-    : status === 'pending'
-    ? 'bg-[#1a1625]/80 border-red-500/40 hover:border-red-400'
+    : status === 'completed'
+    ? 'bg-[#1a1625]/80 border-green-500/40 hover:border-green-400'
     : status === 'review'
     ? 'bg-[#1a1625]/80 border-yellow-500/40 hover:border-yellow-400'
-    : 'bg-[#1a1625]/80 border-green-500/40 hover:border-green-400';
+    : 'bg-[#1a1625]/80'; // Pending/other - border applied via style prop
 
   // R9: Map task status to modal state for MissionModalShell
   const modalState = mapTaskStatusToModalState(status, isArchived, deadline);
   const modalRole: ModalRole = isCreatorView ? 'creator' : 'assignee';
 
+  // R28: Title colors - pending uses neutral white (accent is on border/chip), others stay semantic
   const titleColorClass = isArchived
     ? 'text-slate-500'
-    : status === 'pending'
-    ? 'text-red-400'
-    : status === 'review'
-    ? 'text-yellow-400'
     : status === 'completed'
     ? 'text-green-400'
-    : 'text-slate-300';
+    : status === 'review'
+    ? 'text-yellow-400'
+    : 'text-white/90'; // R28: Pending/other - neutral white, accent shows on border/chip
 
   return (
     <>
@@ -378,9 +381,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
         - Single click handler on BaseCard only
         - Swipe for archive is a nice-to-have, prioritizing core click functionality
       */}
+      {/* R28: Apply mode-aware accent border for pending tasks */}
       <BaseCard
         variant="glass"
         className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor} p-4 sm:p-5`}
+        style={
+          !isArchived && status === 'pending'
+            ? {
+                borderColor: accentVariant.borderColor,
+                boxShadow: `0 0 8px ${accentVariant.glowColor}`,
+              }
+            : undefined
+        }
         hover={true}
         onClick={(e) => {
           e.preventDefault();
@@ -406,20 +418,32 @@ const TaskCard: React.FC<TaskCardProps> = ({
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">
             <div className="flex-1 min-w-0 flex items-start gap-2">
-              {/* Status chip - mobile optimized */}
-              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
-                isArchived
-                  ? 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
-                  : status === 'pending'
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-                  : status === 'review'
-                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
-                  : status === 'completed'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                  : 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
-              }`}>
-                {isArchived ? 'Archived' : 
-                 status === 'pending' ? 'Pending' :
+              {/* R28: Status chip - mode-aware styling for pending */}
+              <span
+                className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
+                  isArchived
+                    ? 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
+                    : status === 'completed'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                    : status === 'review'
+                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
+                    : status === 'rejected'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                    : '' // Pending - styled via inline style below
+                }`}
+                style={
+                  !isArchived && status === 'pending'
+                    ? {
+                        backgroundColor: `${accentVariant.glowColor}`,
+                        borderColor: accentVariant.borderColor,
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                      }
+                    : undefined
+                }
+              >
+                {isArchived ? 'Archived' :
+                 status === 'pending' ? 'Open' :
                  status === 'review' ? 'In Review' :
                  status === 'completed' ? 'Done' :
                  status === 'rejected' ? 'Rejected' :

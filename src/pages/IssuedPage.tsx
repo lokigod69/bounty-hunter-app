@@ -384,7 +384,7 @@ export default function IssuedPage() {
               {
                 icon: <Clock size={32} />,
                 value: stats.review,
-                label: t('contracts.review'),
+                label: t('contracts.inReview'),
                 iconColor: 'text-yellow-400',
               },
               {

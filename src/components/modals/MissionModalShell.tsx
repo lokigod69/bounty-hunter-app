@@ -351,11 +351,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
               )}
             </div>
 
-            {/* R27: Reward Column - fixed, doesn't scroll */}
+            {/* R28: Reward Column - fixed, properly centered, doesn't scroll */}
             {reward && (
-              <div className={isMobile ? 'flex-shrink-0' : 'min-h-0'}>
+              <div className={isMobile ? 'flex-shrink-0' : 'flex items-start'}>
                 <div
-                  className="h-full p-4 rounded-xl text-center flex flex-col justify-center"
+                  className="w-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,
