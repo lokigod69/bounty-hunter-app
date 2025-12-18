@@ -35,7 +35,7 @@ const RewardsStorePage: React.FC = () => {
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
   const { deleteBounty, isLoading: isDeleting } = useDeleteBounty();
-  const { credits: userCredits, loading: creditsLoading } = useUserCredits();
+  const { credits: userCredits, loading: creditsLoading, refetch: refetchCredits } = useUserCredits();
   const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards } = useCollectedRewards();
 
   // State for modals
@@ -85,6 +85,7 @@ const RewardsStorePage: React.FC = () => {
 
   const handleRefresh = async () => {
     await fetchRewards();
+    refetchCredits(); // R29: Always refresh credits on pull-to-refresh
     if (activeTab === 'collected') {
       await fetchCollectedRewards();
     }
@@ -96,8 +97,10 @@ const RewardsStorePage: React.FC = () => {
     const result = await purchaseBounty(rewardId);
 
     if (result?.success) {
-      // Refetch to update the UI
-      fetchRewards();
+      // R29: Refetch all affected data after successful claim
+      fetchRewards();        // Remove from available list
+      refetchCredits();      // Update balance display
+      fetchCollectedRewards(); // Update collected tab
     }
   };
 
