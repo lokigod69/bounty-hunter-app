@@ -6,5 +6,21 @@
     },
     "installLocation": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\awesome-claude-skills",
     "lastUpdated": "2025-11-23T04:00:33.318Z"
+  },
+  "claude-code-plugins": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-code"
+    },
+    "installLocation": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\claude-code-plugins",
+    "lastUpdated": "2025-12-18T07:39:58.836Z"
+  },
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "C:\\Users\\micha\\.claude\\plugins\\marketplaces\\claude-plugins-official",
+    "lastUpdated": "2025-12-18T07:39:57.995Z"
   }
 }
