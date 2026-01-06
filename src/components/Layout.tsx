@@ -59,7 +59,7 @@ export default function Layout() {
   const { theme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
-  const { isMobileMenuOpen, toggleMenu, closeMenu, openMenu, forceCloseMobileMenu, clearLayer, activeLayer } = useUI();
+  const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -92,7 +92,8 @@ export default function Layout() {
   // avatarUrlBase: The actual DB value (null if user hasn't set one)
   // avatarUrl: For rendering - uses placeholder when avatarUrlBase is null
   const avatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
-  const avatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
+  const profileUpdatedAt = (profile as { updated_at?: string } | null | undefined)?.updated_at;
+  const avatarCacheBuster = profileUpdatedAt ? `?v=${encodeURIComponent(profileUpdatedAt)}` : '';
   const avatarUrl = avatarUrlBase
     ? `${avatarUrlBase}${avatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
@@ -104,7 +105,7 @@ export default function Layout() {
     avatarUrlBaseShort: avatarUrlBase?.substring(0, 60) || 'NULL (using placeholder)',
     hasProfile: !!profile,
     profileId: profile?.id,
-    profileUpdatedAt: profile?.updated_at,
+    profileUpdatedAt: profileUpdatedAt,
   });
 
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu

@@ -188,7 +188,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     
     const taskPayload: NewTaskData = {
       created_by: userId, // Add created_by to the payload
-      status: 'pending' as TaskStatus, // Ensure status is set to pending
+      status: (editingTask?.status as TaskStatus) ?? ('pending' as TaskStatus),
       title,
       description: description.trim() || null, // Use description state, allowing null for empty
       assigned_to: assignedTo,

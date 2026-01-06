@@ -97,7 +97,7 @@ export function getErrorMessage(error: unknown, context?: string): string {
     message = error;
   } else if (error instanceof Error) {
     message = error.message;
-    code = (error as any).code;
+    code = (error as unknown as { code?: string }).code;
   }
   
   // Log enhanced error information for debugging
@@ -193,7 +193,7 @@ export function getTaskUpdateError(error: unknown): string {
 }
 
 // Error reporting function for debugging
-export function reportError(error: unknown, context?: string, additionalInfo?: Record<string, any>): void {
+export function reportError(error: unknown, context?: string, additionalInfo?: Record<string, unknown>): void {
   const errorReport = {
     timestamp: new Date().toISOString(),
     error: error,

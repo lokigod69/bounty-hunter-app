@@ -24,7 +24,7 @@ import { supabase } from '../lib/supabase'; // Import supabase client (still use
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
 import TaskCard from '../components/TaskCard';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import TaskForm from '../components/TaskForm';
+import TaskForm, { type NewTaskData as TaskFormData, type Task as TaskFormTask } from '../components/TaskForm';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 // Types imported from hooks or defined locally
@@ -33,19 +33,6 @@ import type { IssuedContract } from '../hooks/useIssuedContracts';
 
 // Define TaskStatus locally based on known statuses
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
-
-// Define NewTaskData based on the fields required for creating a new task
-// This should align with what TaskForm expects and what supabase insert needs for 'tasks'
-export interface NewTaskData {
-  title: string;
-  description: string | null;
-  reward_text?: string; // Optional, can be undefined
-  status: TaskStatus; // Ensure this is 'pending' on creation
-  created_by: string;
-  assigned_to?: string | null; // Optional
-  deadline?: string | null; // Optional
-  // Add other fields as necessary from tasks.Insert, e.g., proof_required, proof_type etc.
-}
 import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from '../components/layout/PageQuote';
@@ -56,8 +43,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
-import { BaseCard } from '../components/ui/BaseCard';
-import { approveMission, rejectMission, archiveMission } from '../domain/missions';
+import { approveMission, rejectMission } from '../domain/missions';
 import { useTheme } from '../context/ThemeContext';
 
 export default function IssuedPage() {
@@ -82,6 +68,7 @@ export default function IssuedPage() {
   const [rejectingTaskId, setRejectingTaskId] = useState<string | null>(null);
   const dailyQuote = useDailyQuote();
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
+  const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
 
   const handleDeleteTaskRequest = (taskId: string) => {
     const task = issuedContracts.find((t: IssuedContract) => t.id === taskId);
@@ -132,8 +119,12 @@ export default function IssuedPage() {
     handleCloseDeleteModal();
   };
 
-  const handleProofUpload = async (file: File, taskId: string): Promise<string | null> => {
-    console.warn('handleProofUpload called for task:', taskId, 'with file:', file.name, 'but uploadProof is not available for issued contracts view.');
+  const handleProofUpload = async (file: File | null, taskId: string): Promise<string | null> => {
+    console.warn('handleProofUpload called for task:', taskId, 'but uploadProof is not available for issued contracts view.');
+    if (!file) {
+      toast.error(t('contracts.proofUploadDisabled'));
+      return null;
+    }
     toast.error(t('contracts.proofUploadDisabled'));
     return null;
   };
@@ -231,17 +222,44 @@ export default function IssuedPage() {
   }, [issuedContracts]);
 
 
-  const handleCreateContract = async (taskData: NewTaskData) => {
+  const handleSubmitContract = async (taskData: TaskFormData, taskId?: string) => {
     if (!user) {
       toast.error(t('contracts.createFailedLoggedIn'));
       return;
     }
 
     try {
+      if (taskId) {
+        const updatePayload = {
+          title: taskData.title,
+          description: taskData.description,
+          assigned_to: taskData.assigned_to,
+          deadline: taskData.deadline,
+          reward_type: taskData.reward_type,
+          reward_text: taskData.reward_text,
+          proof_required: taskData.proof_required,
+          is_daily: taskData.is_daily,
+        };
+
+        const { error: updateError } = await supabase
+          .from('tasks')
+          .update(updatePayload)
+          .match({ id: taskId, created_by: user.id });
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        await refetchIssuedContracts();
+        toast.success('Contract updated');
+        setEditingTask(null);
+        return;
+      }
+
       const newContract = {
         ...taskData,
         created_by: user.id,
-        status: 'pending' as TaskStatus, // Set initial status
+        status: 'pending' as TaskStatus,
       };
 
       console.log('User ID:', user.id);
@@ -259,10 +277,8 @@ export default function IssuedPage() {
         throw createError;
       }
 
-      await refetchIssuedContracts(); // Refresh the list
-      toast.success(t('contracts.createSuccess')); // Show success toast
-      setIsTaskFormOpen(false); // Close the modal
-      // navigate('/issued'); // Navigation might not be needed if staying on the page
+      await refetchIssuedContracts();
+      toast.success(t('contracts.createSuccess'));
     } catch (error: unknown) {
       // Log the full error details as requested
       console.error('Full Supabase error:', error);
@@ -282,6 +298,7 @@ export default function IssuedPage() {
 
   // Enhanced FAB click handler with mobile menu state coordination
   const handleCreateNewContract = () => {
+    setEditingTask(null);
     // If mobile menu is open, close it first
     if (isMobileMenuOpen) {
       console.log("[IssuedPage] handleCreateNewContract - closing mobile menu first");
@@ -292,6 +309,18 @@ export default function IssuedPage() {
       }, 50); // 50ms is enough for React state update
     } else {
       // Mobile menu is already closed, open modal immediately
+      setIsTaskFormOpen(true);
+    }
+  };
+
+  const handleEditTaskRequest = (task: TaskFormTask) => {
+    setEditingTask(task);
+    if (isMobileMenuOpen) {
+      forceCloseMobileMenu();
+      setTimeout(() => {
+        setIsTaskFormOpen(true);
+      }, 50);
+    } else {
       setIsTaskFormOpen(true);
     }
   };
@@ -339,13 +368,15 @@ export default function IssuedPage() {
           onClose={() => {
             console.log("[IssuedPage] TaskForm onClose - checking mobile menu state");
             setIsTaskFormOpen(false);
+            setEditingTask(null);
             // Ensure mobile menu can be opened after modal closes
             if (isMobileMenuOpen) {
               console.log("[IssuedPage] TaskForm onClose - closing mobile menu");
               forceCloseMobileMenu();
             }
           }}
-          onSubmit={handleCreateContract}
+          onSubmit={handleSubmitContract}
+          editingTask={editingTask}
         />
       )}
 
@@ -428,6 +459,7 @@ export default function IssuedPage() {
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                    onEditTaskRequest={handleEditTaskRequest}
                   />
                 ))}
               </div>

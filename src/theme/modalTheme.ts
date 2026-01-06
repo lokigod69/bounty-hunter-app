@@ -70,7 +70,7 @@ export const roleConfigByMode: Record<ThemeId, Record<ModalRole, RoleConfig>> = 
   },
   couple: {
     assignee: { headerLabel: 'For you', headerIcon: 'Heart' },
-    creator: { headerLabel: 'You asked for this', headerIcon: 'PenSquare' },
+    creator: { headerLabel: 'You set this task', headerIcon: 'ClipboardList' },
     store: { headerLabel: 'Shared treat', headerIcon: 'Gift' },
   },
 };

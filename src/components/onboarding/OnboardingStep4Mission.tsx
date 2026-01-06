@@ -20,7 +20,6 @@ interface OnboardingStep4MissionProps {
 }
 
 export default function OnboardingStep4Mission({
-  firstRewardId,
   invitedUserId,
   assigneeChoice,
   onComplete,
@@ -69,7 +68,7 @@ export default function OnboardingStep4Mission({
         proof_required: false,
       };
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tasks')
         .insert([newTask])
         .select()

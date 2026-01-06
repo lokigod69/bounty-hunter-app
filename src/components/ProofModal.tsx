@@ -87,7 +87,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
     }
   };
 
-  console.log("[ProofModal] Rendering modal");
+  console.log("[ProofModal] Rendering modal", { taskId });
 
   return (
     <div 

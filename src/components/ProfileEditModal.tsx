@@ -163,7 +163,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       // R15: Enhanced logging before save - track what's being preserved vs changed
       console.log('[ProfileEditModal] Saving profile', {
         userId: user.id.substring(0, 8),
-        display_name: displayName,
+        display_name: baseDisplayName,
         avatarUrl: avatarUrl?.substring(0, 50) || null,
         avatarChanged: !!avatarFile, // R15: Track if avatar was changed
         previousAvatarUrl: profile?.avatar_url?.substring(0, 50) || null,
@@ -177,7 +177,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
           {
             id: user.id,
             email: user.email || '',  // Required for INSERT
-            display_name: displayName || null,
+            display_name: baseDisplayName || null,
             avatar_url: avatarUrl || null,
           },
           { onConflict: 'id' }

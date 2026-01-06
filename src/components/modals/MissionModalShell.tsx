@@ -10,8 +10,7 @@ import {
   Target,
   Stamp,
   Coins,
-  Shield,
-  Home,
+  Clock,
   Heart,
   User,
   ListChecks,
@@ -71,6 +70,9 @@ interface MissionModalShellProps {
   title: string;
   description?: string;
 
+  // Deadline
+  deadline?: string | null;
+
   // Context
   fromUser?: UserInfo;
   toUser?: UserInfo;
@@ -109,12 +111,6 @@ const roleIconMap = {
   Gift,
 };
 
-const modeIconMap = {
-  Shield,
-  Home,
-  Heart,
-};
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -127,6 +123,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   state,
   title,
   description,
+  deadline,
   fromUser,
   toUser,
   reward,
@@ -179,7 +176,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   const roleConf = getRoleConfig(mode, role);
   const stateConf = stateConfig[state];
   const RoleIcon = roleIconMap[roleConf.headerIcon];
-  const ModeIcon = modeIconMap[modeConfig.icon];
 
   // Animation classes
   const animationClass = isMobile
@@ -196,6 +192,42 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
       ? `Assigned to: ${toUser?.name || 'Unknown'}`
       : `From: ${fromUser?.name || 'Unknown'}`;
   const contextUser = role === 'creator' ? toUser : fromUser;
+
+  const DeadlineCountdown: React.FC<{ deadline: string }> = ({ deadline }) => {
+    const calculateTimeLeft = () => {
+      if (!deadline) return null;
+      const difference = +new Date(deadline) - +new Date();
+      let timeLeft: { days?: number; hours?: number; minutes?: number } = {};
+      if (difference > 0) {
+        timeLeft = {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+        };
+      }
+      return timeLeft;
+    };
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+    useEffect(() => {
+      if (!deadline) return;
+      const timer = setTimeout(() => setTimeLeft(calculateTimeLeft()), 1000 * 60);
+      return () => clearTimeout(timer);
+    });
+
+    if (!timeLeft || Object.keys(timeLeft).length === 0) {
+      return <span className="text-xs text-white/70 font-semibold">x deadline</span>;
+    }
+
+    return (
+      <span className="text-xs text-white/70 flex items-center">
+        {timeLeft.days !== undefined && timeLeft.days > 0 && `${timeLeft.days}d `}
+        {timeLeft.hours !== undefined && timeLeft.hours > 0 && `${timeLeft.hours}h `}
+        {`${timeLeft.minutes}m`}
+      </span>
+    );
+  };
 
   return createPortal(
     <div
@@ -353,9 +385,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
             {/* R28: Reward Column - fixed, properly centered, doesn't scroll */}
             {reward && (
-              <div className={isMobile ? 'flex-shrink-0' : 'flex items-start'}>
+              <div className={isMobile ? 'flex-shrink-0' : 'flex items-stretch min-h-0'}>
                 <div
-                  className="w-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
+                  className="w-full h-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,
@@ -365,64 +397,73 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                     Reward
                   </p>
 
-                  {reward.type === 'credit' ? (
-                    <div className="flex items-center justify-center py-2">
-                      {/* R19: Unified Coin component with value on face */}
-                      <Coin
-                        value={
-                          typeof reward.value === 'number'
-                            ? reward.value
-                            : parseInt(String(reward.value), 10) || 0
-                        }
-                        size="lg"
-                        variant="subtle-spin"
-                      />
-                    </div>
-                  ) : reward.imageUrl ? (
-                    // R27: Square thumbnail with click to open lightbox
-                    <button
-                      type="button"
-                      onClick={() => setLightboxOpen(true)}
-                      className="relative aspect-square w-24 mx-auto rounded-xl overflow-hidden border border-white/20 cursor-pointer hover:border-white/40 transition-colors group"
-                      aria-label="View full image"
-                    >
-                      <img
-                        src={reward.imageUrl}
-                        alt={String(reward.value)}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium transition-opacity">
-                          View
+                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center w-full">
+                    {reward.type === 'credit' ? (
+                      <div className="flex items-center justify-center py-2">
+                        <Coin
+                          value={
+                            typeof reward.value === 'number'
+                              ? reward.value
+                              : parseInt(String(reward.value), 10) || 0
+                          }
+                          size="lg"
+                          variant="subtle-spin"
+                        />
+                      </div>
+                    ) : reward.imageUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setLightboxOpen(true)}
+                        className="relative aspect-square w-24 mx-auto rounded-xl overflow-hidden border border-white/20 cursor-pointer hover:border-white/40 transition-colors group"
+                        aria-label="View full image"
+                      >
+                        <img
+                          src={reward.imageUrl}
+                          alt={String(reward.value)}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium transition-opacity">
+                            View
+                          </span>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 py-2">
+                        <span className="text-2xl">🎁</span>
+                        <span
+                          className="text-lg font-semibold break-words max-w-full"
+                          style={{ color: modeConfig.accent }}
+                        >
+                          {reward.value}
                         </span>
                       </div>
-                    </button>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 py-2">
-                      <span className="text-2xl">🎁</span>
-                      <span
-                        className="text-lg font-semibold break-words max-w-full"
+                    )}
+
+                    {reward.type !== 'credit' && reward.imageUrl && (
+                      <p
+                        className="text-sm font-medium mt-2 break-words line-clamp-2"
                         style={{ color: modeConfig.accent }}
                       >
                         {reward.value}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* R27: Reward label for image/text rewards */}
-                  {reward.type !== 'credit' && reward.imageUrl && (
-                    <p
-                      className="text-sm font-medium mt-2 break-words line-clamp-2"
-                      style={{ color: modeConfig.accent }}
-                    >
-                      {reward.value}
-                    </p>
-                  )}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
+
+        {deadline && (
+          <div className="flex-shrink-0 px-4 sm:px-6 pb-4">
+            <div className="flex items-center justify-center gap-2 text-white/50 text-sm">
+              <Clock size={14} />
+              <span>Deadline:</span>
+              <DeadlineCountdown deadline={deadline} />
+            </div>
+          </div>
+        )}
 
         {/* R27: Lightbox for reward images */}
         {reward?.imageUrl && (

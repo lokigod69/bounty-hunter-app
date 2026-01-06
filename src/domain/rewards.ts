@@ -64,11 +64,7 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
     p_collector_id: userId,
   };
 
-  // RPC function name cast to 'any' to bypass constraint checks due to incomplete database.ts types.
-  const { data: rawData, error: rpcError } = await (supabaseClient as any).rpc(
-    'purchase_reward_store_item',
-    rpcArgs
-  );
+  const { data: rawData, error: rpcError } = await supabaseClient.rpc('purchase_reward_store_item' as never, rpcArgs as never);
 
   if (rpcError) {
     throw rpcError;
@@ -106,7 +102,7 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
   if (isOnboarding) {
     // Type assertion needed because TypeScript types may not reflect nullable assigned_to
     // but the database schema should allow it for unassigned rewards
-    const { data: inserted, error: insertError } = await (supabaseClient as any)
+    const { data: inserted, error: insertError } = await supabaseClient
       .from('rewards_store')
       .insert({
         name: rewardData.p_name,
@@ -114,7 +110,7 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
         image_url: rewardData.p_image_url || null,
         credit_cost: rewardData.p_credit_cost,
         creator_id: userId,
-        assigned_to: null, // Unassigned during onboarding - can be assigned later
+        assigned_to: null as unknown as string, // Unassigned during onboarding - can be assigned later
       })
       .select('id')
       .single();
@@ -137,15 +133,7 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
   }
 
   // Normal flow: use RPC (requires friendship)
-  const rpcArgs = {
-    ...rewardData,
-    p_creator_id: userId,
-  };
-
-  const { data: rawData, error: rpcError } = await (supabaseClient as any).rpc(
-    'create_reward_store_item',
-    rpcArgs
-  );
+  const { data: rawData, error: rpcError } = await supabaseClient.rpc('create_reward_store_item' as never, rewardData as never);
 
   if (rpcError) {
     throw rpcError;
@@ -173,17 +161,14 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
  * Uses RPC: update_reward_store_item
  */
 export async function updateReward(params: UpdateRewardParams): Promise<void> {
-  const { rewardId, updates, userId, supabaseClient = supabase } = params;
+  const { rewardId, updates, supabaseClient = supabase } = params;
 
   const rpcArgs = {
     ...updates,
     p_bounty_id: rewardId,
   };
 
-  const { error } = await (supabaseClient as any).rpc(
-    'update_reward_store_item',
-    rpcArgs
-  );
+  const { error } = await supabaseClient.rpc('update_reward_store_item' as never, rpcArgs as never);
 
   if (error) {
     throw error;
@@ -196,14 +181,9 @@ export async function updateReward(params: UpdateRewardParams): Promise<void> {
  * Uses RPC: delete_reward_store_item
  */
 export async function deleteReward(params: DeleteRewardParams): Promise<void> {
-  const { rewardId, userId, supabaseClient = supabase } = params;
+  const { rewardId, supabaseClient = supabase } = params;
 
-  const { error } = await (supabaseClient as any).rpc(
-    'delete_reward_store_item',
-    {
-      p_reward_id: rewardId,
-    }
-  );
+  const { error } = await supabaseClient.rpc('delete_reward_store_item' as never, { p_reward_id: rewardId } as never);
 
   if (error) {
     throw error;

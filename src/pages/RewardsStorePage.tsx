@@ -21,7 +21,6 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
-import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
 import { Coin } from '../components/visual/Coin';
 // R14: CreditDisplay removed - using simplified balance layout with just the number

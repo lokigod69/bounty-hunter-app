@@ -16,7 +16,7 @@ import type { ContractStatus, StatusChangeContext, StatusChangeResult, StreakCon
  * - Rejection resets to 'pending' and clears proof
  */
 export function evaluateStatusChange(ctx: StatusChangeContext): StatusChangeResult {
-  const { actorId, contractOwnerId, assigneeId, currentStatus, requestedStatus, proofRequired, hasProof } = ctx;
+  const { actorId, contractOwnerId, assigneeId, currentStatus, requestedStatus, proofRequired } = ctx;
 
   // Check if actor has permission
   const isAssignee = assigneeId === actorId;

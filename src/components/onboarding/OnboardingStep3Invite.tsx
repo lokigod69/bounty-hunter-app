@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
 import { supabase } from '../../lib/supabase';
 import { BaseCard } from '../ui/BaseCard';
 import { ArrowRight, ArrowLeft, UserPlus, AlertTriangle } from 'lucide-react';
@@ -21,7 +20,6 @@ export default function OnboardingStep3Invite({
   onBack,
 }: OnboardingStep3InviteProps) {
   const { user } = useAuth();
-  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isSending, setIsSending] = useState(false);

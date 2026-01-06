@@ -8,12 +8,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database';
-import type { 
-  CreateRewardStoreItemArgs, 
-  CreateRewardStoreItemResult, 
-  PurchaseRewardStoreItemArgs, 
-  PurchaseRewardStoreItemResult 
-} from '../types/rpc-types';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useAuth } from './useAuth';
 import { toast } from 'react-hot-toast';
@@ -104,7 +98,7 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
           p_description: newReward.description ?? '',
           p_image_url: newReward.image_url ?? '',
           p_credit_cost: newReward.credit_cost,
-          p_creator_id: user.id,
+          p_assigned_to: user.id,
         },
         userId: user.id,
       });

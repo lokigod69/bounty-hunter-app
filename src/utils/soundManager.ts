@@ -29,12 +29,16 @@ class SoundManager {
 
   private detectLowPowerMode(): void {
     // Check for battery API to detect low power mode
-    if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
-        this.isLowPowerMode = battery.level < 0.2; // Below 20%
-      }).catch(() => {
-        this.isLowPowerMode = false;
-      });
+    const nav = navigator as unknown as { getBattery?: () => Promise<{ level: number }> };
+    if (typeof nav.getBattery === 'function') {
+      nav
+        .getBattery()
+        .then((battery) => {
+          this.isLowPowerMode = battery.level < 0.2; // Below 20%
+        })
+        .catch(() => {
+          this.isLowPowerMode = false;
+        });
     }
   }
 

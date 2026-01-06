@@ -1,8 +1,10 @@
 // src/context/ThemeContext.tsx
 // P1: Theme System - Theme context provider and hook for theme selection
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ThemeId, ThemeDefinition, DEFAULT_THEME_ID, themesById } from '../theme/themes';
+import { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { ThemeId, ThemeDefinition } from '../theme/theme.types';
+import { DEFAULT_THEME_ID, themesById } from '../theme/themes';
 
 interface ThemeContextType {
   themeId: ThemeId;

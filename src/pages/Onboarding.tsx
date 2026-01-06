@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../context/ThemeContext';
 import { ThemeId } from '../theme/theme.types';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -30,16 +29,13 @@ interface OnboardingState {
 export default function Onboarding() {
   // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
   const { 
-    session, 
     profile, 
     authLoading,
     profileLoading, 
     profileError, 
     hasSession,
     hasProfile,
-    refreshProfile 
   } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
   const [state, setState] = useState<OnboardingState>({
@@ -141,6 +137,8 @@ export default function Onboarding() {
   ];
 
   // Render onboarding wizard
+  const profileThemeId = (profile as unknown as { theme?: ThemeId } | null | undefined)?.theme;
+
   return (
     <PageContainer>
       <PageHeader
@@ -191,7 +189,7 @@ export default function Onboarding() {
         {/* Profile is optional - used only for prefilling, wizard works without it */}
         {currentStep === 1 && (
           <OnboardingStep1Mode
-            currentThemeId={state.themeId || (profile?.theme as ThemeId | undefined) || null}
+            currentThemeId={state.themeId || profileThemeId || null}
             onComplete={handleStep1Complete}
           />
         )}
