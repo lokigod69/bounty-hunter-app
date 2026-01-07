@@ -12,7 +12,6 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { lockScroll, unlockScroll } from '../lib/scrollLock';
-import { logOverlayRootState } from '../lib/overlayDebug';
 
 // Define the active overlay layer type
 export type ActiveLayer = 'none' | 'menu' | 'modal' | 'critical';
@@ -54,40 +53,27 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     };
   }, [activeLayer]);
 
-  // Phase 8: Minimal logging to verify state changes (kept for debugging)
-  useEffect(() => {
-    console.log('[UIContext] activeLayer:', activeLayer, 'isMobileMenuOpen:', isMobileMenuOpen);
-    // Phase 10: Debug logging for overlay root state
-    if (import.meta.env.DEV) {
-      logOverlayRootState(`activeLayer changed to: ${activeLayer}`);
-    }
-  }, [activeLayer, isMobileMenuOpen]);
-
   // Phase UX-2: Deterministic menu functions using useCallback
   const openMenu = useCallback(() => {
-    console.log("[UIContext] openMenu called");
     setIsMobileMenuOpen(true);
     setActiveLayer('menu');
   }, []);
 
   const closeMenu = useCallback(() => {
-    console.log("[UIContext] closeMenu called");
     setIsMobileMenuOpen(false);
     setActiveLayer('none');
   }, []);
 
   const toggleMenu = useCallback(() => {
-    console.log("[UIContext] toggleMenu called, current state:", isMobileMenuOpen);
     setIsMobileMenuOpen((prev) => {
       const next = !prev;
       setActiveLayer(next ? 'menu' : 'none');
       return next;
     });
-  }, [isMobileMenuOpen]);
+  }, []);
 
   // Function to force immediate close for critical scenarios (kept as thin alias)
   const forceCloseMobileMenu = useCallback(() => {
-    console.log("[UIContext] forceCloseMobileMenu called (alias of closeMenu)");
     closeMenu();
   }, [closeMenu]);
 
@@ -112,7 +98,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   // Clear all layers
   const clearLayer = useCallback(() => {
-    console.log("[UIContext] clearLayer called");
     setActiveLayer('none');
     // Do NOT touch the menu directly here.
     // If we ever need to clear overlays + menu, call closeMenu() explicitly at the call site instead.

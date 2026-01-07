@@ -97,15 +97,12 @@ export async function uploadRewardImage(
     const timestamp = Date.now();
     const filePath = `rewards/${creatorId}/${bountyId}-${timestamp}.${ext}`;
 
-    console.log('[rewardImageUpload] Uploading to:', filePath);
-
     // Upload to storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(REWARD_IMAGES_BUCKET)
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      console.error('[rewardImageUpload] Upload error:', uploadError);
       return {
         success: false,
         error: uploadError.message || 'Failed to upload image. Please try again.',
@@ -117,14 +114,11 @@ export async function uploadRewardImage(
       .from(REWARD_IMAGES_BUCKET)
       .getPublicUrl(uploadData.path);
 
-    console.log('[rewardImageUpload] Upload successful:', urlData.publicUrl);
-
     return {
       success: true,
       publicUrl: urlData.publicUrl,
     };
   } catch (err) {
-    console.error('[rewardImageUpload] Unexpected error:', err);
     return {
       success: false,
       error: 'Could not upload image. Please try again.',

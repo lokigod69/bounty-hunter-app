@@ -118,7 +118,6 @@ export async function createReward(params: CreateRewardParams): Promise<CreateRe
     if (insertError) {
       // Non-blocking error - return failure but don't throw
       // This allows onboarding to continue even if reward creation fails
-      console.warn('[createReward] Onboarding reward creation failed:', insertError);
       return {
         success: false,
         message: insertError.message || 'Couldn\'t save this gift right now. You can create gifts later in the Gift Store.',

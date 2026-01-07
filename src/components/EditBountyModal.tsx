@@ -146,8 +146,6 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // R23 debug log (remove later)
-    console.log('[EditBountyModal] bounty.id', bounty?.id, bounty);
     if (!bounty || !user) return;
 
     if (imageType === 'url' && !validateImageUrl(imageUrl)) {
@@ -199,7 +197,6 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
         onClose();
       }
     } catch (err) {
-      console.error('[EditBountyModal] Submit error:', err);
       setUploadError('Failed to update bounty. Please try again.');
     } finally {
       setIsUploading(false);

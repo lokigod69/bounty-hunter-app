@@ -68,35 +68,17 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     };
   }, [isOpen, openModal, clearLayer]);
 
-  // R16: Log when modal opens for debugging
-  useEffect(() => {
-    if (!isOpen) return;
-    console.log('[ProfileEditModal] OPEN', {
-      profileNull: !profile,
-      profileLoading,
-      userId: user?.id?.substring(0, 8),
-    });
-  }, [isOpen, profile, profileLoading, user]);
-
   // R16: Hydrate form state when modal opens - handles both existing profile and first-time scenarios
   useEffect(() => {
     if (!isOpen) return; // Only hydrate when modal is open
 
     if (profile) {
       // Existing user with profile - use profile values
-      console.log('[ProfileEditModal] Hydrating from profile:', {
-        displayName: profile.display_name,
-        avatarUrl: profile.avatar_url?.substring(0, 50),
-      });
       setDisplayName(profile.display_name ?? '');
       setAvatarPreview(profile.avatar_url ?? null);
     } else if (!profileLoading && user) {
       // R16: First-time profile scenario - derive defaults from user
       const baseName = deriveDisplayNameFromEmail(user.email);
-      console.log('[ProfileEditModal] Hydrating from user (no profile yet):', {
-        baseName,
-        userId: user.id.substring(0, 8),
-      });
       setDisplayName(baseName);
       setAvatarPreview(null);
     }
@@ -117,18 +99,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     e.preventDefault();
     if (!user) return;
 
-    // R16: Log submit attempt for debugging
-    console.log('[ProfileEditModal] SUBMIT CLICK', {
-      profileNull: !profile,
-      profileLoading,
-      displayName,
-      hasAvatarFile: !!avatarFile,
-    });
-
     // R16: Only block if profile is still actively loading
     // If profile is null but not loading, this is first-time creation - allow it
     if (!profile && profileLoading) {
-      console.warn('[ProfileEditModal] Cannot save - profile still loading');
       toast.error('Profile is still loading. Please wait a moment and try again.');
       return;
     }
@@ -160,18 +133,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      // R15: Enhanced logging before save - track what's being preserved vs changed
-      console.log('[ProfileEditModal] Saving profile', {
-        userId: user.id.substring(0, 8),
-        display_name: baseDisplayName,
-        avatarUrl: avatarUrl?.substring(0, 50) || null,
-        avatarChanged: !!avatarFile, // R15: Track if avatar was changed
-        previousAvatarUrl: profile?.avatar_url?.substring(0, 50) || null,
-      });
-
       // R12: Upsert must include `email` since it's required for INSERT
       // If profile doesn't exist, upsert will INSERT which requires email
-      const { data: upsertData, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .upsert(
           {
@@ -184,9 +148,6 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         )
         .select('*')
         .single();
-
-      // R10: Log upsert result
-      console.log('[ProfileEditModal] Upsert result', { data: upsertData, error: updateError });
 
       if (updateError) {
         console.error('[ProfileEditModal] Upsert error:', updateError);
@@ -218,14 +179,8 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
 
       toast.success(t('profile.saveSuccess'), { id: toastId });
 
-      // Refresh profile in context
-      console.log('[ProfileEditModal] About to call refreshProfile');
-
       if (refreshProfile) {
         await refreshProfile();
-        console.log('[ProfileEditModal] refreshProfile completed');
-      } else {
-        console.warn('[ProfileEditModal] refreshProfile is undefined!');
       }
 
       // Close modal after successful save
@@ -373,18 +328,14 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                         key={option.id}
                         type="button"
                         onClick={() => {
-                          console.log('[ProfileEditModal] Mode switched to:', option.id);
                           setThemeId(option.id);
                           soundManager.play('toggleOn');
                         }}
-                        className={`
-                          flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md
-                          text-sm font-medium transition-all duration-200
-                          ${isActive
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                          isActive
                             ? 'bg-cyan-500/20 text-cyan-400 shadow-sm'
                             : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-                          }
-                        `}
+                        }`}
                       >
                         <Icon size={16} className={isActive ? 'text-cyan-400' : ''} />
                         <span className="hidden sm:inline">{option.label}</span>

@@ -14,7 +14,6 @@ import { createPortal } from 'react-dom';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
-import { logOverlayRootState } from '../lib/overlayDebug';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 
@@ -109,15 +108,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
   useEffect(() => {
     if (isExpanded) {
       openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-      // Phase 10: Debug logging
-      if (import.meta.env.DEV) {
-        logOverlayRootState('TaskCard expanded modal opened');
-      }
-    } else {
-      // Phase 10: Debug logging
-      if (import.meta.env.DEV) {
-        logOverlayRootState('TaskCard expanded modal closed');
-      }
     }
   }, [isExpanded, openModal]);
 
@@ -281,7 +271,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('[TaskCard] BaseCard clicked, expanding task:', id, 'isExpanded:', isExpanded);
           if (!isExpanded) {
             setIsExpanded(true);
           }
@@ -373,18 +362,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
       {showProofModal && createPortal(
         <ProofModal
-          taskId={id}
           onClose={() => setShowProofModal(false)}
           onSubmit={async (file: File | null, textDescription?: string) => {
             setInternalActionLoading(true);
+
             try {
               const uploadedUrl = await onProofUpload(file, id, textDescription);
               if (uploadedUrl) {
                 if (refetchTasks) refetchTasks();
                 setShowProofModal(false);
               }
-            } catch (error) {
-              console.error("Proof submission failed:", error);
             } finally {
               setInternalActionLoading(false);
             }

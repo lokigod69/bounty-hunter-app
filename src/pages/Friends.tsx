@@ -40,14 +40,7 @@ export default function Friends() {
   const { user, profile, profileLoading, setPartner } = useAuth();
   const navigate = useNavigate();
 
-  // R10/R11/R13: Enhanced logging for debugging profile/friends loading
   const userIdForFriends = profile ? user?.id : undefined;
-  console.log('[Friends] Render state:', {
-    userId: user?.id?.substring(0, 8),
-    hasProfile: !!profile,
-    profileLoading,
-    willCallUseFriends: !!userIdForFriends,
-  });
 
   // For Couple Mode, use partner state; for other modes, use friends
   const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
@@ -55,15 +48,6 @@ export default function Friends() {
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(
     userIdForFriends
   );
-
-  // R13: Log render data for debugging blank screen issues
-  console.log('[Friends] Render data:', {
-    friendsCount: friends?.length ?? 0,
-    pendingCount: pendingRequests?.length ?? 0,
-    sentCount: sentRequests?.length ?? 0,
-    loading,
-    error: error || null,
-  });
 
   // R25: Get accepted friends list
   const acceptedFriends = useMemo(() =>
@@ -87,7 +71,6 @@ export default function Friends() {
 
     const isPartnerStillFriend = acceptedFriends.some(f => f.friend?.id === profile.partner_user_id);
     if (!isPartnerStillFriend && acceptedFriends.length > 0) {
-      console.log('[Friends] Partner no longer in friends list, clearing partner_user_id');
       setPartner(null);
     }
   }, [profile?.partner_user_id, acceptedFriends, loading, setPartner, friends.length]);
@@ -109,12 +92,11 @@ export default function Friends() {
   // myAvatarUrlBase: The actual DB value (null if user hasn't set one)
   // myAvatarUrl: For rendering - uses placeholder when DB value is null
   const myAvatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
-  const myAvatarCacheBuster = profile?.updated_at ? `?v=${encodeURIComponent(profile.updated_at)}` : '';
+  const myProfileUpdatedAt = (profile as { updated_at?: string | null } | null | undefined)?.updated_at;
+  const myAvatarCacheBuster = myProfileUpdatedAt ? `?v=${encodeURIComponent(myProfileUpdatedAt)}` : '';
   const myAvatarUrl = myAvatarUrlBase
     ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
-
-  // R10: Removed duplicate log - now in single location above
 
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -178,8 +160,8 @@ export default function Friends() {
       const availableUsers = users?.filter(u => !friendIds.has(u.id)) || [];
       setSearchResults(availableUsers);
       setShowDropdown(availableUsers.length > 0);
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch {
+      void 0;
     } finally {
       setIsSearching(false);
     }
@@ -218,7 +200,6 @@ export default function Friends() {
             toast.error(t('friends.requestAlreadyExists'));
         } else {
             toast.error(t('friends.requestFailed'));
-            console.error('Error sending friend request:', error);
         }
     }
   };
@@ -678,7 +659,6 @@ export default function Friends() {
                 <h2 className="text-subtitle text-white font-semibold mb-4">
                   {theme.id === 'guild' && 'Your Crew'}
                   {theme.id === 'family' && 'Your Family'}
-                  {theme.id === 'couple' && 'Your Partner'}
                 </h2>
                 <div className="space-y-3">
                   {friends.map((friendship) => (
@@ -702,7 +682,6 @@ export default function Friends() {
                   <p className="text-body text-white/70 mb-6">
                     {theme.id === 'guild' && 'Invite crew members to share missions and rewards.'}
                     {theme.id === 'family' && 'Invite family members to share chores and rewards.'}
-                    {theme.id === 'couple' && 'Invite your partner to share requests and moments.'}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button

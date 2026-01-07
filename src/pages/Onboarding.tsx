@@ -31,10 +31,7 @@ export default function Onboarding() {
   const { 
     profile, 
     authLoading,
-    profileLoading, 
-    profileError, 
     hasSession,
-    hasProfile,
   } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
@@ -43,14 +40,6 @@ export default function Onboarding() {
     firstRewardId: null,
     invitedUserId: null,
     assigneeChoice: null,
-  });
-
-  // DEBUG: Log state on every render (keep for debugging)
-  console.log('[Onboarding DEBUG]', {
-    hasSession,
-    profileLoading,
-    hasProfile,
-    profileError: profileError ? String(profileError) : null,
   });
 
   // NO HOOKS BELOW THIS LINE - only conditional returns and handlers

@@ -49,7 +49,6 @@ export default function Dashboard() {
   const handleDeleteTaskRequest = () => {
     // Assignees should not be able to delete tasks created by others
     // This prevents confusing UX where modal opens but confirm is disabled
-    console.warn('Delete functionality is not available for assigned contracts');
     toast.error('You cannot delete tasks assigned to you. Contact the task creator if needed.');
   };
 
@@ -96,15 +95,11 @@ export default function Dashboard() {
     toast.loading('Updating task status...', { id: toastId });
     
     try {
-      console.log('[Dashboard] handleStatusUpdate called:', { taskId, status, userId: user.id });
-      
       await updateMissionStatus({
         missionId: taskId,
         status: status as TaskStatus,
         userId: user.id,
       });
-
-      console.log('[Dashboard] Task status updated successfully:', { taskId, status });
       
       if (status === 'completed') {
         toast.success('🎉 Task completed successfully!', { id: toastId, duration: 4000 });
@@ -112,8 +107,8 @@ export default function Dashboard() {
         try {
           sm.play('acceptContract');
           sm.play('success');
-        } catch (soundError) {
-          console.warn('[Dashboard] Sound playback failed:', soundError);
+        } catch {
+          void 0;
         }
       } else if (status === 'review') {
         toast.success('Task submitted for review!', { id: toastId });
@@ -125,15 +120,12 @@ export default function Dashboard() {
       if (refetchAssignedContracts) {
         try {
           await refetchAssignedContracts();
-        } catch (refreshError) {
-          console.warn('[Dashboard] Failed to refresh contracts:', refreshError);
+        } catch {
           // Don't show error to user as the main operation succeeded
         }
       }
 
     } catch (error: unknown) {
-      console.error('[Dashboard] handleStatusUpdate error:', error);
-      
       let message = 'Failed to update task status.';
       if (error instanceof Error) {
         message = error.message;

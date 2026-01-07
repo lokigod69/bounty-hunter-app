@@ -9,7 +9,9 @@
 // - ProfileEditModal is the ONLY place that should UPDATE profile fields
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import type { Profile } from '../types/database';
+import type { Database } from '../types/database';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export async function ensureProfileForUser(
   supabase: SupabaseClient,
@@ -17,32 +19,13 @@ export async function ensureProfileForUser(
 ): Promise<Profile | null> {
   const callId = Date.now(); // R15: Unique call ID to trace async race conditions
 
-  // R15: Enhanced logging with avatar_url tracking
-  console.log(`[ensureProfile:${callId}] enter`, {
-    userId: user.id.substring(0, 8),
-    userEmail: user.email,
-    timestamp: new Date().toISOString(),
-  });
-
   try {
     // 1. Try to load existing profile
-    console.log(`[ensureProfile:${callId}] Querying profiles table...`);
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();   // Returns null data when no row found, not an error
-
-    // R17: Log FULL profile row for debugging - this is what ensureProfile sees from DB
-    console.log(`[ensureProfile:${callId}] select result`, {
-      hasData: !!profile,
-      id: profile?.id,
-      displayName: profile?.display_name,
-      avatarUrl: profile?.avatar_url, // R17: Log FULL URL for comparison
-      avatarUrlShort: profile?.avatar_url?.substring(0, 60) || null,
-      updatedAt: profile?.updated_at,
-      error: error ? { code: error.code, message: error.message } : null,
-    });
 
     // .maybeSingle() returns null data when no rows found, not an error
     // Only real errors (network, RLS violations, etc.) will have error set
@@ -54,11 +37,6 @@ export async function ensureProfileForUser(
     // R15: CRITICAL - If profile exists, return it WITHOUT modification
     // Never overwrite user-chosen display_name or avatar_url here
     if (profile) {
-      console.log(`[ensureProfile:${callId}] RETURNING EXISTING profile (no modification)`, {
-        id: profile.id.substring(0, 8),
-        hasAvatar: !!profile.avatar_url,
-        hasDisplayName: !!profile.display_name,
-      });
       return profile as Profile;
     }
 
@@ -78,19 +56,11 @@ export async function ensureProfileForUser(
       role: null,
     };
 
-    console.log(`[ensureProfile:${callId}] INSERTING NEW profile (no existing row)`, insertPayload);
-
     const { data: inserted, error: insertError } = await supabase
       .from('profiles')
       .insert(insertPayload)
       .select('*')
       .single();
-
-    console.log(`[ensureProfile:${callId}] insert result`, {
-      hasData: !!inserted,
-      insertedId: inserted?.id?.substring(0, 8),
-      error: insertError ? { code: insertError.code, message: insertError.message } : null,
-    });
 
     if (insertError) {
       console.error(`[ensureProfile:${callId}] INSERT FAILED:`, insertError);
@@ -102,7 +72,6 @@ export async function ensureProfileForUser(
       return null;
     }
 
-    console.log(`[ensureProfile:${callId}] NEW profile created successfully`);
     return inserted as Profile;
 
   } catch (err) {

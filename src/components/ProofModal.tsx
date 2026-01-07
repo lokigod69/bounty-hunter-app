@@ -7,13 +7,12 @@ import { useUI } from '../context/UIContext';
 import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES } from '../lib/proofConfig';
 
 interface ProofModalProps {
-  taskId: string;
   onClose: () => void;
   onSubmit: (file: File | null, textDescription?: string) => Promise<void>;
   uploadProgress: number;
 }
 
-const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress, taskId }) => {
+const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress }) => {
   const { openModal, clearLayer } = useUI();
   const [file, setFile] = useState<File | null>(null);
   const [textDescription, setTextDescription] = useState('');
@@ -79,7 +78,6 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
       await onSubmit(file, textDescription.trim() || undefined);
       // Success - modal will close via parent component
     } catch (err) {
-      console.error('[ProofModal] Submit error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit proof. Please try again.';
       setError(errorMessage);
     } finally {
@@ -87,14 +85,11 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
     }
   };
 
-  console.log("[ProofModal] Rendering modal", { taskId });
-
   return (
     <div 
       data-overlay="ProofModal"
       className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" 
       onClick={() => {
-        console.log("[ProofModal] Backdrop clicked, closing");
         onClose();
       }}
     >
@@ -106,7 +101,6 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
         <button 
           onClick={(e) => {
             e.stopPropagation();
-            console.log("[ProofModal] Close button clicked");
             onClose();
           }} 
           title="Close" 

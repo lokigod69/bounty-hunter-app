@@ -26,7 +26,8 @@ import type { Database } from '../types/database';
 import type { NewTaskData, Task, TaskStatus, ProofType, TaskWithProfiles } from '../types/custom';
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
-import { evaluateStatusChange, hasProofSubmitted, type StatusChangeContext } from '../core/contracts/contracts.domain';
+import { evaluateStatusChange, hasProofSubmitted } from '../core/contracts/contracts.domain';
+import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
 import { validateProofPayload, getStatusAfterProofSubmission } from '../core/proofs/proofs.domain';
 
@@ -156,26 +157,21 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (_payload) => { // payload is typed via RealtimePostgresChangesPayload<Task>
-          // console.log('Realtime: Task change received', payload);
           fetchTasks();
         }
       )
       .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          // console.log('Subscribed to tasks channel!');
-        } else if (status === 'CHANNEL_ERROR' && err) {
-          console.error('Tasks channel error:', err);
+        if (status === 'CHANNEL_ERROR' && err) {
           toast.error(`Real-time connection error: ${err.message}`);
         } else if (status === 'TIMED_OUT') {
           toast('Real-time connection timed out.', { icon: '⚠️' }); // Changed from toast.warn
         } else if (err) { 
-            console.error('Tasks subscription error:', err);
             toast.error(`Subscription issue: ${err.message}`);
         }
       });
 
     return () => {
-      client.removeChannel(tasksChannel).catch(err => console.error("Failed to remove channel", err));
+      client.removeChannel(tasksChannel).catch(() => void 0);
     };
   }, [currentUserId, fetchTasks, client]);
 
@@ -275,6 +271,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       assigned_to: newTaskData.assigned_to ?? null, // Handle undefined from NewTaskData
       deadline: newTaskData.deadline || null,
       proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required,
+      is_daily: newTaskData.is_daily ?? false,
       // Default/generated fields for optimistic update
       id: tempId,
       created_at: new Date().toISOString(),
@@ -307,7 +304,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         assigned_to: newTaskData.assigned_to,
         deadline: newTaskData.deadline || null,
         status: 'pending' as TaskStatus,
-        proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required // Ensure it's part of the insert
+        proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required, // Ensure it's part of the insert
+        is_daily: newTaskData.is_daily ?? false,
       };
 
       const { data: createdTask, error: createError } = await client
@@ -338,7 +336,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
   };
 
   const updateTaskStatus = async (taskId: string, requestedStatus: TaskStatus): Promise<boolean> => {
-    console.log('[useTasks] updateTaskStatus called. TaskID:', taskId, 'RequestedStatus:', requestedStatus);
     if (!currentUserId) {
       toast.error('Authentication error.');
       return false;
@@ -347,6 +344,11 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     const originalTask = tasks.find(t => t.id === taskId);
     if (!originalTask) {
       toast.error('Task not found for status update.');
+      return false;
+    }
+
+    if (!originalTask.created_by) {
+      toast.error('Task is missing creator information.');
       return false;
     }
 
@@ -382,8 +384,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       // If neither of the above, completed_at remains as is (e.g. pending -> review, completed_at was null and stays null)
     }
 
-    console.log('[useTasks] updateTaskStatus: Updates object for DB:', updates);
-
     // Optimistic UI update
     const updatedOptimisticTask = {
       ...originalTask,
@@ -404,8 +404,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .single();
 
       if (updateError) {
-        console.error('[useTasks] updateTaskStatus: Error updating task status in DB:', updateError);
-        
         // Enhanced error handling with specific messages
         let errorMessage = 'Failed to update task status.';
         if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
@@ -419,10 +417,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         throw new Error(errorMessage);
       }
       if (!updatedTaskResult) {
-        console.error('[useTasks] updateTaskStatus: Task status update returned no data.');
         throw new Error('Task status update returned no data.');
       }
-      console.log('[useTasks] updateTaskStatus: Successfully updated task status in DB. Result:', updatedTaskResult);
 
       // Award credits using domain logic
       const statusChangeContext: StatusChangeContext = {
@@ -431,7 +427,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         assigneeId: originalTask.assigned_to,
         currentStatus: originalTask.status as TaskStatus,
         requestedStatus,
-        proofRequired: originalTask.proof_required,
+        proofRequired: originalTask.proof_required ?? false,
         hasProof: hasProofSubmitted(originalTask),
       };
 
@@ -445,16 +441,13 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         });
 
         if (creditDecision.amount > 0) {
-          console.log('[useTasks] updateTaskStatus: Calling increment_user_credits RPC for user:', originalTask.assigned_to, 'Amount:', creditDecision.amount);
           const { error: creditError } = await client.rpc('increment_user_credits', {
             user_id_param: originalTask.assigned_to,
             amount_param: creditDecision.amount,
           });
           if (creditError) {
-            console.error('[useTasks] updateTaskStatus: Error calling increment_user_credits RPC:', creditError);
             toast.error(`Task completed, but failed to award credits: ${getErrorMessage(creditError)}`, { duration: 5000 });
           } else {
-            console.log('[useTasks] updateTaskStatus: Successfully called increment_user_credits RPC.');
             toast.success(`${creditDecision.amount} credits awarded to ${updatedTaskResult.profiles?.display_name || 'assignee'}!`, { id: `creditAward-${taskId}`, duration: 4000 });
           }
         }
@@ -496,7 +489,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         id: toastId, 
         duration: isAndroid ? 6000 : 4000 
       });
-      console.error('[useTasks] updateTaskStatus: Catch block error:', errorMessage);
       // Rollback optimistic update
       setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? originalTask : t)));
       return false;
@@ -538,7 +530,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     }
 
     // Determine status after proof submission using domain logic
-    const statusAfterProof = getStatusAfterProofSubmission(taskToUpdate.proof_required);
+    const statusAfterProof = getStatusAfterProofSubmission(taskToUpdate.proof_required ?? false);
 
     const originalTaskState = { ...taskToUpdate }; // For rollback
     // Optimistic UI update
@@ -594,8 +586,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .single();
 
       if (dbUpdateError) {
-        console.error('[useTasks] uploadProof: Database update error:', dbUpdateError);
-        
         // Enhanced error handling for proof upload
         let errorMessage = 'Failed to update task with proof details.';
         if (dbUpdateError.message.includes('permission') || dbUpdateError.code === 'PGRST301') {
@@ -676,11 +666,9 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           const filePath = new URL(proofUrlString).pathname.split('/bounty-proofs/')[1];
           if (filePath) {
             await client.storage.from('bounty-proofs').remove([filePath]);
-            // console.log('Proof file deleted from storage:', filePath);
           }
         } catch (storageError) {
           // Log error but don't block task deletion if file removal fails
-          console.error('Failed to delete proof file from storage:', getErrorMessage(storageError));
           toast.error('Could not delete associated proof file, but will proceed with task deletion.', { duration: 5000 });
         }
       }

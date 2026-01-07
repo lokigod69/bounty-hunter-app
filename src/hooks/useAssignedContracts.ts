@@ -53,8 +53,6 @@ export function useAssignedContracts() {
         setContracts([]);
       } else {
         // FIXED: Remove double URL generation - proof_url is already a public URL from upload
-        console.log('[useAssignedContracts] Fetched contracts with proof URLs:', data?.map(t => ({ id: t.id, proof_url: t.proof_url })));
-        
         const processedContracts = data?.map(task => {
           // Validate proof_url if it exists
           if (task.proof_url) {
@@ -62,11 +60,8 @@ export function useAssignedContracts() {
               // Basic URL validation
               const url = new URL(task.proof_url);
               if (!url.protocol.startsWith('http')) {
-                console.warn('[useAssignedContracts] Invalid proof URL protocol:', task.proof_url);
                 return { ...task, proof_url: null };
               }
-              
-              console.log('[useAssignedContracts] Valid proof URL for task', task.id, ':', task.proof_url);
               return task;
             } catch (urlError) {
               console.error('[useAssignedContracts] Invalid proof URL for task', task.id, ':', task.proof_url, urlError);

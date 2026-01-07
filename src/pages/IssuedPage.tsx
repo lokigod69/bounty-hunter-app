@@ -107,7 +107,6 @@ export default function IssuedPage() {
       toast.success(t('contracts.deleteSuccess', { title: selectedContract.title }));
       await refetchIssuedContracts(); // Refresh the list
     } catch (error: unknown) {
-      console.error('Failed to delete contract:', error);
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
         toast.error(t('contracts.deleteFailedMessage', { message: supabaseError.message }));
@@ -120,7 +119,7 @@ export default function IssuedPage() {
   };
 
   const handleProofUpload = async (file: File | null, taskId: string): Promise<string | null> => {
-    console.warn('handleProofUpload called for task:', taskId, 'but uploadProof is not available for issued contracts view.');
+    void taskId;
     if (!file) {
       toast.error(t('contracts.proofUploadDisabled'));
       return null;
@@ -162,7 +161,6 @@ export default function IssuedPage() {
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
-      console.error('Failed to approve contract:', error);
       const errorMessage = error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
         : t('contracts.approvalFailedUnknown');
@@ -197,7 +195,6 @@ export default function IssuedPage() {
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
-      console.error('Failed to reject contract:', error);
       const errorMessage = error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
         : t('contracts.rejectionFailedUnknown');
@@ -262,16 +259,11 @@ export default function IssuedPage() {
         status: 'pending' as TaskStatus,
       };
 
-      console.log('User ID:', user.id);
-      console.log('Task data being sent:', newContract);
-
-      const { data, error: createError } = await supabase
+      const { error: createError } = await supabase
         .from('tasks')
         .insert([newContract])
         .select()
         .single();
-
-      console.log('Supabase response:', { data, error: createError });
 
       if (createError) {
         throw createError;
@@ -280,15 +272,9 @@ export default function IssuedPage() {
       await refetchIssuedContracts();
       toast.success(t('contracts.createSuccess'));
     } catch (error: unknown) {
-      // Log the full error details as requested
-      console.error('Full Supabase error:', error);
-
       // Type guard to check if it's a Supabase-like error object (PostgrestError)
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
-        console.error('Error code:', supabaseError.code);
-        console.error('Error message:', supabaseError.message);
-        console.error('Error details:', supabaseError.details);
         toast.error(t('contracts.createFailedMessage', { message: supabaseError.message }));
       } else {
         toast.error(t('contracts.createFailedUnknown'));
@@ -301,7 +287,6 @@ export default function IssuedPage() {
     setEditingTask(null);
     // If mobile menu is open, close it first
     if (isMobileMenuOpen) {
-      console.log("[IssuedPage] handleCreateNewContract - closing mobile menu first");
       forceCloseMobileMenu();
       // Add a small delay to ensure state propagation before opening modal
       setTimeout(() => {
@@ -366,12 +351,10 @@ export default function IssuedPage() {
         <TaskForm
           userId={user.id}
           onClose={() => {
-            console.log("[IssuedPage] TaskForm onClose - checking mobile menu state");
             setIsTaskFormOpen(false);
             setEditingTask(null);
             // Ensure mobile menu can be opened after modal closes
             if (isMobileMenuOpen) {
-              console.log("[IssuedPage] TaskForm onClose - closing mobile menu");
               forceCloseMobileMenu();
             }
           }}

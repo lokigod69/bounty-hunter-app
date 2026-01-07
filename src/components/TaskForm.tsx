@@ -24,7 +24,6 @@ import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { getOverlayRoot } from '../lib/overlayRoot';
-import { logOverlayRootState } from '../lib/overlayDebug';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
 import type { Database } from '../types/database';
@@ -73,17 +72,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       openModal();
       hasOpenedModalRef.current = true;
     }
-    // Phase 10: Debug logging
-    if (import.meta.env.DEV) {
-      logOverlayRootState('TaskForm mounted');
-    }
     return () => {
       clearLayer(); // Phase 7: Clear layer when modal unmounts
       hasOpenedModalRef.current = false;
-      // Phase 10: Debug logging
-      if (import.meta.env.DEV) {
-        logOverlayRootState('TaskForm unmounted');
-      }
     };
   }, [openModal, clearLayer]);
 
@@ -210,14 +201,11 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       // Close modal after successful submission
       handleClose();
     } catch (error: unknown) {
-      console.error('Task submission error:', error);
       let errorMessage = t('taskForm.submissionError');
       if (error instanceof Error) {
         errorMessage = error.message || errorMessage;
       }
       toast.error(errorMessage);
-      // Optionally, set a form-level error message here to display to the user
-      // setErrors(prev => ({ ...prev, form: 'Submission failed. Please try again.' }));
     } finally {
       setIsSubmitting(false);
     }
@@ -232,12 +220,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   // const rewardTypes array is no longer directly used for the primary selector, but parts might be reused or adapted if old types are still supported elsewhere.
   // For now, it's superseded by the new contractType logic.
 
-  console.log("[TaskFormModal] Rendering modal");
-
   // Phase 7: Portal TaskForm to overlay-root to fix stacking context issues
   const overlayRoot = getOverlayRoot();
   if (!overlayRoot) {
-    console.error("[TaskFormModal] Overlay root not found");
     return null;
   }
 
@@ -246,7 +231,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       data-overlay="TaskForm"
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
       onClick={() => {
-        console.log("[TaskFormModal] Backdrop clicked, closing");
         handleClose();
       }}
     >
@@ -254,7 +238,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       <button
         onClick={(e) => {
           e.stopPropagation();
-          console.log("[TaskFormModal] Close button clicked");
           handleClose();
         }}
         className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"

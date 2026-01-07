@@ -71,16 +71,6 @@ class SoundManager {
         audio.volume = 0.5;
       }
 
-      // Add error handling for audio loading
-      audio.addEventListener('error', (e) => {
-        console.warn(`Failed to load sound: ${name}`, e);
-      });
-
-      // Add load event to ensure audio is ready
-      audio.addEventListener('canplaythrough', () => {
-        console.log(`Sound loaded: ${name}`);
-      });
-
       this.sounds[name] = audio;
     });
   }
@@ -98,7 +88,6 @@ class SoundManager {
 
     const audio = this.sounds[soundName];
     if (!audio) {
-      console.warn(`Sound not found: ${soundName}`);
       return;
     }
 
@@ -113,35 +102,27 @@ class SoundManager {
         
         if (playPromise !== undefined) {
           playPromise
-            .then(() => {
-              console.log(`Sound played successfully: ${soundName}`);
-            })
-            .catch((error) => {
-              console.warn(`Sound play failed: ${soundName}`, error);
+            .catch(() => {
               // Fallback: try to play with user interaction
-              this.playWithUserInteraction(audio, soundName);
+              this.playWithUserInteraction(audio);
             });
         }
       } else {
         // Standard web playback
         audio.currentTime = 0;
-        audio.play().catch((error) => {
-          console.warn(`Sound play failed: ${soundName}`, error);
-        });
+        audio.play().catch(() => void 0);
       }
-    } catch (error) {
-      console.warn(`Error playing sound: ${soundName}`, error);
+    } catch {
+      void 0;
     }
   }
 
-  private playWithUserInteraction(audio: HTMLAudioElement, soundName: string): void {
+  private playWithUserInteraction(audio: HTMLAudioElement): void {
     // Create a temporary button to trigger user interaction
     const tempButton = document.createElement('button');
     tempButton.style.display = 'none';
     tempButton.onclick = () => {
-      audio.play().catch((error) => {
-        console.warn(`Fallback sound play failed: ${soundName}`, error);
-      });
+      audio.play().catch(() => void 0);
       document.body.removeChild(tempButton);
     };
     

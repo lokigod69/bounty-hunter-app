@@ -152,7 +152,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   useEffect(() => {
     if (isOpen) {
       openModal();
-      console.log('[MissionModalShell] open', { mode, role, state });
     }
     return () => {
       if (isOpen) {

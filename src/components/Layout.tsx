@@ -27,7 +27,6 @@ import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
-import { logOverlayRootState } from '../lib/overlayDebug';
 import {
   Home,
   Send,
@@ -51,9 +50,6 @@ import ProfileEditModal from './ProfileEditModal';
 
 import { soundManager } from '../utils/soundManager';
 
-// R17: Temporary debug component for profile reality check
-import { ProfileDebugger } from './dev/ProfileDebugger';
-
 export default function Layout() {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -62,23 +58,6 @@ export default function Layout() {
   const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Debug logging for mobile menu
-  useEffect(() => {
-    console.log("[MobileMenu] State changed, isOpen:", isMobileMenuOpen);
-  }, [isMobileMenuOpen]);
-
-  // Debug logging for identity pipeline - helps verify profile propagation in production
-  useEffect(() => {
-    console.log("[Layout] Identity state:", {
-      userId: user?.id,
-      userEmail: user?.email,
-      profileId: profile?.id,
-      profileDisplayName: profile?.display_name,
-      profileAvatarUrl: profile?.avatar_url,
-      hasProfile: !!profile,
-    });
-  }, [user, profile]);
 
   // Unified identity values - single source of truth for current user display
   // This ensures consistent display across header, mobile menu, and all identity surfaces
@@ -88,7 +67,6 @@ export default function Layout() {
     user?.email?.split('@')[0] ??
     'Unknown user';
 
-  // R15: RENDERING FALLBACKS - These are for DISPLAY ONLY, never written to DB
   // avatarUrlBase: The actual DB value (null if user hasn't set one)
   // avatarUrl: For rendering - uses placeholder when avatarUrlBase is null
   const avatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
@@ -97,16 +75,6 @@ export default function Layout() {
   const avatarUrl = avatarUrlBase
     ? `${avatarUrlBase}${avatarCacheBuster}`
     : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
-
-  // R17: Enhanced logging to trace profile pipeline issues
-  console.log('[Layout] RENDER identity', {
-    displayName,
-    avatarUrlBase: avatarUrlBase ?? 'NULL',
-    avatarUrlBaseShort: avatarUrlBase?.substring(0, 60) || 'NULL (using placeholder)',
-    hasProfile: !!profile,
-    profileId: profile?.id,
-    profileUpdatedAt: profileUpdatedAt,
-  });
 
   const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
@@ -123,7 +91,6 @@ export default function Layout() {
   useEffect(() => {
     // Only close if pathname actually changed AND menu is open
     if (previousPathname.current !== location.pathname && isMobileMenuOpen) {
-      console.log("[Layout] Route changed from", previousPathname.current, "to", location.pathname, "- closing menu");
       closeMenu(); // Use closeMenu instead of clearLayer for menu-specific close
       previousPathname.current = location.pathname;
     } else if (previousPathname.current !== location.pathname) {
@@ -136,8 +103,6 @@ export default function Layout() {
     await signOut();
     navigate('/login');
   };
-
-
 
   const closeUserMenu = () => setUserMenuOpen(false);
 
@@ -286,10 +251,6 @@ export default function Layout() {
               <button 
                 type="button"
                 onClick={() => {
-                  console.log("[Layout] Hamburger clicked, toggling menu");
-                  if (import.meta.env.DEV) {
-                    logOverlayRootState('Hamburger clicked');
-                  }
                   toggleMenu();
                 }} 
                 className="text-white p-2" 
@@ -320,7 +281,6 @@ export default function Layout() {
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => {
-              console.log("[Layout] MobileMenu backdrop clicked, closing menu");
               closeMenu();
             }}
           />
@@ -332,7 +292,6 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => {
-                console.log("[Layout] MobileMenu close button clicked");
                 closeMenu();
               }}
               className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
@@ -356,11 +315,10 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => {
-                console.log("[Layout] Profile button clicked in mobile menu");
                 setProfileModalOpen(true);
                 closeMenu();
               }}
-              className="w-full flex items-center space-x-3 p-4 mb-6 glass-card text-left transition-colors hover:bg-white/5"
+              className="w-full flex flex-col items-center glass-card hover:bg-white/10 transition-colors rounded-xl p-6 mb-6"
             >
               <div className="w-12 h-12 rounded-full overflow-hidden">
                 <img
@@ -390,7 +348,6 @@ export default function Layout() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log("[Layout] Nav link clicked in mobile menu:", item.path);
                     if (item.sound) soundManager.play(item.sound);
                     closeMenu();
                   }}
@@ -419,7 +376,6 @@ export default function Layout() {
                       : 'hover:bg-white/5'
                   }`}
                   onClick={() => {
-                    console.log("[Layout] User menu item clicked in mobile menu");
                     closeMenu();
                   }}
                 >
@@ -455,9 +411,6 @@ export default function Layout() {
       </main>
 
       <ProfileEditModal isOpen={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />
-
-      {/* R17: Temporary debug component - remove after profile pipeline is stable */}
-      {import.meta.env.DEV && <ProfileDebugger />}
     </div>
   );
 }

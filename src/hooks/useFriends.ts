@@ -78,13 +78,6 @@ export function useFriends(userId: string | undefined) {
         }
       }
 
-      // R11: Log fetch results for debugging
-      console.log(`[useFriends] Fetch complete:`, {
-        acceptedFriends: acceptedFriends.length,
-        pendingReceived: received.length,
-        pendingSent: sent.length,
-      });
-
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
@@ -98,7 +91,6 @@ export function useFriends(userId: string | undefined) {
         errorMessage = 'An unexpected error occurred while fetching friendships.';
       }
       setError(errorMessage);
-      console.error('Error fetching friendships:', e);
     } finally {
       setLoading(false);
     }
@@ -107,9 +99,7 @@ export function useFriends(userId: string | undefined) {
   // R8/R13 FIX: Single useEffect for data fetching and subscription
   // R13: Fixed StrictMode double-subscribe crash
   useEffect(() => {
-    // R11: Enhanced logging for debugging profile/friends loading issues
     if (!userId) {
-      console.log('[useFriends] No userId provided - clearing state and skipping subscription');
       setFriends([]);
       setPendingRequests([]);
       setSentRequests([]);
@@ -120,22 +110,19 @@ export function useFriends(userId: string | undefined) {
     // R13: Clean up any existing channel BEFORE creating a new one
     // This prevents "tried to subscribe multiple times" in StrictMode
     if (channelRef.current) {
-      console.log('[useFriends] Cleaning up existing channel before re-subscribing');
       try {
         channelRef.current.unsubscribe();
       } catch (e) {
-        console.warn('[useFriends] Error unsubscribing old channel:', e);
+        void e;
       }
       channelRef.current = null;
     }
 
     // Initial fetch
-    console.log(`[useFriends] Starting initial fetch for userId: ${userId.substring(0, 8)}...`);
     fetchFriendships(userId);
 
     // R13: Use a unique channel name with timestamp to avoid StrictMode conflicts
     const channelName = `friendships-${userId}-${Date.now()}`;
-    console.log(`[useFriends] Setting up realtime channel: ${channelName}`);
 
     // R13: Wrap subscription in try-catch to prevent crashes
     try {
@@ -153,13 +140,10 @@ export function useFriends(userId: string | undefined) {
             fetchFriendships(userId);
           }
         )
-        .subscribe((status) => {
-          console.log(`[useFriends] Channel ${channelName} status:`, status);
-        });
+        .subscribe();
 
       channelRef.current = channel;
     } catch (err) {
-      console.error('[useFriends] Failed to subscribe to friendships channel:', err);
       channelRef.current = null;
       // Still allow the UI to show the initial fetch results
     }
@@ -167,12 +151,11 @@ export function useFriends(userId: string | undefined) {
     // Cleanup on unmount or userId change
     return () => {
       if (channelRef.current) {
-        console.log(`[useFriends] cleanup channel ${channelName}`);
         try {
           channelRef.current.unsubscribe();
           supabase.removeChannel(channelRef.current);
         } catch (e) {
-          console.warn('[useFriends] Error during channel cleanup:', e);
+          void e;
         }
         channelRef.current = null;
       }
@@ -225,7 +208,6 @@ export function useFriends(userId: string | undefined) {
       return data;
     } catch (error) {
       setError((error as Error).message ?? null);
-      console.error('Error sending friend request:', error);
       return null;
     } finally {
       setLoading(false);
@@ -262,7 +244,6 @@ export function useFriends(userId: string | undefined) {
       }
     } catch (error) {
       setError((error as Error).message ?? null);
-      console.error('Error responding to friend request:', error);
       return null;
     } finally {
       setLoading(false);
@@ -284,7 +265,7 @@ export function useFriends(userId: string | undefined) {
         .delete()
         .eq('id', friendshipId)
         .eq('requested_by', userId) // Ensure the current user is the sender
-        .eq('status', 'pending');    // Ensure the request is still pending
+        .eq('status', 'pending'); // Ensure the request is still pending
 
       if (deleteError) throw deleteError;
 
@@ -293,7 +274,6 @@ export function useFriends(userId: string | undefined) {
       return true;
     } catch (error) {
       setError((error as Error).message ?? null);
-      console.error('Error cancelling sent friend request:', error);
       return false;
     } finally {
       setLoading(false);
@@ -317,7 +297,6 @@ export function useFriends(userId: string | undefined) {
       return true;
     } catch (error) {
       setError((error as Error).message ?? null);
-      console.error('Error removing friend:', error);
       return false;
     } finally {
       setLoading(false);

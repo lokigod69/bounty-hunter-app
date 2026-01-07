@@ -167,15 +167,6 @@ export function getErrorMessage(error: unknown, context?: string): string {
   // Enhance for Android devices
   const finalMessage = enhanceErrorForAndroid(contextualMessage, category);
   
-  // Log final processed message
-  console.log('[getErrorMessage] Final processed message:', {
-    originalMessage: message,
-    category,
-    contextualMessage,
-    finalMessage,
-    isAndroid: detectAndroidDevice()
-  });
-  
   return finalMessage;
 }
 

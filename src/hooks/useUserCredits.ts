@@ -31,51 +31,42 @@ export const useUserCredits = () => {
 
       if (dbError) {
         if (dbError.code === 'PGRST116' || (dbError.message.includes('JSON object requested, multiple (or no) rows returned') && !data)) {
-          console.log('No user_credits record found for user, attempting to create one.');
           try {
             const { error: upsertError } = await supabase
               .from('user_credits')
               .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
 
             if (upsertError) {
-              console.error('Error upserting user_credits record:', upsertError);
               setError('Failed to initialize credits.');
               setCredits(0);
             } else {
-              console.log('Successfully ensured user_credits record exists.');
               setCredits(0);
             }
           } catch (initError: unknown) {
             let initMessage = 'An unexpected error occurred during credit initialization.';
             if (initError instanceof Error) initMessage = initError.message;
-            console.error('Exception upserting user_credits record:', initError);
             setError(initMessage);
             setCredits(0);
           }
         } else {
-          console.error('Error fetching user credits:', dbError);
           setError('Failed to load credits.');
           setCredits(0);
         }
       } else if (data === null) {
-        console.log('No user_credits record found (data is null), attempting to create one.');
         try {
           const { error: upsertError } = await supabase
             .from('user_credits')
             .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
 
           if (upsertError) {
-            console.error('Error upserting user_credits record:', upsertError);
             setError('Failed to initialize credits.');
             setCredits(0);
           } else {
-            console.log('Successfully ensured user_credits record exists.');
             setCredits(0);
           }
         } catch (initError: unknown) {
           let initMessage = 'An unexpected error occurred during credit initialization.';
           if (initError instanceof Error) initMessage = initError.message;
-          console.error('Exception upserting user_credits record:', initError);
           setError(initMessage);
           setCredits(0);
         }
@@ -87,7 +78,6 @@ export const useUserCredits = () => {
       if (e instanceof Error) {
         message = e.message;
       }
-      console.error('Exception fetching user credits:', e);
       setError(message);
       setCredits(0);
     }

@@ -42,7 +42,6 @@ const useUserCredits = () => {
           // Check if the error is because the user_credits record doesn't exist (e.g., Supabase code PGRST116)
           // Or if data is null when .single() is used and no row is found.
           if (dbError.code === 'PGRST116' || (dbError.message.includes('JSON object requested, multiple (or no) rows returned') && !data)) { 
-            console.log('No user_credits record found for user, attempting to create one.');
             try {
               // Use upsert to prevent conflict if record already exists
               const { error: upsertError } = await supabase
@@ -50,28 +49,23 @@ const useUserCredits = () => {
                 .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
 
               if (upsertError) {
-                console.error('Error upserting user_credits record:', upsertError);
                 setError('Failed to initialize credits.');
                 setCredits(0);
               } else {
-                console.log('Successfully ensured user_credits record exists (initialized with 0 balance if new).');
                 setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
               }
             } catch (initError: unknown) {
               let initMessage = 'An unexpected error occurred during credit initialization.';
               if (initError instanceof Error) initMessage = initError.message;
-              console.error('Exception upserting user_credits record:', initError);
               setError(initMessage);
               setCredits(0);
             }
           } else {
-            console.error('Error fetching user credits:', dbError);
             setError('Failed to load credits.');
             setCredits(0); // Show 0 on other errors
           }
         } else if (data === null) {
             // This case handles when .single() returns null (no record) without an explicit PGRST116 error
-            console.log('No user_credits record found (data is null), attempting to create one.');
             try {
               // Use upsert to prevent conflict if record already exists
               const { error: upsertError } = await supabase
@@ -79,17 +73,14 @@ const useUserCredits = () => {
                 .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
 
               if (upsertError) {
-                console.error('Error upserting user_credits record:', upsertError);
                 setError('Failed to initialize credits.');
                 setCredits(0);
               } else {
-                console.log('Successfully ensured user_credits record exists (initialized with 0 balance if new).');
                 setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
               }
             } catch (initError: unknown) {
               let initMessage = 'An unexpected error occurred during credit initialization.';
               if (initError instanceof Error) initMessage = initError.message;
-              console.error('Exception upserting user_credits record:', initError);
               setError(initMessage);
               setCredits(0);
             }
@@ -101,7 +92,6 @@ const useUserCredits = () => {
         if (e instanceof Error) {
           message = e.message;
         }
-        console.error('Exception fetching user credits:', e);
         setError(message);
         setCredits(0); // Show 0 on exception
       }
@@ -124,25 +114,18 @@ const useUserCredits = () => {
             table: 'user_credits',
             filter: `user_id=eq.${user.id}`,
           },
-          (payload) => {
-            console.log('User credits changed:', payload);
+          () => {
             fetchCredits(); // Re-fetch credits when a change is detected
           }
         )
-        .subscribe((status) => {
-          // Handle subscription status to prevent connection storms
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            console.warn('UserCredits: Realtime subscription failed, falling back to manual refresh');
-          }
-        });
+        .subscribe();
 
       // Cleanup subscription on component unmount with error handling
       return () => {
         try {
           supabase.removeChannel(channel);
-        } catch (error) {
+        } catch {
           // Silently handle cleanup errors to prevent console spam
-          console.debug('UserCredits: Channel cleanup completed');
         }
       };
     }

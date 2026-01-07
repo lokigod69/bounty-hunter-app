@@ -104,18 +104,9 @@ export default function ProfileEdit() {
     // R16: Only block if profile is still actively loading
     // If profile is null but not loading, this is first-time creation - allow it
     if (!profile && profileLoading) {
-      console.warn('[ProfileEdit] Cannot save - profile still loading');
       toast.error('Profile is still loading. Please wait a moment and try again.');
       return;
     }
-
-    // R16: Log submit attempt for debugging
-    console.log('[ProfileEdit] SUBMIT CLICK', {
-      profileNull: !profile,
-      profileLoading,
-      displayName,
-      hasAvatarFile: !!avatarFile,
-    });
 
     setIsUploading(true);
     setError(null);
@@ -139,17 +130,8 @@ export default function ProfileEdit() {
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      // R15: Log what we're about to save
-      console.log('[ProfileEdit] Saving profile', {
-        userId: user.id.substring(0, 8),
-        display_name: displayName,
-        avatarUrl: avatarUrl?.substring(0, 50) || null,
-        avatarChanged: !!avatarFile,
-        previousAvatarUrl: profile?.avatar_url?.substring(0, 50) || null,
-      });
-
       // R16: Use UPSERT to handle both existing profiles and first-time creation
-      const { data: updatedProfile, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .upsert(
           {
@@ -164,16 +146,8 @@ export default function ProfileEdit() {
         .single();
 
       if (updateError) {
-        console.error('[ProfileEdit] Update error:', updateError);
         throw updateError;
       }
-
-      // R15: Log successful save with result
-      console.log('[ProfileEdit] Profile updated successfully:', {
-        id: updatedProfile?.id?.substring(0, 8),
-        display_name: updatedProfile?.display_name,
-        avatar_url: updatedProfile?.avatar_url?.substring(0, 50),
-      });
 
       // Refresh profile in useAuth to update header and other components immediately
       setSuccess('Profile updated successfully!');
@@ -185,7 +159,6 @@ export default function ProfileEdit() {
         await refreshProfile();
       }
     } catch (err) {
-      console.error('Upload failed:', err);
       const errorMessage = (err as Error).message || 'An unknown error occurred.';
       setError(errorMessage);
       toast.error(`Failed to upload image. Please try again.`);

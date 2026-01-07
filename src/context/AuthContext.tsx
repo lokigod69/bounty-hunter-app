@@ -2,10 +2,11 @@
 // R6 FIX: Shared auth context so all components see the same profile state
 // Previously, useAuth was a standalone hook where each component had its own state copy
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/custom';  // R25: Use custom Profile type with partner_user_id
+import type { Database } from '../types/database';
 import { ensureProfileForUser } from '../lib/profileBootstrap';
 import toast from 'react-hot-toast';
 
@@ -44,8 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
-
-      console.log('[AuthContext] Initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setAuthLoading(false);
@@ -59,8 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!isMounted) return;
-
-        console.log('[AuthContext] Auth state changed:', _event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setAuthLoading(false);
@@ -82,14 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Effect 2: Ensure profile when session changes
   useEffect(() => {
-    if (!session?.user) {
+    const sessionUser = session?.user;
+
+    if (!sessionUser) {
       setProfile(null);
       setProfileLoading(false);
       ensuringUserIdRef.current = null;
       return;
     }
 
-    if (ensuringUserIdRef.current === session.user.id) {
+    const ensuredSessionUser: User = sessionUser;
+
+    if (ensuringUserIdRef.current === ensuredSessionUser.id) {
       return;
     }
 
@@ -97,42 +98,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function loadProfile() {
       try {
-        ensuringUserIdRef.current = session.user.id;
-        // R17: Log before calling ensureProfileForUser
-        console.log('[AuthContext] loadProfile start', {
-          userId: session.user.id,
-          userEmail: session.user.email,
-        });
+        ensuringUserIdRef.current = ensuredSessionUser.id;
         setProfileLoading(true);
         setProfileError(null);
 
-        const profileData = await ensureProfileForUser(supabase, session.user);
+        const profileData = await ensureProfileForUser(supabase, ensuredSessionUser);
 
         if (cancelled) {
-          console.log('[AuthContext] Profile load cancelled, ignoring result');
           return;
         }
 
         if (profileData) {
-          // R17: Enhanced logging to track avatar_url through pipeline - log FULL URL
-          console.log('[AuthContext] Profile loaded successfully', {
-            id: profileData.id,
-            display_name: profileData.display_name,
-            avatar_url: profileData.avatar_url, // R17: Log FULL URL
-            avatar_url_short: profileData.avatar_url?.substring(0, 60) || 'NULL',
-            hasAvatar: !!profileData.avatar_url,
-            updated_at: profileData.updated_at,
-          });
           setProfile(profileData);
           setProfileError(null);
         } else {
-          console.warn('[AuthContext] No profile returned for user:', session.user.id.substring(0, 8));
           setProfile(null);
           setProfileError(null);
         }
       } catch (err) {
         if (cancelled) {
-          console.log('[AuthContext] Profile load error ignored (cancelled)');
           return;
         }
 
@@ -143,7 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } finally {
         // R12 FIX: Always set profileLoading to false and reset ref
         // Previously, if cancelled=true, profileLoading stayed stuck at true
-        console.log('[AuthContext] Profile loading complete, cancelled:', cancelled);
         setProfileLoading(false);
         ensuringUserIdRef.current = null;
       }
@@ -162,34 +145,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const refreshProfile = async () => {
-    if (!session?.user) {
+    const sessionUser = session?.user;
+
+    if (!sessionUser) {
       return;
     }
+
+    const ensuredSessionUser: User = sessionUser;
 
     ensuringUserIdRef.current = null;
 
     try {
-      ensuringUserIdRef.current = session.user.id;
-      console.log('[AuthContext] Force refreshing profile for user:', session.user.id);
+      ensuringUserIdRef.current = ensuredSessionUser.id;
       setProfileLoading(true);
       setProfileError(null);
 
-      const profileData = await ensureProfileForUser(supabase, session.user);
+      const profileData = await ensureProfileForUser(supabase, ensuredSessionUser);
 
       if (profileData) {
-        // R17: Enhanced logging to track avatar_url through pipeline - log FULL URL
-        console.log('[AuthContext] Profile refreshed successfully', {
-          id: profileData.id,
-          display_name: profileData.display_name,
-          avatar_url: profileData.avatar_url, // R17: Log FULL URL
-          avatar_url_short: profileData.avatar_url?.substring(0, 60) || 'NULL',
-          hasAvatar: !!profileData.avatar_url,
-          updated_at: profileData.updated_at,
-        });
         setProfile(profileData);
         setProfileError(null);
       } else {
-        console.warn('[AuthContext] Profile refresh returned null');
         setProfile(null);
         setProfileError(null);
       }
@@ -199,7 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileError(error);
       setProfile(null);
     } finally {
-      console.log('[AuthContext] Profile refresh complete');
       setProfileLoading(false);
       ensuringUserIdRef.current = null;
     }
@@ -213,10 +188,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      console.log('[AuthContext] Setting partner:', partnerId);
+      const updatePayload = { partner_user_id: partnerId } as unknown as Database['public']['Tables']['profiles']['Update'];
       const { error } = await supabase
         .from('profiles')
-        .update({ partner_user_id: partnerId })
+        .update(updatePayload)
         .eq('id', user.id);
 
       if (error) {

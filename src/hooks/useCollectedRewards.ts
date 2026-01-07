@@ -69,7 +69,6 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
           .map((item) => {
             const rewardDetail = item.rewards_store && item.rewards_store.length > 0 ? item.rewards_store[0] : null;
             if (!rewardDetail) {
-              console.warn(`Collected reward record ${item.collection_id} has no associated reward details or reward is null.`);
               return null;
             }
             return {
@@ -93,7 +92,6 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
       if (postgrestError && postgrestError.message) {
         errorMessage = postgrestError.message;
       }
-      console.error('Error fetching collected rewards:', errorMessage); // Changed message
       setError(errorMessage);
       toast.error(`Error: ${errorMessage}`);
     } finally {

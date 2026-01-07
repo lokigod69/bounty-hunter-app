@@ -51,9 +51,8 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
         body: { reward_id: rewardId, collector_id: collectorId }, // Ensure body matches expected params of 'notify-reward-creator'
       });
       if (functionError) throw functionError;
-      console.log('Successfully triggered notification for reward purchase.');
-    } catch (err) {
-      console.error('Error triggering notification function for reward:', err);
+    } catch {
+      void 0;
     }
   };
 
@@ -72,7 +71,6 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     } catch (err) {
       const postgrestError = err as PostgrestError;
       const errorMessage = postgrestError.message || 'Failed to fetch rewards.';
-      console.error('Error fetching rewards:', errorMessage);
       setRewardsError(errorMessage);
       toast.error(`Error: ${errorMessage}`);
     } finally {
@@ -113,7 +111,6 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
-      console.error('Error creating reward:', errorMessage);
       setCreateRewardError(errorMessage);
       toast.error(`Error creating reward: ${errorMessage}`);
       return { success: false, message: errorMessage };
@@ -154,7 +151,6 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
-      console.error('Error purchasing reward:', errorMessage);
       setPurchaseRewardError(errorMessage);
       toast.error(`Error purchasing reward: ${errorMessage}`);
       return { success: false, message: errorMessage };

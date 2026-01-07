@@ -13,8 +13,8 @@ interface DBProfileRow {
   display_name: string | null;
   avatar_url: string | null;
   role: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at?: string | null;
 }
 
 export function ProfileDebugger() {
@@ -25,14 +25,11 @@ export function ProfileDebugger() {
 
   const fetchDirectFromDB = useCallback(async () => {
     if (!user) {
-      console.log('[ProfileDebugger] No user, cannot fetch');
       return;
     }
 
     setLoading(true);
     setDbError(null);
-
-    console.log('[ProfileDebugger] Fetching directly from DB for user:', user.id.substring(0, 8));
 
     try {
       const { data, error } = await supabase
@@ -42,73 +39,17 @@ export function ProfileDebugger() {
         .single();
 
       if (error) {
-        console.error('[DB PROFILES ROW] Error:', error);
         setDbError(error.message);
         setDbRow(null);
       } else {
-        // R17: Log the FULL row for debugging - this is ground truth
-        console.log('[DB PROFILES ROW]', {
-          id: data.id,
-          email: data.email,
-          display_name: data.display_name,
-          avatar_url: data.avatar_url,
-          role: data.role,
-          created_at: data.created_at,
-          updated_at: data.updated_at,
-        });
-        setDbRow(data);
+        setDbRow(data as unknown as DBProfileRow);
       }
     } catch (err) {
-      console.error('[ProfileDebugger] Unexpected error:', err);
       setDbError(String(err));
     } finally {
       setLoading(false);
     }
   }, [user]);
-
-  // R17: Compare DB vs Context
-  const compareStates = useCallback(() => {
-    console.log('=== R17 PROFILE COMPARISON ===');
-    console.log('[CONTEXT PROFILE]', {
-      id: contextProfile?.id,
-      display_name: contextProfile?.display_name,
-      avatar_url: contextProfile?.avatar_url,
-      updated_at: contextProfile?.updated_at,
-    });
-    console.log('[DB PROFILE]', {
-      id: dbRow?.id,
-      display_name: dbRow?.display_name,
-      avatar_url: dbRow?.avatar_url,
-      updated_at: dbRow?.updated_at,
-    });
-
-    if (!contextProfile || !dbRow) {
-      console.log('[COMPARISON] Cannot compare - missing data');
-      return;
-    }
-
-    const matches = {
-      display_name: contextProfile.display_name === dbRow.display_name,
-      avatar_url: contextProfile.avatar_url === dbRow.avatar_url,
-      updated_at: contextProfile.updated_at === dbRow.updated_at,
-    };
-
-    console.log('[COMPARISON RESULT]', matches);
-
-    if (!matches.display_name) {
-      console.warn('[MISMATCH] display_name differs!', {
-        context: contextProfile.display_name,
-        db: dbRow.display_name,
-      });
-    }
-    if (!matches.avatar_url) {
-      console.warn('[MISMATCH] avatar_url differs!', {
-        context: contextProfile.avatar_url?.substring(0, 60),
-        db: dbRow.avatar_url?.substring(0, 60),
-      });
-    }
-    console.log('=== END COMPARISON ===');
-  }, [contextProfile, dbRow]);
 
   if (!user) {
     return null;
@@ -154,13 +95,6 @@ export function ProfileDebugger() {
             className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded text-white text-xs"
           >
             {loading ? 'Loading...' : 'Fetch DB'}
-          </button>
-          <button
-            onClick={compareStates}
-            disabled={!dbRow}
-            className="px-2 py-1 bg-yellow-600 hover:bg-yellow-500 rounded text-white text-xs disabled:opacity-50"
-          >
-            Compare
           </button>
         </div>
       </div>
