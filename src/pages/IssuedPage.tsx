@@ -18,7 +18,7 @@
 // - Redesigned summary cards to a minimalist icon-based flex layout.
 // PHASE 1 FIX: Enhanced state coordination between TaskForm modal and mobile menu to prevent UI conflicts.
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client (still used for create/delete)
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
@@ -72,6 +72,10 @@ export default function IssuedPage() {
   const dailyQuote = useDailyQuote();
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
   const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
+
+  // Ref guards for synchronous double-click prevention (state updates are async)
+  const isApprovingRef = useRef(false);
+  const isRejectingRef = useRef(false);
 
   const handleDeleteTaskRequest = (taskId: string) => {
     const task = issuedContracts.find((t: IssuedContract) => t.id === taskId);
@@ -137,8 +141,15 @@ export default function IssuedPage() {
       return;
     }
 
-    // Prevent double-submission
+    // Synchronous ref guard - prevents race condition from rapid clicks/touches
+    if (isApprovingRef.current) {
+      return;
+    }
+    isApprovingRef.current = true;
+
+    // Also check state (belt and suspenders)
     if (approvingTaskId === taskId) {
+      isApprovingRef.current = false;
       return;
     }
 
@@ -152,6 +163,7 @@ export default function IssuedPage() {
         issuerId: user.id,
       });
 
+      // Play sounds only once (after successful approval)
       soundManager.play('approveProof');
       soundManager.play('success');
       soundManager.play('coin');
@@ -166,6 +178,7 @@ export default function IssuedPage() {
       toast.error(errorMessage, { id: toastId });
     } finally {
       setApprovingTaskId(null);
+      isApprovingRef.current = false;
     }
   };
 
@@ -175,8 +188,15 @@ export default function IssuedPage() {
       return;
     }
 
-    // Prevent double-submission
+    // Synchronous ref guard - prevents race condition from rapid clicks/touches
+    if (isRejectingRef.current) {
+      return;
+    }
+    isRejectingRef.current = true;
+
+    // Also check state (belt and suspenders)
     if (rejectingTaskId === taskId) {
+      isRejectingRef.current = false;
       return;
     }
 
@@ -200,6 +220,7 @@ export default function IssuedPage() {
       toast.error(errorMessage, { id: toastId });
     } finally {
       setRejectingTaskId(null);
+      isRejectingRef.current = false;
     }
   };
 

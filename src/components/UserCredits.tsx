@@ -147,33 +147,39 @@ const UserCredits: React.FC = () => {
   }
 
   if (error) {
-    // Display 0 credits with an error indicator or message if desired,
-    // but for now, let's ensure it shows 0 as per requirement.
+    // Display 0 credits with an error indicator
     return (
       <div className="credit-badge">
-        <Coin size="sm" variant="subtle-spin" showValue={false} className="mr-2" />
+        <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
         <span>0</span>
-        {/* Optionally show a small error icon or tooltip here */}
       </div>
     );
   }
 
-  // If loading is done and no error, credits should be a number (0 or more)
-  // The (credits === null) check might be redundant if credits are initialized to 0 on error/no user
-  if (credits === null && !loading) { // Ensure we show 0 if not loading and credits is still null
+  // Show 0 if not loading and credits is still null
+  if (credits === null && !loading) {
      return (
       <div className="credit-badge">
-        <Coin size="sm" variant="subtle-spin" showValue={false} className="mr-2" />
+        <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
         <span>0</span>
       </div>
     );
   }
+
+  // Format credits for compact display (1.2k for 1200, etc.)
+  const formatCredits = (value: number): string => {
+    if (value >= 10000) return `${(value / 1000).toFixed(0)}k`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+    return value.toLocaleString();
+  };
+
+  const displayValue = credits ?? 0;
 
   return (
     <div className="credit-badge">
-      <Coin size="sm" variant="subtle-spin" showValue={false} className="mr-2" />
-      {/* Ensure credits is treated as a number, defaulting to 0 if null */}
-      <span>{(credits ?? 0).toLocaleString()}</span>
+      {/* Decorative coin with ¢ symbol - balance shown as text */}
+      <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
+      <span>{formatCredits(displayValue)}</span>
     </div>
   );
 };

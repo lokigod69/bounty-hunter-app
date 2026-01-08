@@ -460,7 +460,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {primaryAction && (
               <button
-                onClick={primaryAction.onClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  primaryAction.onClick();
+                }}
                 disabled={primaryAction.loading || primaryAction.disabled}
                 className={`
                   flex-1 sm:flex-none sm:min-w-[140px]
@@ -490,7 +494,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
             {secondaryAction && (
               <button
-                onClick={secondaryAction.onClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  secondaryAction.onClick();
+                }}
                 disabled={secondaryAction.loading || secondaryAction.disabled}
                 className={`
                   flex-1 sm:flex-none sm:min-w-[100px]

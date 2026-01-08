@@ -215,7 +215,14 @@ export default function Layout() {
           {/* Right side: User Profile & Actions */}
           <div className="flex-shrink-0 flex items-center">
             <div className="hidden md:flex items-center space-x-4">
-              {/* UserCredits component removed */}
+              {/* Desktop credit balance - clickable to Loot Vault */}
+              <Link
+                to="/rewards-store"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+                aria-label={`${strings.storeTitle} - Your balance`}
+              >
+                <UserCredits />
+              </Link>
               <div className="relative group">
                 <button
                   onClick={() => setIsCursorTrailEnabled(!isCursorTrailEnabled)}
