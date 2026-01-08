@@ -10,7 +10,6 @@
   "auth": {
     "signIn": "Sign In",
     "signOut": "Sign Out",
-    "magicLink": "Send Magic Link",
     "email": "Email"
   },
   "contracts": {

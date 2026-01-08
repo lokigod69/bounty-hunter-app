@@ -21,8 +21,10 @@
 // P1: Updated navigation labels to use theme strings from ThemeContext.
 
 import { useState, useRef, useEffect } from 'react';
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+// R31: Removed useNavigate - using window.location.assign for reliable logout
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
@@ -53,10 +55,9 @@ import { soundManager } from '../utils/soundManager';
 export default function Layout() {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
   const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
-  const navigate = useNavigate();
   const location = useLocation();
 
   // Unified identity values - single source of truth for current user display
@@ -99,9 +100,15 @@ export default function Layout() {
     }
   }, [location.pathname, isMobileMenuOpen, closeMenu]);
 
+  // R31: Brute-force logout - always redirect regardless of errors
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error('signOut error:', error);
+    } finally {
+      // Hard reset client state - this ensures we always redirect
+      window.location.assign('/login');
+    }
   };
 
   const closeUserMenu = () => setUserMenuOpen(false);

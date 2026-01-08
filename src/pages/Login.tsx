@@ -1,6 +1,7 @@
 // src/pages/Login.tsx
 // Redesigned to center the login form, add the application logo and title, and use the custom Mandalore font.
 // Fixed auth callback handling to prevent blank screens for new users.
+// R31: Removed magic link - Google OAuth only.
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
@@ -11,7 +12,6 @@ import { useNavigate } from 'react-router-dom';
 const Login: React.FC = () => {
   const { user, loading: authLoading, session } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Redirect authenticated users away from /login
@@ -22,42 +22,6 @@ const Login: React.FC = () => {
       navigate('/', { replace: true });
     }
   }, [user, session, authLoading, navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      
-      // Use dynamic redirect to /login so Supabase can process the callback
-      // The SessionContextProvider will handle the auth state change
-      const redirectTo =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/login`
-          : undefined;
-      
-      const options = redirectTo ? { emailRedirectTo: redirectTo } : undefined;
-      
-      const { error } = await supabase.auth.signInWithOtp({ 
-        email: normalizedEmail,
-        options 
-      });
-      
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Check your email for the magic link!');
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error('An unexpected error occurred.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -126,13 +90,13 @@ const Login: React.FC = () => {
       
       <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-slate-300 mb-6">Sign In</h2>
-        <p className="text-center text-slate-400 mb-6">Enter your email to receive a magic link.</p>
-        
+        <p className="text-center text-slate-400 mb-6">Sign in with your Google account to continue.</p>
+
         {/* Google OAuth Button */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-3 px-4 mb-4 bg-white hover:bg-gray-100 rounded-md text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-white hover:bg-gray-100 rounded-md text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -152,39 +116,8 @@ const Login: React.FC = () => {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continue with Google
+          {loading ? 'Signing in...' : 'Continue with Google'}
         </button>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-600"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-800 text-slate-400">Or</span>
-          </div>
-        </div>
-
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label htmlFor="email" className="sr-only">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-teal-500 hover:bg-teal-600 rounded-md text-white font-bold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Sending...' : 'Send Magic Link'}
-          </button>
-        </form>
       </div>
     </div>
   );
