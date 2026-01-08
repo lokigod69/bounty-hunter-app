@@ -192,19 +192,19 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
       : `From: ${fromUser?.name || 'Unknown'}`;
   const contextUser = role === 'creator' ? toUser : fromUser;
 
+  // R30: DeadlineCountdown - show "Overdue" when past, countdown when active
   const DeadlineCountdown: React.FC<{ deadline: string }> = ({ deadline }) => {
     const calculateTimeLeft = () => {
       if (!deadline) return null;
       const difference = +new Date(deadline) - +new Date();
-      let timeLeft: { days?: number; hours?: number; minutes?: number } = {};
-      if (difference > 0) {
-        timeLeft = {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-        };
+      if (difference <= 0) {
+        return 'overdue';
       }
-      return timeLeft;
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+      };
     };
 
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
@@ -215,9 +215,12 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
       return () => clearTimeout(timer);
     });
 
-    if (!timeLeft || Object.keys(timeLeft).length === 0) {
-      return <span className="text-xs text-white/70 font-semibold">x deadline</span>;
+    // R30: Overdue - show in red
+    if (timeLeft === 'overdue') {
+      return <span className="text-xs text-red-400 font-semibold">Overdue</span>;
     }
+
+    if (!timeLeft || typeof timeLeft === 'string') return null;
 
     return (
       <span className="text-xs text-white/70 flex items-center">
@@ -245,11 +248,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         } ${isAnimatingOut ? 'animate-fade-out' : 'animate-fade-in'}`}
       />
 
-      {/* Modal Content */}
+      {/* Modal Content - R30: Use max-height instead of fixed height */}
       <div
         className={`
           relative z-modal-content
-          w-full ${isMobile ? 'h-[85vh]' : 'max-w-2xl h-[70vh]'}
+          w-full ${isMobile ? 'max-h-[90vh]' : 'max-w-2xl max-h-[85vh]'}
           ${isMobile ? 'rounded-t-2xl' : 'rounded-2xl'}
           flex flex-col
           overflow-hidden
@@ -349,27 +352,29 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           </div>
         </div>
 
-        {/* R27/R30: Body - Fixed height with internal scroll */}
+        {/* R30: Body - scrollable content area */}
         <div
-          className="flex-1 min-h-0 overflow-hidden px-4 sm:px-6 py-4"
+          className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4"
           style={{ overscrollBehavior: 'contain' }}
         >
-          {/* R27: CSS Grid layout - fixed height, description scrolls internally */}
+          {/* R30: CSS Grid layout - content-sized, description scrolls when needed */}
           <div
-            className="grid gap-4 h-full"
+            className="grid gap-4"
             style={{
               gridTemplateColumns: isMobile
                 ? '1fr'
                 : reward
-                ? 'minmax(0, 2fr) minmax(200px, 1fr)'
+                ? 'minmax(0, 2fr) minmax(180px, auto)'
                 : '1fr',
-              gridTemplateRows: isMobile ? 'minmax(0, 1fr) auto' : '1fr',
             }}
           >
-            {/* Description Column - scrolls internally */}
-            <div className="min-h-0 flex flex-col overflow-hidden">
+            {/* Description Column - max height with scroll when needed */}
+            <div className="flex flex-col gap-4">
               {description && (
-                <div className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto">
+                <div
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
+                  style={{ maxHeight: isMobile ? '40vh' : '50vh' }}
+                >
                   <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap break-words">
                     {description}
                   </p>
@@ -378,15 +383,15 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
               {/* Custom children content */}
               {children && (
-                <div className="mt-4 flex-shrink-0">{children}</div>
+                <div className="flex-shrink-0">{children}</div>
               )}
             </div>
 
-            {/* R28: Reward Column - fixed, properly centered, doesn't scroll */}
+            {/* R30: Reward Column - compact, vertically centered */}
             {reward && (
-              <div className={isMobile ? 'flex-shrink-0' : 'flex items-stretch min-h-0'}>
+              <div className={isMobile ? 'flex-shrink-0' : 'self-start'}>
                 <div
-                  className="w-full h-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
+                  className="w-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,
@@ -396,7 +401,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                     Reward
                   </p>
 
-                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center w-full py-2">
                     {reward.type === 'credit' ? (
                       <div className="flex items-center justify-center py-2">
                         <Coin
@@ -454,7 +459,8 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           </div>
         </div>
 
-        {deadline && (
+        {/* R30: Only show deadline section when countdown is active (not overdue) */}
+        {deadline && new Date(deadline) > new Date() && (
           <div className="flex-shrink-0 px-4 sm:px-6 pb-4">
             <div className="flex items-center justify-center gap-2 text-white/50 text-sm">
               <Clock size={14} />
