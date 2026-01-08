@@ -30,6 +30,7 @@ interface TaskCardProps {
   isCreatorView: boolean;
   onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void;
   onProofUpload: (file: File | null, taskId: string, textDescription?: string) => Promise<string | null>;
+  onDirectComplete?: (taskId: string) => Promise<boolean>; // R31: For completing tasks without proof
   onDeleteTaskRequest: (taskId: string) => void;
   onApprove?: (taskId: string) => void;
   onReject?: (taskId: string) => void;
@@ -86,6 +87,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   task,
   isCreatorView,
   onProofUpload,
+  onDirectComplete, // R31: For completing tasks without proof
   onDeleteTaskRequest,
   onApprove,
   onReject,
@@ -187,10 +189,33 @@ const TaskCard: React.FC<TaskCardProps> = ({
         // Actions based on role and state
         primaryAction={
           // Assignee: Complete Task button (for pending/in_progress)
+          // R31: Branch on proof_required - if false, skip modal and submit directly
           !isCreatorView && (safeStatus === 'pending' || safeStatus === 'in_progress') && !isArchived
             ? {
                 label: actionLoading ? 'Submitting...' : 'Complete Task',
-                onClick: () => setShowProofModal(true),
+                onClick: async () => {
+                  const proofRequired = task.proof_required === true;
+                  if (proofRequired) {
+                    // Proof required - open modal
+                    setShowProofModal(true);
+                  } else {
+                    // No proof required - submit directly for review
+                    if (onDirectComplete) {
+                      setInternalActionLoading(true);
+                      try {
+                        const success = await onDirectComplete(id);
+                        if (success) {
+                          handleClose();
+                        }
+                      } finally {
+                        setInternalActionLoading(false);
+                      }
+                    } else {
+                      // Fallback: open modal anyway if handler not provided
+                      setShowProofModal(true);
+                    }
+                  }
+                },
                 loading: actionLoading,
               }
             // Creator in review: Approve button

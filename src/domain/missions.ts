@@ -44,6 +44,12 @@ export interface ArchiveMissionParams {
   supabaseClient?: SupabaseClient;
 }
 
+export interface SubmitForReviewParams {
+  missionId: MissionId;
+  userId: string;
+  supabaseClient?: SupabaseClient;
+}
+
 /**
  * Approves a mission that is in 'review' status.
  * 
@@ -375,6 +381,63 @@ export async function archiveMission(params: ArchiveMissionParams): Promise<void
 
   if (error) {
     throw error;
+  }
+}
+
+/**
+ * R31: Submits a task for review WITHOUT proof.
+ * Used when proof_required=false - assignee can complete without uploading proof.
+ *
+ * Flow:
+ * 1. Verify task exists and user is assigned
+ * 2. Verify proof is NOT required for this task
+ * 3. Update task status to 'review'
+ */
+export async function submitForReviewNoProof(params: SubmitForReviewParams): Promise<void> {
+  const { missionId, userId, supabaseClient = supabase } = params;
+
+  // Step 1: Fetch task to verify assignment and proof_required
+  const { data: task, error: fetchError } = await supabaseClient
+    .from('tasks')
+    .select('assigned_to, proof_required, status')
+    .eq('id', missionId)
+    .single();
+
+  if (fetchError) {
+    console.error('submitForReviewNoProof fetch error:', fetchError);
+    throw new Error('Task not found.');
+  }
+
+  if (!task) {
+    throw new Error('Task not found.');
+  }
+
+  // Step 2: Verify user is assigned to this task
+  if (task.assigned_to !== userId) {
+    throw new Error('You are not assigned to this task.');
+  }
+
+  // Step 3: Verify proof is NOT required (safety check)
+  if (task.proof_required === true) {
+    throw new Error('This task requires proof. Please upload proof to complete.');
+  }
+
+  // Step 4: Verify task is in a completable state
+  const completableStatuses = ['pending', 'in_progress', 'rejected'];
+  if (!completableStatuses.includes(task.status || 'pending')) {
+    throw new Error(`Cannot complete task with status '${task.status}'.`);
+  }
+
+  // Step 5: Update task status to 'review'
+  const { error: updateError } = await supabaseClient
+    .from('tasks')
+    .update({ status: 'review' })
+    .eq('id', missionId)
+    .eq('assigned_to', userId); // Security: only assigned user can update
+
+  if (updateError) {
+    console.error('submitForReviewNoProof update error:', updateError);
+    throw new Error('Failed to submit task for review. Please try again.');
   }
 }
 

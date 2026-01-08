@@ -31,7 +31,7 @@ import { PageBody } from '../components/layout/PageBody';
 import { useUI } from '../context/UIContext';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import { updateMissionStatus, uploadProof } from '../domain/missions';
+import { updateMissionStatus, uploadProof, submitForReviewNoProof } from '../domain/missions';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -78,6 +78,37 @@ export default function Dashboard() {
       }
       toast.error(message);
       return null;
+    }
+  };
+
+  // R31: Direct completion for tasks that don't require proof
+  const handleDirectComplete = async (taskId: string): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in to complete tasks.');
+      return false;
+    }
+
+    const toastId = `direct-complete-${taskId}`;
+    toast.loading('Submitting for review...', { id: toastId });
+
+    try {
+      await submitForReviewNoProof({
+        missionId: taskId,
+        userId: user.id,
+      });
+
+      toast.success('Task submitted for review!', { id: toastId });
+      sm.play('success');
+      if (refetchAssignedContracts) refetchAssignedContracts();
+      return true;
+    } catch (error: unknown) {
+      console.error('Direct complete failed:', error);
+      let message = 'Failed to submit task. Please try again.';
+      if (error instanceof Error) {
+        message = error.message || message;
+      }
+      toast.error(message, { id: toastId });
+      return false;
     }
   };
 
@@ -378,6 +409,7 @@ export default function Dashboard() {
                     isCreatorView={false}
                     onStatusUpdate={handleStatusUpdate}
                     onProofUpload={handleProofUpload}
+                    onDirectComplete={handleDirectComplete}
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
@@ -407,6 +439,7 @@ export default function Dashboard() {
                     isCreatorView={false}
                     onStatusUpdate={handleStatusUpdate}
                     onProofUpload={handleProofUpload}
+                    onDirectComplete={handleDirectComplete}
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
@@ -436,6 +469,7 @@ export default function Dashboard() {
                     isCreatorView={false}
                     onStatusUpdate={handleStatusUpdate}
                     onProofUpload={handleProofUpload}
+                    onDirectComplete={handleDirectComplete}
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
