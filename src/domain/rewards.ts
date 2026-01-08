@@ -10,7 +10,6 @@ export type RewardId = string;
 
 export interface PurchaseRewardParams {
   rewardId: RewardId;
-  userId: string;
   supabaseClient?: SupabaseClient<Database>;
 }
 
@@ -57,11 +56,11 @@ export interface CreateRewardResult {
  * - Creating collected_rewards entry
  */
 export async function purchaseReward(params: PurchaseRewardParams): Promise<PurchaseRewardResult> {
-  const { rewardId, userId, supabaseClient = supabase } = params;
+  const { rewardId, supabaseClient = supabase } = params;
 
+  // RPC uses auth.uid() internally for security - no need to pass userId
   const rpcArgs = {
     p_reward_id: rewardId,
-    p_collector_id: userId,
   };
 
   const { data: rawData, error: rpcError } = await supabaseClient.rpc('purchase_reward_store_item' as never, rpcArgs as never);

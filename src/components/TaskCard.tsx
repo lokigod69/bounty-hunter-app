@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { Archive, CheckCircle, Eye, Link, User, Coins } from 'lucide-react';
+import { Eye, Link, User, Coins } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { createPortal } from 'react-dom';
 import { TaskStatus } from '../types/custom';
@@ -362,18 +362,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
 
-          {/* Bottom row: Actor + Status icons + Reward indicator */}
+          {/* Bottom row: Actor + Reward indicator (status shown in top-left badge only) */}
           <div className="flex justify-between items-center mt-auto pt-2 border-t border-slate-700/30">
             <p className="text-sm text-slate-400 flex items-center min-w-0">
               <User size={14} className="mr-1.5 flex-shrink-0" />
               <span className="truncate">{actorName}</span>
             </p>
             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-              {/* Status icons */}
-              {safeStatus === 'review' && <Eye size={16} className="text-yellow-400" />}
-              {safeStatus === 'completed' && <CheckCircle size={16} className="text-green-400" />}
-              {isArchived && <Archive size={16} className="text-slate-500" />}
-
               {/* R30: Reward indicator - coin + amount or emoji */}
               {reward_text && (
                 <span className="flex items-center gap-1 text-xs">

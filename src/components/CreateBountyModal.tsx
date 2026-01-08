@@ -159,8 +159,11 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             </button>
           </div>
 
-          {/* Form Content (scrollable) with enhanced mobile spacing */}
-          <div className="flex-grow overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+          {/* Form Content (scrollable) with iOS Safari scroll fix */}
+          <div
+            className="flex-grow overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
 
             {/* R27: Name field with character counter */}

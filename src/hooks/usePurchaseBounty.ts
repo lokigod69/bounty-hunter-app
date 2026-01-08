@@ -26,9 +26,9 @@ export const usePurchaseBounty = () => {
     setError(null);
 
     try {
+      // RPC uses auth.uid() internally for security
       const result = await purchaseReward({
         rewardId,
-        userId: user.id,
       });
 
       if (!result.success) {
