@@ -27,6 +27,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
@@ -35,6 +36,7 @@ import { BaseCard } from '../components/ui/BaseCard';
 export default function Friends() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   // R10: Use profileLoading to show skeleton while profile loads
   // R25: Added setPartner for couple mode partner selection
   const { user, profile, profileLoading, setPartner } = useAuth();
@@ -253,7 +255,7 @@ export default function Friends() {
   if (profileLoading) {
     return (
       <PageContainer>
-        <PageHeader title={theme.strings.friendsTitle} />
+        <PageHeader title={strings.friendsTitle} />
         <PageBody>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -279,8 +281,8 @@ export default function Friends() {
       <PullToRefresh onRefresh={handleRefresh}>
         <PageContainer>
           <PageHeader
-            title={theme.strings.friendsTitle}
-            subtitle={theme.strings.friendsSubtitle}
+            title={strings.friendsTitle}
+            subtitle={strings.friendsSubtitle}
           />
 
           <PageBody>
@@ -529,8 +531,8 @@ export default function Friends() {
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
         <PageHeader
-          title={theme.strings.friendsTitle}
-          subtitle={theme.strings.friendsSubtitle}
+          title={strings.friendsTitle}
+          subtitle={strings.friendsSubtitle}
         />
 
         <PageBody>
@@ -587,7 +589,7 @@ export default function Friends() {
                 onClick={() => setActiveTab('friends')}
               >
                 <Users size={16} className="inline mr-1" />
-                {theme.strings.friendsTabLabel}
+                {strings.friendsTabLabel}
                 {friends.length > 0 && (
                   <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
                     {friends.length}
@@ -638,7 +640,7 @@ export default function Friends() {
           <BaseCard className="bg-red-900/20 border-red-500/30">
             <div className="text-center py-8">
               <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-subtitle text-white font-semibold mb-2">Cannot load {theme.strings.friendsTitle.toLowerCase()}</h3>
+              <h3 className="text-subtitle text-white font-semibold mb-2">Cannot load {strings.friendsTitle.toLowerCase()}</h3>
               <p className="text-body text-white/70 mb-4">{error}</p>
               <button
                 onClick={() => refreshFriends?.()}
@@ -678,7 +680,7 @@ export default function Friends() {
               <BaseCard className="transition-all duration-200 hover:shadow-lg">
                 <div className="text-center py-8">
                   <Users size={48} className="mx-auto mb-4 text-teal-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">{theme.strings.friendsTitle}</h3>
+                  <h3 className="text-subtitle text-white/90 mb-2">{strings.friendsTitle}</h3>
                   <p className="text-body text-white/70 mb-6">
                     {theme.id === 'guild' && 'Invite crew members to share missions and rewards.'}
                     {theme.id === 'family' && 'Invite family members to share chores and rewards.'}

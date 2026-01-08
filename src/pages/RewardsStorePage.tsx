@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Plus, ShoppingCart, AlertTriangle } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
 import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
@@ -30,6 +31,7 @@ type Tab = 'available' | 'created' | 'collected';
 const RewardsStorePage: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const { user } = useAuth();
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
@@ -158,7 +160,7 @@ const RewardsStorePage: React.FC = () => {
           <BaseCard className="transition-all duration-200">
             <div className="text-center py-12">
               <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-body text-white/70">Loading collected {theme.strings.rewardPlural}...</p>
+              <p className="text-body text-white/70">Loading collected {strings.rewardPlural}...</p>
             </div>
           </BaseCard>
         );
@@ -169,18 +171,18 @@ const RewardsStorePage: React.FC = () => {
           <BaseCard className="transition-all duration-200 hover:shadow-lg">
             <div className="text-center py-12">
               <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
-              <h3 className="text-subtitle text-white/90 mb-2">No collected {theme.strings.rewardPlural} yet</h3>
+              <h3 className="text-subtitle text-white/90 mb-2">No collected {strings.rewardPlural} yet</h3>
               <p className="text-body text-white/70 mb-6">
-                {theme.id === 'guild' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
-                {theme.id === 'family' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
-                {theme.id === 'couple' && `Complete ${theme.strings.missionPlural} to earn ${theme.strings.tokenPlural} and claim ${theme.strings.rewardPlural}.`}
+                {theme.id === 'guild' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
+                {theme.id === 'family' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
+                {theme.id === 'couple' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
               </p>
               <button
                 onClick={() => setActiveTab('available')}
                 className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
               >
                 <ShoppingCart size={20} />
-                Browse {theme.strings.rewardPlural}
+                Browse {strings.rewardPlural}
               </button>
             </div>
           </BaseCard>
@@ -241,15 +243,15 @@ const RewardsStorePage: React.FC = () => {
         <BaseCard className="transition-all duration-200 hover:shadow-lg">
           <div className="text-center py-12">
             <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
-            <h3 className="text-subtitle text-white/90 mb-2">{theme.strings.storeEmptyTitle}</h3>
-            <p className="text-body text-white/70 mb-6">{theme.strings.storeEmptyBody}</p>
+            <h3 className="text-subtitle text-white/90 mb-2">{strings.storeEmptyTitle}</h3>
+            <p className="text-body text-white/70 mb-6">{strings.storeEmptyBody}</p>
             {user && (
               <button
                 onClick={() => setCreateModalOpen(true)}
                 className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
               >
                 <Plus size={20} />
-                Create first {theme.strings.rewardSingular}
+                Create first {strings.rewardSingular}
               </button>
             )}
           </div>
@@ -297,8 +299,8 @@ const RewardsStorePage: React.FC = () => {
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
         <PageHeader 
-          title={theme.strings.storeTitle} 
-          subtitle={theme.strings.storeSubtitle}
+          title={strings.storeTitle} 
+          subtitle={strings.storeSubtitle}
         />
 
         {/* R14: Simplified Balance Card - number is the focal point */}
@@ -307,7 +309,7 @@ const RewardsStorePage: React.FC = () => {
             <BaseCard className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex flex-col">
                 <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
-                  {theme.strings.storeCreditsLabel}
+                  {strings.storeCreditsLabel}
                 </span>
                 <span className="text-3xl sm:text-4xl font-semibold text-white">
                   {userCredits ?? 0}
@@ -315,11 +317,11 @@ const RewardsStorePage: React.FC = () => {
                 {/* R14: Contextual hint below balance */}
                 {(userCredits ?? 0) === 0 ? (
                   <span className="text-xs text-white/50 mt-1">
-                    Complete {theme.strings.missionPlural} to earn {theme.strings.tokenPlural}
+                    Complete {strings.missionPlural} to earn {strings.tokenPlural}
                   </span>
                 ) : affordableCount > 0 ? (
                   <span className="text-xs text-teal-400/80 mt-1">
-                    {theme.strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? theme.strings.rewardSingular : theme.strings.rewardPlural}
+                    {strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? strings.rewardSingular : strings.rewardPlural}
                   </span>
                 ) : cheapestUnaffordable ? (
                   <span className="text-xs text-white/50 mt-1">

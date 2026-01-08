@@ -33,7 +33,7 @@ import type { IssuedContract } from '../hooks/useIssuedContracts';
 
 // Define TaskStatus locally based on known statuses
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
-import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
+import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle, Clock3, Send } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -43,12 +43,15 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
+import { BaseCard } from '../components/ui/BaseCard';
 import { approveMission, rejectMission } from '../domain/missions';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
@@ -234,7 +237,8 @@ export default function IssuedPage() {
           deadline: taskData.deadline,
           reward_type: taskData.reward_type,
           reward_text: taskData.reward_text,
-          proof_required: taskData.proof_required,
+          // R31d: Ensure proof_required is explicitly boolean, never undefined
+          proof_required: taskData.proof_required === true,
           is_daily: taskData.is_daily,
         };
 
@@ -257,6 +261,8 @@ export default function IssuedPage() {
         ...taskData,
         created_by: user.id,
         status: 'pending' as TaskStatus,
+        // R31d: Ensure proof_required is explicitly boolean, never undefined
+        proof_required: taskData.proof_required === true,
       };
 
       const { error: createError } = await supabase
@@ -337,10 +343,15 @@ export default function IssuedPage() {
 
   const hasMissions = sortedIssuedContracts.length > 0;
 
+  // Section filtering for grouped display
+  const pendingMissions = sortedIssuedContracts.filter(task => task.status === 'pending' || task.status === 'in_progress');
+  const reviewMissions = sortedIssuedContracts.filter(task => task.status === 'review');
+  const completedMissions = sortedIssuedContracts.filter(task => task.status === 'completed');
+
   const stats = {
-    pending: sortedIssuedContracts.filter(task => task.status === 'pending').length,
-    review: sortedIssuedContracts.filter(task => task.status === 'review').length,
-    completed: sortedIssuedContracts.filter(task => task.status === 'completed').length,
+    pending: pendingMissions.length,
+    review: reviewMissions.length,
+    completed: completedMissions.length,
   };
 
   return (
@@ -368,8 +379,8 @@ export default function IssuedPage() {
         <PageContainer>
           {/* R21: Use theme strings directly for page title and subtitle */}
           <PageHeader
-            title={theme.strings.issuedPageTitle}
-            subtitle={theme.strings.issuedPageSubtitle}
+            title={strings.issuedPageTitle}
+            subtitle={strings.issuedPageSubtitle}
           />
 
           {/* R11: Moved quote to bottom of page for consistency */}
@@ -416,7 +427,7 @@ export default function IssuedPage() {
                 <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
                 {/* R21: Simplified empty state - uses theme strings */}
                 <p className="text-subtitle text-slate-300 mb-6">
-                  No missions yet. Create one for your {theme.strings.crewLabel}!
+                  No missions yet. Create one for your {strings.crewLabel}!
                 </p>
                 <button
                   onClick={handleCreateNewContract}
@@ -429,23 +440,109 @@ export default function IssuedPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                {sortedIssuedContracts.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isCreatorView={true}
-                    onStatusUpdate={() => {}} // No-op; handled by approve/reject
-                    onApprove={() => handleApprove(task.id)}
-                    onReject={() => handleReject(task.id)}
-                    onProofUpload={handleProofUpload}
-                    uploadProgress={0}
-                    onDeleteTaskRequest={handleDeleteTaskRequest}
-                    actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                    onEditTaskRequest={handleEditTaskRequest}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Section 1 - Pending/Active Missions */}
+                <div className="space-y-4">
+                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
+                    <Send size={20} className="text-orange-400" />
+                    {t('contracts.open', 'Pending')} ({stats.pending})
+                  </h2>
+                  {pendingMissions.length === 0 ? (
+                    <BaseCard className="border-orange-500/20">
+                      <div className="text-center py-6">
+                        <Send size={40} className="mx-auto mb-3 text-orange-400/60" />
+                        <p className="text-body text-white/70">All missions have been started!</p>
+                      </div>
+                    </BaseCard>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                      {pendingMissions.map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          isCreatorView={true}
+                          onStatusUpdate={() => {}}
+                          onApprove={() => handleApprove(task.id)}
+                          onReject={() => handleReject(task.id)}
+                          onProofUpload={handleProofUpload}
+                          uploadProgress={0}
+                          onDeleteTaskRequest={handleDeleteTaskRequest}
+                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                          onEditTaskRequest={handleEditTaskRequest}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 2 - Ready for Review */}
+                <div className="space-y-4">
+                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
+                    <Clock3 size={20} className="text-yellow-400" />
+                    {t('contracts.inReview', 'Ready for Review')} ({stats.review})
+                  </h2>
+                  {reviewMissions.length === 0 ? (
+                    <BaseCard className="border-yellow-500/20">
+                      <div className="text-center py-6">
+                        <Clock3 size={40} className="mx-auto mb-3 text-yellow-400/60" />
+                        <p className="text-body text-white/70">Nothing waiting for your review.</p>
+                      </div>
+                    </BaseCard>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                      {reviewMissions.map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          isCreatorView={true}
+                          onStatusUpdate={() => {}}
+                          onApprove={() => handleApprove(task.id)}
+                          onReject={() => handleReject(task.id)}
+                          onProofUpload={handleProofUpload}
+                          uploadProgress={0}
+                          onDeleteTaskRequest={handleDeleteTaskRequest}
+                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                          onEditTaskRequest={handleEditTaskRequest}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 3 - Completed Missions */}
+                <div className="space-y-4">
+                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
+                    <CheckCircle size={20} className="text-green-400" />
+                    {t('contracts.completed', 'Completed')} ({stats.completed})
+                  </h2>
+                  {completedMissions.length === 0 ? (
+                    <BaseCard className="border-green-500/20">
+                      <div className="text-center py-6">
+                        <CheckCircle size={40} className="mx-auto mb-3 text-green-400/60" />
+                        <p className="text-body text-white/70">No completed missions yet.</p>
+                      </div>
+                    </BaseCard>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                      {completedMissions.map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          isCreatorView={true}
+                          onStatusUpdate={() => {}}
+                          onApprove={() => handleApprove(task.id)}
+                          onReject={() => handleReject(task.id)}
+                          onProofUpload={handleProofUpload}
+                          uploadProgress={0}
+                          onDeleteTaskRequest={handleDeleteTaskRequest}
+                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                          onEditTaskRequest={handleEditTaskRequest}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* R11: Unified quote placement at bottom */}

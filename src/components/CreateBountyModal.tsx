@@ -148,8 +148,8 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-2 sm:p-4 z-modal-backdrop backdrop-blur-sm">
-      <div className="bg-gray-900 w-full h-[98vh] sm:h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content mx-1 sm:mx-0">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop backdrop-blur-sm">
+      <div className="bg-gray-900 w-full max-h-[90vh] sm:max-h-[85vh] md:h-auto md:max-h-[90vh] md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content pb-safe">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header with enhanced mobile spacing */}
           <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">

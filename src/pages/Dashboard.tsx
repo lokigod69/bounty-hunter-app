@@ -17,6 +17,7 @@ import { useUserCredits } from '../hooks/useUserCredits';
 import { fetchStreaksForContracts } from '../hooks/useDailyMissionStreak';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const { credits: userCredits } = useUserCredits();
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const navigate = useNavigate();
 
   const dailyQuote = useDailyQuote();
@@ -282,7 +284,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <PageContainer>
-        <PageHeader title={theme.strings.inboxTitle} />
+        <PageHeader title={strings.inboxTitle} />
         <PageBody>
           <BaseCard className="bg-red-900/20 border-red-500/30">
             <div className="text-center py-8">
@@ -323,8 +325,8 @@ export default function Dashboard() {
     <PullToRefresh onRefresh={handleRefresh} isPullable={!isPullToRefreshDisabled}>
       <PageContainer>
         <PageHeader
-          title={theme.strings.inboxTitle}
-          subtitle={theme.strings.inboxSubtitle}
+          title={strings.inboxTitle}
+          subtitle={strings.inboxSubtitle}
         />
 
         <StatsRow
@@ -353,7 +355,7 @@ export default function Dashboard() {
         <PageBody>
           {/* Section 1 - Do this now */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionDoNowTitle}</h2>
+            <h2 className="text-subtitle text-white font-semibold">{strings.sectionDoNowTitle}</h2>
             {doNowMissions.length === 0 ? (
               <BaseCard>
                 <div className="text-center py-8">
@@ -377,7 +379,7 @@ export default function Dashboard() {
                         className="btn-secondary flex items-center justify-center gap-2"
                       >
                         <PlusCircle size={20} />
-                        Create {theme.strings.missionSingular} for your {theme.strings.crewLabel}
+                        Create {strings.missionSingular} for your {strings.crewLabel}
                       </button>
                     ) : (
                       <>
@@ -386,14 +388,14 @@ export default function Dashboard() {
                           className="btn-primary flex items-center justify-center gap-2"
                         >
                           <PlusCircle size={20} />
-                          Create new {theme.strings.missionSingular}
+                          Create new {strings.missionSingular}
                         </button>
                         <button
                           onClick={() => navigate('/rewards-store')}
                           className="btn-secondary flex items-center justify-center gap-2"
                         >
                           <ShoppingCart size={20} />
-                          Visit {theme.strings.storeTitle}
+                          Visit {strings.storeTitle}
                         </button>
                       </>
                     )}
@@ -422,7 +424,7 @@ export default function Dashboard() {
 
           {/* Section 2 - Waiting for approval */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionWaitingApprovalTitle}</h2>
+            <h2 className="text-subtitle text-white font-semibold">{strings.sectionWaitingApprovalTitle}</h2>
             {waitingApprovalMissions.length === 0 ? (
               <BaseCard className="border-yellow-500/20">
                 <div className="text-center py-6">
@@ -452,12 +454,12 @@ export default function Dashboard() {
 
           {/* Section 3 - Recently completed */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{theme.strings.sectionCompletedTitle}</h2>
+            <h2 className="text-subtitle text-white font-semibold">{strings.sectionCompletedTitle}</h2>
             {completedMissions.length === 0 ? (
               <BaseCard className="border-green-500/20">
                 <div className="text-center py-6">
                   <CheckCircle2 size={40} className="mx-auto mb-3 text-green-400/60" />
-                  <p className="text-body text-white/70">You haven't completed any {theme.strings.missionPlural} yet.</p>
+                  <p className="text-body text-white/70">You haven't completed any {strings.missionPlural} yet.</p>
                 </div>
               </BaseCard>
             ) : (
@@ -487,21 +489,21 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-subtitle text-white font-semibold mb-2">
-                      {theme.strings.sectionIssuedSummaryTitle}
+                      {strings.sectionIssuedSummaryTitle}
                     </h3>
                     <div className="flex flex-wrap gap-4 text-sm">
                       {issuedStats.awaitingProof > 0 && (
                         <span className="text-white/70">
-                          {issuedStats.awaitingProof} {theme.strings.missionPlural} awaiting proof
+                          {issuedStats.awaitingProof} {strings.missionPlural} awaiting proof
                         </span>
                       )}
                       {issuedStats.pendingApproval > 0 && (
                         <span className="text-white/70">
-                          {issuedStats.pendingApproval} {theme.strings.missionPlural} pending your approval
+                          {issuedStats.pendingApproval} {strings.missionPlural} pending your approval
                         </span>
                       )}
                       {issuedStats.awaitingProof === 0 && issuedStats.pendingApproval === 0 && (
-                        <span className="text-white/70">All {theme.strings.missionPlural} are up to date</span>
+                        <span className="text-white/70">All {strings.missionPlural} are up to date</span>
                       )}
                     </div>
                   </div>
@@ -509,7 +511,7 @@ export default function Dashboard() {
                     onClick={() => navigate('/issued')}
                     className="btn-secondary flex items-center gap-2 whitespace-nowrap"
                   >
-                    Manage {theme.strings.missionsLabel}
+                    Manage {strings.missionsLabel}
                     <ArrowRight size={20} />
                   </button>
                 </div>
@@ -524,10 +526,10 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-subtitle text-white font-semibold mb-1">
-                      Visit {theme.strings.storeTitle}
+                      Visit {strings.storeTitle}
                     </h3>
                     <p className="text-body text-white/70 text-sm">
-                      You have {userCredits} {userCredits === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural} to spend. Check out available {theme.strings.rewardPlural}!
+                      You have {userCredits} {userCredits === 1 ? strings.tokenSingular : strings.tokenPlural} to spend. Check out available {strings.rewardPlural}!
                     </p>
                   </div>
                   <button
@@ -535,7 +537,7 @@ export default function Dashboard() {
                     className="btn-primary flex items-center gap-2 whitespace-nowrap"
                   >
                     <ShoppingCart size={20} />
-                    Go to {theme.strings.storeTitle}
+                    Go to {strings.storeTitle}
                   </button>
                 </div>
               </BaseCard>

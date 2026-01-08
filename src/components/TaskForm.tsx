@@ -23,6 +23,7 @@ import { useFriends } from '../hooks/useFriends';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
@@ -62,6 +63,7 @@ interface TaskFormProps {
 export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
   const { t } = useTranslation();
   const { theme } = useTheme(); // R14: For couple mode self-assignment prevention
+  const { strings } = useThemeStrings();
   const { openModal, clearLayer } = useUI();
   const hasOpenedModalRef = useRef(false);
   
@@ -154,8 +156,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
     // R14: Prevent self-assignment in couple mode
     if (theme.id === 'couple' && assignedTo === userId) {
-      newErrors.assignedTo = `In partner mode, ${theme.strings.missionPlural} are meant for your ${theme.strings.crewLabel}.`;
-      toast.error(`You can't assign a ${theme.strings.missionSingular} to yourself in partner mode.`);
+      newErrors.assignedTo = `In partner mode, ${strings.missionPlural} are meant for your ${strings.crewLabel}.`;
+      toast.error(`You can't assign a ${strings.missionSingular} to yourself in partner mode.`);
     }
 
     if (contractType === 'bounty' && !rewardText.trim()) {

@@ -16,6 +16,7 @@ import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
+import { useThemeStrings } from '../hooks/useThemeStrings';
 
 import { safeUrlRender } from '../lib/proofConfig';
 import { getAccentVariant } from '../theme/accentVariants'; // R28: Mode-aware card accents
@@ -100,6 +101,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const { openModal, clearLayer } = useUI();
   const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
+  const { strings } = useThemeStrings();
   const [showProofModal, setShowProofModal] = useState(false);
 
   // R28: Get mode-aware accent variant for this card
@@ -368,11 +370,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
           {task.is_daily && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                {theme.strings.dailyLabel}
+                {strings.dailyLabel}
               </span>
               {streakCount !== undefined && streakCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-xs text-orange-400">
-                  🔥 {streakCount}-day {theme.strings.streakLabel}
+                  🔥 {streakCount}-day {strings.streakLabel}
                 </span>
               )}
             </div>

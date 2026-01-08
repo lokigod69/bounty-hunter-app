@@ -29,6 +29,7 @@ import { useFriends } from '../hooks/useFriends';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import {
   Home,
   Send,
@@ -55,6 +56,7 @@ import { soundManager } from '../utils/soundManager';
 export default function Layout() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const { user, profile } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
   const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
@@ -148,13 +150,13 @@ export default function Layout() {
     return <Send size={20} />;
   };
 
-  // Navigation items - using theme strings and mode-specific icons
+  // Navigation items - using translated theme strings and mode-specific icons
   const navItems = [
-    { name: theme.strings.contractsLabel, path: '/', icon: getContractsIcon(), sound: 'click1a' },
-    { name: theme.strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
-    { name: theme.strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
-    { name: theme.strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
-    { name: theme.strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
+    { name: strings.contractsLabel, path: '/', icon: getContractsIcon(), sound: 'click1a' },
+    { name: strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
+    { name: strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
+    { name: strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
+    { name: strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
   ];
 
   const navItemsDesktop = navItems;
@@ -182,7 +184,7 @@ export default function Layout() {
                 alt="Bounty Hunter Logo" 
                 className="h-10 w-10"
               />
-              <span className="app-title text-2xl font-bold text-white">{theme.strings.appName}</span>
+              <span className="app-title text-2xl font-bold text-white">{strings.appName}</span>
             </Link>
 
             {/* Desktop Navigation */}

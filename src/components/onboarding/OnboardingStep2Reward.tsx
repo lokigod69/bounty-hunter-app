@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../context/ThemeContext';
+import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { createReward } from '../../domain/rewards';
 import { BaseCard } from '../ui/BaseCard';
 import { ArrowRight, ArrowLeft, AlertTriangle } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function OnboardingStep2Reward({
 }: OnboardingStep2RewardProps) {
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>(10);
@@ -52,7 +54,7 @@ export default function OnboardingStep2Reward({
       });
 
       if (result.success && result.reward_id) {
-        toast.success(`${theme.strings.rewardSingular} created!`);
+        toast.success(`${strings.rewardSingular} created!`);
         setCreateError(null);
         onComplete(result.reward_id);
       } else {
@@ -84,7 +86,7 @@ export default function OnboardingStep2Reward({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="reward-name" className="block text-sm font-medium text-white/70 mb-2">
-            {theme.strings.rewardSingular.charAt(0).toUpperCase() + theme.strings.rewardSingular.slice(1)} Name *
+            {strings.rewardSingular.charAt(0).toUpperCase() + strings.rewardSingular.slice(1)} Name *
           </label>
           <input
             id="reward-name"
@@ -114,7 +116,7 @@ export default function OnboardingStep2Reward({
 
         <div>
           <label htmlFor="reward-cost" className="block text-sm font-medium text-white/70 mb-2">
-            {theme.strings.tokenSingular.charAt(0).toUpperCase() + theme.strings.tokenSingular.slice(1)} Cost *
+            {strings.tokenSingular.charAt(0).toUpperCase() + strings.tokenSingular.slice(1)} Cost *
           </label>
           <input
             id="reward-cost"
@@ -127,7 +129,7 @@ export default function OnboardingStep2Reward({
             required
           />
           <p className="text-meta text-white/50 mt-1">
-            This is how many {theme.strings.tokenPlural} {theme.strings.missionPlural} need to earn to unlock this {theme.strings.rewardSingular}.
+            This is how many {strings.tokenPlural} {strings.missionPlural} need to earn to unlock this {strings.rewardSingular}.
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export default function OnboardingStep2Reward({
             <div className="flex items-start gap-3">
               <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-body text-red-400 font-semibold mb-1">Failed to create {theme.strings.rewardSingular}</p>
+                <p className="text-body text-red-400 font-semibold mb-1">Failed to create {strings.rewardSingular}</p>
                 <p className="text-meta text-red-400/70">{createError}</p>
               </div>
             </div>
@@ -145,7 +147,7 @@ export default function OnboardingStep2Reward({
 
         {isLoading && (
           <div className="text-center text-white/70">
-            Creating {theme.strings.rewardSingular}...
+            Creating {strings.rewardSingular}...
           </div>
         )}
 
@@ -172,7 +174,7 @@ export default function OnboardingStep2Reward({
               disabled={isLoading || !name || creditCost === ''}
               className="btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create {theme.strings.rewardSingular.charAt(0).toUpperCase() + theme.strings.rewardSingular.slice(1)}
+              Create {strings.rewardSingular.charAt(0).toUpperCase() + strings.rewardSingular.slice(1)}
               <ArrowRight size={20} />
             </button>
           </div>

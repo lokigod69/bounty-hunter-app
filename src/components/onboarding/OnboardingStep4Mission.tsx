@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useFriends } from '../../hooks/useFriends';
 import { useTheme } from '../../context/ThemeContext';
+import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { supabase } from '../../lib/supabase';
 import { BaseCard } from '../ui/BaseCard';
 import { ArrowRight, ArrowLeft, Target, AlertTriangle } from 'lucide-react';
@@ -27,6 +28,7 @@ export default function OnboardingStep4Mission({
 }: OnboardingStep4MissionProps) {
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { strings } = useThemeStrings();
   const { friends } = useFriends(user?.id);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -78,7 +80,7 @@ export default function OnboardingStep4Mission({
         throw error;
       }
 
-      toast.success(`${theme.strings.missionSingular.charAt(0).toUpperCase() + theme.strings.missionSingular.slice(1)} created! You're all set.`);
+      toast.success(`${strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)} created! You're all set.`);
       setCreateError(null);
       onComplete();
     } catch (error) {
@@ -104,14 +106,14 @@ export default function OnboardingStep4Mission({
         <div className="text-center">
           <Target size={48} className="mx-auto mb-4 text-teal-400" />
           <p className="text-body text-white/70">
-            Create your first {theme.strings.missionSingular}. This is what you'll assign to yourself or others to earn {theme.strings.tokenPlural}.
+            Create your first {strings.missionSingular}. This is what you'll assign to yourself or others to earn {strings.tokenPlural}.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="mission-title" className="block text-sm font-medium text-white/70 mb-2">
-              {theme.strings.missionSingular.charAt(0).toUpperCase() + theme.strings.missionSingular.slice(1)} Title *
+              {strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)} Title *
             </label>
             <input
               id="mission-title"
@@ -169,7 +171,7 @@ export default function OnboardingStep4Mission({
               <div className="flex items-start gap-3">
                 <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-body text-red-400 font-semibold mb-1">Failed to create {theme.strings.missionSingular}</p>
+                  <p className="text-body text-red-400 font-semibold mb-1">Failed to create {strings.missionSingular}</p>
                   <p className="text-meta text-red-400/70">{createError}</p>
                 </div>
               </div>
@@ -178,7 +180,7 @@ export default function OnboardingStep4Mission({
 
           {isCreating && (
             <div className="text-center text-white/70">
-              Creating {theme.strings.missionSingular}...
+              Creating {strings.missionSingular}...
             </div>
           )}
 
@@ -197,7 +199,7 @@ export default function OnboardingStep4Mission({
               disabled={isCreating || !title || !assignedTo}
               className="btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create {theme.strings.missionSingular.charAt(0).toUpperCase() + theme.strings.missionSingular.slice(1)}
+              Create {strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)}
               <ArrowRight size={20} />
             </button>
           </div>
@@ -207,7 +209,7 @@ export default function OnboardingStep4Mission({
               type="button"
               onClick={() => {
                 // Skip creating mission, just mark onboarding complete
-                toast.success(`You can create ${theme.strings.missionPlural} later from the ${theme.strings.missionsLabel} page.`);
+                toast.success(`You can create ${strings.missionPlural} later from the ${strings.missionsLabel} page.`);
                 setCreateError(null);
                 onComplete();
               }}

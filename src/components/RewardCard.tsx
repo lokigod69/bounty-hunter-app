@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { Database } from '../types/database';
 import { Coin } from './visual/Coin';
@@ -28,6 +29,7 @@ interface RewardCardProps {
 const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0 }) => {
   const { t } = useTranslation();
   const { theme, themeId } = useTheme();
+  const { strings } = useThemeStrings();
   const { id, name, description, image_url, credit_cost } = reward;
   const [imageError, setImageError] = useState(false);
   // R27: Lightbox state for full image view
@@ -71,7 +73,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           />
           {!canAfford && view === 'available' && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <span className="text-white/80 text-xs sm:text-sm font-semibold px-2 text-center">{theme.strings.storeCantAffordLabel}</span>
+              <span className="text-white/80 text-xs sm:text-sm font-semibold px-2 text-center">{strings.storeCantAffordLabel}</span>
             </div>
           )}
           {/* R27: Hover overlay for clickable indication */}
@@ -125,7 +127,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </div>
           {!canAfford && view === 'available' && creditsNeeded > 0 && (
             <span className="text-xs text-white/50 whitespace-nowrap">
-              Need {creditsNeeded} more {creditsNeeded === 1 ? theme.strings.tokenSingular : theme.strings.tokenPlural}
+              Need {creditsNeeded} more {creditsNeeded === 1 ? strings.tokenSingular : strings.tokenPlural}
             </span>
           )}
         </div>
@@ -160,7 +162,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             }`}
             disabled={view !== 'available' || !onAction || !canAfford}
           >
-            {view === 'available' ? (canAfford ? t('rewards.rewardCard.claimButton') : theme.strings.storeCantAffordLabel) : t('rewards.rewardCard.viewButton')}
+            {view === 'available' ? (canAfford ? t('rewards.rewardCard.claimButton') : strings.storeCantAffordLabel) : t('rewards.rewardCard.viewButton')}
           </button>
         )}
       </div>
