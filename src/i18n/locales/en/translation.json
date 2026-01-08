@@ -194,13 +194,11 @@
     "createModal": {
       "title": "Create a New Bounty",
       "closeButton": "Close",
-      "bountyNamePlaceholder": "Bounty Name (e.g., Design a Logo)",
+      "assignBountyPlaceholder": "Select who to gift this to",
+      "bountyNamePlaceholder": "Bounty Name (e.g., Head massage)",
       "descriptionPlaceholder": "Description",
       "creditCostPlaceholder": "Credit Cost",
       "useEmoji": "Use Emoji",
-      "useImageUrl": "Use Image URL",
-      "imageUrlPlaceholder": "Image URL (Optional)",
-      "imageUrlError": "Please enter a valid image URL (e.g., jpg, png, unsplash).",
       "cancelButton": "Cancel",
       "submitButton": "Create Bounty",
       "submittingButton": "Creating..."

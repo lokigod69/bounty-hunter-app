@@ -42,30 +42,15 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   const [creditCost, setCreditCost] = useState<number | ''>('');
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
 
-  // R22: State for image/icon handling - now includes 'upload' option
-  const [imageType, setImageType] = useState<'emoji' | 'url' | 'upload'>('emoji');
+  // R22/R30: State for image/icon handling - emoji or upload only
+  const [imageType, setImageType] = useState<'emoji' | 'upload'>('emoji');
   const [selectedEmoji, setSelectedEmoji] = useState('🎁');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imageUrlError, setImageUrlError] = useState<string | null>(null);
 
   // R22: File upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  const validateImageUrl = (url: string) => {
-    if (!url) return true; // Optional field
-    const isValid = url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
-                    url.includes('unsplash.com') ||
-                    url.includes('imgur.com');
-    if (!isValid) {
-      setImageUrlError(t('rewards.createModal.imageUrlError'));
-      return false;
-    }
-    setImageUrlError(null);
-    return true;
-  };
 
   // R22: Handle file selection
   const handleFileSelect = (file: File) => {
@@ -97,19 +82,13 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
     e.preventDefault();
     if (!assignedTo || creditCost === '' || !user) return;
 
-    if (imageType === 'url' && !validateImageUrl(imageUrl)) {
-      return;
-    }
-
     setIsUploading(true);
     let finalImageUrl = '';
 
     try {
-      // R22: Handle different image types
+      // R22/R30: Handle different image types (emoji or upload only)
       if (imageType === 'emoji') {
         finalImageUrl = selectedEmoji;
-      } else if (imageType === 'url') {
-        finalImageUrl = imageUrl;
       } else if (imageType === 'upload' && uploadFile) {
         // Upload file to storage
         const uploadResult = await uploadRewardImage(
@@ -144,7 +123,6 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         setAssignedTo(null);
         setImageType('emoji');
         setSelectedEmoji('🎁');
-        setImageUrl('');
         handleClearUpload();
 
         onSuccess(); // Trigger refetch
@@ -228,36 +206,16 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
               required
             />
 
-            {/* R22: Image selection with three options */}
+            {/* R22/R30: Image selection - emoji or upload only */}
             <div>
               <label className="block text-sm font-medium text-white/70 mb-2">Reward Image (optional)</label>
               <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
-                <button type="button" onClick={() => setImageType('url')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'url' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useImageUrl')}</button>
                 <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>Upload</button>
               </div>
 
               {imageType === 'emoji' && (
                 <EmojiPicker selectedEmoji={selectedEmoji} onSelect={setSelectedEmoji} />
-              )}
-
-              {imageType === 'url' && (
-                <div>
-                  <input
-                    type="text"
-                    placeholder={t('rewards.createModal.imageUrlPlaceholder')}
-                    value={imageUrl}
-                    onChange={(e) => {
-                      setImageUrl(e.target.value);
-                      validateImageUrl(e.target.value);
-                    }}
-                    className={`
-                      w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition text-base
-                      ${imageUrlError ? 'border-red-500' : ''}
-                    `}
-                  />
-                  {imageUrlError && <p className="text-red-500 text-sm mt-1">{imageUrlError}</p>}
-                </div>
               )}
 
               {imageType === 'upload' && (

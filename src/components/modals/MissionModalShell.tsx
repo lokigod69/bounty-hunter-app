@@ -249,7 +249,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
       <div
         className={`
           relative z-modal-content
-          w-full ${isMobile ? 'max-h-[95vh]' : 'max-w-2xl max-h-[90vh]'}
+          w-full ${isMobile ? 'h-[85vh]' : 'max-w-2xl h-[70vh]'}
           ${isMobile ? 'rounded-t-2xl' : 'rounded-2xl'}
           flex flex-col
           overflow-hidden
@@ -349,9 +349,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           </div>
         </div>
 
-        {/* R27: Body - Fixed height with internal scroll */}
+        {/* R27/R30: Body - Fixed height with internal scroll */}
         <div
-          className="flex-1 overflow-hidden px-4 sm:px-6 py-4"
+          className="flex-1 min-h-0 overflow-hidden px-4 sm:px-6 py-4"
           style={{ overscrollBehavior: 'contain' }}
         >
           {/* R27: CSS Grid layout - fixed height, description scrolls internally */}
