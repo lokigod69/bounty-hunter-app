@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { Archive, CheckCircle, Eye, Link, User } from 'lucide-react';
+import { Archive, CheckCircle, Eye, Link, User, Coins } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { createPortal } from 'react-dom';
 import { TaskStatus } from '../types/custom';
@@ -41,19 +41,19 @@ interface TaskCardProps {
   streakCount?: number; // P5: Streak count for daily missions
 }
 
+// R30: Improved CountdownTimer - hide when no deadline, show "Overdue" when past
 const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> = ({ deadline, baseColor = 'text-slate-400' }) => {
   const calculateTimeLeft = () => {
     if (!deadline) return null;
     const difference = +new Date(deadline) - +new Date();
-    let timeLeft: { days?: number; hours?: number; minutes?: number; seconds?: number } = {};
-    if (difference > 0) {
-      timeLeft = {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-      };
+    if (difference <= 0) {
+      return 'overdue';
     }
-    return timeLeft;
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((difference / 1000 / 60) % 60),
+    };
   };
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   useEffect(() => {
@@ -61,10 +61,18 @@ const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> 
     const timer = setTimeout(() => setTimeLeft(calculateTimeLeft()), 1000 * 60);
     return () => clearTimeout(timer);
   });
-  if (!timeLeft || Object.keys(timeLeft).length === 0) {
-    const pastDeadlineColor = baseColor === 'text-purple-400' ? 'text-purple-400 font-semibold' : 'text-slate-400';
-    return <span className={`text-xs ${pastDeadlineColor}`}>x deadline</span>;
+
+  // R30: No deadline - don't show anything
+  if (!deadline) return null;
+
+  // R30: Overdue - show "Overdue" in red
+  if (timeLeft === 'overdue') {
+    return <span className="text-xs text-red-400 font-semibold">Overdue</span>;
   }
+
+  // R30: Has time left - show countdown
+  if (!timeLeft || typeof timeLeft === 'string') return null;
+
   return (
     <span className={`text-xs ${baseColor} flex items-center`}>
       {timeLeft.days !== undefined && timeLeft.days > 0 && `${timeLeft.days}d `}
@@ -345,16 +353,33 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           )}
 
-          {/* Bottom row: Actor + Status icons */}
+          {/* Bottom row: Actor + Status icons + Reward indicator */}
           <div className="flex justify-between items-center mt-auto pt-2 border-t border-slate-700/30">
             <p className="text-sm text-slate-400 flex items-center min-w-0">
               <User size={14} className="mr-1.5 flex-shrink-0" />
               <span className="truncate">{actorName}</span>
             </p>
-            <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+              {/* Status icons */}
               {safeStatus === 'review' && <Eye size={16} className="text-yellow-400" />}
               {safeStatus === 'completed' && <CheckCircle size={16} className="text-green-400" />}
               {isArchived && <Archive size={16} className="text-slate-500" />}
+
+              {/* R30: Reward indicator - coin + amount or emoji */}
+              {reward_text && (
+                <span className="flex items-center gap-1 text-xs">
+                  {reward_type === 'credit' ? (
+                    <>
+                      <Coins size={14} className="text-yellow-400" />
+                      <span className="text-yellow-400 font-semibold">{reward_text}</span>
+                    </>
+                  ) : (
+                    <span className="text-base" title={reward_text}>
+                      {reward_text.length <= 2 ? reward_text : '🎁'}
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
           </div>
         </div>
