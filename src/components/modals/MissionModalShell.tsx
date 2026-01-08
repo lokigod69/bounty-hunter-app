@@ -90,10 +90,6 @@ interface MissionModalShellProps {
 
   // Custom content
   children?: React.ReactNode;
-
-  // Daily mission indicator
-  isDaily?: boolean;
-  streakCount?: number;
 }
 
 // ============================================================================
@@ -131,8 +127,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   secondaryAction,
   deleteAction,
   children,
-  isDaily,
-  streakCount,
 }) => {
   const { openModal, clearLayer } = useUI();
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
@@ -329,26 +323,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
               <User size={16} className="text-white/40" />
             )}
             <span>{contextLabel}</span>
-
-            {/* Daily badge */}
-            {isDaily && (
-              <span
-                className="ml-2 px-2 py-0.5 rounded text-xs font-semibold"
-                style={{
-                  backgroundColor: modeConfig.accentSoft,
-                  color: modeConfig.accent,
-                }}
-              >
-                Daily
-              </span>
-            )}
-
-            {/* Streak */}
-            {streakCount !== undefined && streakCount > 0 && (
-              <span className="text-orange-400 text-xs">
-                🔥 {streakCount}-day streak
-              </span>
-            )}
           </div>
         </div>
 

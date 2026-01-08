@@ -14,7 +14,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
 import { useIssuedContracts } from '../hooks/useIssuedContracts';
 import { useUserCredits } from '../hooks/useUserCredits';
-import { fetchStreaksForContracts } from '../hooks/useDailyMissionStreak';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -239,39 +238,6 @@ export default function Dashboard() {
     return { awaitingProof, pendingApproval };
   }, [issuedContracts]);
 
-  // P5: Fetch streaks for daily missions
-  const [streaksMap, setStreaksMap] = useState<Record<string, { streak_count: number }>>({});
-  
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchStreaks = async () => {
-      // Get all daily mission IDs assigned to current user
-      const dailyMissionIds = assignedContracts
-        .filter(task => task.is_daily)
-        .map(task => task.id);
-
-      if (dailyMissionIds.length === 0) {
-        setStreaksMap({});
-        return;
-      }
-
-      try {
-        const streaks = await fetchStreaksForContracts(dailyMissionIds, user.id);
-        // Convert to simpler format for TaskCard
-        const simplified: Record<string, { streak_count: number }> = {};
-        Object.entries(streaks).forEach(([contractId, streakData]) => {
-          simplified[contractId] = { streak_count: streakData.streak_count };
-        });
-        setStreaksMap(simplified);
-      } catch (error) {
-        console.error('Error fetching streaks:', error);
-      }
-    };
-
-    fetchStreaks();
-  }, [assignedContracts, user?.id]);
-
   if (loading) {
     return (
       <div className="text-center p-8">
@@ -415,7 +381,6 @@ export default function Dashboard() {
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
-                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
                   />
                 ))}
               </div>
@@ -445,7 +410,6 @@ export default function Dashboard() {
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
-                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
                   />
                 ))}
               </div>
@@ -475,7 +439,6 @@ export default function Dashboard() {
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
-                    streakCount={task.is_daily ? (streaksMap[task.id]?.streak_count || 0) : undefined}
                   />
                 ))}
               </div>

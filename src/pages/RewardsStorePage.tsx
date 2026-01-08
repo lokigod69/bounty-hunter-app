@@ -251,7 +251,7 @@ const RewardsStorePage: React.FC = () => {
                 className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
               >
                 <Plus size={20} />
-                Create first {strings.rewardSingular}
+                {strings.storeCreateFirstButton}
               </button>
             )}
           </div>
@@ -336,8 +336,8 @@ const RewardsStorePage: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="mb-6 sm:mb-8 flex justify-center border-b border-gray-700 overflow-x-auto">
-          <div className="flex gap-1 sm:gap-0">
+        <div className="mb-6 sm:mb-8 flex justify-center border-b border-gray-700 overflow-x-auto px-2">
+          <div className="flex gap-0 sm:gap-2">
             <button 
               onClick={() => setActiveTab('available')} 
               className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${

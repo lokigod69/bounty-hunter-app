@@ -147,7 +147,7 @@ export default function IssuedPage() {
     toast.loading('Approving proof...', { id: toastId });
 
     try {
-      const result = await approveMission({
+      await approveMission({
         missionId: taskId,
         issuerId: user.id,
       });
@@ -156,11 +156,7 @@ export default function IssuedPage() {
       soundManager.play('success');
       soundManager.play('coin');
 
-      const successMessage = result.streakCount && result.streakCount > 1
-        ? t('contracts.approveSuccess') + ` (${result.streakCount}-day streak bonus!)`
-        : t('contracts.approveSuccess');
-      
-      toast.success(successMessage, { id: toastId });
+      toast.success(t('contracts.approveSuccess'), { id: toastId });
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
@@ -445,7 +441,7 @@ export default function IssuedPage() {
                 <div className="space-y-4">
                   <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
                     <Send size={20} className="text-orange-400" />
-                    {t('contracts.open', 'Pending')} ({stats.pending})
+                    {t('contracts.open', 'Pending')}
                   </h2>
                   {pendingMissions.length === 0 ? (
                     <BaseCard className="border-orange-500/20">
@@ -479,7 +475,7 @@ export default function IssuedPage() {
                 <div className="space-y-4">
                   <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
                     <Clock3 size={20} className="text-yellow-400" />
-                    {t('contracts.inReview', 'Ready for Review')} ({stats.review})
+                    {t('contracts.inReview', 'Ready for Review')}
                   </h2>
                   {reviewMissions.length === 0 ? (
                     <BaseCard className="border-yellow-500/20">
@@ -513,7 +509,7 @@ export default function IssuedPage() {
                 <div className="space-y-4">
                   <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
                     <CheckCircle size={20} className="text-green-400" />
-                    {t('contracts.completed', 'Completed')} ({stats.completed})
+                    {t('contracts.completed', 'Completed')}
                   </h2>
                   {completedMissions.length === 0 ? (
                     <BaseCard className="border-green-500/20">

@@ -40,7 +40,6 @@ interface TaskCardProps {
   onEditTaskRequest?: (task: AssignedContract) => void;
   currentUserCredits?: number;
   isArchived?: boolean;
-  streakCount?: number; // P5: Streak count for daily missions
 }
 
 // R30: Improved CountdownTimer - hide when no deadline, show "Overdue" when past
@@ -97,7 +96,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onEditTaskRequest,
   refetchTasks,
   isArchived,
-  streakCount,
 }) => {
   const { openModal, clearLayer } = useUI();
   const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
@@ -186,8 +184,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
           value: reward_type === 'credit' ? parseInt(reward_text, 10) : reward_text,
           imageUrl: task.image_url || undefined,
         } : undefined}
-        isDaily={task.is_daily ?? undefined}
-        streakCount={streakCount}
         // Actions based on role and state
         primaryAction={
           // Assignee: Complete Task button (for pending/in_progress)
@@ -365,20 +361,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <CountdownTimer deadline={deadline} />
             </div>
           </div>
-
-          {/* Daily badge and streak - mobile optimized */}
-          {task.is_daily && (
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                {strings.dailyLabel}
-              </span>
-              {streakCount !== undefined && streakCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-xs text-orange-400">
-                  🔥 {streakCount}-day {strings.streakLabel}
-                </span>
-              )}
-            </div>
-          )}
 
           {/* Bottom row: Actor + Status icons + Reward indicator */}
           <div className="flex justify-between items-center mt-auto pt-2 border-t border-slate-700/30">

@@ -36,9 +36,7 @@ export interface ThemeStrings {
   storeCantAffordLabel: string; // e.g. "Out of reach", "Keep earning"
   storeEmptyTitle: string; // e.g. "No rewards yet"
   storeEmptyBody: string; // Short empty state copy
-  // P5: Daily missions labels
-  dailyLabel: string; // e.g. "Daily mission", "Daily chore", "Daily moment"
-  streakLabel: string; // e.g. "streak", "streak", "streak" (can be same across themes)
+  storeCreateFirstButton: string; // e.g. "Create first bounty"
 }
 
 export interface ThemeDefinition {

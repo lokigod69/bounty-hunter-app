@@ -218,13 +218,13 @@
       "rewardPlural": "Kopfgelder",
       "tokenSingular": "Credit",
       "tokenPlural": "Credits",
-      "inboxTitle": "Missionseingang",
+      "inboxTitle": "Verträge",
       "inboxSubtitle": "Dir zugewiesene Aufträge zur Erledigung.",
       "friendsTitle": "Gilde",
       "friendsSubtitle": "Verwalte deine Gildenmitglieder, sende Einladungen und prüfe Anfragen.",
       "friendsTabLabel": "Gildenmitglieder",
       "storeTitle": "Schatzkammer",
-      "contractsLabel": "Aufträge",
+      "contractsLabel": "Verträge",
       "missionsLabel": "Missionen",
       "historyLabel": "Verlauf",
       "issuedPageTitle": "Meine Missionen",
@@ -238,9 +238,8 @@
       "storeCanAffordLabel": "Erschwinglich",
       "storeCantAffordLabel": "Nicht erreichbar",
       "storeEmptyTitle": "Noch keine Kopfgelder",
-      "storeEmptyBody": "Erstelle dein erstes Kopfgeld.",
-      "dailyLabel": "Tägliche Mission",
-      "streakLabel": "Serie"
+      "storeEmptyBody": "Erstes Kopfgeld erstellen.",
+      "storeCreateFirstButton": "Erstes Kopfgeld erstellen"
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -271,9 +270,8 @@
       "storeCanAffordLabel": "Erreichbar",
       "storeCantAffordLabel": "Weitermachen",
       "storeEmptyTitle": "Noch keine Belohnungen",
-      "storeEmptyBody": "Füge Belohnungen hinzu, um deine Familie zu motivieren.",
-      "dailyLabel": "Tägliche Aufgabe",
-      "streakLabel": "Serie"
+      "storeEmptyBody": "Erste Belohnung erstellen.",
+      "storeCreateFirstButton": "Erste Belohnung erstellen"
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -304,9 +302,8 @@
       "storeCanAffordLabel": "Erschwinglich",
       "storeCantAffordLabel": "Weitermachen",
       "storeEmptyTitle": "Noch keine Geschenke",
-      "storeEmptyBody": "Erstelle Geschenke, um eure gemeinsamen Momente zu feiern.",
-      "dailyLabel": "Täglicher Moment",
-      "streakLabel": "Serie"
+      "storeEmptyBody": "Erstes Geschenk erstellen.",
+      "storeCreateFirstButton": "Erstes Geschenk erstellen"
     }
   }
 }

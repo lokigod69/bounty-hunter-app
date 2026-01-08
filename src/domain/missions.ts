@@ -5,8 +5,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { evaluateStatusChange, StatusChangeContext } from '../core/contracts/contracts.domain';
-import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
-import { updateStreakAfterCompletion } from './streaks';
 import type { TaskStatus } from '../types/custom';
 
 export type MissionId = string;
@@ -52,99 +50,49 @@ export interface SubmitForReviewParams {
 
 /**
  * Approves a mission that is in 'review' status.
- * 
- * Flow:
- * 1. Fetch task details (validate issuer is creator)
- * 2. Evaluate status change using domain logic
- * 3. Update task status to 'completed'
- * 4. Update streak if daily mission
- * 5. Award credits if applicable
- * 
- * Returns the new streak count if applicable.
+ *
+ * Uses the approve_task RPC which handles everything server-side:
+ * - Task status update (review -> completed)
+ * - Credit awarding
+ *
+ * This avoids RLS issues where creator tries to write to assignee's records.
  */
-export async function approveMission(params: ApproveMissionParams): Promise<{ streakCount?: number }> {
-  const { missionId, issuerId, supabaseClient = supabase } = params;
+export async function approveMission(params: ApproveMissionParams): Promise<void> {
+  const { missionId, supabaseClient = supabase } = params;
 
-  // 1. Fetch task details to get reward info and is_daily flag
-  const { data: task, error: fetchError } = await supabaseClient
-    .from('tasks')
-    .select('assigned_to, reward_type, reward_text, is_daily')
-    .eq('id', missionId)
-    .eq('created_by', issuerId) // Security check
-    .single();
+  console.log('[approveMission] Calling approve_task RPC', { missionId });
 
-  if (fetchError || !task) {
-    throw fetchError || new Error('Task not found or you are not the creator.');
-  }
+  const { error } = await supabaseClient.rpc('approve_task', {
+    p_task_id: missionId,
+  });
 
-  // 2. Evaluate status change using domain logic
-  const statusChangeContext: StatusChangeContext = {
-    actorId: issuerId,
-    contractOwnerId: issuerId, // Creator is approving
-    assigneeId: task.assigned_to,
-    currentStatus: 'review', // Approving from review status
-    requestedStatus: 'completed',
-    proofRequired: false, // Not needed for approval decision
-    hasProof: true, // Assumed true if in review
-  };
-
-  const statusChangeResult = evaluateStatusChange(statusChangeContext);
-
-  if (!statusChangeResult.allowed) {
-    const errorMsg = statusChangeResult.errors?.join(' ') || 'Cannot approve this task.';
-    throw new Error(errorMsg);
-  }
-
-  // 3. Update task status to 'completed'
-  const updateData: { status: string; completed_at?: string } = { status: 'completed' };
-  if (statusChangeResult.shouldSetCompletedAt) {
-    updateData.completed_at = new Date().toISOString();
-  }
-
-  const { error: updateError } = await supabaseClient
-    .from('tasks')
-    .update(updateData)
-    .eq('id', missionId);
-
-  if (updateError) {
-    throw updateError;
-  }
-
-  // 4. Update streak for daily missions before awarding credits
-  let streakCount: number | undefined = undefined;
-  if (task.is_daily && task.assigned_to) {
-    try {
-      streakCount = await updateStreakAfterCompletion(missionId, task.assigned_to);
-    } catch (streakError) {
-      console.error('Failed to update streak:', streakError);
-      // Don't block approval if streak update fails, but log it
-    }
-  }
-
-  // 5. Award credits if domain logic says so
-  if (statusChangeResult.shouldAwardCredits && task.reward_type === 'credit' && task.reward_text && task.assigned_to) {
-    const creditDecision = decideCreditsForApprovedContract({
-      contractId: missionId,
-      assigneeId: task.assigned_to,
-      baseReward: parseInt(task.reward_text, 10),
-      isDaily: task.is_daily || false,
-      streakCount: streakCount,
+  if (error) {
+    console.error('[approveMission] RPC approve_task FAILED', {
+      rpc: 'approve_task',
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
     });
 
-    if (creditDecision.amount > 0) {
-      const { error: rpcError } = await supabaseClient.rpc('increment_user_credits', {
-        user_id_param: task.assigned_to,
-        amount_param: creditDecision.amount,
-      });
-
-      if (rpcError) {
-        console.error('Failed to award credits via RPC:', rpcError);
-        throw new Error(`Failed to award ${creditDecision.amount} credits.`);
-      }
+    // Map PostgreSQL exceptions to user-friendly messages
+    if (error.message?.includes('Not authenticated')) {
+      throw new Error('You must be logged in to approve tasks.');
     }
+    if (error.message?.includes('Not authorized')) {
+      throw new Error('Only the task creator can approve this task.');
+    }
+    if (error.message?.includes('Task not found')) {
+      throw new Error('Task not found.');
+    }
+    if (error.message?.includes('must be in review status')) {
+      throw new Error('This task is not ready for approval.');
+    }
+
+    throw new Error(error.message || 'Failed to approve task.');
   }
 
-  return { streakCount };
+  console.log('[approveMission] RPC approve_task SUCCESS');
 }
 
 /**
@@ -333,13 +281,16 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
   }
 
   // Update task with proof data and set status to 'review'
+  // Also set completed_at (submission timestamp) for streak calculation
   const updateData: {
     proof_url?: string | null;
     proof_description?: string | null;
     proof_type?: string | null;
     status: string;
+    completed_at: string;
   } = {
     status: 'review',
+    completed_at: new Date().toISOString(),
   };
 
   if (proofUrl) {
@@ -428,10 +379,14 @@ export async function submitForReviewNoProof(params: SubmitForReviewParams): Pro
     throw new Error(`Cannot complete task with status '${task.status}'.`);
   }
 
-  // Step 5: Update task status to 'review'
+  // Step 5: Update task status to 'review' and set completed_at (submission timestamp)
+  // This timestamp is used for streak calculation (not approval date)
   const { error: updateError } = await supabaseClient
     .from('tasks')
-    .update({ status: 'review' })
+    .update({
+      status: 'review',
+      completed_at: new Date().toISOString(),
+    })
     .eq('id', missionId)
     .eq('assigned_to', userId); // Security: only assigned user can update
 
