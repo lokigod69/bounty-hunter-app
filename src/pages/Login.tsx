@@ -1,18 +1,24 @@
 // src/pages/Login.tsx
 // Redesigned to center the login form, add the application logo and title, and use the custom Mandalore font.
 // Fixed auth callback handling to prevent blank screens for new users.
-// R31: Removed magic link - Google OAuth only.
+// R31: Added email + password auth alongside Google OAuth.
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { user, loading: authLoading, session } = useAuth();
   const navigate = useNavigate();
+
+  // Form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOtherOptions, setShowOtherOptions] = useState(false);
 
   // Redirect authenticated users away from /login
   useEffect(() => {
@@ -23,6 +29,88 @@ const Login: React.FC = () => {
     }
   }, [user, session, authLoading, navigate]);
 
+  // Email + Password Sign Up
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both email and password.');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/login`
+          : undefined;
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
+
+      if (error) {
+        console.error('Sign up error:', error);
+        toast.error(error.message);
+      } else if (data.user && !data.session) {
+        // User created but needs email confirmation
+        toast.success('Check your email to confirm your account!');
+      } else if (data.session) {
+        // Auto-confirmed (email confirmations disabled in Supabase)
+        toast.success('Account created successfully!');
+      }
+    } catch (error: unknown) {
+      console.error('Sign up error:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('An unexpected error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Email + Password Log In
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both email and password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        toast.error(error.message);
+      }
+      // If successful, auth state change will trigger redirect
+    } catch (error: unknown) {
+      console.error('Login error:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('An unexpected error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google OAuth
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
@@ -39,12 +127,51 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error('Google login error', error);
+        console.error('Google login error:', error);
         toast.error(error.message || 'Failed to sign in with Google');
       }
-      // Note: If successful, user will be redirected to Google, so we don't show success here
+      // Note: If successful, user will be redirected to Google
     } catch (error: unknown) {
-      console.error('Google login error', error);
+      console.error('Google login error:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('An unexpected error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Magic Link (passwordless)
+  const handleMagicLink = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter your email address.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/login`
+          : undefined;
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
+
+      if (error) {
+        console.error('Magic link error:', error);
+        toast.error(error.message);
+      } else {
+        toast.success('Check your email for the magic link!');
+      }
+    } catch (error: unknown) {
+      console.error('Magic link error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -83,20 +210,19 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
       <img src="/logo5.png" alt="Bounty Hunter" className="w-24 h-24 mb-4" />
-      
+
       <h1 className="font-mandalore text-5xl font-bold tracking-wider mb-8 text-teal-400">
         BOUNTY HUNTER
       </h1>
-      
-      <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-slate-300 mb-6">Sign In</h2>
-        <p className="text-center text-slate-400 mb-6">Sign in with your Google account to continue.</p>
 
-        {/* Google OAuth Button */}
+      <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-slate-300 mb-6">Welcome</h2>
+
+        {/* Google OAuth Button - Primary option */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-3 px-4 bg-white hover:bg-gray-100 rounded-md text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 mb-4 bg-white hover:bg-gray-100 rounded-md text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -118,6 +244,96 @@ const Login: React.FC = () => {
           </svg>
           {loading ? 'Signing in...' : 'Continue with Google'}
         </button>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-gray-800 text-slate-400">or use email</span>
+          </div>
+        </div>
+
+        {/* Email + Password Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="sr-only">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Password (min 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              disabled={loading}
+            />
+          </div>
+
+          {/* Login / Sign Up Buttons */}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 px-4 bg-teal-500 hover:bg-teal-600 rounded-md text-white font-bold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'Log In'}
+            </button>
+            <button
+              type="button"
+              onClick={handleSignUp}
+              disabled={loading}
+              className="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-500 rounded-md text-white font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'Sign Up'}
+            </button>
+          </div>
+        </form>
+
+        {/* Other Options (Magic Link) - Collapsible */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowOtherOptions(!showOtherOptions)}
+            className="w-full flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors"
+          >
+            Other options
+            {showOtherOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {showOtherOptions && (
+            <div className="mt-4 p-4 bg-gray-700/50 rounded-lg">
+              <p className="text-sm text-slate-400 mb-3">
+                Sign in without a password using a magic link sent to your email.
+              </p>
+              <button
+                type="button"
+                onClick={handleMagicLink}
+                disabled={loading || !email.trim()}
+                className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {loading ? 'Sending...' : 'Send Magic Link'}
+              </button>
+              {!email.trim() && (
+                <p className="text-xs text-slate-500 mt-2 text-center">
+                  Enter your email above first
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
