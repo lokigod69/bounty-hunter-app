@@ -209,12 +209,16 @@ const RewardsStorePage: React.FC = () => {
                   </p>
                 </div>
                 {reward.image_url && (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    <img 
-                      src={reward.image_url} 
-                      alt={reward.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800/50 flex items-center justify-center">
+                    {reward.image_url.startsWith('http') ? (
+                      <img
+                        src={reward.image_url}
+                        alt={reward.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl">{reward.image_url}</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -227,11 +231,11 @@ const RewardsStorePage: React.FC = () => {
     // Handle available and created tabs (use rewards from rewards_store)
     const filteredRewards = rewards.filter(reward => {
       if (activeTab === 'available') {
-        // Bounties assigned to the current user by others AND not already collected
-        return reward.assigned_to === user?.id && !collectedRewardIds.has(reward.id);
+        // Bounties assigned to me, still active, and not already collected
+        return reward.assigned_to === user?.id && reward.is_active !== false && !collectedRewardIds.has(reward.id);
       }
       if (activeTab === 'created') {
-        // Bounties created by the current user for others
+        // All bounties I created (active + redeemed) - sorted by status below
         return reward.creator_id === user?.id;
       }
       return false;
@@ -260,9 +264,36 @@ const RewardsStorePage: React.FC = () => {
 
     // R14: "created" (My Bounties) tab uses centered column layout; "available" uses grid
     if (activeTab === 'created') {
+      // Sort: active rewards first, then redeemed
+      const sortedRewards = [...filteredRewards].sort((a, b) => {
+        if (a.is_active === b.is_active) return 0;
+        return a.is_active ? -1 : 1;
+      });
+
+      const activeRewards = sortedRewards.filter(r => r.is_active !== false);
+      const redeemedRewards = sortedRewards.filter(r => r.is_active === false);
+
       return (
         <div className="max-w-xl mx-auto flex flex-col gap-3">
-          {filteredRewards.map(reward => (
+          {activeRewards.map(reward => (
+            <RewardCard
+              key={reward.id}
+              reward={reward}
+              view={activeTab}
+              onAction={handleClaim}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              currentCredits={userCredits ?? 0}
+            />
+          ))}
+          {redeemedRewards.length > 0 && activeRewards.length > 0 && (
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex-1 h-px bg-gray-700/50" />
+              <span className="text-xs text-gray-500 uppercase tracking-wide">Redeemed</span>
+              <div className="flex-1 h-px bg-gray-700/50" />
+            </div>
+          )}
+          {redeemedRewards.map(reward => (
             <RewardCard
               key={reward.id}
               reward={reward}

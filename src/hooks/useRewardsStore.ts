@@ -60,10 +60,10 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setIsLoadingRewards(true);
     setRewardsError(null);
     try {
+      // Don't filter by is_active - let My Bounties show redeemed items too
       const { data, error } = await supabase
         .from('rewards_store')
         .select('*')
-        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
