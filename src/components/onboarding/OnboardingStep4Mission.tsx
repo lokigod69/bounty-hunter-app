@@ -84,7 +84,6 @@ export default function OnboardingStep4Mission({
       setCreateError(null);
       onComplete();
     } catch (error) {
-      console.error('Error creating mission:', error);
       const errorMsg = error instanceof Error ? error.message : 'Failed to create mission. Please try again.';
       setCreateError(errorMsg);
       toast.error(errorMsg);

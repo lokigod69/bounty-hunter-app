@@ -88,7 +88,6 @@ export default function OnboardingStep3Invite({
       setInviteError(null);
       onComplete(profileData.id);
     } catch (error) {
-      console.error('Error sending invite:', error);
       const errorMsg = error instanceof Error ? error.message : 'Failed to send invitation. Please try again.';
       setInviteError(errorMsg);
       toast.error(errorMsg);

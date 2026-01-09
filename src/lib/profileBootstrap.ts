@@ -7,6 +7,10 @@
 // - If a profile row exists, return it AS-IS (including any user-set avatar_url/display_name)
 // - Only INSERT if no profile exists at all
 // - ProfileEditModal is the ONLY place that should UPDATE profile fields
+//
+// RACE CONDITION FIX: If two simultaneous logins both try to create a profile,
+// the second one will get a unique violation (23505) - we handle this by
+// fetching the existing profile instead of failing.
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
@@ -17,8 +21,6 @@ export async function ensureProfileForUser(
   supabase: SupabaseClient,
   user: User
 ): Promise<Profile | null> {
-  const callId = Date.now(); // R15: Unique call ID to trace async race conditions
-
   try {
     // 1. Try to load existing profile
     const { data: profile, error } = await supabase
@@ -30,7 +32,6 @@ export async function ensureProfileForUser(
     // .maybeSingle() returns null data when no rows found, not an error
     // Only real errors (network, RLS violations, etc.) will have error set
     if (error) {
-      console.error(`[ensureProfile:${callId}] select error`, error);
       return null;
     }
 
@@ -63,20 +64,30 @@ export async function ensureProfileForUser(
       .single();
 
     if (insertError) {
-      console.error(`[ensureProfile:${callId}] INSERT FAILED:`, insertError);
+      // RACE CONDITION HANDLING: If another request already created the profile,
+      // we'll get a unique violation (code 23505). Fetch the existing profile instead.
+      if (insertError.code === '23505') {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        return existingProfile as Profile | null;
+      }
+
+      // Other errors - return null
       return null;
     }
 
     if (!inserted) {
-      console.error(`[ensureProfile:${callId}] insert returned no data`);
       return null;
     }
 
     return inserted as Profile;
 
-  } catch (err) {
+  } catch {
     // Catch any unexpected errors (network failures, etc.)
-    console.error(`[ensureProfile:${callId}] unexpected error`, err);
     return null;
   }
 }

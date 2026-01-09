@@ -28,7 +28,6 @@ export const fetchStreak = async (
     .maybeSingle();
 
   if (error) {
-    console.error('Error fetching streak:', error);
     return null;
   }
 
@@ -72,7 +71,6 @@ export const updateStreakAfterCompletion = async (
       .eq('id', existingStreak.id);
 
     if (error) {
-      console.error('Error updating streak:', error);
       throw error;
     }
   } else {
@@ -89,7 +87,6 @@ export const updateStreakAfterCompletion = async (
       });
 
     if (error) {
-      console.error('Error creating streak:', error);
       throw error;
     }
   }
@@ -116,7 +113,6 @@ export const fetchStreaksForContracts = async (
     .eq('user_id', userId);
 
   if (error) {
-    console.error('Error fetching streaks:', error);
     return {};
   }
 
@@ -152,7 +148,6 @@ export const useDailyMissionStreak = (contractId: string | null, userId: string 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch streak';
       setError(message);
-      console.error('Error in fetchStreakData:', err);
     } finally {
       setLoading(false);
     }

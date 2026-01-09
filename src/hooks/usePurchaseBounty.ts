@@ -44,7 +44,6 @@ export const usePurchaseBounty = () => {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      console.error('Error claiming bounty:', errorMessage);
       setError(errorMessage);
       toast.error(`Error: ${errorMessage}`);
       setIsLoading(false);

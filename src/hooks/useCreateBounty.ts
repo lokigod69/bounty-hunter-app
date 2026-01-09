@@ -53,7 +53,6 @@ export const useCreateBounty = () => {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      console.error('Error creating bounty:', errorMessage);
       setError(errorMessage);
       toast.error(`Error: ${errorMessage}`);
       setIsLoading(false);

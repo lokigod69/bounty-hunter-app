@@ -48,14 +48,12 @@ export function useIssuedContracts() {
         .eq('is_archived', false);
 
       if (fetchError) {
-        console.error('Error fetching issued contracts:', fetchError);
         setError(fetchError.message);
         setContracts([]);
       } else {
         setContracts(data || []);
       }
     } catch (e: unknown) {
-      console.error('Unexpected error fetching issued contracts:', e);
       if (e instanceof Error) {
         setError(e.message);
       } else {

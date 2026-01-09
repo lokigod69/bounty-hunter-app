@@ -150,19 +150,15 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         .single();
 
       if (updateError) {
-        console.error('[ProfileEditModal] Upsert error:', updateError);
-
         // R11: Show specific error messages for known error codes
         let errorMessage = t('profile.saveError');
 
         if (updateError.code === '42501') {
           // RLS policy violation
           errorMessage = 'Profile update blocked by database security rules. Please contact support.';
-          console.error('[ProfileEditModal] RLS policy violation - INSERT/UPDATE blocked on profiles table');
         } else if (updateError.code === '23502') {
           // NOT NULL violation - likely missing required field
           errorMessage = 'Missing required profile data. Please try again.';
-          console.error('[ProfileEditModal] NOT NULL violation:', updateError.message);
         } else if (updateError.code === '23505') {
           // Unique constraint violation
           errorMessage = 'This profile already exists. Please try again.';
@@ -186,8 +182,6 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       // Close modal after successful save
       onClose();
     } catch (err: unknown) {
-      console.error('[ProfileEditModal] Operation failed:', err);
-
       // R11: Better error messages for caught exceptions
       let errorMessage = t('profile.saveError');
 

@@ -60,21 +60,11 @@ export interface SubmitForReviewParams {
 export async function approveMission(params: ApproveMissionParams): Promise<void> {
   const { missionId, supabaseClient = supabase } = params;
 
-  console.log('[approveMission] Calling approve_task RPC', { missionId });
-
   const { error } = await supabaseClient.rpc('approve_task', {
     p_task_id: missionId,
   });
 
   if (error) {
-    console.error('[approveMission] RPC approve_task FAILED', {
-      rpc: 'approve_task',
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-    });
-
     // Map PostgreSQL exceptions to user-friendly messages
     if (error.message?.includes('Not authenticated')) {
       throw new Error('You must be logged in to approve tasks.');
@@ -91,8 +81,6 @@ export async function approveMission(params: ApproveMissionParams): Promise<void
 
     throw new Error(error.message || 'Failed to approve task.');
   }
-
-  console.log('[approveMission] RPC approve_task SUCCESS');
 }
 
 /**
@@ -372,7 +360,6 @@ export async function submitForReviewNoProof(params: SubmitForReviewParams): Pro
     .single();
 
   if (fetchError) {
-    console.error('submitForReviewNoProof fetch error:', fetchError);
     throw new Error('Task not found.');
   }
 
@@ -408,7 +395,6 @@ export async function submitForReviewNoProof(params: SubmitForReviewParams): Pro
     .eq('assigned_to', userId); // Security: only assigned user can update
 
   if (updateError) {
-    console.error('submitForReviewNoProof update error:', updateError);
     throw new Error('Failed to submit task for review. Please try again.');
   }
 }

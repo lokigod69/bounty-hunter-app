@@ -15,6 +15,7 @@ import { useUpdateBounty } from '../hooks/useUpdateBounty';
 import { Reward } from './RewardCard';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
+import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
@@ -39,6 +40,7 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
   const { user } = useAuth();
   const { updateBounty, isLoading } = useUpdateBounty();
   const { openModal, clearLayer } = useUI();
+  const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } = useModalBackdropClick({ onClose });
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -206,8 +208,15 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
   if (!isOpen || !bounty) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-modal-backdrop backdrop-blur-sm">
-      <div className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-modal-backdrop backdrop-blur-sm"
+      onClick={handleBackdropClick}
+      onMouseDown={handleBackdropMouseDown}
+    >
+      <div
+        className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content"
+        onMouseDown={handleContentMouseDown}
+      >
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">

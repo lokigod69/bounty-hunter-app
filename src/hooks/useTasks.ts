@@ -18,7 +18,6 @@
 // Added deleteTask and updateTask functions with optimistic UI updates, proof file deletion (for delete), and robust error handling.
 // Updated updateTaskStatus: if task is rejected, set status to 'pending' and clear proof_url.
 // Calls increment_user_credits RPC when a credit task is marked as 'completed'. (Updated RPC params to common convention, user to verify).
-// Added extensive console.logs for debugging updateTaskStatus flow.
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';

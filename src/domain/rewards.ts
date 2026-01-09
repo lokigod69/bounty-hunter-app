@@ -48,41 +48,70 @@ export interface CreateRewardResult {
 
 /**
  * Purchases a reward from the store.
- * 
- * Uses RPC: purchase_reward_store_item
+ *
+ * Uses RPC: purchase_reward (atomic version with FOR UPDATE locking)
  * This handles:
  * - Validating purchase (not creator, not already claimed, sufficient credits)
- * - Deducting credits
+ * - Deducting credits atomically (prevents race conditions)
  * - Creating collected_rewards entry
+ * - Prevents negative balances and double-purchases
  */
 export async function purchaseReward(params: PurchaseRewardParams): Promise<PurchaseRewardResult> {
   const { rewardId, supabaseClient = supabase } = params;
 
-  // RPC uses auth.uid() internally for security - no need to pass userId
+  // Get current user from session for the atomic RPC
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      success: false,
+      message: 'You must be logged in to purchase rewards.',
+    };
+  }
+
+  // Use atomic purchase_reward RPC with row-level locking
   const rpcArgs = {
     p_reward_id: rewardId,
+    p_collector_id: user.id,
   };
 
-  const { data: rawData, error: rpcError } = await supabaseClient.rpc('purchase_reward_store_item' as never, rpcArgs as never);
+  const { data: rawData, error: rpcError } = await supabaseClient.rpc('purchase_reward' as never, rpcArgs as never);
 
   if (rpcError) {
     throw rpcError;
   }
 
-  const data = rawData as PurchaseRewardResult | null;
-  const rpcResponse = data as { success?: boolean; message?: string; collection_id?: string; reward_name?: string };
+  const rpcResponse = rawData as {
+    success?: boolean;
+    message?: string;
+    error?: string;
+    reward_id?: string;
+    reward_name?: string;
+    new_balance?: number;
+  } | null;
 
   if (rpcResponse && rpcResponse.success === false) {
+    // Map specific error codes to user-friendly messages
+    let message = rpcResponse.message || 'Purchase failed.';
+    if (rpcResponse.error === 'INSUFFICIENT_FUNDS') {
+      message = 'Not enough credits for this reward.';
+    } else if (rpcResponse.error === 'ALREADY_COLLECTED') {
+      message = 'You already have this reward!';
+    } else if (rpcResponse.error === 'SELF_PURCHASE') {
+      message = 'You cannot purchase your own reward.';
+    } else if (rpcResponse.error === 'REWARD_NOT_FOUND') {
+      message = 'This reward is no longer available.';
+    }
+
     return {
       success: false,
-      message: rpcResponse.message || 'Purchase failed.',
+      message,
     };
   }
 
   return {
     success: true,
     message: rpcResponse?.message || 'Reward purchased successfully!',
-    collection_id: rpcResponse?.collection_id,
     reward_name: rpcResponse?.reward_name,
   };
 }

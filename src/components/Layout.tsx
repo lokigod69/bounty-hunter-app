@@ -35,7 +35,7 @@ import {
   Send,
   ShoppingCart,
   Sparkles,
-  Book,
+  // Book, // Hidden: History tab disabled
   LogOut,
   Menu,
   X,
@@ -105,8 +105,7 @@ export default function Layout() {
   // R31: Brute-force logout - always redirect regardless of errors
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) console.error('signOut error:', error);
+      await supabase.auth.signOut();
     } finally {
       // Hard reset client state - this ensures we always redirect
       window.location.assign('/login');
@@ -156,7 +155,8 @@ export default function Layout() {
     { name: strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
     { name: strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
     { name: strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
-    { name: strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
+    // History tab hidden until feature is ready
+    // { name: strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
   ];
 
   const navItemsDesktop = navItems;

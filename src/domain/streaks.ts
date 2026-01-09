@@ -36,7 +36,6 @@ export async function getStreak(
     .maybeSingle();
 
   if (error) {
-    console.error('Error fetching streak:', error);
     return null;
   }
 
@@ -79,7 +78,6 @@ export async function updateStreakAfterCompletion(params: UpdateStreakParams): P
       .eq('id', existingStreak.id);
 
     if (error) {
-      console.error('Error updating streak:', error);
       throw error;
     }
   } else {
@@ -96,7 +94,6 @@ export async function updateStreakAfterCompletion(params: UpdateStreakParams): P
       });
 
     if (error) {
-      console.error('Error creating streak:', error);
       throw error;
     }
   }
@@ -124,7 +121,6 @@ export async function getStreaksForContracts(
     .eq('user_id', userId);
 
   if (error) {
-    console.error('Error fetching streaks:', error);
     return {};
   }
 

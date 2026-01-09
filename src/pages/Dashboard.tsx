@@ -72,7 +72,6 @@ export default function Dashboard() {
       if (refetchAssignedContracts) refetchAssignedContracts();
       return proofUrl;
     } catch (error: unknown) {
-      console.error('Proof upload failed:', error);
       let message = 'Couldn\'t submit proof, please try again.';
       if (error instanceof Error) {
         message = error.message || message;
@@ -103,7 +102,6 @@ export default function Dashboard() {
       if (refetchAssignedContracts) refetchAssignedContracts();
       return true;
     } catch (error: unknown) {
-      console.error('Direct complete failed:', error);
       let message = 'Failed to submit task. Please try again.';
       if (error instanceof Error) {
         message = error.message || message;
@@ -132,7 +130,6 @@ export default function Dashboard() {
       toast.success('Task moved to History!', { id: toastId });
       if (refetchAssignedContracts) refetchAssignedContracts();
     } catch (error: unknown) {
-      console.error('Archive failed:', error);
       let message = 'Failed to archive task. Please try again.';
       if (error instanceof Error) {
         message = error.message || message;

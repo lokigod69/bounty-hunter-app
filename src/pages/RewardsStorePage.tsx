@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
-import { Plus, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { Plus, ShoppingCart, AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
 import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
 import { useDeleteBounty } from '../hooks/useDeleteBounty';
@@ -235,8 +235,8 @@ const RewardsStorePage: React.FC = () => {
         return reward.assigned_to === user?.id && reward.is_active !== false && !collectedRewardIds.has(reward.id);
       }
       if (activeTab === 'created') {
-        // All bounties I created (active + redeemed) - sorted by status below
-        return reward.creator_id === user?.id;
+        // Only active bounties I created (redeemed ones are hidden)
+        return reward.creator_id === user?.id && reward.is_active !== false;
       }
       return false;
     });
@@ -262,9 +262,8 @@ const RewardsStorePage: React.FC = () => {
       );
     }
 
-    // R14: "created" (My Bounties) tab uses centered column layout; "available" uses grid
+    // My Bounties: Compact list layout for creator management
     if (activeTab === 'created') {
-      // Sort: active rewards first, then redeemed
       const sortedRewards = [...filteredRewards].sort((a, b) => {
         if (a.is_active === b.is_active) return 0;
         return a.is_active ? -1 : 1;
@@ -273,19 +272,63 @@ const RewardsStorePage: React.FC = () => {
       const activeRewards = sortedRewards.filter(r => r.is_active !== false);
       const redeemedRewards = sortedRewards.filter(r => r.is_active === false);
 
+      const renderCompactRow = (reward: typeof rewards[0]) => (
+        <BaseCard key={reward.id} className="transition-all duration-200 hover:shadow-lg">
+          <div className="flex items-center gap-3">
+            {/* Small thumbnail */}
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800/50 flex items-center justify-center">
+              {reward.image_url?.startsWith('http') ? (
+                <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl">{reward.image_url || '🎁'}</span>
+              )}
+            </div>
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-semibold text-white truncate">{reward.name}</h3>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                  reward.is_active
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-slate-600/30 text-slate-400'
+                }`}>
+                  {reward.is_active ? 'Active' : 'Redeemed'}
+                </span>
+              </div>
+              {reward.description && (
+                <p className="text-xs text-white/60 truncate mt-0.5">{reward.description}</p>
+              )}
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-xs text-white/50">Cost:</span>
+                <Coin size="xs" variant="static" value={reward.credit_cost} />
+              </div>
+            </div>
+            {/* Actions */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {reward.is_active && (
+                <button
+                  onClick={() => handleEdit(reward)}
+                  className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                  title="Edit"
+                >
+                  <Pencil size={16} />
+                </button>
+              )}
+              <button
+                onClick={() => handleDelete(reward.id)}
+                className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                title="Delete"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+        </BaseCard>
+      );
+
       return (
-        <div className="max-w-xl mx-auto flex flex-col gap-3">
-          {activeRewards.map(reward => (
-            <RewardCard
-              key={reward.id}
-              reward={reward}
-              view={activeTab}
-              onAction={handleClaim}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              currentCredits={userCredits ?? 0}
-            />
-          ))}
+        <div className="space-y-2">
+          {activeRewards.map(renderCompactRow)}
           {redeemedRewards.length > 0 && activeRewards.length > 0 && (
             <div className="flex items-center gap-3 py-2">
               <div className="flex-1 h-px bg-gray-700/50" />
@@ -293,17 +336,7 @@ const RewardsStorePage: React.FC = () => {
               <div className="flex-1 h-px bg-gray-700/50" />
             </div>
           )}
-          {redeemedRewards.map(reward => (
-            <RewardCard
-              key={reward.id}
-              reward={reward}
-              view={activeTab}
-              onAction={handleClaim}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              currentCredits={userCredits ?? 0}
-            />
-          ))}
+          {redeemedRewards.map(renderCompactRow)}
         </div>
       );
     }

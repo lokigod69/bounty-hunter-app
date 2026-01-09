@@ -15,6 +15,7 @@ import { X, Upload, Trash2 } from 'lucide-react';
 import { useCreateBounty } from '../hooks/useCreateBounty';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
+import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
@@ -128,8 +129,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         onSuccess(); // Trigger refetch
         onClose(); // Close modal
       }
-    } catch (err) {
-      console.error('[CreateBountyModal] Submit error:', err);
+    } catch {
       setUploadError('Failed to create bounty. Please try again.');
     } finally {
       setIsUploading(false);
@@ -145,11 +145,21 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
     };
   }, [isOpen, openModal, clearLayer]);
 
+  // Handle backdrop click while respecting text selection
+  const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } = useModalBackdropClick({ onClose });
+
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop backdrop-blur-sm">
-      <div className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop backdrop-blur-sm"
+      onClick={handleBackdropClick}
+      onMouseDown={handleBackdropMouseDown}
+    >
+      <div
+        className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content"
+        onMouseDown={handleContentMouseDown}
+      >
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Header - fixed at top */}
           <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">

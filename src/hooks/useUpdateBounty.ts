@@ -41,7 +41,6 @@ export const useUpdateBounty = () => {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      console.error('Error updating bounty:', err);
       toast.error(`Error updating bounty: ${errorMessage}`);
       setIsLoading(false);
       return { success: false, error: errorMessage };

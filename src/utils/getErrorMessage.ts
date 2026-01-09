@@ -83,8 +83,6 @@ function sanitizeErrorMessage(message: string): string {
 }
 
 export function getErrorMessage(error: unknown, context?: string): string {
-  console.error('[getErrorMessage] Processing error:', { error, context, timestamp: new Date().toISOString() });
-  
   let message = 'An unexpected error occurred.';
   let code: string | undefined;
   let details: string | undefined;
@@ -99,17 +97,7 @@ export function getErrorMessage(error: unknown, context?: string): string {
     message = error.message;
     code = (error as unknown as { code?: string }).code;
   }
-  
-  // Log enhanced error information for debugging
-  console.error('[getErrorMessage] Enhanced error info:', {
-    originalMessage: message,
-    code,
-    details,
-    context,
-    userAgent: navigator.userAgent,
-    timestamp: new Date().toISOString()
-  });
-  
+
   // Categorize the error
   const category = categorizeError(message, code);
   
@@ -184,21 +172,9 @@ export function getTaskUpdateError(error: unknown): string {
 }
 
 // Error reporting function for debugging
-export function reportError(error: unknown, context?: string, additionalInfo?: Record<string, unknown>): void {
-  const errorReport = {
-    timestamp: new Date().toISOString(),
-    error: error,
-    context,
-    additionalInfo,
-    userAgent: navigator.userAgent,
-    url: window.location.href,
-    isAndroid: detectAndroidDevice()
-  };
-  
-  console.error('[Error Report]', errorReport);
-  
-  // In production, this could be sent to an error tracking service
-  // Example: errorTrackingService.report(errorReport);
+// In production, this could be extended to send to an error tracking service
+export function reportError(_error: unknown, _context?: string, _additionalInfo?: Record<string, unknown>): void {
+  // Intentionally empty in production - can be extended for error tracking services
 }
 
 export default getErrorMessage;

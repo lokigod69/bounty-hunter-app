@@ -121,7 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const error = err instanceof Error ? err : new Error(String(err));
-        console.error('[AuthContext] Error loading profile:', error);
         setProfileError(error);
         setProfile(null);
       } finally {
@@ -171,7 +170,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.error('[AuthContext] Error refreshing profile:', error);
       setProfileError(error);
       setProfile(null);
     } finally {
@@ -195,7 +193,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id);
 
       if (error) {
-        console.error('[AuthContext] Error setting partner:', error);
         toast.error('Failed to set partner. Please try again.');
         return false;
       }
@@ -207,8 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       toast.success(partnerId ? 'Partner selected!' : 'Partner cleared.');
       return true;
-    } catch (err) {
-      console.error('[AuthContext] Unexpected error setting partner:', err);
+    } catch {
       toast.error('Failed to set partner. Please try again.');
       return false;
     }
@@ -222,7 +218,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
     } catch (error) {
       setError((error as Error).message);
-      console.error('Error signing out:', error);
     } finally {
       setAuthLoading(false);
     }

@@ -117,7 +117,6 @@ export function usePartnerState(userId: string | undefined): PartnerStateResult 
           .single();
 
         if (profileError) {
-          console.error('Error fetching partner profile:', profileError);
           setPartnerProfile(null);
         } else {
           setPartnerProfile(profile);
@@ -128,7 +127,6 @@ export function usePartnerState(userId: string | undefined): PartnerStateResult 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch partner state';
       setError(errorMessage);
-      console.error('Error fetching partner state:', err);
       setState('NO_PARTNER');
       setPartnerProfile(null);
       setFriendshipId(null);

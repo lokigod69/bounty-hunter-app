@@ -33,7 +33,6 @@ export const useDeleteBounty = () => {
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      console.error('Error deleting bounty:', err);
       toast.error(`Error deleting bounty: ${errorMessage}`);
       setIsLoading(false);
       return { success: false, error: errorMessage };

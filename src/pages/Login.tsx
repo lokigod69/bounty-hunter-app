@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const Login: React.FC = () => {
-  const { user, loading: authLoading, session } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   // Form state
@@ -22,12 +22,13 @@ const Login: React.FC = () => {
 
   // Redirect authenticated users away from /login
   useEffect(() => {
-    // Only redirect if auth is done loading AND user exists
-    // This ensures Supabase has finished processing the callback
-    if (!authLoading && user && session) {
+    // Redirect if auth is done loading AND user exists
+    // Note: We check for user alone (not session) because OAuth callbacks
+    // may briefly have a user before the session object is fully populated
+    if (!authLoading && user) {
       navigate('/', { replace: true });
     }
-  }, [user, session, authLoading, navigate]);
+  }, [user, authLoading, navigate]);
 
   // Email + Password Sign Up
   const handleSignUp = async (e: React.FormEvent) => {
@@ -57,7 +58,6 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error('Sign up error:', error);
         toast.error(error.message);
       } else if (data.user && !data.session) {
         // User created but needs email confirmation
@@ -67,7 +67,6 @@ const Login: React.FC = () => {
         toast.success('Account created successfully!');
       }
     } catch (error: unknown) {
-      console.error('Sign up error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -94,12 +93,10 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error('Login error:', error);
         toast.error(error.message);
       }
       // If successful, auth state change will trigger redirect
     } catch (error: unknown) {
-      console.error('Login error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -127,12 +124,10 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error('Google login error:', error);
         toast.error(error.message || 'Failed to sign in with Google');
       }
       // Note: If successful, user will be redirected to Google
     } catch (error: unknown) {
-      console.error('Google login error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -165,13 +160,11 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error('Magic link error:', error);
         toast.error(error.message);
       } else {
         toast.success('Check your email for the magic link!');
       }
     } catch (error: unknown) {
-      console.error('Magic link error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -196,7 +189,7 @@ const Login: React.FC = () => {
 
   // If user is authenticated, the useEffect above will handle redirect
   // But show loading state here as well to prevent flash of login form
-  if (user && session) {
+  if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">

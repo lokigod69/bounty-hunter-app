@@ -82,7 +82,6 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
         .map((row) => {
           const rewardDetail = row.reward_id ? rewardsMap.get(row.reward_id) : null;
           if (!rewardDetail) {
-            console.warn('[useCollectedRewards] Reward not found for collection:', row.id, 'reward_id:', row.reward_id);
             return null;
           }
           return {

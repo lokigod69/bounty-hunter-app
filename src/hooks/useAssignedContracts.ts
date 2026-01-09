@@ -48,7 +48,6 @@ export function useAssignedContracts() {
         .eq('is_archived', false);
 
       if (dbError) {
-        console.error('Error fetching assigned contracts:', dbError);
         setError(dbError.message);
         setContracts([]);
       } else {
@@ -63,8 +62,7 @@ export function useAssignedContracts() {
                 return { ...task, proof_url: null };
               }
               return task;
-            } catch (urlError) {
-              console.error('[useAssignedContracts] Invalid proof URL for task', task.id, ':', task.proof_url, urlError);
+            } catch {
               // Set proof_url to null for invalid URLs to prevent broken links
               return { ...task, proof_url: null };
             }
@@ -75,7 +73,6 @@ export function useAssignedContracts() {
         setContracts(processedContracts);
       }
     } catch (e: unknown) {
-      console.error('Unexpected error fetching assigned contracts:', e);
       let message = 'An unexpected error occurred.';
       if (e instanceof Error) {
         message = e.message;
