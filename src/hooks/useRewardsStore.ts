@@ -13,7 +13,20 @@ import { useAuth } from './useAuth';
 import { toast } from 'react-hot-toast';
 
 // These types point to 'rewards_store'. They will throw TS errors until 'database.ts' is regenerated.
-export type RewardStoreItem = Database['public']['Tables']['rewards_store']['Row'];
+export type RewardStoreItemBase = Database['public']['Tables']['rewards_store']['Row'];
+
+// R32: Extended type with profile data for creator and assignee
+export interface ProfileInfo {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface RewardStoreItem extends RewardStoreItemBase {
+  creator_profile?: ProfileInfo | null;
+  assignee_profile?: ProfileInfo | null;
+}
+
 export type NewRewardStoreItemData = Pick<
   Database['public']['Tables']['rewards_store']['Insert'],
   'name' | 'description' | 'image_url' | 'credit_cost'
@@ -60,14 +73,44 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setIsLoadingRewards(true);
     setRewardsError(null);
     try {
+      // R32: Fetch rewards with profile data for assignee (has FK)
       // Don't filter by is_active - let My Bounties show redeemed items too
+      // Note: creator_profile needs separate fetch since there's no FK for creator_id
       const { data, error } = await supabase
         .from('rewards_store')
-        .select('*')
+        .select(`
+          *,
+          assignee_profile:profiles!rewards_store_assigned_to_fkey(id, display_name, avatar_url)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRewards(data || []);
+
+      // R32: Fetch creator profiles separately
+      const creatorIds = [...new Set((data || []).map(r => r.creator_id).filter(Boolean))] as string[];
+      let creatorProfiles: Record<string, ProfileInfo> = {};
+
+      if (creatorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', creatorIds);
+
+        if (profiles) {
+          creatorProfiles = profiles.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+          }, {} as Record<string, ProfileInfo>);
+        }
+      }
+
+      // Merge creator profiles into rewards
+      const rewardsWithProfiles = (data || []).map(reward => ({
+        ...reward,
+        creator_profile: reward.creator_id ? creatorProfiles[reward.creator_id] || null : null,
+      }));
+
+      setRewards(rewardsWithProfiles as RewardStoreItem[]);
     } catch (err) {
       const postgrestError = err as PostgrestError;
       const errorMessage = postgrestError.message || 'Failed to fetch rewards.';

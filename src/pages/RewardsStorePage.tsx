@@ -298,9 +298,25 @@ const RewardsStorePage: React.FC = () => {
               {reward.description && (
                 <p className="text-xs text-white/60 truncate mt-0.5">{reward.description}</p>
               )}
-              <div className="flex items-center gap-1 mt-1">
-                <span className="text-xs text-white/50">Cost:</span>
-                <Coin size="xs" variant="static" value={reward.credit_cost} />
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-white/50">Cost:</span>
+                  <Coin size="xs" variant="static" value={reward.credit_cost} />
+                </div>
+                {/* R32: Show assignee profile */}
+                {reward.assignee_profile && (
+                  <div className="flex items-center gap-1" title={`To: ${reward.assignee_profile.display_name || 'Unknown'}`}>
+                    <span className="text-xs text-white/50">To:</span>
+                    <div className="w-5 h-5 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
+                      <img
+                        src={reward.assignee_profile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(reward.assignee_profile.display_name || 'user')}`}
+                        alt={reward.assignee_profile.display_name || 'Assignee'}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="text-xs text-white/70 truncate max-w-[60px]">{reward.assignee_profile.display_name}</span>
+                  </div>
+                )}
               </div>
             </div>
             {/* Actions */}
@@ -366,7 +382,7 @@ const RewardsStorePage: React.FC = () => {
           subtitle={strings.storeSubtitle}
         />
 
-        {/* R14: Simplified Balance Card - number is the focal point */}
+        {/* R32: Balance Card - coin with value is the focal point */}
         {!creditsLoading && (
           <div className="mb-6">
             <BaseCard className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
@@ -374,26 +390,23 @@ const RewardsStorePage: React.FC = () => {
                 <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
                   {strings.storeCreditsLabel}
                 </span>
-                <span className="text-3xl sm:text-4xl font-semibold text-white">
-                  {userCredits ?? 0}
-                </span>
-                {/* R14: Contextual hint below balance */}
+                {/* R32: Contextual hint about balance */}
                 {(userCredits ?? 0) === 0 ? (
-                  <span className="text-xs text-white/50 mt-1">
+                  <span className="text-sm text-white/70 mt-1">
                     Complete {strings.missionPlural} to earn {strings.tokenPlural}
                   </span>
                 ) : affordableCount > 0 ? (
-                  <span className="text-xs text-teal-400/80 mt-1">
+                  <span className="text-sm text-teal-400/80 mt-1">
                     {strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? strings.rewardSingular : strings.rewardPlural}
                   </span>
                 ) : cheapestUnaffordable ? (
-                  <span className="text-xs text-white/50 mt-1">
+                  <span className="text-sm text-white/70 mt-1">
                     {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} more to "{cheapestUnaffordable.name}"
                   </span>
                 ) : null}
               </div>
-              {/* R20: Coin shows actual balance value */}
-              <Coin size="lg" variant="subtle-spin" value={userCredits ?? 0} />
+              {/* R32: Coin with value is now the primary balance display */}
+              <Coin size="xl" variant="subtle-spin" value={userCredits ?? 0} />
             </BaseCard>
           </div>
         )}

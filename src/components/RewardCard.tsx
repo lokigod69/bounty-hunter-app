@@ -9,13 +9,13 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Pencil, Trash2 } from 'lucide-react';
-import type { Database } from '../types/database';
 import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
 import { RewardImageLightbox } from './modals/RewardImageLightbox';
 import { getAccentVariant } from '../theme/accentVariants';
+import type { RewardStoreItem } from '../hooks/useRewardsStore';
 
-export type Reward = Database['public']['Tables']['rewards_store']['Row'];
+export type Reward = RewardStoreItem;
 
 interface RewardCardProps {
   reward: Reward;
@@ -119,18 +119,49 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       
       {/* Bottom - Price and action - mobile optimized */}
       <div className="p-3 sm:p-4 md:p-5 border-t border-gray-700/50 space-y-2 sm:space-y-3">
-        {/* R20: Simplified cost display - static coin + number, no animation */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
+        {/* R32: Profile + Cost row */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Cost */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">Cost:</span>
             <Coin size="sm" variant="static" value={cost} />
           </div>
-          {!canAfford && view === 'available' && creditsNeeded > 0 && (
-            <span className="text-xs text-white/50 whitespace-nowrap">
-              Need {creditsNeeded} more {creditsNeeded === 1 ? strings.tokenSingular : strings.tokenPlural}
-            </span>
+
+          {/* Right: Profile avatar showing who it's from/to */}
+          {view === 'available' && reward.creator_profile && (
+            <div className="flex items-center gap-1.5" title={`From: ${reward.creator_profile.display_name || 'Unknown'}`}>
+              <span className="text-xs text-white/50">From:</span>
+              <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
+                <img
+                  src={reward.creator_profile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(reward.creator_profile.display_name || 'user')}`}
+                  alt={reward.creator_profile.display_name || 'Creator'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+          {view === 'created' && reward.assignee_profile && (
+            <div className="flex items-center gap-1.5" title={`To: ${reward.assignee_profile.display_name || 'Unknown'}`}>
+              <span className="text-xs text-white/50">To:</span>
+              <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
+                <img
+                  src={reward.assignee_profile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(reward.assignee_profile.display_name || 'user')}`}
+                  alt={reward.assignee_profile.display_name || 'Assignee'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
           )}
         </div>
+
+        {/* Affordability hint */}
+        {!canAfford && view === 'available' && creditsNeeded > 0 && (
+          <div className="text-center">
+            <span className="text-xs text-white/50">
+              Need {creditsNeeded} more {creditsNeeded === 1 ? strings.tokenSingular : strings.tokenPlural}
+            </span>
+          </div>
+        )}
         
         {/* Status badge for created view */}
         {view === 'created' && (

@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import toast from 'react-hot-toast';
 import FriendSelector from './FriendSelector';
 import EmojiPicker from './EmojiPicker';
 import { FileUpload } from './FileUpload';
@@ -81,7 +82,17 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!assignedTo || creditCost === '' || !user) return;
+
+    // R32: Add validation messages for missing fields
+    if (!assignedTo) {
+      toast.error('Please select a recipient for this bounty.');
+      return;
+    }
+    if (creditCost === '' || creditCost <= 0) {
+      toast.error('Please enter a valid credit cost.');
+      return;
+    }
+    if (!user) return;
 
     setIsUploading(true);
     let finalImageUrl = '';

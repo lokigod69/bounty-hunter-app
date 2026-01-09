@@ -78,7 +78,29 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
   const { data: rawData, error: rpcError } = await supabaseClient.rpc('purchase_reward' as never, rpcArgs as never);
 
   if (rpcError) {
-    throw rpcError;
+    // R32: Better error handling - extract useful information from Supabase errors
+    // Common issues: function doesn't exist, permission denied, parameter mismatch
+    const errorCode = (rpcError as { code?: string }).code;
+    const errorHint = (rpcError as { hint?: string }).hint;
+    const errorDetails = (rpcError as { details?: string }).details;
+
+    let userMessage = rpcError.message || 'Failed to claim reward.';
+
+    // Check for common error codes
+    if (errorCode === '42883' || (rpcError.message?.includes('function') && rpcError.message?.includes('does not exist'))) {
+      userMessage = 'Claim feature is temporarily unavailable. Please try again later.';
+    } else if (errorCode === '42501' || rpcError.message?.includes('permission denied')) {
+      userMessage = 'Permission denied. Please try logging out and back in.';
+    } else if (errorHint) {
+      userMessage = errorHint;
+    } else if (errorDetails) {
+      userMessage = errorDetails;
+    }
+
+    return {
+      success: false,
+      message: userMessage,
+    };
   }
 
   const rpcResponse = rawData as {
