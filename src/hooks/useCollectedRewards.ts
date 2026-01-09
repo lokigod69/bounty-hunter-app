@@ -1,23 +1,28 @@
 // src/hooks/useCollectedRewards.ts
 // This hook fetches and manages the rewards collected by the current user.
 // Renamed from useCollectedBounties.ts and updated internal references.
+// R33: Added creator profile data for showing who the reward was from.
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-// Assuming 'rewards_store' is the table and its type might be aliased as 'Reward' or directly used.
-// For now, using 'Reward' as a placeholder for the type from 'rewards_store' table.
-// We might need to define this type or ensure it's correctly generated in database.ts.
-import { Database } from '../types/database'; 
-// Explicitly using the table type for now, will adjust if a simpler 'Reward' type is available/created.
+import { Database } from '../types/database';
 type Reward = Database['public']['Tables']['rewards_store']['Row'];
 
 import { useAuth } from './useAuth';
 import { PostgrestError } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
 
+// R33: Profile info type for creator
+export interface CreatorProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
 export interface CollectedReward extends Reward {
   collected_at: string;
   collection_id: string;
+  creator_profile?: CreatorProfile | null;
 }
 
 export interface UseCollectedRewardsReturn {
@@ -76,7 +81,25 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
         throw rError;
       }
 
-      // Step 3: Merge client-side
+      // Step 3: R33 - Fetch creator profiles
+      const creatorIds = [...new Set((rewards || []).map(r => r.creator_id).filter(Boolean))] as string[];
+      let creatorProfiles: Record<string, CreatorProfile> = {};
+
+      if (creatorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', creatorIds);
+
+        if (profiles) {
+          creatorProfiles = profiles.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+          }, {} as Record<string, CreatorProfile>);
+        }
+      }
+
+      // Step 4: Merge client-side with creator profiles
       const rewardsMap = new Map((rewards || []).map(r => [r.id, r]));
       const transformedData: CollectedReward[] = collectedRows
         .map((row) => {
@@ -88,6 +111,7 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
             ...rewardDetail,
             collected_at: row.collected_at,
             collection_id: row.id,
+            creator_profile: rewardDetail.creator_id ? creatorProfiles[rewardDetail.creator_id] || null : null,
           };
         })
         .filter((reward): reward is CollectedReward => reward !== null);

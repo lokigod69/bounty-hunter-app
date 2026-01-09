@@ -24,9 +24,11 @@ interface RewardCardProps {
   onEdit?: (reward: Reward) => void;
   onDelete?: (rewardId: string) => void;
   currentCredits?: number; // P4: Current user credits for affordability checks
+  // R33: Optional props for collected view
+  collectedAt?: string;
 }
 
-const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0 }) => {
+const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0, collectedAt }) => {
   const { t } = useTranslation();
   const { themeId } = useTheme();
   const { strings } = useThemeStrings();
@@ -34,6 +36,8 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
   const [imageError, setImageError] = useState(false);
   // R27: Lightbox state for full image view
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  // R33: Collapsible description state for desktop
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   // P4: Calculate affordability
   const cost = credit_cost || 0;
@@ -113,7 +117,22 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       <div className="p-3 sm:p-4 md:p-5 flex-grow flex flex-col min-h-0">
         <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 sm:mb-2 line-clamp-2" title={name}>{name}</h3>
         {description && (
-          <p className="text-sm text-white/70 flex-grow">{description}</p>
+          <div className="flex-grow">
+            {/* R33: On mobile show full text, on desktop limit to 4 lines unless expanded */}
+            <p className={`text-sm text-white/70 ${!descriptionExpanded ? 'sm:line-clamp-4' : ''}`}>
+              {description}
+            </p>
+            {/* R33: Show more/less toggle - only visible on desktop when text might be truncated */}
+            {description.length > 120 && (
+              <button
+                type="button"
+                onClick={() => setDescriptionExpanded(!descriptionExpanded)}
+                className="hidden sm:inline-block text-xs text-teal-400 hover:text-teal-300 mt-1 transition-colors"
+              >
+                {descriptionExpanded ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </div>
         )}
       </div>
       
@@ -128,7 +147,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </div>
 
           {/* Right: Profile avatar showing who it's from/to */}
-          {view === 'available' && reward.creator_profile && (
+          {(view === 'available' || view === 'collected') && reward.creator_profile && (
             <div className="flex items-center gap-1.5" title={`From: ${reward.creator_profile.display_name || 'Unknown'}`}>
               <span className="text-xs text-white/50">From:</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
@@ -176,14 +195,30 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </div>
         )}
 
+        {/* R33: Collected view - show collected date and badge */}
+        {view === 'collected' && collectedAt && (
+          <div className="text-center space-y-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/50">
+              ✓ Collected
+            </span>
+            <p className="text-xs text-white/50">
+              {new Date(collectedAt).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </p>
+          </div>
+        )}
+
         {/* Action button - mobile optimized tap target */}
         {view === 'created' ? (
-          <div className="flex gap-2">
+          <div className="flex justify-center gap-3">
             {/* Edit button - only for Active items */}
             {is_active && (
               <button
                 onClick={() => onEdit?.(reward)}
-                className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
+                className="px-4 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
                 title={t('rewards.rewardCard.editButton')}
               >
                 <Pencil size={16} />
@@ -193,15 +228,15 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             {/* Delete button - always available for creator */}
             <button
               onClick={() => onDelete?.(id)}
-              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
+              className="px-4 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
               title={t('rewards.rewardCard.deleteButton')}
             >
               <Trash2 size={16} />
               <span className="text-sm">Delete</span>
             </button>
           </div>
-        ) : (
-          <button 
+        ) : view === 'collected' ? null : (
+          <button
             onClick={() => onAction?.(id)}
             className={`w-full px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold rounded-lg transition-all ${
               canAfford && view === 'available'

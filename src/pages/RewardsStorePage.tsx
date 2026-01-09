@@ -188,41 +188,16 @@ const RewardsStorePage: React.FC = () => {
         );
       }
 
+      // R33: Use same grid layout as Available/My Bounties for consistency
       return (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
           {collectedRewards.map((reward) => (
-            <BaseCard key={reward.collection_id} className="transition-all duration-200 hover:shadow-lg">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex-1">
-                  <h3 className="text-subtitle text-white font-semibold mb-1">{reward.name}</h3>
-                  {reward.description && (
-                    <p className="text-body text-white/70 mb-2 line-clamp-2">{reward.description}</p>
-                  )}
-                  <p className="text-meta text-white/60">
-                    Collected {new Date(reward.collected_at).toLocaleDateString(undefined, { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                {reward.image_url && (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800/50 flex items-center justify-center">
-                    {reward.image_url.startsWith('http') ? (
-                      <img
-                        src={reward.image_url}
-                        alt={reward.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-4xl">{reward.image_url}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </BaseCard>
+            <RewardCard
+              key={reward.collection_id}
+              reward={reward as Reward}
+              view="collected"
+              collectedAt={reward.collected_at}
+            />
           ))}
         </div>
       );
