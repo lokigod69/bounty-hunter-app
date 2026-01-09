@@ -159,17 +159,15 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
                 <span className="text-sm">Edit</span>
               </button>
             )}
-            {/* Delete button - only for Redeemed items */}
-            {!is_active && (
-              <button
-                onClick={() => onDelete?.(id)}
-                className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
-                title={t('rewards.rewardCard.deleteButton')}
-              >
-                <Trash2 size={16} />
-                <span className="text-sm">Delete</span>
-              </button>
-            )}
+            {/* Delete button - always available for creator */}
+            <button
+              onClick={() => onDelete?.(id)}
+              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
+              title={t('rewards.rewardCard.deleteButton')}
+            >
+              <Trash2 size={16} />
+              <span className="text-sm">Delete</span>
+            </button>
           </div>
         ) : (
           <button 

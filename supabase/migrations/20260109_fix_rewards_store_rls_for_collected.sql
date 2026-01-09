@@ -48,17 +48,8 @@ TO authenticated
 USING (
   -- Creator can always read their own bounties (for My Bounties management)
   creator_id = auth.uid()
-
-  -- Assignee can read their assigned bounties while they're active (Available tab)
-  OR (assigned_to = auth.uid() AND is_active = true)
-
-  -- Collector can read bounties they collected (Collected tab), even after deactivation
-  OR EXISTS (
-    SELECT 1
-    FROM public.collected_rewards cr
-    WHERE cr.reward_id = rewards_store.id
-      AND cr.collector_id = auth.uid()
-  )
+  -- Assignee can always read their assigned bounties (active for Available, inactive for Collected)
+  OR assigned_to = auth.uid()
 );
 
 -- ============================================================
