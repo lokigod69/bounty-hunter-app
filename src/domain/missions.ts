@@ -320,13 +320,15 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
 
 /**
  * Archives a mission.
+ * Sets is_archived = true (not status = 'archived') so History tab query works.
+ * Only creators can archive their own tasks.
  */
 export async function archiveMission(params: ArchiveMissionParams): Promise<void> {
   const { missionId, userId, supabaseClient = supabase } = params;
 
   const { error } = await supabaseClient
     .from('tasks')
-    .update({ status: 'archived' })
+    .update({ is_archived: true })
     .eq('id', missionId)
     .eq('created_by', userId); // Only creator can archive
 

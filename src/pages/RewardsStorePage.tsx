@@ -51,20 +51,21 @@ const RewardsStorePage: React.FC = () => {
 
   useEffect(() => {
     fetchRewards();
-  }, [fetchRewards]);
+    fetchCollectedRewards(); // Always fetch so we can exclude from Available
+  }, [fetchRewards, fetchCollectedRewards]);
 
-  useEffect(() => {
-    if (activeTab === 'collected') {
-      fetchCollectedRewards();
-    }
-  }, [activeTab, fetchCollectedRewards]);
+  // Set of already-collected reward IDs to exclude from Available
+  const collectedRewardIds = useMemo(() => {
+    return new Set(collectedRewards.map(r => r.id));
+  }, [collectedRewards]);
 
   // P4: Calculate affordable rewards and distance to next reward
   const { affordableCount, cheapestUnaffordable } = useMemo(() => {
     const currentCredits = userCredits ?? 0;
     const availableRewards = rewards.filter(reward => {
       if (activeTab === 'available') {
-        return reward.assigned_to === user?.id;
+        // Assigned to me AND not already collected
+        return reward.assigned_to === user?.id && !collectedRewardIds.has(reward.id);
       }
       if (activeTab === 'created') {
         return reward.creator_id === user?.id;
@@ -74,7 +75,7 @@ const RewardsStorePage: React.FC = () => {
 
     const affordable = availableRewards.filter(r => (r.credit_cost || 0) <= currentCredits);
     const unaffordable = availableRewards.filter(r => (r.credit_cost || 0) > currentCredits);
-    const cheapest = unaffordable.length > 0 
+    const cheapest = unaffordable.length > 0
       ? unaffordable.reduce((min, r) => (r.credit_cost || 0) < (min.credit_cost || 0) ? r : min, unaffordable[0])
       : null;
 
@@ -82,14 +83,12 @@ const RewardsStorePage: React.FC = () => {
       affordableCount: affordable.length,
       cheapestUnaffordable: cheapest,
     };
-  }, [rewards, userCredits, activeTab, user?.id]);
+  }, [rewards, userCredits, activeTab, user?.id, collectedRewardIds]);
 
   const handleRefresh = async () => {
     await fetchRewards();
     refetchCredits(); // R29: Always refresh credits on pull-to-refresh
-    if (activeTab === 'collected') {
-      await fetchCollectedRewards();
-    }
+    await fetchCollectedRewards(); // Always fetch to update exclusion filter
   };
 
   const handleClaim = async (rewardId: string) => {
@@ -228,8 +227,8 @@ const RewardsStorePage: React.FC = () => {
     // Handle available and created tabs (use rewards from rewards_store)
     const filteredRewards = rewards.filter(reward => {
       if (activeTab === 'available') {
-        // Bounties assigned to the current user by others
-        return reward.assigned_to === user?.id;
+        // Bounties assigned to the current user by others AND not already collected
+        return reward.assigned_to === user?.id && !collectedRewardIds.has(reward.id);
       }
       if (activeTab === 'created') {
         // Bounties created by the current user for others
