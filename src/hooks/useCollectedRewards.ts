@@ -17,14 +17,7 @@ import { toast } from 'react-hot-toast';
 
 export interface CollectedReward extends Reward {
   collected_at: string;
-  collection_id: string; 
-}
-
-// Type for the raw data returned by the Supabase query, matching the select string
-interface CollectedRewardQueryResult {
   collection_id: string;
-  collected_at: string;
-  rewards_store: Reward[] | null; // Changed from 'bounties'
 }
 
 export interface UseCollectedRewardsReturn {
@@ -49,40 +42,61 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase
-        .from('collected_rewards') // Changed from 'collected_bounties'
-        .select(`
-          collection_id:id,
-          collected_at,
-          rewards_store (*) 
-        `) // Changed from 'bounties (*)'
+      // Two-step query to avoid silent join failures from RLS
+      // Step 1: Get collected_rewards rows (collector always has RLS access)
+      const { data: collectedRows, error: crError } = await supabase
+        .from('collected_rewards')
+        .select('id, reward_id, collector_id, collected_at')
         .eq('collector_id', user.id)
         .order('collected_at', { ascending: false });
 
-      if (rpcError) {
-        throw rpcError;
+      if (crError) {
+        throw crError;
       }
 
-      if (data) {
-        const queryData = data as CollectedRewardQueryResult[];
-        const transformedData: CollectedReward[] = queryData
-          .map((item) => {
-            const rewardDetail = item.rewards_store && item.rewards_store.length > 0 ? item.rewards_store[0] : null;
-            if (!rewardDetail) {
-              return null;
-            }
-            return {
-              ...rewardDetail,
-              collected_at: item.collected_at,
-              collection_id: item.collection_id,
-            };
-          })
-          .filter((reward): reward is CollectedReward => reward !== null);
-        setCollectedRewards(transformedData);
+      if (!collectedRows || collectedRows.length === 0) {
+        setCollectedRewards([]);
+        return;
       }
+
+      // Step 2: Fetch reward details by ID (RLS should allow assignee to read)
+      const rewardIds = collectedRows.map(row => row.reward_id).filter(Boolean) as string[];
+
+      if (rewardIds.length === 0) {
+        setCollectedRewards([]);
+        return;
+      }
+
+      const { data: rewards, error: rError } = await supabase
+        .from('rewards_store')
+        .select('*')
+        .in('id', rewardIds);
+
+      if (rError) {
+        throw rError;
+      }
+
+      // Step 3: Merge client-side
+      const rewardsMap = new Map((rewards || []).map(r => [r.id, r]));
+      const transformedData: CollectedReward[] = collectedRows
+        .map((row) => {
+          const rewardDetail = row.reward_id ? rewardsMap.get(row.reward_id) : null;
+          if (!rewardDetail) {
+            console.warn('[useCollectedRewards] Reward not found for collection:', row.id, 'reward_id:', row.reward_id);
+            return null;
+          }
+          return {
+            ...rewardDetail,
+            collected_at: row.collected_at,
+            collection_id: row.id,
+          };
+        })
+        .filter((reward): reward is CollectedReward => reward !== null);
+
+      setCollectedRewards(transformedData);
 
     } catch (err) {
-      let errorMessage = 'Failed to fetch collected rewards.'; // Changed message
+      let errorMessage = 'Failed to fetch collected rewards.';
       if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'string') {
