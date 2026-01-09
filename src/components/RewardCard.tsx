@@ -113,7 +113,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       <div className="p-3 sm:p-4 md:p-5 flex-grow flex flex-col min-h-0">
         <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 sm:mb-2 line-clamp-2" title={name}>{name}</h3>
         {description && (
-          <p className="text-sm text-white/70 line-clamp-2 flex-grow">{description}</p>
+          <p className="text-sm text-white/70 flex-grow">{description}</p>
         )}
       </div>
       

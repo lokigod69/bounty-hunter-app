@@ -198,6 +198,7 @@
       "descriptionPlaceholder": "Description",
       "creditCostPlaceholder": "Credit Cost",
       "useEmoji": "Use Emoji",
+      "useImageUrl": "Use URL",
       "cancelButton": "Cancel",
       "submitButton": "Create Bounty",
       "submittingButton": "Creating..."
