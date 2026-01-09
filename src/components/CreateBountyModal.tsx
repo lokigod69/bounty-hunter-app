@@ -149,9 +149,9 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
   return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop backdrop-blur-sm">
-      <div className="bg-gray-900 w-full max-h-[90vh] sm:max-h-[85vh] md:h-auto md:max-h-[90vh] md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content pb-safe">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          {/* Header with enhanced mobile spacing */}
+      <div className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content">
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          {/* Header - fixed at top */}
           <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
             <h2 className="text-lg sm:text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
@@ -159,10 +159,15 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             </button>
           </div>
 
-          {/* Form Content (scrollable) with iOS Safari scroll fix */}
+          {/* Single scroll container - iOS Safari optimized */}
           <div
-            className="flex-grow overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
-            style={{ WebkitOverflowScrolling: 'touch' }}
+            className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+            style={{
+              maxHeight: 'calc(100dvh - 200px)',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+            }}
           >
             <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
 
@@ -259,8 +264,11 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             </div>
           </div>
 
-          {/* Footer with enhanced mobile button layout */}
-          <div className="p-3 sm:p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+          {/* Sticky footer - always visible on iOS Safari */}
+          <div
+            className="p-3 sm:p-4 bg-gray-900 border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0"
+            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          >
             <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold min-h-[48px] sm:min-h-[auto] text-base sm:text-sm" disabled={isLoading || isUploading}>
               {t('rewards.createModal.cancelButton')}
             </button>

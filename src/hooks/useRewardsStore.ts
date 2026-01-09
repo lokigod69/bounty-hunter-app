@@ -131,9 +131,9 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
 
     try {
       const { purchaseReward: purchaseRewardDomain } = await import('../domain/rewards');
+      // RPC uses auth.uid() internally for security
       const result = await purchaseRewardDomain({
         rewardId,
-        userId: user.id,
       });
 
       if (!result.success) {
