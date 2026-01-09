@@ -6,7 +6,7 @@
 import React from 'react';
 
 export type CoinVariant = 'static' | 'subtle-spin' | 'flip-loop';
-export type CoinSize = 'sm' | 'md' | 'lg' | 'xl';
+export type CoinSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface CoinProps {
   /** Optional value to display on the coin face */
@@ -24,7 +24,8 @@ export interface CoinProps {
 }
 
 // Size configurations
-const sizeConfig = {
+const sizeConfig: Record<CoinSize, { dimension: number; fontSize: number; strokeWidth: number; emblemSize: number }> = {
+  xs: { dimension: 24, fontSize: 8, strokeWidth: 1, emblemSize: 10 },
   sm: { dimension: 32, fontSize: 10, strokeWidth: 1.5, emblemSize: 12 },
   md: { dimension: 48, fontSize: 14, strokeWidth: 2, emblemSize: 16 },
   lg: { dimension: 64, fontSize: 18, strokeWidth: 2.5, emblemSize: 20 },
