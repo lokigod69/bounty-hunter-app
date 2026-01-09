@@ -34,7 +34,8 @@ interface EmojiPickerProps {
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ selectedEmoji, onSelect }) => {
   return (
     <div className="p-2 bg-gray-800/50 rounded-lg border border-gray-700">
-      <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-2 max-h-40 md:max-h-48 overflow-y-auto pr-2">
+      {/* No max-height/overflow here - let parent scroll container handle scrolling (iOS Safari fix) */}
+      <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-2">
         {BOUNTY_ICONS.map(({ emoji, label }) => (
           <button
             key={emoji}

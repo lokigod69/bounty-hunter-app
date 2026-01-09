@@ -87,6 +87,10 @@ interface MissionModalShellProps {
     onClick: () => void;
     loading?: boolean;
   };
+  archiveAction?: {
+    onClick: () => void;
+    loading?: boolean;
+  };
 
   // Custom content
   children?: React.ReactNode;
@@ -126,6 +130,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   primaryAction,
   secondaryAction,
   deleteAction,
+  archiveAction,
   children,
 }) => {
   const { openModal, clearLayer } = useUI();
@@ -527,6 +532,19 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 className="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
               >
                 {deleteAction.loading ? 'Deleting...' : 'Delete mission'}
+              </button>
+            </div>
+          )}
+
+          {/* Archive Action (Ghost button for completed tasks - both creator and assignee) */}
+          {archiveAction && (
+            <div className="flex justify-center pt-2 border-t border-white/5">
+              <button
+                onClick={archiveAction.onClick}
+                disabled={archiveAction.loading}
+                className="px-4 py-2 text-sm text-slate-400 hover:text-slate-300 hover:bg-slate-500/10 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {archiveAction.loading ? 'Archiving...' : 'Move to History'}
               </button>
             </div>
           )}

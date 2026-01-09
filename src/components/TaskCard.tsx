@@ -35,6 +35,7 @@ interface TaskCardProps {
   onDeleteTaskRequest: (taskId: string) => void;
   onApprove?: (taskId: string) => void;
   onReject?: (taskId: string) => void;
+  onArchive?: (taskId: string) => Promise<void>; // Archive action for completed tasks
   uploadProgress: number;
   actionLoading?: boolean;
   onEditTaskRequest?: (task: AssignedContract) => void;
@@ -91,6 +92,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onDeleteTaskRequest,
   onApprove,
   onReject,
+  onArchive, // Archive action for completed tasks
   uploadProgress,
   actionLoading: externalActionLoading,
   onEditTaskRequest,
@@ -252,6 +254,24 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 onClick: () => {
                   handleClose();
                   onDeleteTaskRequest(id);
+                },
+                loading: actionLoading,
+              }
+            : undefined
+        }
+        archiveAction={
+          // Show archive button for completed tasks (both creator and assignee)
+          safeStatus === 'completed' && !isArchived && onArchive
+            ? {
+                onClick: async () => {
+                  setInternalActionLoading(true);
+                  try {
+                    await onArchive(id);
+                    handleClose();
+                    if (refetchTasks) refetchTasks();
+                  } finally {
+                    setInternalActionLoading(false);
+                  }
                 },
                 loading: actionLoading,
               }

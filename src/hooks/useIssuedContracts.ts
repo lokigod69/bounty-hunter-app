@@ -44,7 +44,8 @@ export function useIssuedContracts() {
           creator:profiles!tasks_created_by_fkey(display_name, avatar_url),
           assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url)
         `)
-        .eq('created_by', user.id);
+        .eq('created_by', user.id)
+        .eq('is_archived', false);
 
       if (fetchError) {
         console.error('Error fetching issued contracts:', fetchError);

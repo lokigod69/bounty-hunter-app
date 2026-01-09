@@ -28,9 +28,9 @@ interface RewardCardProps {
 
 const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0 }) => {
   const { t } = useTranslation();
-  const { theme, themeId } = useTheme();
+  const { themeId } = useTheme();
   const { strings } = useThemeStrings();
-  const { id, name, description, image_url, credit_cost } = reward;
+  const { id, name, description, image_url, credit_cost, is_active } = reward;
   const [imageError, setImageError] = useState(false);
   // R27: Lightbox state for full image view
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -132,25 +132,44 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           )}
         </div>
         
+        {/* Status badge for created view */}
+        {view === 'created' && (
+          <div className="flex justify-center mb-2">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+              is_active
+                ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                : 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
+            }`}>
+              {is_active ? 'Active' : 'Redeemed'}
+            </span>
+          </div>
+        )}
+
         {/* Action button - mobile optimized tap target */}
         {view === 'created' ? (
           <div className="flex gap-2">
-            <button 
-              onClick={() => onEdit?.(reward)}
-              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
-              title={t('rewards.rewardCard.editButton')}
-            >
-              <Pencil size={16} />
-              <span className="text-sm">Edit</span>
-            </button>
-            <button 
-              onClick={() => onDelete?.(id)}
-              className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
-              title={t('rewards.rewardCard.deleteButton')}
-            >
-              <Trash2 size={16} />
-              <span className="text-sm">Delete</span>
-            </button>
+            {/* Edit button - only for Active items */}
+            {is_active && (
+              <button
+                onClick={() => onEdit?.(reward)}
+                className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-gray-700/50"
+                title={t('rewards.rewardCard.editButton')}
+              >
+                <Pencil size={16} />
+                <span className="text-sm">Edit</span>
+              </button>
+            )}
+            {/* Delete button - only for Redeemed items */}
+            {!is_active && (
+              <button
+                onClick={() => onDelete?.(id)}
+                className="flex-1 px-3 py-2.5 sm:py-2 min-h-[44px] flex items-center justify-center gap-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors border border-gray-700/50"
+                title={t('rewards.rewardCard.deleteButton')}
+              >
+                <Trash2 size={16} />
+                <span className="text-sm">Delete</span>
+              </button>
+            )}
           </div>
         ) : (
           <button 

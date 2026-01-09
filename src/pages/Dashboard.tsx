@@ -31,7 +31,7 @@ import { PageBody } from '../components/layout/PageBody';
 import { useUI } from '../context/UIContext';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import { updateMissionStatus, uploadProof, submitForReviewNoProof } from '../domain/missions';
+import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -110,6 +110,34 @@ export default function Dashboard() {
       }
       toast.error(message, { id: toastId });
       return false;
+    }
+  };
+
+  // Archive handler for completed tasks
+  const handleArchive = async (taskId: string): Promise<void> => {
+    if (!user) {
+      toast.error('You must be logged in to archive tasks.');
+      return;
+    }
+
+    const toastId = `archive-${taskId}`;
+    toast.loading('Moving to History...', { id: toastId });
+
+    try {
+      await archiveMission({
+        missionId: taskId,
+        userId: user.id,
+      });
+
+      toast.success('Task moved to History!', { id: toastId });
+      if (refetchAssignedContracts) refetchAssignedContracts();
+    } catch (error: unknown) {
+      console.error('Archive failed:', error);
+      let message = 'Failed to archive task. Please try again.';
+      if (error instanceof Error) {
+        message = error.message || message;
+      }
+      toast.error(message, { id: toastId });
     }
   };
 
@@ -439,6 +467,7 @@ export default function Dashboard() {
                     uploadProgress={0}
                     onDeleteTaskRequest={handleDeleteTaskRequest}
                     refetchTasks={refetchAssignedContracts}
+                    onArchive={handleArchive}
                   />
                 ))}
               </div>

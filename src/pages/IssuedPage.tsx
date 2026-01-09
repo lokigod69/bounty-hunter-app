@@ -44,7 +44,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
-import { approveMission, rejectMission } from '../domain/missions';
+import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 
@@ -221,6 +221,32 @@ export default function IssuedPage() {
     } finally {
       setRejectingTaskId(null);
       isRejectingRef.current = false;
+    }
+  };
+
+  // Archive handler for completed tasks
+  const handleArchive = async (taskId: string): Promise<void> => {
+    if (!user) {
+      toast.error(t('contracts.mustBeLoggedIn'));
+      return;
+    }
+
+    const toastId = `archive-${taskId}`;
+    toast.loading('Moving to History...', { id: toastId });
+
+    try {
+      await archiveMission({
+        missionId: taskId,
+        userId: user.id,
+      });
+
+      toast.success('Task moved to History!', { id: toastId });
+      await refetchIssuedContracts();
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Failed to archive task.';
+      toast.error(errorMessage, { id: toastId });
     }
   };
 
@@ -554,6 +580,8 @@ export default function IssuedPage() {
                           onDeleteTaskRequest={handleDeleteTaskRequest}
                           actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
                           onEditTaskRequest={handleEditTaskRequest}
+                          refetchTasks={refetchIssuedContracts}
+                          onArchive={handleArchive}
                         />
                       ))}
                     </div>
