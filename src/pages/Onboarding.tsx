@@ -1,6 +1,7 @@
 // src/pages/Onboarding.tsx
 // P2: First-Time Experience wizard - guides new users through setup
-// Rebuilt with proper hook order - all hooks at top level
+// R35: Streamlined to 3 steps: Choose Mode → Invite Friend → Learn How to Create Missions
+// Removed "Create First Reward" step (requires friends) and "Create First Mission" (self-assign is confusing)
 
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -13,23 +14,20 @@ import { Check } from 'lucide-react';
 
 // Step components
 import OnboardingStep1Mode from '../components/onboarding/OnboardingStep1Mode';
-import OnboardingStep2Reward from '../components/onboarding/OnboardingStep2Reward';
-import OnboardingStep3Invite from '../components/onboarding/OnboardingStep3Invite';
-import OnboardingStep4Mission from '../components/onboarding/OnboardingStep4Mission';
+import OnboardingStep2Invite from '../components/onboarding/OnboardingStep3Invite'; // Renamed import
+import OnboardingStep3Explainer from '../components/onboarding/OnboardingStep4Mission'; // Will be converted to explainer
 
-type OnboardingStep = 1 | 2 | 3 | 4;
+type OnboardingStep = 1 | 2 | 3;
 
 interface OnboardingState {
   themeId: ThemeId | null;
-  firstRewardId: string | null;
   invitedUserId: string | null;
-  assigneeChoice: 'self' | 'invited' | null;
 }
 
 export default function Onboarding() {
   // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
-  const { 
-    profile, 
+  const {
+    profile,
     authLoading,
     hasSession,
   } = useAuth();
@@ -37,9 +35,7 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
   const [state, setState] = useState<OnboardingState>({
     themeId: null,
-    firstRewardId: null,
     invitedUserId: null,
-    assigneeChoice: null,
   });
 
   // NO HOOKS BELOW THIS LINE - only conditional returns and handlers
@@ -65,33 +61,18 @@ export default function Onboarding() {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. DO NOT block on profileLoading anymore.
-  //    Profile is nice-to-have for prefilling, but not required to render the wizard.
-  //    The wizard will render regardless of profile state.
-  //    Profile bootstrap continues in the background via useAuth effect.
-
   // Step handlers
   const handleStep1Complete = (themeId: ThemeId) => {
     setState(prev => ({ ...prev, themeId }));
     setCurrentStep(2);
   };
 
-  const handleStep2Complete = (rewardId: string) => {
-    // rewardId can be empty string if user skipped
-    setState(prev => ({ ...prev, firstRewardId: rewardId || null }));
+  const handleStep2Complete = (invitedUserId: string | null) => {
+    setState(prev => ({ ...prev, invitedUserId }));
     setCurrentStep(3);
   };
 
-  const handleStep3Complete = (invitedUserId: string | null) => {
-    setState(prev => ({ 
-      ...prev, 
-      invitedUserId, 
-      assigneeChoice: invitedUserId ? 'invited' : 'self' 
-    }));
-    setCurrentStep(4);
-  };
-
-  const handleStep4Complete = () => {
+  const handleStep3Complete = () => {
     // Mark onboarding as completed
     localStorage.setItem('bounty_onboarding_completed', 'true');
     // Navigate to Mission Inbox (Dashboard)
@@ -110,19 +91,17 @@ export default function Onboarding() {
     }
   };
 
-  // Step titles and descriptions
+  // Step titles and descriptions - R35: Updated for 3-step flow
   const stepTitles = [
     'Choose Your World',
-    'Create Your First Reward',
     'Invite Someone (Optional)',
-    'Create Your First Mission',
+    'How Missions Work',
   ];
 
   const stepDescriptions = [
     'Select a theme that matches how you\'ll use Bounty Hunter.',
-    'Set up a reward that missions can earn towards.',
     'Invite a friend, family member, or partner to share missions with.',
-    'This is what you\'ll assign to yourself or your partner to earn tokens.',
+    'Here\'s how you\'ll create and assign missions.',
   ];
 
   // Render onboarding wizard
@@ -135,10 +114,10 @@ export default function Onboarding() {
         subtitle={stepDescriptions[currentStep - 1]}
       />
 
-      {/* Progress indicator */}
+      {/* Progress indicator - R35: Now only 3 steps */}
       <div className="mb-8">
         <div className="flex items-center justify-center gap-2">
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3].map((step) => (
             <div key={step} className="flex items-center">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
@@ -151,7 +130,7 @@ export default function Onboarding() {
               >
                 {step < currentStep ? <Check size={20} /> : step}
               </div>
-              {step < 4 && (
+              {step < 3 && (
                 <div
                   className={`w-12 h-1 mx-1 transition-all ${
                     step < currentStep ? 'bg-teal-500' : 'bg-gray-700'
@@ -175,7 +154,6 @@ export default function Onboarding() {
         </div>
 
         {/* Step content */}
-        {/* Profile is optional - used only for prefilling, wizard works without it */}
         {currentStep === 1 && (
           <OnboardingStep1Mode
             currentThemeId={state.themeId || profileThemeId || null}
@@ -184,26 +162,16 @@ export default function Onboarding() {
         )}
 
         {currentStep === 2 && (
-          <OnboardingStep2Reward
+          <OnboardingStep2Invite
             onComplete={handleStep2Complete}
+            onSkip={() => handleStep2Complete(null)}
             onBack={handleBack}
           />
         )}
 
         {currentStep === 3 && (
-          <OnboardingStep3Invite
+          <OnboardingStep3Explainer
             onComplete={handleStep3Complete}
-            onSkip={() => handleStep3Complete(null)}
-            onBack={handleBack}
-          />
-        )}
-
-        {currentStep === 4 && (
-          <OnboardingStep4Mission
-            firstRewardId={state.firstRewardId}
-            invitedUserId={state.invitedUserId}
-            assigneeChoice={state.assigneeChoice}
-            onComplete={handleStep4Complete}
             onBack={handleBack}
           />
         )}

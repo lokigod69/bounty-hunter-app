@@ -1,226 +1,149 @@
 // src/components/onboarding/OnboardingStep4Mission.tsx
-// P2: Onboarding Step 4 - Create First Mission
+// R35: Converted to educational explainer - shows how missions work without creating one
+// Read-only walkthrough of the mission creation form with field explanations
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useFriends } from '../../hooks/useFriends';
-import { useTheme } from '../../context/ThemeContext';
 import { useThemeStrings } from '../../hooks/useThemeStrings';
-import { supabase } from '../../lib/supabase';
 import { BaseCard } from '../ui/BaseCard';
-import { ArrowRight, ArrowLeft, Target, AlertTriangle } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import type { TaskStatus } from '../../pages/IssuedPage';
+import { ArrowLeft, Home, Target, Users, FileText, Clock, Coins, Camera, Info } from 'lucide-react';
 
 interface OnboardingStep4MissionProps {
-  firstRewardId: string | null;
-  invitedUserId: string | null;
-  assigneeChoice: 'self' | 'invited' | null;
+  // R35: Simplified props - no longer needs reward/invite state
+  firstRewardId?: string | null;
+  invitedUserId?: string | null;
+  assigneeChoice?: 'self' | 'invited' | null;
   onComplete: () => void;
   onBack: () => void;
 }
 
 export default function OnboardingStep4Mission({
-  invitedUserId,
-  assigneeChoice,
   onComplete,
   onBack,
 }: OnboardingStep4MissionProps) {
-  const { user } = useAuth();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
-  const { friends } = useFriends(user?.id);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState<string>('');
-  const [isCreating, setIsCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
 
-  // Set default assignee based on onboarding state
-  useEffect(() => {
-    if (!user) return;
-
-    if (assigneeChoice === 'invited' && invitedUserId) {
-      setAssignedTo(invitedUserId);
-    } else {
-      // Default to self
-      setAssignedTo(user.id);
-    }
-  }, [user, assigneeChoice, invitedUserId]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!user || !title || !assignedTo) {
-      toast.error('Please fill in all required fields.');
-      return;
-    }
-
-    setIsCreating(true);
-
-    try {
-      const newTask = {
-        title,
-        description: description || null,
-        assigned_to: assignedTo,
-        created_by: user.id,
-        status: 'pending' as TaskStatus,
-        reward_type: 'credit',
-        reward_text: '10', // Default credit amount for onboarding
-        proof_required: false,
-      };
-
-      const { error } = await supabase
-        .from('tasks')
-        .insert([newTask])
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success(`${strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)} created! You're all set.`);
-      setCreateError(null);
-      onComplete();
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to create mission. Please try again.';
-      setCreateError(errorMsg);
-      toast.error(errorMsg);
-      setIsCreating(false);
-    }
-  };
-
-  // Get assignee options
-  const assigneeOptions = [
-    { id: user?.id || '', label: 'Myself', value: user?.id || '' },
-    ...(invitedUserId && friends.some(f => f.friend.id === invitedUserId)
-      ? [{ id: invitedUserId, label: friends.find(f => f.friend.id === invitedUserId)?.friend.display_name || 'Invited Friend', value: invitedUserId }]
-      : []),
+  // Field explanations for the mission creation form
+  const fieldExplanations = [
+    {
+      icon: <FileText size={20} className="text-teal-400" />,
+      label: `${strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)} Title`,
+      example: '"Clean the kitchen" or "Finish homework"',
+      explanation: `Give your ${strings.missionSingular} a clear, descriptive name so the assignee knows exactly what to do.`,
+    },
+    {
+      icon: <Info size={20} className="text-blue-400" />,
+      label: 'Description',
+      example: '"Wash dishes, wipe counters, take out trash"',
+      explanation: 'Add extra details, steps, or requirements. This is optional but helpful for complex tasks.',
+    },
+    {
+      icon: <Users size={20} className="text-purple-400" />,
+      label: 'Assign To',
+      example: 'Select a friend or family member',
+      explanation: `Choose who should complete this ${strings.missionSingular}. You can only assign to people in your ${strings.friendsTitle}.`,
+    },
+    {
+      icon: <Clock size={20} className="text-orange-400" />,
+      label: 'Deadline',
+      example: 'Tomorrow at 5:00 PM',
+      explanation: `Set when the ${strings.missionSingular} should be completed. This is optional but helps with priority.`,
+    },
+    {
+      icon: <Coins size={20} className="text-yellow-400" />,
+      label: `${strings.tokenSingular.charAt(0).toUpperCase() + strings.tokenSingular.slice(1)} Reward`,
+      example: '10 tokens',
+      explanation: `How many ${strings.tokenPlural} the assignee earns when they complete this ${strings.missionSingular}.`,
+    },
+    {
+      icon: <Camera size={20} className="text-pink-400" />,
+      label: 'Proof Required',
+      example: 'Photo of completed task',
+      explanation: `When enabled, the assignee must submit a photo or note as proof before the ${strings.missionSingular} can be approved.`,
+    },
   ];
 
   return (
-    <BaseCard>
-      <div className="space-y-6">
-        <div className="text-center">
-          <Target size={48} className="mx-auto mb-4 text-teal-400" />
-          <p className="text-body text-white/70">
-            Create your first {strings.missionSingular}. This is what you'll assign to yourself or others to earn {strings.tokenPlural}.
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Hero section */}
+      <BaseCard className="text-center">
+        <Target size={48} className="mx-auto mb-4 text-teal-400" />
+        <h3 className="text-subtitle text-white font-semibold mb-2">
+          Creating {strings.missionPlural} is Easy!
+        </h3>
+        <p className="text-body text-white/70">
+          Go to the "{strings.missionsLabel}" tab and tap the + button to create a new {strings.missionSingular}.
+          Here's what each field means:
+        </p>
+      </BaseCard>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="mission-title" className="block text-sm font-medium text-white/70 mb-2">
-              {strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)} Title *
-            </label>
-            <input
-              id="mission-title"
-              type="text"
-              placeholder="e.g., Complete morning routine, Finish project report"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="input-field w-full text-white"
-              required
-              maxLength={100}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="mission-description" className="block text-sm font-medium text-white/70 mb-2">
-              Description (Optional)
-            </label>
-            <textarea
-              id="mission-description"
-              placeholder="Add more details about what needs to be done..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="input-field w-full text-white h-24 resize-none"
-              maxLength={500}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="mission-assignee" className="block text-sm font-medium text-white/70 mb-2">
-              Assign To *
-            </label>
-            <select
-              id="mission-assignee"
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              className="input-field w-full text-white"
-              required
-            >
-              <option value="">Select assignee...</option>
-              {assigneeOptions.map((option) => (
-                <option key={option.id} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-meta text-white/50 mt-1">
-              {assigneeOptions.length > 1
-                ? 'You can assign this to yourself or your invited friend.'
-                : 'Only you for now (invite someone later to assign missions to them).'}
-            </p>
-          </div>
-
-          {createError && (
-            <BaseCard className="bg-red-900/20 border-red-500/30">
-              <div className="flex items-start gap-3">
-                <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-body text-red-400 font-semibold mb-1">Failed to create {strings.missionSingular}</p>
-                  <p className="text-meta text-red-400/70">{createError}</p>
-                </div>
+      {/* Field explanations - displayed as a two-column layout on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {fieldExplanations.map((field, index) => (
+          <BaseCard key={index} className="bg-gray-800/30 border-gray-700/50">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center">
+                {field.icon}
               </div>
-            </BaseCard>
-          )}
-
-          {isCreating && (
-            <div className="text-center text-white/70">
-              Creating {strings.missionSingular}...
+              <div className="flex-1 min-w-0">
+                <h4 className="text-body text-white font-semibold mb-1">
+                  {field.label}
+                </h4>
+                <p className="text-meta text-white/50 italic mb-2">
+                  {field.example}
+                </p>
+                <p className="text-meta text-white/70">
+                  {field.explanation}
+                </p>
+              </div>
             </div>
-          )}
-
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={onBack}
-              className="btn-secondary flex items-center gap-2 flex-1"
-              disabled={isCreating}
-            >
-              <ArrowLeft size={20} />
-              Back
-            </button>
-            <button
-              type="submit"
-              disabled={isCreating || !title || !assignedTo}
-              className="btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Create {strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1)}
-              <ArrowRight size={20} />
-            </button>
-          </div>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => {
-                // Skip creating mission, just mark onboarding complete
-                toast.success(`You can create ${strings.missionPlural} later from the ${strings.missionsLabel} page.`);
-                setCreateError(null);
-                onComplete();
-              }}
-              className="text-meta text-white/50 hover:text-white/70 underline"
-              disabled={isCreating}
-            >
-              Skip, I'll create one later
-            </button>
-          </div>
-        </form>
+          </BaseCard>
+        ))}
       </div>
-    </BaseCard>
+
+      {/* Workflow summary */}
+      <BaseCard className="bg-gradient-to-r from-teal-900/20 to-cyan-900/20 border-teal-500/30">
+        <h3 className="text-body text-white font-semibold mb-4 flex items-center gap-2">
+          <Target size={20} className="text-teal-400" />
+          The {strings.missionSingular} Workflow
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 font-bold flex items-center justify-center mx-auto">1</div>
+            <p className="text-meta text-white/70">You create a {strings.missionSingular}</p>
+          </div>
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 font-bold flex items-center justify-center mx-auto">2</div>
+            <p className="text-meta text-white/70">Assignee completes it</p>
+          </div>
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 font-bold flex items-center justify-center mx-auto">3</div>
+            <p className="text-meta text-white/70">You approve the work</p>
+          </div>
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 font-bold flex items-center justify-center mx-auto">4</div>
+            <p className="text-meta text-white/70">They earn {strings.tokenPlural}!</p>
+          </div>
+        </div>
+      </BaseCard>
+
+      {/* Navigation buttons */}
+      <div className="flex gap-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="btn-secondary flex items-center gap-2 flex-1"
+        >
+          <ArrowLeft size={20} />
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={onComplete}
+          className="btn-primary flex items-center gap-2 flex-1"
+        >
+          <Home size={20} />
+          Enter Dashboard
+        </button>
+      </div>
+    </div>
   );
 }
-
