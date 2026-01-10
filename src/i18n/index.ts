@@ -15,12 +15,15 @@ i18n
     },
     fallbackLng: 'en',
     debug: false,
-    
+
     detection: {
-      order: ['localStorage', 'navigator'],
+      // R35: Only check localStorage - don't auto-detect from browser
+      // This ensures new users get English by default
+      // Users can manually switch language and it will be saved to localStorage
+      order: ['localStorage'],
       caches: ['localStorage']
     },
-    
+
     interpolation: {
       escapeValue: false
     }
