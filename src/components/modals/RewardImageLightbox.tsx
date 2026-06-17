@@ -6,6 +6,7 @@ import React, { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { getOverlayRoot } from '../../lib/overlayRoot';
+import { lockScroll, unlockScroll } from '../../lib/scrollLock';
 
 interface RewardImageLightboxProps {
   isOpen: boolean;
@@ -33,12 +34,13 @@ export const RewardImageLightbox: React.FC<RewardImageLightboxProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      if (isOpen) {
+        unlockScroll();
+      }
     };
   }, [isOpen, handleKeyDown]);
 
@@ -47,7 +49,7 @@ export const RewardImageLightbox: React.FC<RewardImageLightboxProps> = ({
   return createPortal(
     <div
       data-overlay="RewardImageLightbox"
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-critical-overlay flex items-center justify-center p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

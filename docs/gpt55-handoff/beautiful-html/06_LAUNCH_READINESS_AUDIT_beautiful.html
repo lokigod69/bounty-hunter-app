@@ -1,0 +1,447 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=2600, initial-scale=1" />
+  <title>Launch Readiness Audit</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 2600px; height: 1900px; margin: 0; overflow: hidden; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: #19202d;
+      background:
+        linear-gradient(90deg, rgba(25,32,45,.07) 1px, transparent 1px) 0 0 / 80px 80px,
+        linear-gradient(0deg, rgba(25,32,45,.06) 1px, transparent 1px) 0 0 / 80px 80px,
+        #f4f1ea;
+    }
+    .page {
+      position: relative;
+      width: 2600px;
+      height: 1900px;
+      padding: 88px 100px 78px;
+      background:
+        radial-gradient(circle at 18% 20%, color-mix(in srgb, #ef4444 13%, transparent), transparent 28%),
+        radial-gradient(circle at 92% 5%, color-mix(in srgb, #f59e0b 13%, transparent), transparent 22%),
+        linear-gradient(145deg, rgba(255,255,255,.82), rgba(245,246,248,.74));
+    }
+    .topline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 80px;
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 22px;
+      border: 2px solid color-mix(in srgb, #ef4444 45%, #18202d);
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      color: #314052;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .dot { width: 18px; height: 18px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 8px color-mix(in srgb, #ef4444 17%, transparent); }
+    .doc-pill {
+      width: 475px;
+      padding: 18px 22px;
+      border-left: 10px solid #ef4444;
+      background: #18202d;
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 22px 55px rgba(31,35,45,.18);
+      overflow: hidden;
+    }
+    .doc-pill b {
+      display: block;
+      font-size: 24px;
+      line-height: 1.12;
+      overflow-wrap: anywhere;
+    }
+    .doc-pill span { display: block; margin-top: 8px; color: #c5cfdd; font-size: 20px; line-height: 1.18; }
+    h1 {
+      width: 1640px;
+      margin: 40px 0 20px;
+      font-size: 82px;
+      line-height: .98;
+      letter-spacing: 0;
+      color: #111827;
+    }
+    .subtitle {
+      width: 1540px;
+      margin: 0 0 42px;
+      font-size: 34px;
+      line-height: 1.28;
+      color: #526174;
+      font-weight: 500;
+    }
+    .verdict {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 26px;
+      align-items: center;
+      margin-bottom: 46px;
+      padding: 28px 34px;
+      border: 2px solid rgba(25,32,45,.08);
+      border-left: 16px solid #f59e0b;
+      border-radius: 24px;
+      background: rgba(255,255,255,.84);
+      box-shadow: 0 18px 42px rgba(31,35,45,.09);
+    }
+    .verdict-label {
+      color: #111827;
+      font-size: 26px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .verdict-text {
+      color: #253142;
+      font-size: 34px;
+      line-height: 1.23;
+      font-weight: 750;
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 980px 1fr;
+      gap: 54px;
+      align-items: stretch;
+      height: 900px;
+    }
+    .scene {
+      position: relative;
+      min-height: 900px;
+      border-radius: 34px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.96), rgba(243,247,250,.92)),
+        #fff;
+      border: 2px solid rgba(25,32,45,.1);
+      box-shadow: 0 30px 90px rgba(23,31,45,.16);
+      overflow: hidden;
+      padding: 54px;
+    }
+    .scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, color-mix(in srgb, #ef4444 30%, transparent), transparent 36%),
+        linear-gradient(0deg, color-mix(in srgb, #0ea5a4 16%, transparent), transparent 42%);
+      opacity: .62;
+      pointer-events: none;
+    }
+    .scene-content { position: relative; z-index: 1; }
+    .scene-label {
+      color: #5a687b;
+      font-size: 24px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+    .scene h2 {
+      margin: 14px 0 16px;
+      color: #111827;
+      font-size: 52px;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+    .scene p {
+      margin: 0;
+      color: #405166;
+      font-size: 29px;
+      line-height: 1.28;
+      font-weight: 520;
+    }
+    .artifact {
+      position: relative;
+      height: 500px;
+      margin-top: 70px;
+    }
+    .sheet {
+      position: absolute;
+      border-radius: 26px;
+      background: #fff;
+      border: 2px solid rgba(25,32,45,.13);
+      box-shadow: 0 24px 70px rgba(17,24,39,.14);
+    }
+    .sheet.a { inset: 0 74px 104px 0; transform: rotate(-4deg); }
+    .sheet.b { inset: 58px 18px 48px 86px; transform: rotate(3deg); }
+    .sheet.c {
+      inset: 120px 0 0 36px;
+      transform: rotate(-1deg);
+      background: linear-gradient(180deg, #172033, #222b40);
+      border-color: rgba(255,255,255,.16);
+      color: white;
+      padding: 42px;
+    }
+    .sheet-tab {
+      width: 150px;
+      height: 18px;
+      margin-bottom: 28px;
+      border-radius: 999px;
+      background: #ef4444;
+    }
+    .line { height: 17px; border-radius: 999px; background: rgba(255,255,255,.28); margin: 20px 0; }
+    .line.short { width: 58%; }
+    .line.mid { width: 78%; }
+    .nodes {
+      position: absolute;
+      left: 58px;
+      right: 58px;
+      bottom: 54px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      z-index: 2;
+    }
+    .node {
+      min-height: 98px;
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.86);
+      border: 2px solid rgba(25,32,45,.09);
+      box-shadow: 0 14px 28px rgba(17,24,39,.08);
+      font-size: 20px;
+      line-height: 1.18;
+      color: #334155;
+      font-weight: 750;
+    }
+    .node:nth-child(1) { border-top: 8px solid #ef4444; }
+    .node:nth-child(2) { border-top: 8px solid #0ea5a4; }
+    .node:nth-child(3) { border-top: 8px solid #f59e0b; }
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+    }
+    .card {
+      min-height: 236px;
+      padding: 32px 34px;
+      border-radius: 26px;
+      background: rgba(255,255,255,.88);
+      border: 2px solid rgba(25,32,45,.09);
+      box-shadow: 0 18px 45px rgba(31,35,45,.09);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: linear-gradient(90deg, #ef4444, #0ea5a4, #f59e0b);
+    }
+    .card-num {
+      display: inline-flex;
+      width: 58px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #18202d;
+      color: white;
+      font-size: 22px;
+      font-weight: 850;
+    }
+    .card h3 {
+      margin: 22px 0 12px;
+      color: #111827;
+      font-size: 34px;
+      line-height: 1.08;
+    }
+    .card p {
+      margin: 0;
+      color: #516174;
+      font-size: 25px;
+      line-height: 1.32;
+      font-weight: 510;
+    }
+    .lanes {
+      margin-top: 28px;
+      padding: 28px;
+      border-radius: 30px;
+      border: 2px solid rgba(25,32,45,.09);
+      background: rgba(24,32,45,.94);
+      color: white;
+      box-shadow: 0 24px 60px rgba(31,35,45,.16);
+    }
+    .lane {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 22px;
+      min-height: 88px;
+      align-items: start;
+      padding: 18px 8px;
+      border-bottom: 1px solid rgba(255,255,255,.11);
+    }
+    .lane:last-child { border-bottom: none; }
+    .lane-marker {
+      width: 22px;
+      height: 22px;
+      margin-top: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 0 8px color-mix(in srgb, #ef4444 20%, transparent);
+    }
+    .lane strong {
+      display: block;
+      margin-bottom: 7px;
+      color: white;
+      font-size: 28px;
+      line-height: 1.06;
+    }
+    .lane span {
+      display: block;
+      color: #c7d2e2;
+      font-size: 23px;
+      line-height: 1.25;
+      font-weight: 500;
+    }
+    .footer {
+      position: absolute;
+      left: 100px;
+      right: 100px;
+      bottom: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #69788b;
+      font-size: 23px;
+      font-weight: 650;
+    }
+    .footer .bar {
+      flex: 1;
+      height: 3px;
+      margin: 0 34px;
+      background: linear-gradient(90deg, #ef4444, #0ea5a4, #f59e0b);
+      border-radius: 999px;
+      opacity: .8;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="topline">
+      <div>
+        <div class="kicker"><span class="dot"></span> GPT-5.5 Handoff Visual 06</div>
+        <h1>Launch Readiness Audit</h1>
+        <p class="subtitle">The release gate: blockers, private beta risks, public launch risks, tests, and minimum fix set.</p>
+      </div>
+      <div class="doc-pill">
+        <b>06_LAUNCH_READINESS_AUDIT.md</b>
+        <span>Beautiful briefing PNG generated from the handoff document.</span>
+      </div>
+    </section>
+
+    <section class="verdict">
+      <div class="verdict-label">Core read</div>
+      <div class="verdict-text">Not launchable. Private beta is reachable only after the minimum security, data, storage, migration, email, and test fixes.</div>
+    </section>
+
+    <section class="main">
+      <div class="scene">
+        <div class="scene-content">
+          <div class="scene-label">Launch gate</div>
+          <h2>The app can build, but core trust boundaries are not ready for real users until launch blockers are closed and tested.</h2>
+          <p>The app can build, but core trust boundaries are not ready for real users until launch blockers are closed and tested.</p>
+          <div class="artifact" aria-hidden="true">
+            <div class="sheet a"></div>
+            <div class="sheet b"></div>
+            <div class="sheet c">
+              <div class="sheet-tab"></div>
+              <div class="line mid"></div>
+              <div class="line"></div>
+              <div class="line short"></div>
+              <div class="line mid"></div>
+              <div class="line short"></div>
+            </div>
+          </div>
+        </div>
+        <div class="nodes">
+          <div class="node">Source truth: Markdown handoff</div>
+          <div class="node">Focus: decisions, flows, risks</div>
+          <div class="node">Output: readable visual board</div>
+        </div>
+      </div>
+      <div>
+        <div class="cards">
+    <article class="card card-1">
+      <div class="card-num">01</div>
+      <h3>Critical blockers</h3>
+      <p>Direct credit writes, broad task updates, missing storage migrations, proof mismatch, unsafe fresh migrations, email auth gaps, no tests.</p>
+    </article>
+
+    <article class="card card-2">
+      <div class="card-num">02</div>
+      <h3>Private beta risks</h3>
+      <p>Lint failures, local-only onboarding state, reward assignment ambiguity, RLS inconsistency, orphaned files, public profile emails.</p>
+    </article>
+
+    <article class="card card-3">
+      <div class="card-num">03</div>
+      <h3>Public launch risks</h3>
+      <p>No rate limits, noisy realtime refetches, large bundle, unscanned uploads, no analytics/error tracking/admin visibility.</p>
+    </article>
+
+    <article class="card card-4">
+      <div class="card-num">04</div>
+      <h3>Minimum fix set</h3>
+      <p>Move sensitive mutations to server-owned RPCs, lock RLS/storage, prove migrations, authorize functions, add launch-critical regression tests.</p>
+    </article>
+  </div>
+        <div class="lanes">
+    <div class="lane lane-1">
+      <div class="lane-marker"></div>
+      <div>
+        <strong>Block</strong>
+        <span>Credit balance can be changed by the user through direct table access.</span>
+      </div>
+    </div>
+
+    <div class="lane lane-2">
+      <div class="lane-marker"></div>
+      <div>
+        <strong>Block</strong>
+        <span>Task lifecycle can be tampered with outside the UI.</span>
+      </div>
+    </div>
+
+    <div class="lane lane-3">
+      <div class="lane-marker"></div>
+      <div>
+        <strong>Block</strong>
+        <span>Fresh Supabase setup cannot be trusted until reset passes.</span>
+      </div>
+    </div>
+
+    <div class="lane lane-4">
+      <div class="lane-marker"></div>
+      <div>
+        <strong>Block</strong>
+        <span>Email functions need event-level authorization and escaping.</span>
+      </div>
+    </div>
+
+    <div class="lane lane-5">
+      <div class="lane-marker"></div>
+      <div>
+        <strong>Ship later</strong>
+        <span>Observability, admin tooling, rate limits, bundle budget, richer QA.</span>
+      </div>
+    </div>
+  </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Best use: treat this as the go/no-go checklist before exposing the app to real users.</span>
+      <span class="bar"></span>
+      <span>2600x1900 PNG</span>
+    </footer>
+  </main>
+</body>
+</html>

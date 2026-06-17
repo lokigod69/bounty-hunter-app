@@ -85,12 +85,10 @@ function sanitizeErrorMessage(message: string): string {
 export function getErrorMessage(error: unknown, context?: string): string {
   let message = 'An unexpected error occurred.';
   let code: string | undefined;
-  let details: string | undefined;
   
   if (isErrorWithMessage(error)) {
     message = error.message;
     code = error.code;
-    details = error.details;
   } else if (typeof error === 'string') {
     message = error;
   } else if (error instanceof Error) {
@@ -173,7 +171,10 @@ export function getTaskUpdateError(error: unknown): string {
 
 // Error reporting function for debugging
 // In production, this could be extended to send to an error tracking service
-export function reportError(_error: unknown, _context?: string, _additionalInfo?: Record<string, unknown>): void {
+export function reportError(error: unknown, context?: string, additionalInfo?: Record<string, unknown>): void {
+  void error;
+  void context;
+  void additionalInfo;
   // Intentionally empty in production - can be extended for error tracking services
 }
 

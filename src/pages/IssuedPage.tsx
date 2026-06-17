@@ -45,12 +45,10 @@ import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
-import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
   const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

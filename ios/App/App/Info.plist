@@ -16,12 +16,29 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.bountyhunter.app.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bountyhunter</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Bounty Hunter uses the camera so you can attach proof photos or videos to completed missions.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Bounty Hunter may use the microphone when you record proof videos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Bounty Hunter uses your photo library so you can choose proof and reward images.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

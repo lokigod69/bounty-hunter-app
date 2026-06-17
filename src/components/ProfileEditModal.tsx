@@ -35,6 +35,11 @@ const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: stri
   { id: 'couple', label: 'Couple', icon: Heart, hint: 'For partners & loved ones' },
 ];
 
+// Temporary V1 public gating: Family/Couple remain available in dev for internal testing.
+const VISIBLE_PROFILE_MODE_OPTIONS = import.meta.env.DEV
+  ? modeOptions
+  : modeOptions.filter((option) => option.id === 'guild');
+
 // R16: Helper to derive display name from email
 function deriveDisplayNameFromEmail(email: string | undefined): string {
   if (!email) return 'New User';
@@ -236,7 +241,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
           <div className="w-8"></div> {/* Spacer */}
           <h2 className="text-lg sm:text-xl font-bold text-center flex-grow">{t('profile.edit')}</h2>
-          <button onClick={onClose} className="w-10 h-10 sm:w-8 sm:h-8 p-2 sm:p-1.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-full transition-colors z-modal-controls flex items-center justify-center" aria-label="Close profile edit modal">
+          <button onClick={onClose} className="min-w-[44px] min-h-[44px] w-11 h-11 p-2 bg-gray-800/60 hover:bg-gray-700/80 rounded-full transition-colors z-modal-controls flex items-center justify-center" aria-label="Close profile edit modal">
             <X size={20} />
           </button>
         </div>
@@ -314,7 +319,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               <div className="p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium block mb-3">Mode</label>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
-                  {modeOptions.map((option) => {
+                  {VISIBLE_PROFILE_MODE_OPTIONS.map((option) => {
                     const Icon = option.icon;
                     const isActive = themeId === option.id;
                     return (
@@ -339,7 +344,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 </div>
                 {/* R20: Show hint for currently selected mode */}
                 <p className="text-xs text-white/50 mt-2 text-center">
-                  {modeOptions.find(o => o.id === themeId)?.hint}
+                  {modeOptions.find(o => o.id === themeId)?.hint || 'Guild Mode is the public V1 launch mode.'}
                 </p>
               </div>
             </div>

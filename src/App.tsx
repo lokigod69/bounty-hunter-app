@@ -1,7 +1,7 @@
 // src/App.tsx
 // Main application component, sets up routing.
 // Corrected routing for ProfileEdit.
-// Renamed BountyStorePage to RewardsStorePage and MyCollectedBountiesPage to MyCollectedRewardsPage, and updated routes.
+// Renamed BountyStorePage to RewardsStorePage and redirected My Rewards to the store collected tab.
 // Removed DailyContractsPage route and import.
 // Added IssuedPage route for viewing contracts created by the user.
 // P1: Added ThemeProvider wrapper for theme system support.
@@ -18,7 +18,6 @@ import Friends from './pages/Friends';
 import ArchivePage from './pages/ArchivePage';
 import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
 import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyStorePage
-import MyCollectedRewardsPage from './pages/MyCollectedRewardsPage'; // Renamed from MyCollectedBountiesPage
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import Onboarding from './pages/Onboarding'; // P2: First-Time Experience onboarding flow
 import FTXGate from './components/FTXGate'; // P2: First-Time Experience gate
@@ -93,7 +92,7 @@ export default function App() {
                 <Route path="archive" element={<ArchivePage />} />
                 <Route path="profile/edit" element={<ProfileEdit />} />
                 <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
-                <Route path="my-rewards" element={<MyCollectedRewardsPage />} /> {/* Renamed from my-bounties */}
+                <Route path="my-rewards" element={<Navigate to="/rewards-store?tab=collected" replace />} />
                 <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}
                 {/* Add other protected routes here */}
               </Route>

@@ -8,9 +8,15 @@ import { ThemeId } from '../../theme/theme.types';
 import { BaseCard } from '../ui/BaseCard';
 import { Check, ArrowRight } from 'lucide-react';
 
+const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = ['guild'];
+
 interface OnboardingStep1ModeProps {
   currentThemeId: ThemeId | null;
   onComplete: (themeId: ThemeId) => void;
+}
+
+function getPublicThemeId(themeId: ThemeId | null | undefined): ThemeId {
+  return themeId && PUBLIC_ONBOARDING_THEME_IDS.includes(themeId) ? themeId : 'guild';
 }
 
 export default function OnboardingStep1Mode({
@@ -19,16 +25,12 @@ export default function OnboardingStep1Mode({
 }: OnboardingStep1ModeProps) {
   const { themeId: currentTheme, setThemeId } = useTheme();
   const [selectedThemeId, setSelectedThemeId] = useState<ThemeId | null>(
-    currentThemeId || currentTheme
+    getPublicThemeId(currentThemeId || currentTheme)
   );
 
   // Update selected theme when current theme changes
   useEffect(() => {
-    if (currentThemeId) {
-      setSelectedThemeId(currentThemeId);
-    } else {
-      setSelectedThemeId(currentTheme);
-    }
+    setSelectedThemeId(getPublicThemeId(currentThemeId || currentTheme));
   }, [currentThemeId, currentTheme]);
 
   const handleSelect = (themeId: ThemeId) => {
@@ -50,29 +52,33 @@ export default function OnboardingStep1Mode({
         </p>
 
         <div className="space-y-3">
-          {Object.values(themesById).map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => handleSelect(theme.id)}
-              className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                selectedThemeId === theme.id
-                  ? 'border-teal-400 bg-teal-400/10'
-                  : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-subtitle text-white font-semibold">{theme.label}</h3>
-                    {selectedThemeId === theme.id && (
-                      <Check size={20} className="text-teal-400" />
-                    )}
+          {/* Temporary V1 public gating: Family/Couple stay in code for internal/dev testing. */}
+          {PUBLIC_ONBOARDING_THEME_IDS.map((themeId) => {
+            const theme = themesById[themeId];
+            return (
+              <button
+                key={theme.id}
+                onClick={() => handleSelect(theme.id)}
+                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                  selectedThemeId === theme.id
+                    ? 'border-teal-400 bg-teal-400/10'
+                    : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-subtitle text-white font-semibold">{theme.label}</h3>
+                      {selectedThemeId === theme.id && (
+                        <Check size={20} className="text-teal-400" />
+                      )}
+                    </div>
+                    <p className="text-body text-white/70 text-sm">{theme.description}</p>
                   </div>
-                  <p className="text-body text-white/70 text-sm">{theme.description}</p>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-6 flex justify-end">

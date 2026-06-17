@@ -239,7 +239,9 @@
       "storeCantAffordLabel": "Nicht erreichbar",
       "storeEmptyTitle": "Noch keine Kopfgelder",
       "storeEmptyBody": "Erstes Kopfgeld erstellen.",
-      "storeCreateFirstButton": "Erstes Kopfgeld erstellen"
+      "storeCreateFirstButton": "Erstes Kopfgeld erstellen",
+      "dailyLabel": "Tägliche Mission",
+      "streakLabel": "Serie"
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -271,7 +273,9 @@
       "storeCantAffordLabel": "Weitermachen",
       "storeEmptyTitle": "Noch keine Belohnungen",
       "storeEmptyBody": "Erste Belohnung erstellen.",
-      "storeCreateFirstButton": "Erste Belohnung erstellen"
+      "storeCreateFirstButton": "Erste Belohnung erstellen",
+      "dailyLabel": "Tägliche Aufgabe",
+      "streakLabel": "Serie"
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -303,7 +307,9 @@
       "storeCantAffordLabel": "Weitermachen",
       "storeEmptyTitle": "Noch keine Geschenke",
       "storeEmptyBody": "Erstes Geschenk erstellen.",
-      "storeCreateFirstButton": "Erstes Geschenk erstellen"
+      "storeCreateFirstButton": "Erstes Geschenk erstellen",
+      "dailyLabel": "Täglicher Moment",
+      "streakLabel": "Serie"
     }
   }
 }

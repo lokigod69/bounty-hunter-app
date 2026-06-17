@@ -17,7 +17,7 @@
 // Phase 12: Updated taskQueryString in fetchTasks to include creator_profile to align with Task type.
 // Added deleteTask and updateTask functions with optimistic UI updates, proof file deletion (for delete), and robust error handling.
 // Updated updateTaskStatus: if task is rejected, set status to 'pending' and clear proof_url.
-// Calls increment_user_credits RPC when a credit task is marked as 'completed'. (Updated RPC params to common convention, user to verify).
+// Uses approve_task RPC for creator approvals so credit awarding stays server-side.
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
@@ -25,9 +25,6 @@ import type { Database } from '../types/database';
 import type { NewTaskData, Task, TaskStatus, ProofType, TaskWithProfiles } from '../types/custom';
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
-import { evaluateStatusChange, hasProofSubmitted } from '../core/contracts/contracts.domain';
-import type { StatusChangeContext } from '../core/contracts/contracts.types';
-import { decideCreditsForApprovedContract } from '../core/credits/credits.domain';
 import { validateProofPayload, getStatusAfterProofSubmission } from '../core/proofs/proofs.domain';
 
 // Helper to reliably get an error message string
@@ -391,65 +388,76 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     setTasks(prevTasks => prevTasks.map(t => (t.id === taskId ? updatedOptimisticTask : t)));
 
     try {
-      const { data: updatedTaskResult, error: updateError } = await client
-        .from('tasks')
-        .update(updates)
-        .eq('id', taskId)
-        .select(`
-          *,
-          profiles:profiles!assigned_to ( id, display_name, email ),
-          creator_profile:profiles!created_by ( id, display_name, email )
-        `)
-        .single();
+      let updatedTaskResult: TaskWithProfiles | null = null;
 
-      if (updateError) {
-        // Enhanced error handling with specific messages
-        let errorMessage = 'Failed to update task status.';
-        if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
-          errorMessage = 'You do not have permission to update this task.';
-        } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
-          errorMessage = 'Task not found or has been deleted.';
-        } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        }
-        
-        throw new Error(errorMessage);
-      }
-      if (!updatedTaskResult) {
-        throw new Error('Task status update returned no data.');
-      }
-
-      // Award credits using domain logic
-      const statusChangeContext: StatusChangeContext = {
-        actorId: currentUserId,
-        contractOwnerId: originalTask.created_by,
-        assigneeId: originalTask.assigned_to,
-        currentStatus: originalTask.status as TaskStatus,
-        requestedStatus,
-        proofRequired: originalTask.proof_required ?? false,
-        hasProof: hasProofSubmitted(originalTask),
-      };
-
-      const statusChangeResult = evaluateStatusChange(statusChangeContext);
-
-      if (statusChangeResult.shouldAwardCredits && originalTask.reward_type === 'credit' && originalTask.reward_text && originalTask.assigned_to) {
-        const creditDecision = decideCreditsForApprovedContract({
-          contractId: taskId,
-          assigneeId: originalTask.assigned_to,
-          baseReward: parseInt(originalTask.reward_text || '0', 10),
+      if (requestedStatus === 'completed') {
+        const { data: approvalData, error: approvalError } = await client.rpc('approve_task', {
+          p_task_id: taskId,
         });
 
-        if (creditDecision.amount > 0) {
-          const { error: creditError } = await client.rpc('increment_user_credits', {
-            user_id_param: originalTask.assigned_to,
-            amount_param: creditDecision.amount,
-          });
-          if (creditError) {
-            toast.error(`Task completed, but failed to award credits: ${getErrorMessage(creditError)}`, { duration: 5000 });
-          } else {
-            toast.success(`${creditDecision.amount} credits awarded to ${updatedTaskResult.profiles?.display_name || 'assignee'}!`, { id: `creditAward-${taskId}`, duration: 4000 });
-          }
+        if (approvalError) {
+          throw new Error(approvalError.message || 'Failed to approve task.');
         }
+
+        const approvalResult = approvalData as { success?: boolean; message?: string } | null;
+        if (approvalResult?.success === false) {
+          throw new Error(approvalResult.message || 'Failed to approve task.');
+        }
+
+        const { data: approvedTask, error: approvedTaskError } = await client
+          .from('tasks')
+          .select(`
+            *,
+            profiles:profiles!assigned_to ( id, display_name, email ),
+            creator_profile:profiles!created_by ( id, display_name, email )
+          `)
+          .eq('id', taskId)
+          .single();
+
+        if (approvedTaskError) {
+          throw approvedTaskError;
+        }
+
+        if (!approvedTask) {
+          throw new Error('Task approval returned no data.');
+        }
+
+        updatedTaskResult = approvedTask as TaskWithProfiles;
+      } else {
+        const { data, error: updateError } = await client
+          .from('tasks')
+          .update(updates)
+          .eq('id', taskId)
+          .select(`
+            *,
+            profiles:profiles!assigned_to ( id, display_name, email ),
+            creator_profile:profiles!created_by ( id, display_name, email )
+          `)
+          .single();
+
+        if (updateError) {
+          // Enhanced error handling with specific messages
+          let errorMessage = 'Failed to update task status.';
+          if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
+            errorMessage = 'You do not have permission to update this task.';
+          } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
+            errorMessage = 'Task not found or has been deleted.';
+          } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
+            errorMessage = 'Network error. Please check your connection and try again.';
+          }
+
+          throw new Error(errorMessage);
+        }
+
+        if (!data) {
+          throw new Error('Task status update returned no data.');
+        }
+
+        updatedTaskResult = data as TaskWithProfiles;
+      }
+
+      if (!updatedTaskResult) {
+        throw new Error('Task status update returned no data.');
       }
 
       // Update local state with the actual returned task to ensure consistency

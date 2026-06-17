@@ -31,45 +31,13 @@ export const useUserCredits = () => {
 
       if (dbError) {
         if (dbError.code === 'PGRST116' || (dbError.message.includes('JSON object requested, multiple (or no) rows returned') && !data)) {
-          try {
-            const { error: upsertError } = await supabase
-              .from('user_credits')
-              .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
-
-            if (upsertError) {
-              setError('Failed to initialize credits.');
-              setCredits(0);
-            } else {
-              setCredits(0);
-            }
-          } catch (initError: unknown) {
-            let initMessage = 'An unexpected error occurred during credit initialization.';
-            if (initError instanceof Error) initMessage = initError.message;
-            setError(initMessage);
-            setCredits(0);
-          }
+          setCredits(0);
         } else {
           setError('Failed to load credits.');
           setCredits(0);
         }
       } else if (data === null) {
-        try {
-          const { error: upsertError } = await supabase
-            .from('user_credits')
-            .upsert({ user_id: user.id, balance: 0 }, { onConflict: 'user_id' });
-
-          if (upsertError) {
-            setError('Failed to initialize credits.');
-            setCredits(0);
-          } else {
-            setCredits(0);
-          }
-        } catch (initError: unknown) {
-          let initMessage = 'An unexpected error occurred during credit initialization.';
-          if (initError instanceof Error) initMessage = initError.message;
-          setError(initMessage);
-          setCredits(0);
-        }
+        setCredits(0);
       } else {
         setCredits(data?.balance || 0);
       }

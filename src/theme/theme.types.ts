@@ -37,6 +37,8 @@ export interface ThemeStrings {
   storeEmptyTitle: string; // e.g. "No rewards yet"
   storeEmptyBody: string; // Short empty state copy
   storeCreateFirstButton: string; // e.g. "Create first bounty"
+  dailyLabel: string; // e.g. "Daily mission"
+  streakLabel: string; // e.g. "streak"
 }
 
 export interface ThemeDefinition {

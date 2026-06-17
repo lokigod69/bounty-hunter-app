@@ -107,6 +107,7 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
     success?: boolean;
     message?: string;
     error?: string;
+    collection_id?: string;
     reward_id?: string;
     reward_name?: string;
     new_balance?: number;
@@ -134,6 +135,7 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
   return {
     success: true,
     message: rpcResponse?.message || 'Reward purchased successfully!',
+    collection_id: rpcResponse?.collection_id,
     reward_name: rpcResponse?.reward_name,
   };
 }

@@ -202,7 +202,7 @@ export default function Layout() {
                 >
                   {item.icon}
                   <span className="nav-text-spacing">{item.name}</span>
-                  {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
+                  {item.path === '/friends' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                       {pendingRequests.length}
                     </span>
@@ -370,7 +370,7 @@ export default function Layout() {
                 >
                   {item.icon}
                   <span className="text-lg nav-text-spacing">{item.name}</span>
-                  {item.name === 'Guild Roster' && pendingRequests && pendingRequests.length > 0 && (
+                  {item.path === '/friends' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
                       {pendingRequests.length}
                     </span>

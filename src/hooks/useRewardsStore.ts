@@ -40,7 +40,7 @@ export interface UseRewardsStoreReturn {
   createReward: (rewardData: NewRewardStoreItemData) => Promise<{ success: boolean; reward_id?: string; message: string }>;
   isCreatingReward: boolean;
   createRewardError: string | null;
-  purchaseReward: (rewardId: string) => Promise<{ success: boolean; message: string }>;
+  purchaseReward: (rewardId: string) => Promise<{ success: boolean; message: string; collection_id?: string }>;
   isPurchasingReward: boolean;
   purchaseRewardError: string | null;
   triggerNotification: (rewardId: string, collectorId: string) => Promise<void>;
@@ -162,7 +162,7 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     }
   };
 
-  const purchaseReward = async (rewardId: string): Promise<{ success: boolean; message: string }> => {
+  const purchaseReward = async (rewardId: string): Promise<{ success: boolean; message: string; collection_id?: string }> => {
     if (!user) {
       const msg = 'User must be logged in to purchase a reward.';
       toast.error(msg);

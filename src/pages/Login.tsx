@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { getAuthRedirectTo } from '../lib/authRedirect';
 
 const Login: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -44,10 +45,7 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
-      const redirectTo =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/login`
-          : undefined;
+      const redirectTo = getAuthRedirectTo();
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
@@ -111,10 +109,7 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const redirectTo =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/login`
-          : undefined;
+      const redirectTo = getAuthRedirectTo();
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -147,10 +142,7 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
-      const redirectTo =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/login`
-          : undefined;
+      const redirectTo = getAuthRedirectTo();
 
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),

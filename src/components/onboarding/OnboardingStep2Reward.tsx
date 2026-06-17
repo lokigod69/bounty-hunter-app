@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
 import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { createReward } from '../../domain/rewards';
 import { BaseCard } from '../ui/BaseCard';
@@ -20,7 +19,6 @@ export default function OnboardingStep2Reward({
   onBack,
 }: OnboardingStep2RewardProps) {
   const { user } = useAuth();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

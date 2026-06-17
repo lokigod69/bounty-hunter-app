@@ -13,26 +13,25 @@ export interface GrantCreditsParams {
 }
 
 /**
- * Grants credits to a user.
- * 
- * Uses RPC: increment_user_credits
- * This creates the user_credits row if it doesn't exist.
+ * Direct client-side credit grants are disabled.
+ *
+ * Credits must be awarded through trusted server-side RPC flows
+ * (for example approve_task), not from browser code.
  */
 export async function grantCredits(params: GrantCreditsParams): Promise<void> {
-  const { userId, amount, supabaseClient = supabase } = params;
+  const { userId, amount } = params;
 
   if (amount <= 0) {
     throw new Error('Credit amount must be positive.');
   }
 
-  const { error } = await supabaseClient.rpc('increment_user_credits', {
-    user_id_param: userId,
-    amount_param: amount,
-  });
-
-  if (error) {
-    throw error;
+  if (!userId) {
+    throw new Error('User ID is required.');
   }
+
+  throw new Error(
+    'Direct client credit grants are disabled. Credits are awarded server-side via trusted approval RPCs.'
+  );
 }
 
 /**

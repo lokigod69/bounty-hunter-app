@@ -16,7 +16,6 @@ import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { BaseCard } from './ui/BaseCard';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
-import { useThemeStrings } from '../hooks/useThemeStrings';
 
 import { safeUrlRender } from '../lib/proofConfig';
 import { getAccentVariant } from '../theme/accentVariants'; // R28: Mode-aware card accents
@@ -101,7 +100,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const { openModal, clearLayer } = useUI();
   const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
-  const { strings } = useThemeStrings();
   const [showProofModal, setShowProofModal] = useState(false);
 
   // R28: Get mode-aware accent variant for this card

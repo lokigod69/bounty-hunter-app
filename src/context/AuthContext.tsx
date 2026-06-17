@@ -4,11 +4,15 @@
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/custom';  // R25: Use custom Profile type with partner_user_id
 import type { Database } from '../types/database';
 import { ensureProfileForUser } from '../lib/profileBootstrap';
 import toast from 'react-hot-toast';
+import { parseSupabaseAuthCallback } from '../lib/authRedirect';
 
 interface AuthContextType {
   user: User | null;
@@ -74,6 +78,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    let listener: PluginListenerHandle | undefined;
+    let cancelled = false;
+
+    App.addListener('appUrlOpen', async ({ url }) => {
+      const authParams = parseSupabaseAuthCallback(url);
+
+      try {
+        if (authParams.code) {
+          await supabase.auth.exchangeCodeForSession(authParams.code);
+        } else if (authParams.accessToken && authParams.refreshToken) {
+          await supabase.auth.setSession({
+            access_token: authParams.accessToken,
+            refresh_token: authParams.refreshToken,
+          });
+        }
+      } catch {
+        toast.error('Could not complete sign in. Please try again.');
+      }
+    }).then((handle) => {
+      if (cancelled) {
+        handle.remove();
+        return;
+      }
+
+      listener = handle;
+    });
+
+    return () => {
+      cancelled = true;
+      listener?.remove();
     };
   }, []);
 

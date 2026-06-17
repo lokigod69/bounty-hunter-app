@@ -9,7 +9,7 @@
 // P1: Updated page header title to use theme strings.
 // P3: Refactored into Mission Inbox with sections: "Do this now", "Waiting for approval", "Recently completed"
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
 import { useIssuedContracts } from '../hooks/useIssuedContracts';

@@ -4,6 +4,19 @@ This index organizes all project documentation. New docs should go into `docs/` 
 
 ---
 
+## Open This First
+
+The most current repo-wide audit/refactor handoff is:
+
+| Document | Description |
+|----------|-------------|
+| [codex-refactor-pass/00_REFACTOR_PASS_INDEX.md](./codex-refactor-pass/00_REFACTOR_PASS_INDEX.md) | Current refactor-pass entry point |
+| [codex-refactor-pass/02_CURRENT_PROJECT_STATE.md](./codex-refactor-pass/02_CURRENT_PROJECT_STATE.md) | Code-verified current project state |
+| [codex-refactor-pass/06_SQL_AND_MIGRATION_RUNBOOK.md](./codex-refactor-pass/06_SQL_AND_MIGRATION_RUNBOOK.md) | Current SQL/migration guidance |
+| [codex-refactor-pass/10_FINAL_HANDOFF.md](./codex-refactor-pass/10_FINAL_HANDOFF.md) | Latest handoff status |
+
+---
+
 ## Canonical V1 Docs
 
 These are the authoritative specifications for V1:

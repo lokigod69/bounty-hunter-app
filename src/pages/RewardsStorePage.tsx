@@ -4,6 +4,7 @@
 // P4: Added credits summary, theme-aware labels, and aspirational design.
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -30,6 +31,7 @@ type Tab = 'available' | 'created' | 'collected';
 
 const RewardsStorePage: React.FC = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { theme } = useTheme();
   const { strings } = useThemeStrings();
   const { user } = useAuth();
@@ -48,6 +50,13 @@ const RewardsStorePage: React.FC = () => {
   const [bountyToDelete, setBountyToDelete] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<Tab>('available');
+
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+    if (requestedTab === 'available' || requestedTab === 'created' || requestedTab === 'collected') {
+      setActiveTab(requestedTab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchRewards();

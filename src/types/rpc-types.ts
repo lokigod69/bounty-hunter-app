@@ -7,7 +7,7 @@ export interface CreateRewardStoreItemArgs {
   p_description: string;
   p_image_url: string;
   p_credit_cost: number;
-  p_creator_id: string; // UUID
+  p_assigned_to: string; // UUID
 }
 
 export interface CreateRewardStoreItemResult {

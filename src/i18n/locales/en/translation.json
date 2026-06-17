@@ -259,7 +259,9 @@
       "storeCantAffordLabel": "Out of reach",
       "storeEmptyTitle": "No bounties yet",
       "storeEmptyBody": "Create your first bounty to get started.",
-      "storeCreateFirstButton": "Create first bounty"
+      "storeCreateFirstButton": "Create first bounty",
+      "dailyLabel": "Daily mission",
+      "streakLabel": "streak"
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -291,7 +293,9 @@
       "storeCantAffordLabel": "Keep earning",
       "storeEmptyTitle": "No rewards yet",
       "storeEmptyBody": "Add rewards to motivate your family.",
-      "storeCreateFirstButton": "Create first reward"
+      "storeCreateFirstButton": "Create first reward",
+      "dailyLabel": "Daily chore",
+      "streakLabel": "streak"
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -323,7 +327,9 @@
       "storeCantAffordLabel": "Keep earning",
       "storeEmptyTitle": "No gifts yet",
       "storeEmptyBody": "Create gifts to celebrate your moments together.",
-      "storeCreateFirstButton": "Create first gift"
+      "storeCreateFirstButton": "Create first gift",
+      "dailyLabel": "Daily moment",
+      "streakLabel": "streak"
     }
   }
 }

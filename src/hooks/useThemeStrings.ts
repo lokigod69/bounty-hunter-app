@@ -52,6 +52,8 @@ export function useThemeStrings(): { strings: ThemeStrings; themeId: string } {
     storeEmptyTitle: t(`theme.${themeId}.storeEmptyTitle`),
     storeEmptyBody: t(`theme.${themeId}.storeEmptyBody`),
     storeCreateFirstButton: t(`theme.${themeId}.storeCreateFirstButton`),
+    dailyLabel: t(`theme.${themeId}.dailyLabel`),
+    streakLabel: t(`theme.${themeId}.streakLabel`),
   };
 
   return { strings, themeId };
