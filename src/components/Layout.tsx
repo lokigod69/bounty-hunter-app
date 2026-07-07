@@ -315,6 +315,7 @@ export default function Layout() {
                 {profile && (
                   <Link
                     to="/rewards-store"
+                    onClick={() => closeMenu()}
                     className="glass-card flex items-center justify-between gap-4 rounded-xl px-5 py-4 mb-6 hover:bg-white/10 transition-colors"
                     aria-label={`${strings.storeTitle} - Your balance`}
                   >

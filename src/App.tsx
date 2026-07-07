@@ -61,9 +61,10 @@ export default function App() {
       <AuthProvider>
         <ThemeProvider>
         <UIProvider>
-          {/* R19: Toast container z-index must be above modals (10200) to appear above blur */}
+          {/* Toasts sit above everything, including the critical overlay layer (99000)
+              used by ConfirmModal, so success/loading toasts stay visible during confirms */}
           <Toaster
-            containerStyle={{ zIndex: 10500 }}
+            containerStyle={{ zIndex: 99500 }}
             toastOptions={{
               duration: 3500,
               style: {

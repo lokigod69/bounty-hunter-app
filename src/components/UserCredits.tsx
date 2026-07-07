@@ -12,6 +12,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { Coin } from './visual/Coin';
 
+// Several UserCredits instances can be mounted at once (desktop header, mobile
+// pill, mobile menu). Supabase channels are deduped by topic and throw on a
+// second subscribe, so every instance needs its own channel name.
+let channelSeq = 0;
+
 const useUserCredits = () => {
   const supabase = useSupabaseClient();
   const user = useUser();
@@ -105,7 +110,7 @@ const useUserCredits = () => {
     
     if (user && !isMobile) {
       const channel = supabase
-        .channel(`user_credits_changes_${user.id}`)
+        .channel(`user_credits_changes_${user.id}_${++channelSeq}`)
         .on(
           'postgres_changes',
           {
@@ -155,11 +160,13 @@ function useCountUp(target: number, duration = 600): number {
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - t, 3);
-      setValue(Math.round(from + (to - from) * eased));
+      const next = Math.round(from + (to - from) * eased);
+      // Keep the ref on the last rendered value so an animation interrupted
+      // by a new target resumes from what's on screen, not a stale balance.
+      prevRef.current = next;
+      setValue(next);
       if (t < 1) {
         raf = requestAnimationFrame(tick);
-      } else {
-        prevRef.current = to;
       }
     };
     raf = requestAnimationFrame(tick);

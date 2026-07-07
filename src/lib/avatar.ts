@@ -2,16 +2,26 @@
 // Deterministic, network-free fallback avatar (initials on a colored disc).
 // Replaces the external avatar.iran.liara.run dependency and its gendered defaults.
 
+const XML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&apos;',
+};
+
 export function avatarFallback(name?: string | null): string {
   const label = (name ?? '').trim() || 'User';
   const initials =
     label
       .split(/\s+/)
-      .map((w) => w[0])
+      // Array.from splits by code point, so emoji/astral chars stay intact
+      .map((w) => Array.from(w)[0])
       .filter(Boolean)
       .slice(0, 2)
       .join('')
-      .toUpperCase() || 'U';
+      .toUpperCase()
+      .replace(/[&<>"']/g, (c) => XML_ESCAPES[c]) || 'U';
 
   // Deterministic hue from the label so a given user always gets the same color.
   let hash = 0;

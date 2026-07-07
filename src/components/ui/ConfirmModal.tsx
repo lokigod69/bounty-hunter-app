@@ -2,7 +2,7 @@
 // Unified confirmation modal (replaces ConfirmDeleteModal + ConfirmDialog).
 // Glass shell, portalled to the overlay root, sits above other modals via the critical layer.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
@@ -35,6 +35,11 @@ export function ConfirmModal({
   loading = false,
 }: ConfirmModalProps) {
   const { openCriticalOverlay, clearLayer } = useUI();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,6 +48,19 @@ export function ConfirmModal({
       clearLayer();
     };
   }, [isOpen, openCriticalOverlay, clearLayer]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    cardRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !loadingRef.current) {
+        e.stopPropagation();
+        onCloseRef.current();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -54,7 +72,12 @@ export function ConfirmModal({
       }}
     >
       <div
-        className="glass-card w-full max-w-md p-6 rounded-2xl shadow-xl z-critical-content"
+        ref={cardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
+        className="glass-card w-full max-w-md p-6 rounded-2xl shadow-xl z-critical-content outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-start mb-3">
@@ -65,7 +88,7 @@ export function ConfirmModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="modal-icon-button z-critical-controls"
+            className="modal-icon-button z-critical-controls min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Close"
           >
             <X size={22} />
