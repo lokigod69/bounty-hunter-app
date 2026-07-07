@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-08 (late night)
+Last updated: 2026-07-08 (late night, session 2)
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -7,7 +7,8 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 ## Working now
 - Core loop end-to-end: create mission for a friend, submit proof, approve, earn credits, claim rewards (per SAYA_USAGE.md and domain tests).
 - Supabase magic-link/OTP auth, onboarding + tutorial flow, i18n (en/de), multi-theme system.
-- Vitest suite (12 test files, 49 tests: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes + accent drift guards, auth redirect, feedback sound+haptics contract). `npm test` = `vitest run src`.
+- Vitest suite (13 test files, 59 tests: domain logic in `src/core/` + `src/domain/` incl. proof validation, security policy tests in `src/security/`, themes + accent drift guards, auth redirect, feedback sound+haptics contract). `npm test` = `vitest run src`.
+- **`tsc -p tsconfig.app.json --noEmit` = 0 errors** (2026-07-08 session 2, commit fcb830d): `database.ts` regenerated from the live project (now UTF-8, includes daily_mission_streaks/invites/approved_at/all RPCs; legacy marketplace tables gone), custom.ts overlays slimmed, 15-error baseline burned down. Regen also fixed a real bug: PDF/video proofs were failing domain validation ("Unknown proof type") — now allowed + tested.
 - Unified feedback layer (`src/utils/feedback.ts`, Phase 4): sound + haptics behind one semantic API; @capacitor/haptics lazy-imported (static import breaks vite dev — see LOG 2026-07-08 late night); volume pass in soundManager.
 - Migrations: all 9 repo migrations are APPLIED to the new test DB as of 2026-07-08 (see LOG); credit-table writes + increment RPC locked down, storage policies live, PDF proofs + rejection_reason + profile persistence + collected redeemed + invites all in the schema. Tracker (`supabase_migrations.schema_migrations`) has 10 rows.
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
@@ -29,10 +30,10 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - Was the 2026-06-18 "Harden V1 launch readiness" commit fully verified? Is the uncommitted UI refactor finished and meant to be committed?
 - ~~Which migrations are applied in production?~~ ANSWERED 2026-07-08 for the new test project (see Known problems). Residual: whether the OLD paused project (with real user data) had the April/June migrations applied — only matters if its data is ever migrated over.
 - ~~Proof types~~ DECIDED 2026-07-07: PDF/text/private all allowed (see DECISIONS). "Private" needs no work — storage RLS already limits proofs to creator+assignee.
-- DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed (`rejection_reason` was hand-added meanwhile).
+- ~~DB types regeneration pending~~ DONE 2026-07-08 session 2 (fcb830d): regenerated from mvbmpcmexkgfairnthux via `supabase gen types --project-id` (NOT `--linked`, which wants a DB password); file is UTF-8 now.
 
 ## Next actions
 1. Michael: (a) set the new project's dashboard auth config (Site URL + redirect URLs for magic links — localhost:6075 and Vercel domain) so login + the invite round-trip are testable; (b) then eyeball Phases 1–4 in the browser (glass modals, badges, reject flow, mark-redeemed, invite link, Phase-3 art, Phase-4 sounds/volumes); (c) sound audition: upload/toggle alias click files, payday aliases coin.mp3 — replace with distinct audio if wanted.
 2. ✅ Phases 0–4 of docs/premium-v1/ROADMAP.md DONE + committed (…47e7eb7, 37b3a4b, 70bdff3).
 3. Phase 5 ship vehicle: `npx cap sync ios` (picks up @capacitor/haptics native module + Phase-3 icon/splash), device safe-areas, TestFlight prep.
-4. `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs; regenerate DB types from the new project (types currently overlaid in `src/types/custom.ts` for theme/onboarding_completed/redeemed_at/invites — a full regen would fold these into `database.ts`). Also note `npm run build` skips page typechecking — use `tsc -p tsconfig.app.json --noEmit`.
+4. `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs (#4, high effort/risk, needs Michael review); ~~DB-types regen (#5)~~ DONE (fcb830d). Note `npm run build` skips page typechecking — `tsc -p tsconfig.app.json --noEmit` is now CLEAN (0 errors); keep it that way (consider wiring it into CI/pre-commit).

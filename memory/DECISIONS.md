@@ -4,6 +4,11 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-08 — database.ts is regenerated + UTF-8; custom.ts overlays only for NOT-yet-migrated columns
+**Status:** active — supersedes [[#2026-07-08 — DB type additions go through custom.ts overlay, not the UTF-16 database.ts]]
+**Decision:** `src/types/database.ts` is now regenerated from the live project (`npx supabase gen types typescript --project-id mvbmpcmexkgfairnthux` — use `--project-id`, NOT `--linked` which demands a DB password) and stored as **UTF-8 no-BOM** (was UTF-16LE; git treated it as binary). After any applied migration, regen the file instead of extending `custom.ts`; overlays in custom.ts are only for columns that exist in code but not yet in the DB. The regen dropped the legacy marketplace_bounties/collected_bounties types — the schema and types now agree.
+**Why:** The overlay rule existed to avoid hand-editing a UTF-16 file; with the file UTF-8 and the regen path proven, overlays would just drift. The regen also caught a real runtime bug (PDF/video proof validation) that the overlay approach had hidden — types that match the DB are a bug-finding tool.
+
 ## 2026-07-08 — Feedback layer: one semantic API, haptics behind the sound toggle, Capacitor plugins lazy-imported
 **Status:** active
 **Decision:** All user feedback goes through `src/utils/feedback.ts` (`tap`/`success`/`payday`/`warning`/`error`) — call sites state the event, the module owns the sound+haptic pairing. Haptics obey the existing single sound toggle (no separate haptics setting for V1). AppButton/Fab fire the tap impact centrally, so individual buttons never wire haptics. **Capacitor plugins must be dynamically `import()`ed from web code, never statically imported**: a static `import '@capacitor/haptics'` broke the vite DEV server (optimizer mixed chunk generations → two React copies → app-wide "Invalid hook call" white screen; production build unaffected; survived cache purges). New sounds: `payday` key for credit-award moments (aliases coin.mp3 until a distinct sound is auditioned); approve plays approveProof+payday instead of the old success×2+coin stack; per-sound volumes replace the Android blanket override.
@@ -31,7 +36,7 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Why:** A two-player app must recruit player 2 who has no account yet; the existing add-friend surfaces only found existing accounts. Auto-accept is correct because the inviter consented by sharing. Token table (vs. embedding a raw user id) keeps it revocable and non-enumerable. **Consequence:** a brand-new signup's redemption fires only after onboarding (Layout is behind FTXGate) — token persists until then; acceptable for V1.
 
 ## 2026-07-08 — DB type additions go through custom.ts overlay, not the UTF-16 database.ts
-**Status:** active
+**Status:** ⚠️ superseded → [[#2026-07-08 — database.ts is regenerated + UTF-8; custom.ts overlays only for NOT-yet-migrated columns]]
 **Decision:** New columns/tables (`theme`, `onboarding_completed`, `redeemed_at`, `invites`) were typed by extending `src/types/custom.ts`, leaving the auto-generated UTF-16 `src/types/database.ts` untouched; RPCs not in the generated types are called with the `('name' as never, args as never)` loose-cast already used in the codebase. Persistence writes are fire-and-forget with localStorage as the immediate source of truth.
 **Why:** Hand-editing the UTF-16 file risks encoding corruption, and this is the codebase's established precedent (`partner_user_id`). NB: `npm run build` does NOT typecheck pages (root tsconfig `files: []`) — always run `tsc -p tsconfig.app.json --noEmit` to catch type regressions in pages/hooks (it surfaced 7 masked errors this session).
 
