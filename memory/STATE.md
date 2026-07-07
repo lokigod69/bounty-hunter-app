@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-08
+Last updated: 2026-07-08 (late night)
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -7,12 +7,13 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 ## Working now
 - Core loop end-to-end: create mission for a friend, submit proof, approve, earn credits, claim rewards (per SAYA_USAGE.md and domain tests).
 - Supabase magic-link/OTP auth, onboarding + tutorial flow, i18n (en/de), multi-theme system.
-- Vitest suite (9 test files, 33 tests: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes + accent drift guards, auth redirect). `npm test` = `vitest run src`.
+- Vitest suite (12 test files, 49 tests: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes + accent drift guards, auth redirect, feedback sound+haptics contract). `npm test` = `vitest run src`.
+- Unified feedback layer (`src/utils/feedback.ts`, Phase 4): sound + haptics behind one semantic API; @capacitor/haptics lazy-imported (static import breaks vite dev — see LOG 2026-07-08 late night); volume pass in soundManager.
 - Migrations: all 9 repo migrations are APPLIED to the new test DB as of 2026-07-08 (see LOG); credit-table writes + increment RPC locked down, storage policies live, PDF proofs + rejection_reason + profile persistence + collected redeemed + invites all in the schema. Tracker (`supabase_migrations.schema_migrations`) has 10 rows.
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
 
 ## In progress
-- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phases 0–2 DONE + committed (47e7eb7). **Phase 3 visual identity DONE + committed (37b3a4b, 2026-07-08 night):** 16 generated masters (assets-src/generated/) → 17 WebP (src/assets/generated/, 566 KB); raster coin face, per-mode gift emblems (TypeEmblem), type-based card accents (credit=gold, gift=mode accent), onboarding hero banners, 5 empty-state illustrations, 4 reward-placeholder still-lifes, iOS icon+splash. Vitest 44/44, tsc baseline 15 held. Next: **Phase 4 sound & haptics** or task-lifecycle RPCs (CODEX_NEXT_STEPS). Visual eyeball by Michael still pending (needs dashboard auth config on the new project). Phase-3 leftovers parked: emblem-credit.webp unwired, streak-flame count, is_daily form toggle, heroes in modal headers.
+- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phases 0–2 DONE + committed (47e7eb7); Phase 3 DONE + committed (37b3a4b). **Phase 4 sound & haptics DONE + committed (70bdff3, 2026-07-08 late night):** feedback.ts semantic API, AppButton/Fab tap haptics, approve/reject/delete/claim wired, volume pass, payday key. Code-complete; pending Michael: sound audition (upload/toggle/payday alias placeholder files) + on-device haptics (Phase 5 cap sync). Next: **Phase 5 ship vehicle**, or task-lifecycle RPCs / DB-types regen (CODEX_NEXT_STEPS). Visual eyeball of Phases 1–4 by Michael still pending (needs dashboard auth config on the new project). Phase-3 leftovers parked: emblem-credit.webp unwired, streak-flame count, is_daily form toggle, heroes in modal headers.
 - **Supabase LIVE again on a NEW project** (2026-07-08): `bounty-hunter-app`, ref `mvbmpcmexkgfairnthux`, region ap-south-1 Mumbai. Jan-2026 cluster backup restored, all data rows wiped for a clean test env (see DECISIONS 2026-07-08). `.env.local` + `supabase link` point at it. DB access from this machine: session pooler `aws-1-ap-south-1.pooler.supabase.com:5432`, user `postgres.mvbmpcmexkgfairnthux` (direct host is IPv6-only; no local IPv6). ✅ 2026-07-08: all 9 repo migrations APPLIED + verified (schema now hardened + Phase-2 columns/RPCs live). Dashboard-side config (auth Site URL/redirects, edge functions, vault secrets) did NOT transfer — auth config still pending, so login/invite round-trip aren't browser-testable yet. Old paused project (`bounty`, tsnjpylkgsovjujoczll) still holds the only copy of real user data. The old restore checklist runbook is now historical.
 - Image-asset pipeline: Codex image generation + gpt-image-2-skill (`~/.codex/skills/gpt-image-2-skill/`) is proven. Current pilots in `assets-src/generated/`: coin (`coin-pilot-v1*.png`) and gift emblem (`gift-emblem-pilot-v1.png`, solid `#FF00FF` background).
 
@@ -31,7 +32,7 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed (`rejection_reason` was hand-added meanwhile).
 
 ## Next actions
-1. Michael: (a) ✅ done — 9-migration batch applied; (b) set the new project's dashboard auth config (Site URL + redirect URLs for magic links — localhost:6075 and Vercel domain) so login + the invite round-trip are testable; (c) then eyeball Phase 1+2 UI in the browser (glass-card modals, badges, reject flow, History tab, mark-redeemed, Share invite link); (d) go/no-go to commit the current uncommitted Phase-2 working tree.
-2. ✅ Remaining Phase 2 DONE (invite links, persistence, orphan surface, collected-rewards mark-redeemed) — 2026-07-08.
-3. Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
+1. Michael: (a) set the new project's dashboard auth config (Site URL + redirect URLs for magic links — localhost:6075 and Vercel domain) so login + the invite round-trip are testable; (b) then eyeball Phases 1–4 in the browser (glass modals, badges, reject flow, mark-redeemed, invite link, Phase-3 art, Phase-4 sounds/volumes); (c) sound audition: upload/toggle alias click files, payday aliases coin.mp3 — replace with distinct audio if wanted.
+2. ✅ Phases 0–4 of docs/premium-v1/ROADMAP.md DONE + committed (…47e7eb7, 37b3a4b, 70bdff3).
+3. Phase 5 ship vehicle: `npx cap sync ios` (picks up @capacitor/haptics native module + Phase-3 icon/splash), device safe-areas, TestFlight prep.
 4. `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs; regenerate DB types from the new project (types currently overlaid in `src/types/custom.ts` for theme/onboarding_completed/redeemed_at/invites — a full regen would fold these into `database.ts`). Also note `npm run build` skips page typechecking — use `tsc -p tsconfig.app.json --noEmit`.
