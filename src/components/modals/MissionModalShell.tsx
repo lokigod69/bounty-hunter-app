@@ -1,6 +1,7 @@
 // src/components/modals/MissionModalShell.tsx
 // R9: Unified modal shell for mission-related modals
 // R27: Fixed height layout with internal scroll, reward thumbnail + lightbox
+// R35: Text-reward branch uses the mode gift emblem (TypeEmblem) instead of a raw 🎁
 // Implements glassmorphism design with mode/role/state theming
 
 import React, { useEffect, useState } from 'react';
@@ -33,6 +34,7 @@ import { useEscapeToClose } from '../../hooks/useEscapeToClose';
 import { AppButton } from '../ui/AppButton';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 import { Coin } from '../visual/Coin';
+import { TypeEmblem } from '../visual/TypeEmblem'; // R35: mode gift emblem for text rewards
 import { RewardImageLightbox } from './RewardImageLightbox';
 
 // ============================================================================
@@ -418,7 +420,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                       </button>
                     ) : (
                       <div className="flex items-center justify-center gap-2 py-2">
-                        <span className="text-2xl">🎁</span>
+                        <TypeEmblem size={48} />
                         <span
                           className="text-lg font-semibold break-words max-w-full"
                           style={{ color: modeConfig.accent }}

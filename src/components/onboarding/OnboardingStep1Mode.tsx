@@ -9,6 +9,9 @@ import { MODE_ACCENT_HEX } from '../../theme/modeAccents';
 import { BaseCard } from '../ui/BaseCard';
 import { AppButton } from '../ui';
 import { Check, ArrowRight, ScrollText, Home, Heart } from 'lucide-react';
+import heroGuild from '../../assets/generated/hero-guild.webp';
+import heroFamily from '../../assets/generated/hero-family.webp';
+import heroCouple from '../../assets/generated/hero-couple.webp';
 
 const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = ['guild'];
 
@@ -18,6 +21,13 @@ const MODE_ICON: Record<ThemeId, typeof ScrollText> = {
   guild: ScrollText,
   family: Home,
   couple: Heart,
+};
+
+// VISUAL: Per-mode hero key art shown as a banner at the top of each mode card.
+const MODE_HERO: Record<ThemeId, string> = {
+  guild: heroGuild,
+  family: heroFamily,
+  couple: heroCouple,
 };
 
 interface OnboardingStep1ModeProps {
@@ -81,13 +91,24 @@ export default function OnboardingStep1Mode({
                       }
                     : undefined
                 }
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                className={`w-full text-left rounded-lg border-2 overflow-hidden transition-all ${
                   isSelected
                     ? ''
                     : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'
                 }`}
               >
-                <div className="flex items-start gap-3">
+                <div className="relative h-28 w-full">
+                  <img
+                    src={MODE_HERO[theme.id]}
+                    alt=""
+                    aria-hidden="true"
+                    draggable={false}
+                    className="h-full w-full object-cover object-center"
+                  />
+                  {/* Bottom-up fade so the art melts into the dark card surface. */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-gray-950/90 via-gray-950/30 to-transparent" />
+                </div>
+                <div className="flex items-start gap-3 p-4">
                   <span
                     className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-lg bg-white/5"
                     style={{ color: accent }}

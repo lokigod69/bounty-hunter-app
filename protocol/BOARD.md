@@ -1,15 +1,14 @@
 # BOARD — Bounty Hunter — updated 2026-07-08
 
 ## ⚠️ WAITING ON YOU
-- ✅ DONE: 9-migration batch applied + verified (hardening + Phase-2 schema). Tracker at 10 rows.
-- **Commit go/no-go** — the Phase-2 leftovers working tree (22 modified / 6 new / 1 deleted) is green but UNCOMMITTED. Say "commit it" and I'll commit.
+- ✅ DONE: Phase-2 tree committed (47e7eb7) on your go.
 - **New project dashboard config** — magic-link login (and the invite round-trip) won't work until Site URL + redirect URLs are set in the Supabase dashboard (Authentication → URL Configuration): add http://localhost:6075 and your Vercel domain.
-- Browser eyeball of Phase 1+2 UI (glass-card modals, badges, reject flow, History, Share invite link, Restart Onboarding, mark-redeemed, mode/onboarding persistence) — unblocked once auth config is set.
+- Browser eyeball of Phase 1+2 UI + (once landed) Phase 3 art — unblocked once auth config is set.
 
 ## Workstreams
 | Workstream | Phase/Gate | Last done | Next | State |
 |---|---|---|---|---|
-| main | Premium V1 polish — **Phase 2 COMPLETE** → Phase 3 assets | Jul 8: applied all 9 migrations + shipped Phase 2 leftovers (invite links, persistence, orphan surface, mark-redeemed); build/lint/test green, uncommitted | Commit go (your call) + dashboard auth config + browser eyeball, then Phase 3 generated assets per docs/premium-v1/ROADMAP.md | 🟢 active |
+| main | Premium V1 polish — Phase 2 committed → **Phase 3 assets IN FLIGHT** | Jul 8: committed 47e7eb7; generated 16-asset Phase-3 set via Codex/gpt-image-2 (emblems, heroes, empty states, placeholders, iOS icon/splash); wiring agents running | Review wiring diffs, verify, commit Phase 3; then Phase 4 sound/haptics or task-lifecycle RPCs | 🟢 active |
 
 ## Standing decisions parked for you (not blocking yet)
 - Prod SQL go/no-go whenever a runbook comes up — backup + your review required, always.

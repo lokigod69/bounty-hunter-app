@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { CheckCircle, CheckCircle2, Clock, Clock3, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -34,6 +34,7 @@ import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
 import { useNavigate } from 'react-router-dom';
+import emptyMissions from '../assets/generated/empty-missions.webp';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -346,7 +347,7 @@ export default function Dashboard() {
             <SectionHeader title={strings.sectionDoNowTitle} count={doNowMissions.length} accent="default" />
             {doNowMissions.length === 0 ? (
               <EmptyState
-                icon={<DatabaseZap />}
+                illustration={emptyMissions}
                 /* R14: Mode-aware empty state copy for inbox */
                 title={
                   theme.id === 'guild'

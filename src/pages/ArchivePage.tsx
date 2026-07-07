@@ -2,7 +2,7 @@
 // This page displays a history of archived tasks — a "Contract Ledger" / trophy view.
 
 import React from 'react';
-import { CheckCircle, Coins, Trophy } from 'lucide-react';
+import { CheckCircle, Coins } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -12,6 +12,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { PageState, EmptyState } from '../components/ui';
+import emptyArchive from '../assets/generated/empty-archive.webp';
 
 const ArchivePage: React.FC = () => {
   const { archivedTasks, loading, error, refetch: refetchArchivedTasks } = useArchivedContracts();
@@ -87,7 +88,7 @@ const ArchivePage: React.FC = () => {
           </>
         ) : (
           <EmptyState
-            icon={<Trophy />}
+            illustration={emptyArchive}
             title={strings.archiveEmptyTitle}
             body={strings.archiveEmptyBody}
           />

@@ -5,20 +5,23 @@
 // CRITICAL FIX: Uses React Portal (createPortal) for tooltips and modals.
 // UI REFINEMENT: Consolidated status display at the bottom of the expanded card modal.
 // DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
+// R35: Type-based card accent (gold=credit / mode=gift), TypeEmblem indicator, daily badge.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Eye, Link, User } from 'lucide-react';
+import { Eye, Link, User, Flame } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
 import { BaseCard } from './ui/BaseCard';
 import { Coin } from './visual/Coin';
+import { TypeEmblem } from './visual/TypeEmblem'; // R35: Contract-type gift emblem
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
+import { useThemeStrings } from '../hooks/useThemeStrings'; // R35: dailyLabel string
 
 import { safeUrlRender } from '../lib/proofConfig';
-import { getAccentVariant } from '../theme/accentVariants'; // R28: Mode-aware card accents
+import { getTypeAccentVariant } from '../theme/accentVariants'; // R35: Type-based card accents
 import { mapTaskStatusToModalState } from '../theme/modalTheme';
 
 import ProofModal from './ProofModal';
@@ -101,10 +104,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const { t } = useTranslation();
   const { openModal, clearLayer } = useUI();
   const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
+  const { strings } = useThemeStrings(); // R35: mode-aware dailyLabel
   const [showProofModal, setShowProofModal] = useState(false);
 
-  // R28: Get mode-aware accent variant for this card
-  const accentVariant = getAccentVariant(themeId, task.id);
+  // R35: Type-based accent — credit → gold (matches coin), gift/other → mode accent
+  const derivedRewardType: 'credit' | 'text' | 'image' =
+    task.reward_type === 'credit' ? 'credit' : task.image_url ? 'image' : 'text';
+  const accentVariant = getTypeAccentVariant(themeId, derivedRewardType);
   const [internalActionLoading, setInternalActionLoading] = useState(false);
   const actionLoading = internalActionLoading || !!externalActionLoading;
   const [isExpanded, setIsExpanded] = useState(false);
@@ -391,6 +397,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
                  safeStatus === 'rejected' ? t('taskStatus.rejected') :
                  safeStatus}
               </span>
+              {/* R35: Daily-mission badge — dormant until is_daily is set (no layout impact when absent) */}
+              {task.is_daily && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-orange-500/20 text-orange-400 border border-orange-500/50">
+                  <Flame size={12} />
+                  {strings.dailyLabel}
+                </span>
+              )}
               <h3 className={`text-base sm:text-lg font-bold ${titleColorClass} min-w-0 line-clamp-2`} title={title}>
                 {title}
               </h3>
@@ -413,9 +426,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   {reward_type === 'credit' ? (
                     <Coin size="sm" variant="static" value={parseInt(reward_text, 10) || 0} />
                   ) : (
-                    <span className="text-base" title={reward_text}>
-                      {reward_text.length <= 2 ? reward_text : '🎁'}
-                    </span>
+                    // R35: user-picked short emoji still wins; otherwise the mode gift emblem
+                    reward_text.length <= 2 ? (
+                      <span className="text-base" title={reward_text}>
+                        {reward_text}
+                      </span>
+                    ) : (
+                      <TypeEmblem size={32} />
+                    )
                   )}
                 </span>
               )}

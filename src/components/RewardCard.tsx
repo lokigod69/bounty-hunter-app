@@ -2,6 +2,7 @@
 // Phase 1: Updated to use BaseCard for consistent styling.
 // P4: Redesigned for aspirational feel with clearer visual hierarchy and affordability hints.
 // R27: Added per-card accent variants and lightbox for images
+// R34: Generated placeholder art replaces the default-emoji fallback
 // A component to display a single reward or bounty item.
 
 import React, { useState, useEffect } from 'react';
@@ -16,8 +17,24 @@ import { RewardImageLightbox } from './modals/RewardImageLightbox';
 import { getAccentVariant } from '../theme/accentVariants';
 import { avatarFallback } from '../lib/avatar';
 import type { RewardStoreItem } from '../hooks/useRewardsStore';
+import fallbackChest from '../assets/generated/reward-fallback-chest.webp';
+import fallbackGifts from '../assets/generated/reward-fallback-gifts.webp';
+import fallbackTrophy from '../assets/generated/reward-fallback-trophy.webp';
+import fallbackCrate from '../assets/generated/reward-fallback-crate.webp';
 
 export type Reward = RewardStoreItem;
+
+// R34: Generated placeholder art for rewards without a real image or custom emoji.
+// Chosen deterministically per reward via a stable char-code hash of the reward id.
+const fallbackArts = [fallbackChest, fallbackGifts, fallbackTrophy, fallbackCrate];
+
+const hashRewardId = (rewardId: string): number => {
+  let hash = 0;
+  for (let i = 0; i < rewardId.length; i++) {
+    hash = (hash * 31 + rewardId.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+};
 
 interface RewardCardProps {
   reward: Reward;
@@ -92,13 +109,34 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       );
     }
 
-    // R27: Emoji fallback with mode-aware accent gradient
+    // R27: Emoji fallback with mode-aware accent gradient (user deliberately picked a non-default emoji)
+    if (!displayUrl && image_url && image_url !== defaultEmoji) {
+      return (
+        <div
+          className={`w-full h-full flex items-center justify-center ${canAfford || view !== 'available' ? '' : 'bg-gray-700/50'}`}
+          style={canAfford || view !== 'available' ? { background: accentVariant.backgroundGradient } : undefined}
+        >
+          <span className="text-4xl sm:text-5xl md:text-6xl">{image_url}</span>
+        </div>
+      );
+    }
+
+    // R34: Full-bleed placeholder art for empty/default-emoji/broken-image rewards (not clickable)
     return (
-      <div
-        className={`w-full h-full flex items-center justify-center ${canAfford || view !== 'available' ? '' : 'bg-gray-700/50'}`}
-        style={canAfford || view !== 'available' ? { background: accentVariant.backgroundGradient } : undefined}
-      >
-        <span className="text-4xl sm:text-5xl md:text-6xl">{displayUrl ? defaultEmoji : image_url || defaultEmoji}</span>
+      <div className="w-full h-full relative overflow-hidden">
+        <img
+          src={fallbackArts[hashRewardId(id) % fallbackArts.length]}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          draggable={false}
+          className="w-full h-full object-cover"
+        />
+        {!canAfford && view === 'available' && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <span className="text-white/80 text-xs sm:text-sm font-semibold px-2 text-center">{strings.storeCantAffordLabel}</span>
+          </div>
+        )}
       </div>
     );
   };

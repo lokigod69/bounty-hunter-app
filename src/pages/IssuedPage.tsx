@@ -48,6 +48,7 @@ import { CharacterCounter } from '../components/ui/CharacterCounter';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 import { useThemeStrings } from '../hooks/useThemeStrings';
+import emptyIssued from '../assets/generated/empty-issued.webp';
 
 export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
@@ -497,7 +498,7 @@ export default function IssuedPage() {
             {sortedIssuedContracts.length === 0 && !loading ? (
               /* R21: Simplified empty state - uses theme strings */
               <EmptyState
-                icon={<Send />}
+                illustration={emptyIssued}
                 title={t('contracts.noMissionsYet')}
                 body={t('contracts.createOneForCrew', { crewLabel: strings.crewLabel })}
               >

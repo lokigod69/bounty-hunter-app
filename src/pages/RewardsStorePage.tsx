@@ -26,6 +26,7 @@ import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, Fab, ConfirmModal, TabBar } from '../components/ui';
 import { useUI } from '../context/UIContext';
 import { Coin } from '../components/visual/Coin';
+import emptyStore from '../assets/generated/empty-store.webp';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
 
 type Tab = 'available' | 'created' | 'collected';
@@ -223,7 +224,7 @@ const RewardsStorePage: React.FC = () => {
     if (filteredRewards.length === 0) {
       return (
         <EmptyState
-          icon={<ShoppingCart />}
+          illustration={emptyStore}
           title={strings.storeEmptyTitle}
           body={strings.storeEmptyBody}
         >

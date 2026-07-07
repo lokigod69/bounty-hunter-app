@@ -1,6 +1,7 @@
 // src/theme/accentVariants.ts
 // R27: Per-card accent variants for visual differentiation
 // Deterministic (same card always gets same accent) based on stable hash of ID
+// R35: Added getTypeAccentVariant — reward-TYPE-driven accent for mission cards (additive)
 
 import { ThemeId } from './theme.types';
 
@@ -163,6 +164,33 @@ export function getAccentVariant(mode: ThemeId, id: string): AccentVariant {
   const variants = variantsByMode[mode];
   const index = stableHash(id) % variants.length;
   return variants[index];
+}
+
+// ============================================================================
+// R35: Type-based accent (contract-type card accents)
+// ============================================================================
+
+// Credits are gold across ALL modes (gold = credits, matching the coin).
+// Same visual intensity as the mode variants above: border @0.2, glow @0.15.
+const creditGoldVariant: AccentVariant = {
+  backgroundGradient: 'linear-gradient(135deg, rgba(245, 183, 51, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%)',
+  borderColor: 'rgba(245, 183, 51, 0.2)',
+  glowColor: 'rgba(245, 183, 51, 0.15)',
+  className: 'accent-credit-gold',
+};
+
+/**
+ * Get an accent variant driven by the reward TYPE (not a random hash).
+ * - credit → warm gold, consistent across all modes (matches the coin)
+ * - gift/other (text | image) → the mode's primary accent, so gift cards read
+ *   as "the mode color"
+ */
+export function getTypeAccentVariant(
+  mode: ThemeId,
+  rewardType: 'credit' | 'text' | 'image'
+): AccentVariant {
+  if (rewardType === 'credit') return creditGoldVariant;
+  return variantsByMode[mode][0];
 }
 
 /**

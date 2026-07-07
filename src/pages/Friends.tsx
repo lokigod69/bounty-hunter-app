@@ -34,6 +34,7 @@ import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, ConfirmModal, SectionHeader, Spinner, TabBar } from '../components/ui';
 import { avatarFallback } from '../lib/avatar';
+import emptyFriends from '../assets/generated/empty-friends.webp';
 
 // Shared loading skeleton for friend lists (used while profile or friends load)
 function FriendListSkeleton() {
@@ -660,7 +661,7 @@ export default function Friends() {
               </>
             ) : (
               <EmptyState
-                icon={<Users />}
+                illustration={emptyFriends}
                 title={strings.friendsTitle}
                 body={
                   theme.id === 'family'

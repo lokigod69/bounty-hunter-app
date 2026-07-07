@@ -1,8 +1,8 @@
-# NEXT STEP — Bounty Hunter/main — updated 2026-07-08 (9 migrations APPLIED; Phase 2 COMPLETE; awaiting dashboard auth config + commit go)
+# NEXT STEP — Bounty Hunter/main — updated 2026-07-08 (Phase-2 tree COMMITTED 47e7eb7; Phase 3 assets IN FLIGHT)
 
 ## FOR YOU
 1. ✅ DONE 2026-07-08: all 9 migrations APPLIED + verified (6-batch hardening + 3 new Phase-2 migrations). Credit-mint RPC + `user_credits` writes revoked from anon/authenticated; `rejection_reason` + PDF proofs live; 12 storage policies; `profiles.theme`/`onboarding_completed`, `collected_rewards.redeemed_at` + `mark_reward_redeemed`, `invites` table + `get_or_create_invite`/`redeem_invite` all live; tracker has 10 rows. See memory/LOG.md + DECISIONS.md.
-2. ✅ DONE 2026-07-08: remaining Phase 2 shipped — invite links, mode/onboarding persistence, orphan `/profile/edit` removed (Restart Onboarding folded into the profile modal), collected-rewards mark-redeemed. Build ✓ / lint 0 errors / test 44 ✓ / 0 net-new type errors. **Working tree is NOT committed — say the word and I'll commit.**
+2. ✅ DONE 2026-07-08: remaining Phase 2 shipped AND COMMITTED (47e7eb7, on your go) — invite links, mode/onboarding persistence, orphan `/profile/edit` removed, collected-rewards mark-redeemed. Build ✓ / lint 0 errors / test 44 ✓. Phase 3 asset generation now in flight (Codex + gpt-image-2 pipeline).
 3. **Supabase dashboard → Authentication → URL Configuration** for `bounty-hunter-app`: set Site URL + redirect URLs for `http://localhost:6075` and your Vercel domain — magic-link login (and the invite round-trip) won't work until then.
 4. Then log in and eyeball: glass-card modals, badges + History tab, reject/resubmit, per-mode nouns + German, **Share invite link** (Friends + onboarding), **Restart Onboarding** (profile modal), **collected-reward "Mark as redeemed"**, and that mode/onboarding now persist across a fresh device.
 5. FYI: Mumbai region latency from Europe (fine for testing); real user data still only in the old paused `bounty` project.
