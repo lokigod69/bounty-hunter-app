@@ -47,6 +47,7 @@ export interface NewTaskData {
   reward_type: string; // 'credit' or 'text'
   reward_text?: string; // For bounty description or credit amount (stringified number)
   proof_required?: boolean;
+  is_daily?: boolean;
   status: TaskStatus; // Should be 'pending' on creation
   created_by: string; // Added, as it's usually required
   // Add other fields from tasks.Insert as necessary

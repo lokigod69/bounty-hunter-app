@@ -1,8 +1,6 @@
 // src/components/layout/PageQuote.tsx
 // R11: Unified quote/creed component for consistent placement across pages
 
-import React from 'react';
-
 interface PageQuoteProps {
   text: string;
   author?: string;

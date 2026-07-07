@@ -5,7 +5,7 @@
 /**
  * Type of proof submission.
  */
-export type ProofType = 'text' | 'url' | 'image';
+export type ProofType = 'text' | 'url' | 'image' | 'video' | 'document';
 
 /**
  * Payload for proof submission.
@@ -14,7 +14,7 @@ export interface ProofPayload {
   type: ProofType;
   content?: string; // For text proofs
   url?: string; // For URL proofs
-  file?: File; // For file/image proofs
+  file?: File; // For file/image/video/document proofs
 }
 
 /**
@@ -59,8 +59,10 @@ export function validateProofPayload(payload: ProofPayload): ProofValidationResu
       break;
 
     case 'image':
+    case 'video':
+    case 'document':
       if (!file) {
-        errors.push('Image proof must have a file.');
+        errors.push(`${type.charAt(0).toUpperCase()}${type.slice(1)} proof must have a file.`);
       }
       break;
 

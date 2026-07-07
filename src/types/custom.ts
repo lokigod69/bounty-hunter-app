@@ -8,14 +8,9 @@ import type { Database } from './database';
 export type Task = Database['public']['Tables']['tasks']['Row'] & {
   updated_at?: string | null;
 };
-// R25: Extended Profile type to include partner_user_id (added to DB by backend)
-// Phase 2.6: theme + onboarding_completed persisted on profiles
-// (migration 20260708120000). Optional so pre-migration rows/reads stay valid.
-export type Profile = Database['public']['Tables']['profiles']['Row'] & {
-  partner_user_id?: string | null;
-  theme?: string | null;
-  onboarding_completed?: boolean | null;
-};
+// partner_user_id, theme and onboarding_completed are in the generated types
+// since the 2026-07-08 regen (migrations applied to mvbmpcmexkgfairnthux).
+export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type NewTaskData = Database['public']['Tables']['tasks']['Insert'];
 export type UpdateTaskData = Database['public']['Tables']['tasks']['Update'];
 
@@ -25,22 +20,10 @@ export type TaskWithProfiles = Task & {
   creator_profile: Profile | null; // This alias is based on the join in useTasks
 };
 
-// Phase 2.8: collected_rewards.redeemed_at (migration 20260708120100).
-// Overlay because the generated types predate the column.
 export type CollectedRewardRow =
-  Database['public']['Tables']['collected_rewards']['Row'] & {
-    redeemed_at?: string | null;
-  };
+  Database['public']['Tables']['collected_rewards']['Row'];
 
-// Phase 2.5: shareable friend-invite links (migration 20260708120200).
-// The `invites` table is not in the generated database types yet.
-export type Invite = {
-  id: string;
-  token: string;
-  inviter_id: string;
-  created_at: string;
-  revoked: boolean;
-};
+export type Invite = Database['public']['Tables']['invites']['Row'];
 
 // Manually define Enums as they are not in the generated types
 export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'archived' | 'pending_proof' | 'rejected';

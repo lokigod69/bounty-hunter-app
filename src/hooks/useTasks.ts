@@ -277,6 +277,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       proof_type: null,
       rejection_reason: null,
       completed_at: null,
+      approved_at: null,
       is_archived: false,
             profiles: null, // This is the assignee's profile
       creator_profile: null, // This is the creator's profile

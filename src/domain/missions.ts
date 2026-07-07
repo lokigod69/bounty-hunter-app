@@ -4,7 +4,8 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { evaluateStatusChange, StatusChangeContext } from '../core/contracts/contracts.domain';
+import { evaluateStatusChange } from '../core/contracts/contracts.domain';
+import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import type { TaskStatus } from '../types/custom';
 
 export type MissionId = string;
