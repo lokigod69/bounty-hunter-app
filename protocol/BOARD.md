@@ -1,14 +1,13 @@
-# BOARD — Bounty Hunter — updated 2026-07-08
+# BOARD — Bounty Hunter — updated 2026-07-08 night
 
 ## ⚠️ WAITING ON YOU
-- ✅ DONE: Phase-2 tree committed (47e7eb7) on your go.
 - **New project dashboard config** — magic-link login (and the invite round-trip) won't work until Site URL + redirect URLs are set in the Supabase dashboard (Authentication → URL Configuration): add http://localhost:6075 and your Vercel domain.
-- Browser eyeball of Phase 1+2 UI + (once landed) Phase 3 art — unblocked once auth config is set.
+- **Browser eyeball of Phases 1–3** (now includes all the new art: coin, emblems, card accents, heroes, empty states, store placeholders) — unblocked once auth config is set.
 
 ## Workstreams
 | Workstream | Phase/Gate | Last done | Next | State |
 |---|---|---|---|---|
-| main | Premium V1 polish — Phase 2 committed → **Phase 3 assets IN FLIGHT** | Jul 8: committed 47e7eb7; generated 16-asset Phase-3 set via Codex/gpt-image-2 (emblems, heroes, empty states, placeholders, iOS icon/splash); wiring agents running | Review wiring diffs, verify, commit Phase 3; then Phase 4 sound/haptics or task-lifecycle RPCs | 🟢 active |
+| main | Premium V1 polish — **Phases 0–3 COMPLETE + committed** | Jul 8 night: Phase 2 committed (47e7eb7); Phase 3 generated+wired+committed (37b3a4b) — 16 masters via Codex/gpt-image-2, 17 WebP wired by 5 reviewed sub-agents, iOS icon/splash; build/lint/test/tsc green | Your auth config + eyeball; then Phase 4 sound/haptics or task-lifecycle RPCs | 🟢 active |
 
 ## Standing decisions parked for you (not blocking yet)
 - Prod SQL go/no-go whenever a runbook comes up — backup + your review required, always.
@@ -16,6 +15,7 @@
 - ~~Proof types~~ DECIDED 2026-07-07: PDF/text/private all allowed.
 
 ## Recently finished (last 5)
+- 2026-07-08 (night) **Phase 3 visual identity shipped + committed (37b3a4b)**: 16 masters generated via Codex/gpt-image-2 (3 race-duplicates caught by eyeball + regenerated serialized), 17 WebP wired by 5 reviewed sub-agents — raster coin, per-mode gift emblems, type-based card accents, onboarding heroes, 5 empty-state illustrations, 4 store placeholders, iOS icon/splash; Phase-2 tree committed first (47e7eb7)
 - 2026-07-08 (later) Applied all 9 migrations (6-batch hardening + 3 new: profiles theme/onboarding, collected redeemed, invites) to the new DB via psql/pooler, backups first, tracker→10 rows; shipped Phase 2 leftovers via 3 reviewed sub-agents — invite links (/invite/:token + redeem RPC + post-login round-trip), mode/onboarding persistence, orphan /profile/edit deleted + Restart-Onboarding folded into modal, collected-rewards mark-redeemed; build/lint/test green (44), 0 net-new type errors (caught + fixed a build-masked type regression); UNCOMMITTED pending Michael's go
 - 2026-07-08 Supabase revived: Jan-2026 cluster backup restored into NEW project mvbmpcmexkgfairnthux (ap-south-1) via IPv4 session pooler; all data wiped for clean testing (buckets kept); .env.local + supabase link switched; found schema is pre-April-2026 hardening → 6-migration batch queued for Michael's go
 - 2026-07-07 Phase 2 UX coherence (4 sub-agents, 2 waves): noun system implemented per Michael's call, tasks realtime + action badges (review//issued, rejected//), History nav back, rejection loop (persisted 'rejected' + reason + resubmit; migration 20260707220000 unapplied), PDF proofs aligned (migration 20260707221000 unapplied); 41/41 tests

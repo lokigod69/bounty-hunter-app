@@ -4,6 +4,16 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-08 — Phase-3 asset design system: gold-medallion emblems, per-mode materials, type-based accents
+**Status:** active
+**Decision:** The app's generated-art language is **sculpted gold game-medallion**: circular gold ring + four compass gems for emblems (gift emblems in mode materials — guild teal, family honey #F5D76E-ish, couple rose #FF6FAE-ish; coin/credits always gold), painterly dark key-art heroes with mode-accent rim light, thin gold-linework empty-states on #090A0F with radially faded edges, dark still-life reward placeholders. Mission-card accents are now **reward-TYPE-based** (`getTypeAccentVariant`: credit→gold to match the coin, gift→mode primary) instead of the random per-id hash; the hash variant stays on store RewardCards for shelf variety. Reward placeholders replace only the DEFAULT 🎁/broken images — a user-picked emoji always wins. The credit-pouch emblem was generated but deliberately NOT wired (coin already carries credit identity everywhere a value shows).
+**Why:** Roadmap Phase 3 item 2 prescribed emblem + per-type accent; one material language keeps 16 disparate images reading as one product. Type-based accent turns card color into information (what kind of reward) instead of noise.
+
+## 2026-07-08 — Codex image generation: verify every output, serialize regenerations
+**Status:** active
+**Decision:** Parallel `codex:codex-rescue` image tasks are allowed for FIRST-pass batches, but every returned image must be visually verified before use, and any regeneration runs ONE AT A TIME. Rose/pink art keys on GREEN #00FF00; everything else on #FF00FF magenta (defringe: clamp B≤G for magenta, G≤max(R,B) for green).
+**Why:** 3 of 15 parallel runs copied another task's newest PNG from the shared Codex output pool (wrong image, right filename) — silent and only catchable by eyeballing. Serial regens can't race; green key needed because magenta collides with rose subjects.
+
 ## 2026-07-08 — 9-migration batch applied to the new test DB (Michael's explicit go)
 **Status:** active
 **Decision:** On "apply the migration and all else," applied the queued 6 hardening migrations PLUS 3 new Phase-2 migrations to `mvbmpcmexkgfairnthux` via the session pooler + psql (NOT `supabase db push` — the remote tracker held only `20231117000000`, so a push would have replayed every intermediate migration against the already-restored schema). Backups taken before each batch; all 9 recorded in `supabase_migrations.schema_migrations`. New schema: `profiles.theme`/`onboarding_completed`, `collected_rewards.redeemed_at` + `mark_reward_redeemed` RPC, `invites` table + `get_or_create_invite`/`redeem_invite` RPCs.
