@@ -83,10 +83,17 @@ session or memory/LOG.md):
 
 ## Phase 3 — Visual identity & generated assets
 
-Pipeline confirmed working: Codex CLI (v0.128.0) + `gpt-image-2-skill`
-(~/.codex/skills/) → transparent-friendly renders → post-process →
-drop into slots. The full 10-slot spec is in the asset audit; priority
-order:
+Pipeline PROVEN this session (pilot: `assets-src/generated/coin-pilot-v1*.png`):
+Codex CLI (v0.128.0) + `gpt-image-2-skill` generates excellent art but FAKES
+transparency (paints a checkerboard, 24bpp no alpha). Post-process required:
+
+- Circular assets (coins, badges): programmatic circular mask with 3px
+  feather (System.Drawing script used for the pilot) → true 32bpp alpha.
+- Irregular shapes (emblems, illustrations): generate on a solid
+  `#FF00FF` background and chroma-key it out, or run a background
+  remover — do NOT trust the model's "transparent background".
+
+The full 10-slot spec is in the asset audit; priority order:
 
 1. **Coin set** — replace the CSS-gradient SVG face with premium art
    (256px master; 24–80px usage; keep the number as overlaid text so

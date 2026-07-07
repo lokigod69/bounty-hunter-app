@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-07
+Last updated: 2026-07-07 (late evening)
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -12,7 +12,8 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
 
 ## In progress
-- **Uncommitted UI consolidation refactor** in the working tree (27 files, +625/−906): new `src/components/ui/` primitives (AppButton, ConfirmModal, EmptyState, Fab, PageState, SectionHeader), new `src/lib/avatar.ts`; deletes ConfirmDeleteModal, ConfirmDialog, ProofSubmissionModal, TaskCard.css, DoubleCoinValue; touches most pages, themes, and both locale files. Build/test status of this diff unknown; not committed since 2026-06-18.
+- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phase 0 done, Phase 1 (congruence) nearly done — dead-CSS purge pending as of this update. The June UI refactor is committed and verified (8a18540 + fixes 2c569a3); build/lint green, vitest 31/31.
+- Image-asset pipeline: Codex image generation + gpt-image-2-skill (`~/.codex/skills/gpt-image-2-skill/`) is proven. Current pilots in `assets-src/generated/`: coin (`coin-pilot-v1*.png`) and gift emblem (`gift-emblem-pilot-v1.png`, solid `#FF00FF` background).
 
 ## Known problems
 (mostly from `docs/codex-refactor-pass/10_FINAL_HANDOFF.md` + `CODEX_NEXT_STEPS.md`)
@@ -29,7 +30,7 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed.
 
 ## Next actions
-1. Verify the uncommitted UI refactor: `npm run build`, `npm test`, `npm run lint`; then commit it.
-2. Reconcile production migration state (which migrations/proposals applied) and record it here.
-3. Work `CODEX_NEXT_STEPS.md` top items: storage bucket/policy verification, task lifecycle RPCs, regenerate DB types.
-4. Fix low-risk build warnings (`/img/C1.jpg`, chunking, mixed import).
+1. Finish Phase 1 (dead-CSS purge), then Phase 2 UX coherence per `docs/premium-v1/ROADMAP.md` — top items: noun system (needs Michael's call), action badges + tasks realtime (wire orphaned `useTasks.ts` channel), rejection loop, re-enable History nav, invite links, persist theme/onboarding to profiles (prod SQL → runbook + Michael's go).
+2. Continue Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
+3. Reconcile production migration state (which migrations/proposals applied) and record it here.
+4. Work `CODEX_NEXT_STEPS.md` top items: storage bucket/policy verification, task lifecycle RPCs, regenerate DB types.
