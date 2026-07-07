@@ -44,7 +44,7 @@ import {
   ScrollText,
   Heart,
 } from 'lucide-react'; 
-import logo from '../assets/logo5.png'; 
+import logo from '../assets/logo5-small.png'; 
 import CursorTrail from './CursorTrail';
 import UserCredits from './UserCredits'; 
 
