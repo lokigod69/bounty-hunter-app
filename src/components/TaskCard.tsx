@@ -8,13 +8,14 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { Eye, Link, User, Coins } from 'lucide-react';
+import { Eye, Link, User } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { createPortal } from 'react-dom';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { BaseCard } from './ui/BaseCard';
+import { Coin } from './visual/Coin';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 
 import { safeUrlRender } from '../lib/proofConfig';
@@ -151,10 +152,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const collapsedCardBgColor = isArchived
     ? 'bg-slate-800/60 border-slate-600/40 hover:border-slate-500'
     : safeStatus === 'completed'
-    ? 'bg-[#1a1625]/80 border-green-500/40 hover:border-green-400'
+    ? 'bg-slate-900/50 border-green-500/40 hover:border-green-400'
     : safeStatus === 'review'
-    ? 'bg-[#1a1625]/80 border-yellow-500/40 hover:border-yellow-400'
-    : 'bg-[#1a1625]/80'; // Pending/other - border applied via style prop
+    ? 'bg-slate-900/50 border-yellow-500/40 hover:border-yellow-400'
+    : 'bg-slate-900/50'; // Pending/other - border applied via style prop
 
   // R28: Title colors - pending uses neutral white (accent is on border/chip), others stay semantic
   const titleColorClass = isArchived
@@ -391,10 +392,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               {reward_text && (
                 <span className="flex items-center gap-1 text-xs">
                   {reward_type === 'credit' ? (
-                    <>
-                      <Coins size={14} className="text-yellow-400" />
-                      <span className="text-yellow-400 font-semibold">{reward_text}</span>
-                    </>
+                    <Coin size="sm" variant="static" value={parseInt(reward_text, 10) || 0} />
                   ) : (
                     <span className="text-base" title={reward_text}>
                       {reward_text.length <= 2 ? reward_text : '🎁'}

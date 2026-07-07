@@ -3,13 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-@font-face {
-  font-family: 'Mandalore';
-  src: url('/fonts/mandalore/Mandalore.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 /* Universal Box Sizing & Android Fixes */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -73,13 +66,7 @@ html, body {
   font-style: normal;
 }
 
-@font-face {
-  font-family: 'Howdybun';
-  src: url('/fonts/howdybun/Howdybun.otf') format('opentype'),
-       url('/fonts/howdybun/Howdybun.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
+/* (Howdybun display font removed — card titles now use the standard Poppins type scale) */
 
 /* Apply Custom Fonts */
 
@@ -104,28 +91,10 @@ h1 {
   font-family: 'Mandalore', 'Bebas Neue';
 }
 
-/* Target the collapsed card title specifically */
-.task-card h3,
-div[class*="border rounded-lg"] h3,
-.collapsed-title {
-  font-family: 'Howdybun', 'Bebas Neue' !important;
-  font-weight: normal !important;
-  text-shadow: 
-    1px 1px 0 rgba(0,0,0,0.5),
-    -1px -1px 0 rgba(0,0,0,0.5),
-    1px -1px 0 rgba(0,0,0,0.5),
-    -1px 1px 0 rgba(0,0,0,0.5);
-
-}
+/* (Card-title font override removed — titles inherit the Poppins type scale for cross-card consistency) */
 
 /* Body Text */
-body {
-  background-image: url('/img/C1.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
+/* (Removed broken C1.jpg body background — the canonical starfield radial-gradient is defined later) */
 
 body,
 p,
@@ -554,10 +523,10 @@ p,
   --text-accent: var(--accent-blue);
   --text-header: var(--accent-cyan);
 
-  /* Font Families */
-  --font-headers: 'Orbitron', 'Courier New', monospace;
-  --font-body: 'Rajdhani', 'Segoe UI', sans-serif;
-  --font-accent: 'Courier New', monospace;
+  /* Font Families (re-pointed to fonts actually loaded by the app) */
+  --font-headers: 'MandaloreTitle', 'Bebas Neue', sans-serif;
+  --font-body: 'Poppins', 'Inter', 'Segoe UI', sans-serif;
+  --font-accent: 'Poppins', 'Inter', monospace;
 }
 
 /* Route 66 Motel Sign Task Card Redesign */
@@ -899,6 +868,32 @@ body {
     transform: scale(0.98);
   }
   
+  /* CTA button — the single primary action per screen (solid mode accent). */
+  .btn-cta {
+    @apply relative px-5 py-2.5 rounded-lg font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm;
+    background-color: var(--mode-accent);
+    color: #06231d;
+    box-shadow: 0 4px 14px rgba(var(--mode-accent-rgb), 0.35);
+  }
+
+  .btn-cta:hover, .btn-cta:focus {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(var(--mode-accent-rgb), 0.45);
+  }
+
+  .btn-cta:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-cta:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.25);
+    transform: none;
+    box-shadow: none;
+  }
+
   .input-field {
     @apply px-4 py-2 rounded-lg backdrop-blur-sm transition-all duration-300;
     background-color: rgba(var(--accent-blue-rgb), 0.05); /* Subtle background */

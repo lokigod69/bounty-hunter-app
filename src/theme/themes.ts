@@ -40,6 +40,10 @@ export const guildTheme: ThemeDefinition = {
     storeCreateFirstButton: 'Create first bounty',
     dailyLabel: 'Daily mission',
     streakLabel: 'streak',
+    archiveTitle: 'Completed Contracts',
+    archiveSubtitle: 'Your ledger of fulfilled contracts.',
+    archiveEmptyTitle: 'No contracts completed yet',
+    archiveEmptyBody: 'Finish a mission and it lands here for good.',
   },
 };
 
@@ -80,6 +84,10 @@ export const familyTheme: ThemeDefinition = {
     storeCreateFirstButton: 'Create first reward',
     dailyLabel: 'Daily chore',
     streakLabel: 'streak',
+    archiveTitle: 'Completed Chores',
+    archiveSubtitle: 'A record of everything your family has finished.',
+    archiveEmptyTitle: 'Nothing completed yet',
+    archiveEmptyBody: 'Finish a chore and it will be saved here.',
   },
 };
 
@@ -120,6 +128,10 @@ export const coupleTheme: ThemeDefinition = {
     storeCreateFirstButton: 'Create first gift',
     dailyLabel: 'Daily moment',
     streakLabel: 'streak',
+    archiveTitle: 'Completed Requests',
+    archiveSubtitle: 'A timeline of everything you have done together.',
+    archiveEmptyTitle: 'Nothing completed yet',
+    archiveEmptyBody: 'Complete a request and it will live here.',
   },
 };
 

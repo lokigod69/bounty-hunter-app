@@ -45,13 +45,13 @@ import {
   Heart,
 } from 'lucide-react'; 
 import logo from '../assets/logo5.png'; 
-import useClickOutside from '../hooks/useClickOutside';
-import CursorTrail from './CursorTrail'; 
+import CursorTrail from './CursorTrail';
 import UserCredits from './UserCredits'; 
 
 import ProfileEditModal from './ProfileEditModal';
 
 import { soundManager } from '../utils/soundManager';
+import { avatarFallback } from '../lib/avatar';
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -77,13 +77,11 @@ export default function Layout() {
   const avatarCacheBuster = profileUpdatedAt ? `?v=${encodeURIComponent(profileUpdatedAt)}` : '';
   const avatarUrl = avatarUrlBase
     ? `${avatarUrlBase}${avatarCacheBuster}`
-    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
+    : avatarFallback(displayName); // RENDER FALLBACK ONLY (network-free initials)
 
-  const [userMenuOpen, setUserMenuOpen] = useState(false); // State for desktop user menu
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isCursorTrailEnabled, setIsCursorTrailEnabled] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
   // Phase 2: Scroll locking is now handled by UIContext via activeLayer
@@ -112,10 +110,6 @@ export default function Layout() {
     }
   };
 
-  const closeUserMenu = () => setUserMenuOpen(false);
-
-  useClickOutside(userMenuRef, closeUserMenu); // Close user menu when clicking outside
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -127,12 +121,6 @@ export default function Layout() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  useClickOutside(userMenuRef, () => {
-    if (userMenuOpen) {
-      closeUserMenu();
-    }
-  });
 
   // R20: Mode-specific icons for navigation
   const getContractsIcon = () => {
@@ -262,9 +250,16 @@ export default function Layout() {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden ml-4">
-              <button 
+            {/* Mobile: always-visible credit pill + menu button */}
+            <div className="md:hidden ml-4 flex items-center gap-2">
+              <Link
+                to="/rewards-store"
+                className="flex items-center rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors px-2.5 min-h-[44px]"
+                aria-label={`${strings.storeTitle} - Your balance`}
+              >
+                <UserCredits />
+              </Link>
+              <button
                 type="button"
                 onClick={() => {
                   toggleMenu();
@@ -316,14 +311,16 @@ export default function Layout() {
               <X size={24} />
             </button>
             <div className="container mx-auto px-4 py-6 flex flex-col h-full overflow-y-auto">
-                {/* Credits Display - Placed prominently at the top */}
+                {/* Credits Display - prominent glass card linking to the store */}
                 {profile && (
-                  <>
-                    {/* Credits Display - Uses UserCredits component for live updates */}
-                    <div className="px-4 py-3 mb-4 flex justify-center items-center text-6xl font-bold text-amber-300">
-                      <UserCredits />
-                    </div>
-                  </>
+                  <Link
+                    to="/rewards-store"
+                    className="glass-card flex items-center justify-between gap-4 rounded-xl px-5 py-4 mb-6 hover:bg-white/10 transition-colors"
+                    aria-label={`${strings.storeTitle} - Your balance`}
+                  >
+                    <span className="text-sm uppercase tracking-wide text-white/60">{strings.storeCreditsLabel}</span>
+                    <UserCredits />
+                  </Link>
                 )}
             {/* 'NEW CONTRACT' button removed from mobile menu. Functionality moved to IssuedPage.tsx FAB. */}
 
@@ -379,8 +376,8 @@ export default function Layout() {
               ))}
             </nav>
 
-            {/* User Menu Links - Mobile */}
-            <div className="border-t border-white/10 pt-4 mt-4">
+            {/* User Menu Links - Mobile (hidden until account links exist) */}
+            <div className={userMenuItems.length > 0 ? "border-t border-white/10 pt-4 mt-4" : "hidden"}>
               <p className="px-4 pb-2 text-xs uppercase text-white/50">{t('profile.account')}</p>
               {userMenuItems.map((item) => (
                 <Link
@@ -399,11 +396,6 @@ export default function Layout() {
                   <span className="text-lg">{item.name}</span>
                 </Link>
               ))}
-            </div>
-
-            {/* Language Switcher - Mobile */}
-            <div className="mt-6 mb-4 flex justify-center">
-
             </div>
 
             {/* Sign Out Button */}

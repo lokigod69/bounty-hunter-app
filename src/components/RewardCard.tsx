@@ -13,6 +13,7 @@ import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
 import { RewardImageLightbox } from './modals/RewardImageLightbox';
 import { getAccentVariant } from '../theme/accentVariants';
+import { avatarFallback } from '../lib/avatar';
 import type { RewardStoreItem } from '../hooks/useRewardsStore';
 
 export type Reward = RewardStoreItem;
@@ -152,7 +153,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
               <span className="text-xs text-white/50">From:</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
                 <img
-                  src={reward.creator_profile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(reward.creator_profile.display_name || 'user')}`}
+                  src={reward.creator_profile.avatar_url || avatarFallback(reward.creator_profile.display_name)}
                   alt={reward.creator_profile.display_name || 'Creator'}
                   className="w-full h-full object-cover"
                 />
@@ -164,7 +165,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
               <span className="text-xs text-white/50">To:</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
                 <img
-                  src={reward.assignee_profile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(reward.assignee_profile.display_name || 'user')}`}
+                  src={reward.assignee_profile.avatar_url || avatarFallback(reward.assignee_profile.display_name)}
                   alt={reward.assignee_profile.display_name || 'Assignee'}
                   className="w-full h-full object-cover"
                 />

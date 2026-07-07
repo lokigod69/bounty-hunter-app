@@ -7,6 +7,7 @@ import { useFriends } from '../hooks/useFriends';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import { Heart, AlertCircle } from 'lucide-react';
+import { avatarFallback } from '../lib/avatar';
 
 interface FriendSelectorProps {
   selectedFriend: string | null;
@@ -76,7 +77,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
       return (
         <div className={`p-3 bg-gray-800/80 border border-teal-500/30 rounded-lg flex items-center gap-3 ${className}`}>
           <img
-            src={partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(partnerProfile.email || 'user')}`}
+            src={partnerProfile.avatar_url || avatarFallback(partnerProfile.email)}
             alt={partnerProfile.display_name || 'partner'}
             className="w-8 h-8 rounded-full border-2 border-teal-400"
           />
@@ -99,7 +100,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
         {selectedFriendProfile ? (
           <div className="flex items-center gap-3">
             <img
-              src={selectedFriendProfile.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(selectedFriendProfile.email || 'user')}`}
+              src={selectedFriendProfile.avatar_url || avatarFallback(selectedFriendProfile.email)}
               alt={selectedFriendProfile.display_name || 'user avatar'}
               className="w-8 h-8 rounded-full"
             />
@@ -131,7 +132,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
                     aria-selected={selectedFriend === friend.id}
                   >
                     <img
-                      src={friend.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(friend.email || 'user')}`}
+                      src={friend.avatar_url || avatarFallback(friend.email)}
                       alt={friend.display_name || 'user avatar'}
                       className="w-8 h-8 rounded-full"
                     />

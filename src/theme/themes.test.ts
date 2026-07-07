@@ -39,6 +39,10 @@ const requiredThemeStringKeys = [
   'storeCreateFirstButton',
   'dailyLabel',
   'streakLabel',
+  'archiveTitle',
+  'archiveSubtitle',
+  'archiveEmptyTitle',
+  'archiveEmptyBody',
 ] as const;
 
 describe('theme string contract', () => {

@@ -241,7 +241,11 @@
       "storeEmptyBody": "Erstes Kopfgeld erstellen.",
       "storeCreateFirstButton": "Erstes Kopfgeld erstellen",
       "dailyLabel": "Tägliche Mission",
-      "streakLabel": "Serie"
+      "streakLabel": "Serie",
+      "archiveTitle": "Abgeschlossene Aufträge",
+      "archiveSubtitle": "Dein Verzeichnis erfüllter Aufträge.",
+      "archiveEmptyTitle": "Noch keine Aufträge abgeschlossen",
+      "archiveEmptyBody": "Schließe eine Mission ab und sie wird hier dauerhaft festgehalten."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -275,7 +279,11 @@
       "storeEmptyBody": "Erste Belohnung erstellen.",
       "storeCreateFirstButton": "Erste Belohnung erstellen",
       "dailyLabel": "Tägliche Aufgabe",
-      "streakLabel": "Serie"
+      "streakLabel": "Serie",
+      "archiveTitle": "Abgeschlossene Aufgaben",
+      "archiveSubtitle": "Eine Übersicht über alles, was deine Familie erledigt hat.",
+      "archiveEmptyTitle": "Noch nichts abgeschlossen",
+      "archiveEmptyBody": "Erledige eine Aufgabe und sie wird hier gespeichert."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -309,7 +317,11 @@
       "storeEmptyBody": "Erstes Geschenk erstellen.",
       "storeCreateFirstButton": "Erstes Geschenk erstellen",
       "dailyLabel": "Täglicher Moment",
-      "streakLabel": "Serie"
+      "streakLabel": "Serie",
+      "archiveTitle": "Abgeschlossene Wünsche",
+      "archiveSubtitle": "Eine Chronik von allem, was ihr gemeinsam getan habt.",
+      "archiveEmptyTitle": "Noch nichts abgeschlossen",
+      "archiveEmptyBody": "Erfülle einen Wunsch und er lebt hier weiter."
     }
   }
 }

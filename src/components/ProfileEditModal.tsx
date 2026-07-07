@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
+import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 
 
@@ -28,12 +29,28 @@ interface ProfileEditModalProps {
   onClose: () => void;
 }
 
-// R10/R20: Mode switcher configuration with descriptions
-const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: string }[] = [
-  { id: 'guild', label: 'Guild', icon: Shield, hint: 'For friends & gaming groups' },
-  { id: 'family', label: 'Family', icon: Home, hint: 'For household chores' },
-  { id: 'couple', label: 'Couple', icon: Heart, hint: 'For partners & loved ones' },
-];
+// VISUAL: Per-mode accent hex used to preview each mode's identity (matches Onboarding).
+const MODE_ACCENT_HEX: Record<ThemeId, string> = {
+  guild: '#20F9D2',
+  family: '#F5D76E',
+  couple: '#FF6FAE',
+};
+
+// Icons per mode; labels/descriptions are sourced from theme definitions below.
+const MODE_ICON: Record<ThemeId, typeof Shield> = {
+  guild: Shield,
+  family: Home,
+  couple: Heart,
+};
+
+// R10/R20: Mode switcher configuration, with label/hint sourced from theme definitions.
+const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: string }[] =
+  Object.values(themesById).map((theme) => ({
+    id: theme.id,
+    label: theme.label,
+    icon: MODE_ICON[theme.id],
+    hint: theme.description,
+  }));
 
 // Temporary V1 public gating: Family/Couple remain available in dev for internal testing.
 const VISIBLE_PROFILE_MODE_OPTIONS = import.meta.env.DEV
@@ -322,6 +339,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                   {VISIBLE_PROFILE_MODE_OPTIONS.map((option) => {
                     const Icon = option.icon;
                     const isActive = themeId === option.id;
+                    const accent = MODE_ACCENT_HEX[option.id];
                     return (
                       <button
                         key={option.id}
@@ -330,13 +348,23 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                           setThemeId(option.id);
                           soundManager.play('toggleOn');
                         }}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                        style={
                           isActive
-                            ? 'bg-cyan-500/20 text-cyan-400 shadow-sm'
-                            : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                            ? {
+                                borderColor: accent,
+                                color: accent,
+                                boxShadow: `0 0 16px ${accent}40`,
+                                backgroundColor: `${accent}14`,
+                              }
+                            : undefined
+                        }
+                        className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-[44px] py-2 px-3 rounded-lg border-2 text-xs font-semibold transition-all ${
+                          isActive
+                            ? ''
+                            : 'border-transparent text-white/60 hover:text-white/80 hover:bg-white/5'
                         }`}
                       >
-                        <Icon size={16} className={isActive ? 'text-cyan-400' : ''} />
+                        <Icon size={16} style={isActive ? { color: accent } : undefined} />
                         <span className="hidden sm:inline">{option.label}</span>
                       </button>
                     );

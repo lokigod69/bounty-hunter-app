@@ -23,7 +23,6 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client (still used for create/delete)
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
 import TaskCard from '../components/TaskCard';
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TaskForm, { type NewTaskData as TaskFormData, type Task as TaskFormTask } from '../components/TaskForm';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +32,7 @@ import type { IssuedContract } from '../hooks/useIssuedContracts';
 
 // Define TaskStatus locally based on known statuses
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
-import { Clock, AlertTriangle, CheckCircle, DatabaseZap, PlusCircle, Clock3, Send } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText // Added PlusCircle for FAB
+import { Clock, AlertTriangle, CheckCircle, Plus, Clock3, Send } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -43,7 +42,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
-import { BaseCard } from '../components/ui/BaseCard';
+import { AppButton, EmptyState, PageState, SectionHeader, Fab, ConfirmModal } from '../components/ui';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 
@@ -359,20 +358,29 @@ export default function IssuedPage() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
-        <DatabaseZap size={48} className="text-teal-400 animate-pulse mb-4" />
-        <p className="text-xl text-slate-300">{t('contracts.loadingMissions')}</p>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title={strings.issuedPageTitle}
+          subtitle={strings.issuedPageSubtitle}
+        />
+        <PageBody>
+          <PageState state="loading" message={t('contracts.loadingMissions')} />
+        </PageBody>
+      </PageContainer>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-white flex flex-col items-center justify-center">
-        <AlertTriangle size={48} className="text-red-500 mb-4" />
-        <p className="text-xl text-red-400">{t('contracts.errorLoadingMissions', { error })}</p>
-        <p className="text-sm text-slate-400">{t('contracts.errorLoadingSuggestion')}</p>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title={strings.issuedPageTitle}
+          subtitle={strings.issuedPageSubtitle}
+        />
+        <PageBody>
+          <PageState state="error" message={error} onRetry={refetchIssuedContracts} />
+        </PageBody>
+      </PageContainer>
     );
   }
 
@@ -428,15 +436,11 @@ export default function IssuedPage() {
 
           {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
           {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
-            <button
+            <Fab
               onClick={handleCreateNewContract}
-              className="fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 bg-teal-500 hover:bg-teal-600 text-white p-4 min-w-[56px] min-h-[56px] flex items-center justify-center bottom-4 right-4 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto"
-              aria-label="Create new mission"
-              title="Create new mission"
-              data-testid="missions-fab"
-            >
-              <PlusCircle size={28} />
-            </button>
+              label="Create new mission"
+              icon={<Plus size={24} />}
+            />
           )}
 
           <StatsRow
@@ -464,37 +468,33 @@ export default function IssuedPage() {
 
           <PageBody>
             {sortedIssuedContracts.length === 0 && !loading ? (
-              <div className="text-center py-10">
-                <DatabaseZap size={48} className="text-teal-400 mx-auto mb-4" />
-                {/* R21: Simplified empty state - uses theme strings */}
-                <p className="text-subtitle text-slate-300 mb-6">
-                  No missions yet. Create one for your {strings.crewLabel}!
-                </p>
-                <button
+              /* R21: Simplified empty state - uses theme strings */
+              <EmptyState
+                icon={<Send />}
+                title="No missions yet"
+                body={`Create one for your ${strings.crewLabel}!`}
+              >
+                <AppButton
+                  variant="cta"
                   onClick={handleCreateNewContract}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+                  icon={<Plus size={20} />}
                   data-testid="missions-empty-cta"
                   aria-label="Create new mission"
                 >
-                  <PlusCircle size={20} />
                   Create new mission
-                </button>
-              </div>
+                </AppButton>
+              </EmptyState>
             ) : (
               <>
                 {/* Section 1 - Pending/Active Missions */}
                 <div className="space-y-4">
-                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
-                    <Send size={20} className="text-orange-400" />
-                    {t('contracts.open', 'Pending')}
-                  </h2>
+                  <SectionHeader
+                    title={t('contracts.open', 'Pending')}
+                    count={pendingMissions.length}
+                    accent="default"
+                  />
                   {pendingMissions.length === 0 ? (
-                    <BaseCard className="border-orange-500/20">
-                      <div className="text-center py-6">
-                        <Send size={40} className="mx-auto mb-3 text-orange-400/60" />
-                        <p className="text-body text-white/70">All missions have been started!</p>
-                      </div>
-                    </BaseCard>
+                    <EmptyState icon={<Send />} title="All missions have been started!" />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {pendingMissions.map(task => (
@@ -518,17 +518,13 @@ export default function IssuedPage() {
 
                 {/* Section 2 - Ready for Review */}
                 <div className="space-y-4">
-                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
-                    <Clock3 size={20} className="text-yellow-400" />
-                    {t('contracts.inReview', 'Ready for Review')}
-                  </h2>
+                  <SectionHeader
+                    title={t('contracts.inReview', 'Ready for Review')}
+                    count={reviewMissions.length}
+                    accent="warning"
+                  />
                   {reviewMissions.length === 0 ? (
-                    <BaseCard className="border-yellow-500/20">
-                      <div className="text-center py-6">
-                        <Clock3 size={40} className="mx-auto mb-3 text-yellow-400/60" />
-                        <p className="text-body text-white/70">Nothing waiting for your review.</p>
-                      </div>
-                    </BaseCard>
+                    <EmptyState icon={<Clock3 />} title="Nothing waiting for your review." />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {reviewMissions.map(task => (
@@ -552,17 +548,13 @@ export default function IssuedPage() {
 
                 {/* Section 3 - Completed Missions */}
                 <div className="space-y-4">
-                  <h2 className="text-subtitle text-white font-semibold flex items-center gap-2">
-                    <CheckCircle size={20} className="text-green-400" />
-                    {t('contracts.completed', 'Completed')}
-                  </h2>
+                  <SectionHeader
+                    title={t('contracts.completed', 'Completed')}
+                    count={completedMissions.length}
+                    accent="success"
+                  />
                   {completedMissions.length === 0 ? (
-                    <BaseCard className="border-green-500/20">
-                      <div className="text-center py-6">
-                        <CheckCircle size={40} className="mx-auto mb-3 text-green-400/60" />
-                        <p className="text-body text-white/70">No completed missions yet.</p>
-                      </div>
-                    </BaseCard>
+                    <EmptyState icon={<CheckCircle />} title="No completed missions yet." />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {completedMissions.map(task => (
@@ -594,13 +586,16 @@ export default function IssuedPage() {
             )}
           </PageBody>
 
-          <ConfirmDeleteModal
+          <ConfirmModal
             isOpen={isDeleteModalOpen}
             onClose={handleCloseDeleteModal}
             onConfirm={handleConfirmDeleteTask}
             title="Confirm Delete Contract"
             message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
-            isConfirming={isDeleting}
+            confirmLabel="Delete"
+            loadingLabel="Deleting…"
+            variant="danger"
+            loading={isDeleting}
           />
         </PageContainer>
       </PullToRefresh>

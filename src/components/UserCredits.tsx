@@ -8,7 +8,7 @@
 // - Added logic to initialize user_credits record with 0 balance if not found for an authenticated user, using upsert to prevent conflicts.
 // MOBILE FIX: Disabled realtime subscriptions on mobile devices to prevent WebSocket connection storms.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { Coin } from './visual/Coin';
 
@@ -134,8 +134,43 @@ const useUserCredits = () => {
   return { credits, loading, error };
 };
 
+// Smoothly animates the displayed balance when it changes (the "living credit HUD").
+function useCountUp(target: number, duration = 600): number {
+  const [value, setValue] = useState(target);
+  const prevRef = useRef(target);
+  useEffect(() => {
+    const from = prevRef.current;
+    const to = target;
+    if (from === to) return;
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      prevRef.current = to;
+      setValue(to);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(Math.round(from + (to - from) * eased));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        prevRef.current = to;
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
 const UserCredits: React.FC = () => {
   const { credits, loading, error } = useUserCredits();
+  const animatedValue = useCountUp(credits ?? 0);
 
   if (loading) {
     return (
@@ -173,13 +208,11 @@ const UserCredits: React.FC = () => {
     return value.toLocaleString();
   };
 
-  const displayValue = credits ?? 0;
-
   return (
     <div className="credit-badge">
       {/* Decorative coin with ¢ symbol - balance shown as text */}
       <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
-      <span>{formatCredits(displayValue)}</span>
+      <span>{formatCredits(animatedValue)}</span>
     </div>
   );
 };

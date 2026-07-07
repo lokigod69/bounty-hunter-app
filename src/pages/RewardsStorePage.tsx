@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
-import { Plus, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { Plus, ShoppingCart } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
 import { usePurchaseBounty } from '../hooks/usePurchaseBounty';
 import { useDeleteBounty } from '../hooks/useDeleteBounty';
@@ -18,12 +18,12 @@ import { useCollectedRewards } from '../hooks/useCollectedRewards';
 import RewardCard, { Reward } from '../components/RewardCard';
 import CreateBountyModal from '../components/CreateBountyModal';
 import EditBountyModal from '../components/EditBountyModal';
-import ConfirmDialog from '../components/ConfirmDialog';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
+import { PageState, Fab, ConfirmModal } from '../components/ui';
 import { Coin } from '../components/visual/Coin';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
 
@@ -139,26 +139,11 @@ const RewardsStorePage: React.FC = () => {
 
   const renderContent = () => {
     if (isLoadingRewards) {
-      return <div className="text-center text-slate-400">{t('rewards.loading')}</div>;
+      return <PageState state="loading" message={t('rewards.loading')} />;
     }
 
     if (rewardsError) {
-      return (
-        <BaseCard className="bg-red-900/20 border-red-500/30">
-          <div className="text-center py-8">
-            <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-            <h3 className="text-subtitle text-white font-semibold mb-2">Cannot load rewards right now</h3>
-            <p className="text-body text-white/70 mb-4">{rewardsError}</p>
-            <button
-              onClick={() => fetchRewards()}
-              className="btn-primary flex items-center justify-center gap-2 mx-auto"
-            >
-              <ShoppingCart size={20} />
-              Retry
-            </button>
-          </div>
-        </BaseCard>
-      );
+      return <PageState state="error" message={rewardsError} onRetry={() => fetchRewards()} />;
     }
 
     // Handle collected tab separately (uses different data source)
@@ -199,7 +184,7 @@ const RewardsStorePage: React.FC = () => {
 
       // R33: Use same grid layout as Available/My Bounties for consistency
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
           {collectedRewards.map((reward) => (
             <RewardCard
               key={reward.collection_id}
@@ -248,7 +233,7 @@ const RewardsStorePage: React.FC = () => {
 
     // My Bounties and Available: Grid layout with RewardCards
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
         {filteredRewards.map(reward => (
           <RewardCard
             key={reward.id}
@@ -273,30 +258,63 @@ const RewardsStorePage: React.FC = () => {
         />
 
         {/* R32: Balance Card - coin with value is the focal point */}
+        {/* V1: Vault hero - gold accent ring + subtle gradient make the balance aspirational */}
         {!creditsLoading && (
           <div className="mb-6">
-            <BaseCard className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
-              <div className="flex flex-col">
-                <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
-                  {strings.storeCreditsLabel}
-                </span>
-                {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
-                {(userCredits ?? 0) === 0 ? (
-                  <span className="text-sm text-white/70 mt-1">
-                    Complete {strings.missionPlural} to earn {strings.tokenPlural}
+            <BaseCard
+              className="relative overflow-hidden border-yellow-500/30 px-4 py-4 sm:px-6 sm:py-5"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(245,215,110,0.08) 0%, rgba(245,215,110,0) 55%)',
+                boxShadow: 'inset 0 1px 0 0 rgba(245,215,110,0.25)',
+              }}
+            >
+              {/* Gold top accent line */}
+              <div
+                className="absolute inset-x-0 top-0 h-px"
+                style={{
+                  background:
+                    'linear-gradient(90deg, rgba(245,215,110,0) 0%, rgba(245,215,110,0.7) 50%, rgba(245,215,110,0) 100%)',
+                }}
+              />
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
+                    {strings.storeCreditsLabel}
                   </span>
-                ) : activeTab === 'available' && affordableCount > 0 ? (
-                  <span className="text-sm text-teal-400/80 mt-1">
-                    {strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? strings.rewardSingular : strings.rewardPlural}
+                  {/* V1: Gold shimmering balance number is the currency identity */}
+                  <span className="text-display font-bold leading-none animate-shimmer-credit">
+                    {userCredits ?? 0}
                   </span>
-                ) : activeTab === 'available' && cheapestUnaffordable ? (
-                  <span className="text-sm text-white/70 mt-1">
-                    {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} more to "{cheapestUnaffordable.name}"
-                  </span>
-                ) : null}
+                  {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
+                  {(userCredits ?? 0) === 0 ? (
+                    <span className="text-sm text-white/70 mt-1">
+                      Complete {strings.missionPlural} to earn {strings.tokenPlural}
+                    </span>
+                  ) : activeTab === 'available' && affordableCount > 0 ? (
+                    <span className="text-sm text-teal-400/80 mt-1">
+                      {strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? strings.rewardSingular : strings.rewardPlural}
+                    </span>
+                  ) : activeTab === 'available' && cheapestUnaffordable ? (
+                    <>
+                      <span className="text-sm text-white/70 mt-1">
+                        {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} more to "{cheapestUnaffordable.name}"
+                      </span>
+                      {/* V1: Progress-to-next-reward bar (gold fill, clamped 0-100%) */}
+                      <div className="mt-2 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-yellow-400 transition-all duration-500"
+                          style={{
+                            width: `${Math.min(100, Math.max(0, ((userCredits ?? 0) / (cheapestUnaffordable.credit_cost || 1)) * 100))}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+                {/* R32: Coin with value is now the primary balance display */}
+                <Coin size="xl" variant="subtle-spin" value={userCredits ?? 0} />
               </div>
-              {/* R32: Coin with value is now the primary balance display */}
-              <Coin size="xl" variant="subtle-spin" value={userCredits ?? 0} />
             </BaseCard>
           </div>
         )}
@@ -342,13 +360,11 @@ const RewardsStorePage: React.FC = () => {
         </PageBody>
 
       {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
-      <button
+      <Fab
         onClick={() => setCreateModalOpen(true)}
-        className="fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 bg-teal-500 hover:bg-teal-600 text-white p-4 min-w-[56px] min-h-[56px] flex items-center justify-center bottom-4 right-4 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto"
-        aria-label={t('rewards.createBountyButton')}
-      >
-        <Plus size={24} />
-      </button>
+        label={t('rewards.createBountyButton')}
+        icon={<Plus size={24} />}
+      />
 
       <CreateBountyModal 
         isOpen={isCreateModalOpen} 
@@ -367,13 +383,17 @@ const RewardsStorePage: React.FC = () => {
         bounty={selectedBounty}
       />
 
-        <ConfirmDialog
+        <ConfirmModal
           isOpen={isConfirmDialogOpen}
           onClose={() => setConfirmDialogOpen(false)}
           onConfirm={onConfirmDelete}
           title={t('rewards.confirmDialog.deleteTitle')}
           message={t('rewards.confirmDialog.deleteMessage')}
-          isLoading={isDeleting}
+          variant="danger"
+          loading={isDeleting}
+          confirmLabel={t('rewards.confirmDialog.confirmButton')}
+          cancelLabel={t('rewards.confirmDialog.cancelButton')}
+          loadingLabel={t('rewards.confirmDialog.deletingButton')}
         />
       </PageContainer>
     </PullToRefresh>

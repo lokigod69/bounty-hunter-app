@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { toast } from 'react-hot-toast';
-import { AlertTriangle, CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { CheckCircle, CheckCircle2, Clock, Clock3, DatabaseZap, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -31,6 +31,7 @@ import { PageBody } from '../components/layout/PageBody';
 import { useUI } from '../context/UIContext';
 import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
+import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
 import { useNavigate } from 'react-router-dom';
 
@@ -265,10 +266,15 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="text-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto"></div>
-        <p className="mt-4 text-white/50">{t('common.loadingContracts')}</p>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title={strings.inboxTitle}
+          subtitle={strings.inboxSubtitle}
+        />
+        <PageBody>
+          <PageState state="loading" message={t('common.loadingContracts')} />
+        </PageBody>
+      </PageContainer>
     );
   }
 
@@ -277,20 +283,11 @@ export default function Dashboard() {
       <PageContainer>
         <PageHeader title={strings.inboxTitle} />
         <PageBody>
-          <BaseCard className="bg-red-900/20 border-red-500/30">
-            <div className="text-center py-8">
-              <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-subtitle text-white font-semibold mb-2">We're having trouble loading your missions</h3>
-              <p className="text-body text-white/70 mb-4">{error}</p>
-              <button
-                onClick={() => refetchAssignedContracts?.()}
-                className="btn-primary flex items-center justify-center gap-2 mx-auto"
-              >
-                <DatabaseZap size={20} />
-                Retry
-              </button>
-            </div>
-          </BaseCard>
+          <PageState
+            state="error"
+            message={error}
+            onRetry={() => refetchAssignedContracts?.()}
+          />
         </PageBody>
       </PageContainer>
     );
@@ -326,7 +323,7 @@ export default function Dashboard() {
               icon: <ScrollText size={32} />,
               value: pendingCount,
               label: t('contracts.open'),
-              iconColor: 'text-red-400',
+              iconColor: 'text-[var(--mode-accent)]',
             },
             {
               icon: <Clock size={32} />,
@@ -346,53 +343,54 @@ export default function Dashboard() {
         <PageBody>
           {/* Section 1 - Do this now */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{strings.sectionDoNowTitle}</h2>
+            <SectionHeader title={strings.sectionDoNowTitle} count={doNowMissions.length} accent="default" />
             {doNowMissions.length === 0 ? (
-              <BaseCard>
-                <div className="text-center py-8">
-                  <DatabaseZap size={48} className="mx-auto mb-4 text-teal-400" />
-                  {/* R14: Mode-aware empty state copy for inbox */}
-                  <h3 className="text-subtitle text-white/90 mb-2">
-                    {theme.id === 'guild' && 'No missions right now'}
-                    {theme.id === 'family' && 'No chores assigned'}
-                    {theme.id === 'couple' && 'No requests yet'}
-                  </h3>
-                  <p className="text-body text-white/60 mb-4">
-                    {theme.id === 'guild' && 'Create a mission or check the store.'}
-                    {theme.id === 'family' && 'You\'re all clear for now.'}
-                    {theme.id === 'couple' && 'When your partner sends you a request, it will show up here.'}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
-                    {/* R14: In couple mode, primary CTA is to create for partner */}
-                    {theme.id === 'couple' ? (
-                      <button
-                        onClick={() => navigate('/issued')}
-                        className="btn-secondary flex items-center justify-center gap-2"
-                      >
-                        <PlusCircle size={20} />
-                        Create {strings.missionSingular} for your {strings.crewLabel}
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => navigate('/issued')}
-                          className="btn-primary flex items-center justify-center gap-2"
-                        >
-                          <PlusCircle size={20} />
-                          Create new {strings.missionSingular}
-                        </button>
-                        <button
-                          onClick={() => navigate('/rewards-store')}
-                          className="btn-secondary flex items-center justify-center gap-2"
-                        >
-                          <ShoppingCart size={20} />
-                          Visit {strings.storeTitle}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </BaseCard>
+              <EmptyState
+                icon={<DatabaseZap />}
+                /* R14: Mode-aware empty state copy for inbox */
+                title={
+                  theme.id === 'guild'
+                    ? 'No missions right now'
+                    : theme.id === 'family'
+                      ? 'No chores assigned'
+                      : 'No requests yet'
+                }
+                body={
+                  theme.id === 'guild'
+                    ? 'Create a mission or check the store.'
+                    : theme.id === 'family'
+                      ? 'You\'re all clear for now.'
+                      : 'When your partner sends you a request, it will show up here.'
+                }
+              >
+                {/* R14: In couple mode, primary CTA is to create for partner */}
+                {theme.id === 'couple' ? (
+                  <AppButton
+                    variant="secondary"
+                    icon={<PlusCircle size={20} />}
+                    onClick={() => navigate('/issued')}
+                  >
+                    Create {strings.missionSingular} for your {strings.crewLabel}
+                  </AppButton>
+                ) : (
+                  <>
+                    <AppButton
+                      variant="cta"
+                      icon={<PlusCircle size={20} />}
+                      onClick={() => navigate('/issued')}
+                    >
+                      Create new {strings.missionSingular}
+                    </AppButton>
+                    <AppButton
+                      variant="secondary"
+                      icon={<ShoppingCart size={20} />}
+                      onClick={() => navigate('/rewards-store')}
+                    >
+                      Visit {strings.storeTitle}
+                    </AppButton>
+                  </>
+                )}
+              </EmptyState>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                 {doNowMissions.map(task => (
@@ -414,14 +412,12 @@ export default function Dashboard() {
 
           {/* Section 2 - Waiting for approval */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{strings.sectionWaitingApprovalTitle}</h2>
+            <SectionHeader title={strings.sectionWaitingApprovalTitle} count={waitingApprovalMissions.length} accent="warning" />
             {waitingApprovalMissions.length === 0 ? (
-              <BaseCard className="border-yellow-500/20">
-                <div className="text-center py-6">
-                  <Clock3 size={40} className="mx-auto mb-3 text-yellow-400/60" />
-                  <p className="text-body text-white/70">Nothing waiting for approval.</p>
-                </div>
-              </BaseCard>
+              <EmptyState
+                icon={<Clock3 />}
+                title="Nothing waiting for approval."
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                 {waitingApprovalMissions.map(task => (
@@ -443,14 +439,12 @@ export default function Dashboard() {
 
           {/* Section 3 - Recently completed */}
           <div className="space-y-4">
-            <h2 className="text-subtitle text-white font-semibold">{strings.sectionCompletedTitle}</h2>
+            <SectionHeader title={strings.sectionCompletedTitle} count={completedMissions.length} accent="success" />
             {completedMissions.length === 0 ? (
-              <BaseCard className="border-green-500/20">
-                <div className="text-center py-6">
-                  <CheckCircle2 size={40} className="mx-auto mb-3 text-green-400/60" />
-                  <p className="text-body text-white/70">You haven't completed any {strings.missionPlural} yet.</p>
-                </div>
-              </BaseCard>
+              <EmptyState
+                icon={<CheckCircle2 />}
+                title={`You haven't completed any ${strings.missionPlural} yet.`}
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                 {completedMissions.map(task => (

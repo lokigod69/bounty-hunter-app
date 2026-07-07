@@ -5,6 +5,10 @@
 import { useState, useEffect } from 'react';
 import { allQuotes, Quote } from '../lib/quotes';
 
+// Keep daily quotes short enough to read at a glance on mobile.
+// Long, multi-clause passages wrap to many lines on an iPhone and break the tone.
+const SHORT_QUOTES: Quote[] = allQuotes.filter((q) => q.text.length <= 140);
+
 const fisherYatesShuffle = <T>(array: T[]): T[] => {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -29,7 +33,7 @@ export const useDailyQuote = (): Quote | null => {
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || allQuotes.length === 0) return;
+    if (typeof window === 'undefined' || SHORT_QUOTES.length === 0) return;
 
     const todayStr = getTodayDateString();
     
@@ -39,7 +43,7 @@ export const useDailyQuote = (): Quote | null => {
 
     if (todayStr !== lastQuoteDate || shuffledQuotes.length === 0) {
       if (currentIndex >= shuffledQuotes.length - 1 || shuffledQuotes.length === 0) {
-        shuffledQuotes = fisherYatesShuffle(allQuotes);
+        shuffledQuotes = fisherYatesShuffle(SHORT_QUOTES);
         currentIndex = 0;
         localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
       } else {
@@ -51,7 +55,7 @@ export const useDailyQuote = (): Quote | null => {
     }
 
     if (currentIndex < 0 || currentIndex >= shuffledQuotes.length) {
-      shuffledQuotes = fisherYatesShuffle(allQuotes);
+      shuffledQuotes = fisherYatesShuffle(SHORT_QUOTES);
       currentIndex = 0;
       localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
       localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, String(currentIndex));

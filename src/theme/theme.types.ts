@@ -39,6 +39,11 @@ export interface ThemeStrings {
   storeCreateFirstButton: string; // e.g. "Create first bounty"
   dailyLabel: string; // e.g. "Daily mission"
   streakLabel: string; // e.g. "streak"
+  // Archive / completed-history page
+  archiveTitle: string; // e.g. "Completed Contracts"
+  archiveSubtitle: string;
+  archiveEmptyTitle: string;
+  archiveEmptyBody: string;
 }
 
 export interface ThemeDefinition {

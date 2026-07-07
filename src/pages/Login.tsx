@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { getAuthRedirectTo } from '../lib/authRedirect';
+import { AppButton } from '../components/ui';
 
 const Login: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -170,7 +171,7 @@ const Login: React.FC = () => {
   // Show loading state while Supabase is initializing or processing auth callback
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white">Loading...</p>
@@ -183,7 +184,7 @@ const Login: React.FC = () => {
   // But show loading state here as well to prevent flash of login form
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white">Signing you in...</p>
@@ -193,21 +194,20 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center text-white p-4">
       <img src="/logo5.png" alt="Bounty Hunter" className="w-24 h-24 mb-4" />
 
-      <h1 className="font-mandalore text-5xl font-bold tracking-wider mb-8 text-teal-400">
-        BOUNTY HUNTER
-      </h1>
+      <h1 className="text-display app-title text-[var(--mode-accent)] mb-2">BOUNTY HUNTER</h1>
+      <p className="text-meta text-white/50 mb-8">Run missions. Earn credits. Claim loot.</p>
 
-      <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-slate-300 mb-6">Welcome</h2>
+      <div className="glass-card w-full max-w-sm p-8 rounded-2xl">
+        <h2 className="text-subtitle text-white text-center mb-6">Welcome</h2>
 
         {/* Google OAuth Button - Primary option */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-3 px-4 mb-4 bg-white hover:bg-gray-100 rounded-md text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full min-h-[48px] py-3 px-4 mb-4 bg-white hover:bg-gray-100 rounded-xl text-gray-900 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -233,10 +233,10 @@ const Login: React.FC = () => {
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-600"></div>
+            <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-800 text-slate-400">or use email</span>
+            <span className="px-2 text-white/50">or use email</span>
           </div>
         </div>
 
@@ -250,7 +250,7 @@ const Login: React.FC = () => {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="input-field w-full"
               disabled={loading}
             />
           </div>
@@ -262,28 +262,15 @@ const Login: React.FC = () => {
               placeholder="Password (min 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="input-field w-full"
               disabled={loading}
             />
           </div>
 
           {/* Login / Sign Up Buttons */}
           <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 px-4 bg-teal-500 hover:bg-teal-600 rounded-md text-white font-bold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Loading...' : 'Log In'}
-            </button>
-            <button
-              type="button"
-              onClick={handleSignUp}
-              disabled={loading}
-              className="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-500 rounded-md text-white font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Loading...' : 'Sign Up'}
-            </button>
+            <AppButton variant="cta" type="submit" loading={loading} fullWidth>Log In</AppButton>
+            <AppButton variant="ghost" type="button" onClick={handleSignUp} loading={loading} fullWidth>Sign Up</AppButton>
           </div>
         </form>
 
@@ -292,27 +279,29 @@ const Login: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowOtherOptions(!showOtherOptions)}
-            className="w-full flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors"
+            className="w-full flex items-center justify-center gap-2 text-sm text-white/50 hover:text-white/70 transition-colors"
           >
             Other options
             {showOtherOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
           {showOtherOptions && (
-            <div className="mt-4 p-4 bg-gray-700/50 rounded-lg">
-              <p className="text-sm text-slate-400 mb-3">
+            <div className="mt-4 p-4 rounded-lg border border-white/10">
+              <p className="text-sm text-white/50 mb-3">
                 Sign in without a password using a magic link sent to your email.
               </p>
-              <button
+              <AppButton
+                variant="secondary"
                 type="button"
+                fullWidth
+                loading={loading}
                 onClick={handleMagicLink}
                 disabled={loading || !email.trim()}
-                className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                {loading ? 'Sending...' : 'Send Magic Link'}
-              </button>
+                Send Magic Link
+              </AppButton>
               {!email.trim() && (
-                <p className="text-xs text-slate-500 mt-2 text-center">
+                <p className="text-xs text-white/40 mt-2 text-center">
                   Enter your email above first
                 </p>
               )}

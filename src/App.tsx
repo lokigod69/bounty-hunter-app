@@ -64,7 +64,23 @@ export default function App() {
           {/* R19: Toast container z-index must be above modals (10200) to appear above blur */}
           <Toaster
             containerStyle={{ zIndex: 10500 }}
-            toastOptions={{ style: { background: '#333', color: '#fff' } }}
+            toastOptions={{
+              duration: 3500,
+              style: {
+                background: 'rgba(12, 18, 40, 0.92)',
+                color: '#fff',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                fontWeight: 500,
+                padding: '12px 16px',
+                maxWidth: '92vw',
+              },
+              success: { iconTheme: { primary: '#20F9D2', secondary: '#06231d' } },
+              error: { iconTheme: { primary: '#ef4444', secondary: '#ffffff' } },
+            }}
           />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>

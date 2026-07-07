@@ -1,7 +1,7 @@
 // src/context/ThemeContext.tsx
 // P1: Theme System - Theme context provider and hook for theme selection
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { ThemeId, ThemeDefinition } from '../theme/theme.types';
 import { DEFAULT_THEME_ID, themesById } from '../theme/themes';
@@ -36,6 +36,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   });
 
   const theme = themesById[themeId];
+
+  // Reflect the active mode on <html> so the --mode-accent CSS variables cascade app-wide.
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-mode', themeId);
+    }
+  }, [themeId]);
 
   // Persist theme changes to localStorage
   const setThemeId = (id: ThemeId) => {

@@ -261,7 +261,11 @@
       "storeEmptyBody": "Create your first bounty to get started.",
       "storeCreateFirstButton": "Create first bounty",
       "dailyLabel": "Daily mission",
-      "streakLabel": "streak"
+      "streakLabel": "streak",
+      "archiveTitle": "Completed Contracts",
+      "archiveSubtitle": "Your ledger of fulfilled contracts.",
+      "archiveEmptyTitle": "No contracts completed yet",
+      "archiveEmptyBody": "Finish a mission and it lands here for good."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -295,7 +299,11 @@
       "storeEmptyBody": "Add rewards to motivate your family.",
       "storeCreateFirstButton": "Create first reward",
       "dailyLabel": "Daily chore",
-      "streakLabel": "streak"
+      "streakLabel": "streak",
+      "archiveTitle": "Completed Chores",
+      "archiveSubtitle": "A record of everything your family has finished.",
+      "archiveEmptyTitle": "Nothing completed yet",
+      "archiveEmptyBody": "Finish a chore and it will be saved here."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -329,7 +337,11 @@
       "storeEmptyBody": "Create gifts to celebrate your moments together.",
       "storeCreateFirstButton": "Create first gift",
       "dailyLabel": "Daily moment",
-      "streakLabel": "streak"
+      "streakLabel": "streak",
+      "archiveTitle": "Completed Requests",
+      "archiveSubtitle": "A timeline of everything you have done together.",
+      "archiveEmptyTitle": "Nothing completed yet",
+      "archiveEmptyBody": "Complete a request and it will live here."
     }
   }
 }

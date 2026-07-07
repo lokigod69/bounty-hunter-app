@@ -16,7 +16,6 @@ import { useFriends } from '../hooks/useFriends';
 import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { UserPlus, Users, AlertTriangle, Heart, Mail, CheckCircle, XCircle, UserCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -32,6 +31,8 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
+import { AppButton, EmptyState, PageState, ConfirmModal } from '../components/ui';
+import { avatarFallback } from '../lib/avatar';
 
 export default function Friends() {
   const { t } = useTranslation();
@@ -98,7 +99,7 @@ export default function Friends() {
   const myAvatarCacheBuster = myProfileUpdatedAt ? `?v=${encodeURIComponent(myProfileUpdatedAt)}` : '';
   const myAvatarUrl = myAvatarUrlBase
     ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
-    : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(user?.email || 'user')}`; // RENDER FALLBACK ONLY
+    : avatarFallback(user?.email); // RENDER FALLBACK ONLY
 
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -314,7 +315,7 @@ export default function Friends() {
                 <div className="text-center py-8">
                   <div className="flex items-center justify-center gap-4 mb-6">
                     <img
-                      src={selectedPartnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(selectedPartnerProfile.email || 'partner')}`}
+                      src={selectedPartnerProfile.avatar_url || avatarFallback(selectedPartnerProfile.email)}
                       alt={selectedPartnerProfile.display_name || 'partner'}
                       className="w-24 h-24 rounded-full border-4 border-teal-400"
                     />
@@ -373,7 +374,7 @@ export default function Friends() {
                         >
                           <div className="flex items-center gap-3">
                             <img
-                              src={friend.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(friend.email || 'user')}`}
+                              src={friend.avatar_url || avatarFallback(friend.email)}
                               alt={friend.display_name || 'user'}
                               className="w-10 h-10 rounded-full"
                             />
@@ -418,7 +419,7 @@ export default function Friends() {
                   {partnerState.partnerProfile && (
                     <div className="flex items-center justify-center gap-3 mb-6">
                       <img
-                        src={partnerState.partnerProfile.avatar_url || `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(partnerState.partnerProfile.email || 'partner')}`}
+                        src={partnerState.partnerProfile.avatar_url || avatarFallback(partnerState.partnerProfile.email)}
                         alt={partnerState.partnerProfile.display_name || 'partner'}
                         className="w-16 h-16 rounded-full border-2 border-teal-400"
                       />
@@ -494,7 +495,7 @@ export default function Friends() {
                       >
                         <div className="flex items-center gap-3">
                           <img
-                            src={userResult.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(userResult.email || 'user')}`}
+                            src={userResult.avatar_url || avatarFallback(userResult.email)}
                             alt={userResult.display_name || 'user avatar'}
                             className="w-10 h-10 rounded-full"
                           />
@@ -510,14 +511,16 @@ export default function Friends() {
 
             {/* Confirmation Modal for Cancelling Sent Request */}
             {showCancelModal && (
-              <ConfirmDeleteModal
+              <ConfirmModal
                 isOpen={showCancelModal}
                 onClose={handleCloseCancelModal}
                 onConfirm={handleConfirmCancelRequest}
                 title="Cancel Invite"
                 message="Are you sure you want to cancel this invitation?"
-                confirmText="Cancel Invite"
-                isConfirming={isCancelling}
+                variant="danger"
+                confirmLabel="Cancel Invite"
+                loadingLabel="Removing…"
+                loading={isCancelling}
               />
             )}
           </PageBody>
@@ -564,7 +567,7 @@ export default function Friends() {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={userResult.avatar_url || `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(userResult.email || 'user')}`}
+                        src={userResult.avatar_url || avatarFallback(userResult.email)}
                         alt={userResult.display_name || 'user avatar'}
                         className="w-10 h-10 rounded-full"
                       />
@@ -637,20 +640,7 @@ export default function Friends() {
 
         {/* P6: Error State */}
         {error && !loading && (
-          <BaseCard className="bg-red-900/20 border-red-500/30">
-            <div className="text-center py-8">
-              <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-subtitle text-white font-semibold mb-2">Cannot load {strings.friendsTitle.toLowerCase()}</h3>
-              <p className="text-body text-white/70 mb-4">{error}</p>
-              <button
-                onClick={() => refreshFriends?.()}
-                className="btn-primary flex items-center justify-center gap-2 mx-auto"
-              >
-                <Users size={20} />
-                Retry
-              </button>
-            </div>
-          </BaseCard>
+          <PageState state="error" message={error} onRetry={() => refreshFriends?.()} />
         )}
 
         {/* Friends List */}
@@ -677,39 +667,34 @@ export default function Friends() {
                 </div>
               </>
             ) : (
-              <BaseCard className="transition-all duration-200 hover:shadow-lg">
-                <div className="text-center py-8">
-                  <Users size={48} className="mx-auto mb-4 text-teal-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">{strings.friendsTitle}</h3>
-                  <p className="text-body text-white/70 mb-6">
-                    {theme.id === 'guild' && 'Invite crew members to share missions and rewards.'}
-                    {theme.id === 'family' && 'Invite family members to share chores and rewards.'}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button
-                      onClick={() => {
-                        // Focus the search input
-                        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                        if (searchInput) {
-                          searchInput.focus();
-                        }
-                      }}
-                      className="btn-primary flex items-center justify-center gap-2 min-h-[44px] transition-all duration-200 hover:scale-105"
-                    >
-                      <UserPlus size={20} />
-                      Invite someone
-                    </button>
-                    {pendingRequests.length > 0 && (
-                      <button
-                        onClick={() => setActiveTab('requests')}
-                        className="btn-secondary min-h-[44px] transition-all duration-200 hover:scale-105"
-                      >
-                        View requests ({pendingRequests.length})
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </BaseCard>
+              <EmptyState
+                icon={<Users />}
+                title={strings.friendsTitle}
+                body={
+                  theme.id === 'family'
+                    ? 'Invite family members to share chores and rewards.'
+                    : 'Invite crew members to share missions and rewards.'
+                }
+              >
+                <AppButton
+                  variant="cta"
+                  icon={<UserPlus size={20} />}
+                  onClick={() => {
+                    // Focus the search input
+                    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+                    if (searchInput) {
+                      searchInput.focus();
+                    }
+                  }}
+                >
+                  Invite someone
+                </AppButton>
+                {pendingRequests.length > 0 && (
+                  <AppButton variant="secondary" onClick={() => setActiveTab('requests')}>
+                    View requests ({pendingRequests.length})
+                  </AppButton>
+                )}
+              </EmptyState>
             )}
           </section>
         )}
@@ -758,39 +743,31 @@ export default function Friends() {
 
             {/* Empty State */}
             {pendingRequests.length === 0 && sentRequests.length === 0 && (
-              <BaseCard className="transition-all duration-200">
-                <div className="text-center py-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                    <UserPlus size={24} className="text-white/50" />
-                  </div>
-                  <h3 className="text-subtitle text-white/90 mb-2">{t('friends.noRequestsTitle')}</h3>
-                  <p className="text-body text-white/70 mb-6">
-                    {t('friends.noRequestsMessage')}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button
-                      onClick={() => setActiveTab('friends')}
-                      className="btn-secondary min-h-[44px] transition-all duration-200 hover:scale-105"
-                    >
-                      {t('friends.viewFriends')}
-                    </button>
-                  </div>
-                </div>
-              </BaseCard>
+              <EmptyState
+                icon={<UserPlus />}
+                title={t('friends.noRequestsTitle')}
+                body={t('friends.noRequestsMessage')}
+              >
+                <AppButton variant="secondary" onClick={() => setActiveTab('friends')}>
+                  {t('friends.viewFriends')}
+                </AppButton>
+              </EmptyState>
             )}
           </section>
         )}
 
           {/* Confirmation Modal for Cancelling Sent Request */}
           {showCancelModal && (
-            <ConfirmDeleteModal
+            <ConfirmModal
               isOpen={showCancelModal}
               onClose={handleCloseCancelModal}
               onConfirm={handleConfirmCancelRequest}
               title={t('friends.cancelRequestTitle')}
               message={t('friends.cancelRequestMessage')}
-              confirmText={t('friends.cancelRequestConfirm')}
-              isConfirming={isCancelling}
+              variant="danger"
+              confirmLabel={t('friends.cancelRequestConfirm')}
+              loadingLabel="Removing…"
+              loading={isCancelling}
             />
           )}
         </PageBody>
