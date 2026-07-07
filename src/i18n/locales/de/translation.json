@@ -1,12 +1,4 @@
 {
-  "navigation": {
-    "contracts": "Aufträge",
-    "missions": "Missionen",
-    "bounties": "Kopfgelder",
-    "history": "Verlauf",
-    "friends": "Freunde",
-    "guildRoster": "Gildenliste"
-  },
   "auth": {
     "signIn": "Anmelden",
     "signOut": "Abmelden",
@@ -34,7 +26,7 @@
     "errorMessage": "Beim Laden Ihrer Verträge ist ein unerwarteter Fehler aufgetreten.",
     "errorSuggestion": "Bitte versuchen Sie, die Seite zu aktualisieren.",
     "confirmDeletion": "Löschung bestätigen",
-    "confirmDeletionMessage": "Sind Sie sicher, dass Sie den Vertrag \"{{title}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirmDeletionMessage": "Sind Sie sicher, dass Sie \"{{title}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "thisTask": "diese Aufgabe",
     "myMissions": "MISSIONEN",
     "myMissionsDescription": "Missionen, die Sie für andere erstellt haben.",
@@ -50,35 +42,52 @@
     "errorLoadingSuggestion": "Bitte versuchen Sie, die Seite zu aktualisieren. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
     "taskNotFound": "Aufgabe nicht gefunden.",
     "noTaskSelected": "Keine Aufgabe ausgewählt oder Benutzer nicht gefunden.",
-    "deleteSuccess": "Vertrag \"{{title}}\" erfolgreich gelöscht.",
-    "deleteFailed": "Löschen des Vertrags fehlgeschlagen.",
+    "deleteSuccess": "\"{{title}}\" gelöscht.",
+    "deleteFailed": "Löschen fehlgeschlagen.",
     "deleteFailedMessage": "Fehlgeschlagen: {{message}}",
-    "deleteFailedUnknown": "Löschen des Vertrags aufgrund eines unbekannten Fehlers fehlgeschlagen.",
+    "deleteFailedUnknown": "Löschen aufgrund eines unbekannten Fehlers fehlgeschlagen.",
     "proofUploadDisabled": "Das Hochladen von Beweisen ist hier nicht anwendbar oder deaktiviert.",
     "mustBeLoggedIn": "Sie müssen angemeldet sein.",
     "taskNotFoundOrNotCreator": "Aufgabe nicht gefunden oder Sie sind nicht der Ersteller.",
     "approvalFailedAward": "Aufgabe genehmigt, aber die Vergabe von {{amount}} Credits ist fehlgeschlagen.",
     "awardSuccess": "{{amount}} Credits an den Beauftragten vergeben!",
     "approvingProof": "Beweis wird genehmigt...",
-    "approveSuccess": "Vertrag genehmigt und abgeschlossen!",
+    "approveSuccess": "Genehmigt und abgeschlossen!",
     "approvalFailed": "Genehmigung fehlgeschlagen: {{message}}",
     "approvalFailedUnknown": "Genehmigung aufgrund eines unbekannten Fehlers fehlgeschlagen.",
     "rejectingProof": "Beweis wird abgelehnt...",
-    "rejectSuccess": "Vertrag wurde abgelehnt.",
+    "rejectSuccess": "Abgelehnt.",
     "rejectionFailed": "Ablehnung fehlgeschlagen: {{message}}",
     "rejectionFailedUnknown": "Ablehnung aufgrund eines unbekannten Fehlers fehlgeschlagen.",
     "archivingMission": "Wird in den Verlauf verschoben...",
     "archiveSuccess": "Aufgabe in den Verlauf verschoben!",
     "archiveFailed": "Aufgabe konnte nicht archiviert werden.",
-    "updateSuccess": "Vertrag aktualisiert",
-    "confirmDeleteContract": "Vertrag löschen bestätigen",
-    "createFailedLoggedIn": "Sie müssen angemeldet sein, um einen Vertrag zu erstellen.",
-    "createSuccess": "Vertrag erfolgreich erstellt!",
-    "createFailedUnknown": "Erstellen des Vertrags aufgrund eines unbekannten Fehlers fehlgeschlagen."
+    "updateSuccess": "{{noun}} aktualisiert.",
+    "confirmDeleteContract": "{{noun}} löschen?",
+    "createFailedLoggedIn": "Sie müssen angemeldet sein.",
+    "createFailedMessage": "Fehlgeschlagen: {{message}}",
+    "createSuccess": "{{noun}} erstellt.",
+    "createFailedUnknown": "Erstellen aufgrund eines unbekannten Fehlers fehlgeschlagen.",
+    "reject": {
+      "title": "{{noun}} ablehnen?",
+      "subtitle": "Fügen Sie optional eine Notiz hinzu, damit klar ist, was zu ändern ist.",
+      "reasonLabel": "Grund (optional)",
+      "reasonPlaceholder": "Was muss geändert werden, bevor Sie es genehmigen?",
+      "confirm": "Ablehnen",
+      "resubmit": "Erneut einreichen",
+      "rejectedLabel": "Abgelehnt"
+    }
   },
   "history": {
     "description": "Überprüfen Sie Ihren Verlauf abgeschlossener und abgelaufener Verträge.",
     "creditsEarned": "Verdiente Credits"
+  },
+  "taskStatus": {
+    "archived": "Archiviert",
+    "pending": "Offen",
+    "review": "In Prüfung",
+    "completed": "Erledigt",
+    "rejected": "Abgelehnt"
   },
   "friends": {
     "title": "GILDENLISTE",
@@ -104,20 +113,6 @@
     "cancelRequestMessage": "Sind Sie sicher, dass Sie diese Freundschaftsanfrage abbrechen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "cancelRequestConfirm": "Ja, Anfrage abbrechen",
     "cancelRequestLoading": "Wird entfernt…"
-  },
-  "bounties": {
-    "title": "Kopfgelder",
-    "available": "Verfügbar",
-    "myBounties": "Meine Kopfgelder",
-    "collected": "Gesammelt",
-    "create": "Kopfgeld erstellen",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "claim": "Belohnung einfordern",
-    "name": "Kopfgeldname",
-    "description": "Kopfgeld-Beschreibung",
-    "cost": "Credit-Kosten",
-    "selectFriend": "Einen Freund auswählen"
   },
   "profile": {
     "edit": "Profil bearbeiten",
@@ -152,10 +147,10 @@
     "loadingCredits": "Credits werden geladen..."
   },
   "taskForm": {
-    "editTitle": "Vertrag bearbeiten",
-    "createTitle": "Neuen Vertrag erstellen",
+    "editTitle": "{{noun}} bearbeiten",
+    "createTitle": "{{noun}} erstellen",
     "closeButton": "Schließen",
-    "contractTitleLabel": "Vertragstitel*",
+    "contractTitleLabel": "Titel*",
     "contractTitlePlaceholder": "Was muss getan werden?",
     "descriptionLabel": "Beschreibung (Optional)",
     "descriptionPlaceholder": "Fügen Sie weitere Details zur Aufgabe hinzu...",
@@ -164,11 +159,11 @@
     "noFriendsWarning": "Sie müssen zuerst Freunde hinzufügen, um Aufgaben zuzuweisen.",
     "goToFriends": "Zu Freunden",
     "deadlineLabel": "Frist (Optional)",
-    "contractTypeLabel": "Vertragstyp",
-    "bountyContract": "Kopfgeldvertrag (Direkte Belohnung)",
-    "creditContract": "Credit-Vertrag (Münzen)",
-    "bountyDescriptionLabel": "Kopfgeld-Beschreibung*",
-    "bountyDescriptionPlaceholder": "z.B. Reise nach Bali, ein seltenes Artefakt",
+    "contractTypeLabel": "Belohnungstyp",
+    "rewardTypeDirect": "Individuelle Belohnung (Geschenk oder Gegenstand)",
+    "rewardTypeCredit": "Credit-Belohnung (Münzen)",
+    "customRewardLabel": "Belohnungsbeschreibung*",
+    "customRewardPlaceholder": "z.B. Reise nach Bali, ein seltenes Artefakt",
     "creditRewardLabel": "Credit-Belohnung*",
     "creditOptions": {
       "quickTask": "1 Credit - Schnelle Aufgabe",
@@ -182,55 +177,64 @@
       "saving": "Speichern...",
       "creating": "Erstellen...",
       "saveChanges": "Änderungen speichern",
-      "createContract": "Vertrag erstellen"
+      "createContract": "{{noun}} erstellen"
     },
     "validation": {
       "titleRequired": "Titel ist erforderlich",
       "assigneeRequired": "Bitte wählen Sie einen Freund",
-      "bountyRequired": "Kopfgeld-Beschreibung ist für Kopfgeldverträge erforderlich.",
-      "creditRequired": "Bitte wählen Sie einen Credit-Betrag für Credit-Verträge."
+      "rewardRequired": "Eine Belohnungsbeschreibung ist erforderlich.",
+      "creditRequired": "Bitte wählen Sie einen Credit-Betrag."
     },
-    "submissionError": "Vertrag konnte nicht übermittelt werden. Bitte versuchen Sie es erneut."
+    "submissionError": "Übermittlung fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "rewards": {
-    "title": "Kopfgelder",
+    "title": "Belohnungen",
     "tabs": {
       "label": "Belohnungskategorien",
       "available": "Verfügbar",
-      "created": "Meine Kopfgelder",
+      "created": "Meine Belohnungen",
       "collected": "Gesammelt"
     },
-    "loading": "Lade Kopfgelder...",
-    "error": "Fehler beim Laden der Kopfgelder: {{error}}",
+    "loading": "Belohnungen werden geladen...",
+    "error": "Fehler beim Laden der Belohnungen: {{error}}",
     "empty": {
-      "available": "Ihnen wurde noch kein Kopfgeld zugewiesen.",
-      "created": "Sie haben noch keine Kopfgelder erstellt.",
-      "collected": "Sie haben noch keine Kopfgelder gesammelt.",
-      "default": "Keine Kopfgelder in dieser Kategorie gefunden."
+      "available": "Dir wurde noch keine Belohnung zugewiesen.",
+      "created": "Du hast noch keine Belohnungen erstellt.",
+      "collected": "Du hast noch keine Belohnungen gesammelt.",
+      "default": "Keine Belohnungen in dieser Kategorie gefunden."
     },
-    "createBountyButton": "Neues Kopfgeld erstellen",
+    "createBountyButton": "Neue Belohnung erstellen",
     "rewardCard": {
-      "editButton": "Kopfgeld bearbeiten",
-      "deleteButton": "Kopfgeld löschen",
+      "editButton": "Belohnung bearbeiten",
+      "deleteButton": "Belohnung löschen",
       "claimButton": "Einfordern",
       "viewButton": "Ansehen"
     },
     "createModal": {
-      "title": "Neues Kopfgeld erstellen",
-        "assignBountyPlaceholder": "Wähle einen Freund, dem du das Kopfgeld zuweisen möchtest",
+      "title": "Neue Belohnung erstellen",
       "closeButton": "Schließen",
-      "bountyNamePlaceholder": "Kopfgeldname (z.B. Logo entwerfen)",
+      "assignBountyPlaceholder": "Wähle aus, wem du diese Belohnung zuweisen möchtest",
+      "bountyNamePlaceholder": "Belohnungsname (z.B. Kopfmassage)",
       "descriptionPlaceholder": "Beschreibung",
       "creditCostPlaceholder": "Credit-Kosten",
       "useEmoji": "Emoji verwenden",
       "useImageUrl": "Bild-URL verwenden",
       "cancelButton": "Abbrechen",
-      "submitButton": "Kopfgeld erstellen",
+      "submitButton": "Belohnung erstellen",
       "submittingButton": "Wird erstellt..."
     },
+    "editModal": {
+      "title": "Belohnung bearbeiten",
+      "bountyNamePlaceholder": "Belohnungsname",
+      "descriptionPlaceholder": "Beschreibung (Optional)",
+      "creditCostPlaceholder": "Credit-Kosten",
+      "cancelButton": "Abbrechen",
+      "submitButton": "Änderungen speichern",
+      "submittingButton": "Speichern..."
+    },
     "confirmDialog": {
-      "deleteTitle": "Kopfgeld löschen",
-      "deleteMessage": "Möchtest du dieses Kopfgeld wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteTitle": "Belohnung löschen",
+      "deleteMessage": "Möchtest du diese Belohnung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "cancelButton": "Abbrechen",
       "confirmButton": "Bestätigen",
       "deletingButton": "Wird gelöscht..."
@@ -242,8 +246,8 @@
       "missionSingular": "Mission",
       "missionPlural": "Missionen",
       "crewLabel": "Crew",
-      "rewardSingular": "Kopfgeld",
-      "rewardPlural": "Kopfgelder",
+      "rewardSingular": "Belohnung",
+      "rewardPlural": "Belohnungen",
       "tokenSingular": "Credit",
       "tokenPlural": "Credits",
       "inboxTitle": "Verträge",
@@ -265,9 +269,9 @@
       "storeCreditsLabel": "Deine Credits",
       "storeCanAffordLabel": "Erschwinglich",
       "storeCantAffordLabel": "Nicht erreichbar",
-      "storeEmptyTitle": "Noch keine Kopfgelder",
-      "storeEmptyBody": "Erstes Kopfgeld erstellen.",
-      "storeCreateFirstButton": "Erstes Kopfgeld erstellen",
+      "storeEmptyTitle": "Noch keine Belohnungen",
+      "storeEmptyBody": "Erste Belohnung erstellen.",
+      "storeCreateFirstButton": "Erste Belohnung erstellen",
       "dailyLabel": "Tägliche Mission",
       "streakLabel": "Serie",
       "archiveTitle": "Abgeschlossene Aufträge",

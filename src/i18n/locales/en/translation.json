@@ -1,12 +1,4 @@
 {
-  "navigation": {
-    "contracts": "Contracts",
-    "missions": "Missions",
-    "bounties": "Bounties",
-    "history": "History",
-    "friends": "Friends",
-    "guildRoster": "Guild Roster"
-  },
   "auth": {
     "signIn": "Sign In",
     "signOut": "Sign Out",
@@ -34,7 +26,7 @@
     "errorMessage": "An unexpected error occurred while loading your contracts.",
     "errorSuggestion": "Please try refreshing the page.",
     "confirmDeletion": "Confirm Deletion",
-    "confirmDeletionMessage": "Are you sure you want to delete the contract \"{{title}}\"? This action cannot be undone.",
+    "confirmDeletionMessage": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
     "thisTask": "this task",
     "myMissions": "MISSIONS",
     "myMissionsDescription": "Missions you have created for others to complete.",
@@ -50,31 +42,41 @@
     "errorLoadingSuggestion": "Please try refreshing the page. If the problem persists, contact support.",
     "taskNotFound": "Task not found.",
     "noTaskSelected": "No task selected or user not found.",
-    "deleteSuccess": "Contract \"{{title}}\" deleted successfully.",
-    "deleteFailed": "Failed to delete contract.",
+    "deleteSuccess": "\"{{title}}\" deleted.",
+    "deleteFailed": "Failed to delete.",
     "deleteFailedMessage": "Failed: {{message}}",
-    "deleteFailedUnknown": "Failed to delete contract due to an unknown error.",
+    "deleteFailedUnknown": "Failed to delete due to an unknown error.",
     "proofUploadDisabled": "Proof upload functionality is not applicable here or disabled.",
     "mustBeLoggedIn": "You must be logged in.",
     "taskNotFoundOrNotCreator": "Task not found or you are not the creator.",
     "approvalFailedAward": "Task approved, but failed to award {{amount}} credits.",
     "awardSuccess": "{{amount}} credits awarded to assignee!",
     "approvingProof": "Approving proof...",
-    "approveSuccess": "Contract approved and completed!",
+    "approveSuccess": "Approved and completed!",
     "approvalFailed": "Approval failed: {{message}}",
     "approvalFailedUnknown": "Approval failed due to an unknown error.",
     "rejectingProof": "Rejecting proof...",
-    "rejectSuccess": "Contract has been rejected.",
+    "rejectSuccess": "Rejected.",
     "rejectionFailed": "Rejection failed: {{message}}",
     "rejectionFailedUnknown": "Rejection failed due to an unknown error.",
     "archivingMission": "Moving to History...",
     "archiveSuccess": "Task moved to History!",
     "archiveFailed": "Failed to archive task.",
-    "updateSuccess": "Contract updated",
-    "confirmDeleteContract": "Confirm Delete Contract",
-    "createFailedLoggedIn": "You must be logged in to create a contract.",
-    "createSuccess": "Contract created successfully!",
-    "createFailedUnknown": "Failed to create contract due to an unknown error."
+    "updateSuccess": "{{noun}} updated.",
+    "confirmDeleteContract": "Delete {{noun}}?",
+    "createFailedLoggedIn": "You must be logged in.",
+    "createFailedMessage": "Failed: {{message}}",
+    "createSuccess": "{{noun}} created.",
+    "createFailedUnknown": "Failed to create due to an unknown error.",
+    "reject": {
+      "title": "Reject {{noun}}?",
+      "subtitle": "Add an optional note so they know what to fix.",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "What needs to change before you approve it?",
+      "confirm": "Reject",
+      "resubmit": "Resubmit",
+      "rejectedLabel": "Rejected"
+    }
   },
   "friends": {
     "title": "GUILD ROSTER",
@@ -99,20 +101,6 @@
     "cancelRequestMessage": "Are you sure you want to cancel this friend request? This action cannot be undone.",
     "cancelRequestConfirm": "Yes, Cancel Request",
     "cancelRequestLoading": "Removing…"
-  },
-  "bounties": {
-    "title": "Bounties",
-    "available": "Available",
-    "myBounties": "My Bounties",
-    "collected": "Collected",
-    "create": "Create Bounty",
-    "edit": "Edit",
-    "delete": "Delete",
-    "claim": "Claim Reward",
-    "name": "Bounty Name",
-    "description": "Bounty Description",
-    "cost": "Credit Cost",
-    "selectFriend": "Select a friend"
   },
   "profile": {
     "edit": "Edit Profile",
@@ -147,10 +135,10 @@
     "loadingCredits": "Loading credits..."
   },
   "taskForm": {
-    "editTitle": "Edit Contract",
-    "createTitle": "Create New Contract",
+    "editTitle": "Edit {{noun}}",
+    "createTitle": "Create {{noun}}",
     "closeButton": "Close",
-    "contractTitleLabel": "Contract Title*",
+    "contractTitleLabel": "Title*",
     "contractTitlePlaceholder": "What needs to be done?",
     "descriptionLabel": "Description (Optional)",
     "descriptionPlaceholder": "Add more details about the task...",
@@ -159,11 +147,11 @@
     "noFriendsWarning": "You need to add friends first to assign tasks.",
     "goToFriends": "Go to Friends",
     "deadlineLabel": "Deadline (Optional)",
-    "contractTypeLabel": "Contract Type",
-    "bountyContract": "Bounty Contract (Direct Reward)",
-    "creditContract": "Credit Contract (Coins)",
-    "bountyDescriptionLabel": "Bounty Description*",
-    "bountyDescriptionPlaceholder": "e.g., Trip to Bali, a rare artifact",
+    "contractTypeLabel": "Reward Type",
+    "rewardTypeDirect": "Custom reward (gift or item)",
+    "rewardTypeCredit": "Credit reward (coins)",
+    "customRewardLabel": "Reward description*",
+    "customRewardPlaceholder": "e.g., Trip to Bali, a rare artifact",
     "creditRewardLabel": "Credit Reward*",
     "creditOptions": {
       "quickTask": "1 Credit - Quick task",
@@ -177,55 +165,55 @@
       "saving": "Saving...",
       "creating": "Creating...",
       "saveChanges": "Save Changes",
-      "createContract": "Create Contract"
+      "createContract": "Create {{noun}}"
     },
     "validation": {
       "titleRequired": "Title is required",
       "assigneeRequired": "Please select a friend",
-      "bountyRequired": "Bounty description is required for Bounty Contracts.",
-      "creditRequired": "Please select a credit amount for Credit Contracts."
+      "rewardRequired": "A reward description is required.",
+      "creditRequired": "Please select a credit amount."
     },
-    "submissionError": "Failed to submit contract. Please try again."
+    "submissionError": "Failed to submit. Please try again."
   },
   "rewards": {
-    "title": "Bounties",
+    "title": "Rewards",
     "tabs": {
       "label": "Reward categories",
       "available": "Available",
-      "created": "My Bounties",
+      "created": "My Rewards",
       "collected": "Collected"
     },
-    "loading": "Loading bounties...",
-    "error": "Error loading bounties: {{error}}",
+    "loading": "Loading rewards...",
+    "error": "Error loading rewards: {{error}}",
     "empty": {
-      "available": "No one has assigned a bounty to you yet.",
-      "created": "You have not created any bounties.",
-      "collected": "You have not collected any bounties yet.",
-      "default": "No bounties found in this category."
+      "available": "No one has assigned a reward to you yet.",
+      "created": "You have not created any rewards.",
+      "collected": "You have not collected any rewards yet.",
+      "default": "No rewards found in this category."
     },
-    "createBountyButton": "Create new bounty",
+    "createBountyButton": "Create new reward",
     "rewardCard": {
-      "editButton": "Edit Bounty",
-      "deleteButton": "Delete Bounty",
+      "editButton": "Edit reward",
+      "deleteButton": "Delete reward",
       "claimButton": "Claim",
       "viewButton": "View"
     },
     "createModal": {
-      "title": "Create a New Bounty",
+      "title": "Create a new reward",
       "closeButton": "Close",
       "assignBountyPlaceholder": "Select who to gift this to",
-      "bountyNamePlaceholder": "Bounty Name (e.g., Head massage)",
+      "bountyNamePlaceholder": "Reward name (e.g., Head massage)",
       "descriptionPlaceholder": "Description",
       "creditCostPlaceholder": "Credit Cost",
       "useEmoji": "Use Emoji",
       "useImageUrl": "Use URL",
       "cancelButton": "Cancel",
-      "submitButton": "Create Bounty",
+      "submitButton": "Create reward",
       "submittingButton": "Creating..."
     },
     "editModal": {
-      "title": "Edit Bounty",
-      "bountyNamePlaceholder": "Bounty Name",
+      "title": "Edit reward",
+      "bountyNamePlaceholder": "Reward name",
       "descriptionPlaceholder": "Description (Optional)",
       "creditCostPlaceholder": "Credit Cost",
       "cancelButton": "Cancel",
@@ -233,8 +221,8 @@
       "submittingButton": "Saving..."
     },
     "confirmDialog": {
-      "deleteTitle": "Delete Bounty",
-      "deleteMessage": "Are you sure you want to delete this bounty? This action cannot be undone.",
+      "deleteTitle": "Delete reward",
+      "deleteMessage": "Are you sure you want to delete this reward? This action cannot be undone.",
       "cancelButton": "Cancel",
       "confirmButton": "Confirm",
       "deletingButton": "Deleting..."
@@ -243,6 +231,13 @@
   "history": {
     "description": "Review your history of completed and expired contracts.",
     "creditsEarned": "Credits earned"
+  },
+  "taskStatus": {
+    "archived": "Archived",
+    "pending": "Open",
+    "review": "In Review",
+    "completed": "Done",
+    "rejected": "Rejected"
   },
   "languageSwitcher": {
     "language": "Language",
@@ -255,8 +250,8 @@
       "missionSingular": "mission",
       "missionPlural": "missions",
       "crewLabel": "crew",
-      "rewardSingular": "bounty",
-      "rewardPlural": "bounties",
+      "rewardSingular": "reward",
+      "rewardPlural": "rewards",
       "tokenSingular": "credit",
       "tokenPlural": "credits",
       "inboxTitle": "Mission Inbox",
@@ -278,9 +273,9 @@
       "storeCreditsLabel": "Your Credits",
       "storeCanAffordLabel": "You can afford",
       "storeCantAffordLabel": "Out of reach",
-      "storeEmptyTitle": "No bounties yet",
-      "storeEmptyBody": "Create your first bounty to get started.",
-      "storeCreateFirstButton": "Create first bounty",
+      "storeEmptyTitle": "No rewards yet",
+      "storeEmptyBody": "Create your first reward to get started.",
+      "storeCreateFirstButton": "Create first reward",
       "dailyLabel": "Daily mission",
       "streakLabel": "streak",
       "archiveTitle": "Completed Contracts",

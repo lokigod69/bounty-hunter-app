@@ -23,4 +23,6 @@ export type TaskWithProfiles = Task & {
 
 // Manually define Enums as they are not in the generated types
 export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'archived' | 'pending_proof' | 'rejected';
-export type ProofType = 'text' | 'url' | 'image';
+// 'video' and 'document' (PDF) reflect what src/domain/missions.ts uploadProof()
+// actually writes to tasks.proof_type based on the uploaded file's MIME type.
+export type ProofType = 'text' | 'url' | 'image' | 'video' | 'document';

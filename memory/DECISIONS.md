@@ -4,6 +4,16 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-07 — Canonical noun system: Mission / Chore / Request per mode
+**Status:** active
+**Decision:** Michael approved the recommended noun set. The task object is named by mode via the existing `theme.<mode>.*` i18n mechanism: **Mission** (guild), **Chore** (family), **Request** (couple). Store items are plain **Rewards** everywhere ("Bounty" no longer names store items, including guild's `rewardSingular`). **"Bounty" is reserved for the credit pot attached to a mission.** The hardcoded Contract/Mission/Task mixing in `contracts.*`, `taskForm.*`, `navigation.*` and component-level English (e.g. TaskCard status chips) gets purged and routed through theme strings.
+**Why:** Five names for one entity ("Contract, Mission, Task, Chore, Bounty Contract") plus "bounty" double-booked (store item AND task type) made the app feel random — Phase 2.1 of docs/premium-v1/ROADMAP.md.
+
+## 2026-07-07 — Proof types: PDF, text-only, and private proof are allowed
+**Status:** active
+**Decision:** Michael approved allowing PDF proofs, text-only proofs, and private proofs. Implementation reality (recon 2026-07-07): text-only already works end-to-end; PDF is allowed by the ProofModal dropzone but blocked by the storage bucket mime allowlist and by `uploadProof` in src/domain/missions.ts (which conversely allows video the dropzone doesn't offer); private proof has no schema/UI support yet. Alignment work: fix the domain validator, add PDF to the bucket allowlist via migration (applied when Supabase is restored — prod-SQL rule still applies), and schedule private-proof (visibility column + UI) as its own item.
+**Why:** Pre-existing product decision parked since the codex pass (CODEX_NEXT_STEPS #3); private-group trust model makes permissive proof types low-risk.
+
 ## 2026-06 — Codex refactor pass docs are the current source of truth
 **Status:** active
 **Decision:** `docs/codex-refactor-pass/` (index at `00_REFACTOR_PASS_INDEX.md`) supersedes the older 2025-10 docs (`docs/overview.md`, `docs/open-questions.md`, etc.) as the authoritative project state; `CODEX_NEXT_STEPS.md` is the backlog, `SAYA_USAGE.md` the user guide.

@@ -43,6 +43,9 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { StatsRow } from '../components/layout/StatsRow';
 import { AppButton, EmptyState, PageState, SectionHeader, Fab, ConfirmModal } from '../components/ui';
+import { ModalShell } from '../components/ui/ModalShell';
+import { CharacterCounter } from '../components/ui/CharacterCounter';
+import { TEXT_LIMITS } from '../config/textLimits';
 import { approveMission, rejectMission, archiveMission } from '../domain/missions';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 
@@ -50,6 +53,8 @@ export default function IssuedPage() {
   const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
   const { strings } = useThemeStrings();
   const { t } = useTranslation();
+  // Phase 2.1: capitalized mode noun (Mission / Chore / Request) for interpolated toasts and dialogs
+  const noun = strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth(); // user is implicitly used by useIssuedContracts hook
   // const location = useLocation(); // Removed as unused
@@ -66,6 +71,9 @@ export default function IssuedPage() {
   const [isDeleting, setIsDeleting] = useState(false); // Enabled for delete functionality
   const [approvingTaskId, setApprovingTaskId] = useState<string | null>(null);
   const [rejectingTaskId, setRejectingTaskId] = useState<string | null>(null);
+  // Phase 2.3: reject-with-reason modal state
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const dailyQuote = useDailyQuote();
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
   const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
@@ -179,7 +187,23 @@ export default function IssuedPage() {
     }
   };
 
-  const handleReject = async (taskId: string) => {
+  // Phase 2.3: opening the reject flow now asks for an optional reason first.
+  const handleReject = (taskId: string) => {
+    setRejectReason('');
+    setRejectTargetId(taskId);
+  };
+
+  const handleCloseRejectModal = () => {
+    // Don't allow closing mid-request.
+    if (isRejectingRef.current) return;
+    setRejectTargetId(null);
+    setRejectReason('');
+  };
+
+  const handleConfirmReject = async () => {
+    const taskId = rejectTargetId;
+    if (!taskId) return;
+
     if (!user) {
       toast.error(t('contracts.mustBeLoggedIn'));
       return;
@@ -205,9 +229,12 @@ export default function IssuedPage() {
       await rejectMission({
         missionId: taskId,
         issuerId: user.id,
+        reason: rejectReason,
       });
 
       toast.success(t('contracts.rejectSuccess'), { id: toastId });
+      setRejectTargetId(null);
+      setRejectReason('');
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
@@ -292,7 +319,7 @@ export default function IssuedPage() {
         }
 
         await refetchIssuedContracts();
-        toast.success(t('contracts.updateSuccess'));
+        toast.success(t('contracts.updateSuccess', { noun }));
         setEditingTask(null);
         return;
       }
@@ -316,7 +343,7 @@ export default function IssuedPage() {
       }
 
       await refetchIssuedContracts();
-      toast.success(t('contracts.createSuccess'));
+      toast.success(t('contracts.createSuccess', { noun }));
     } catch (error: unknown) {
       // Type guard to check if it's a Supabase-like error object (PostgrestError)
       if (error && typeof error === 'object' && 'message' in error) {
@@ -590,13 +617,71 @@ export default function IssuedPage() {
             isOpen={isDeleteModalOpen}
             onClose={handleCloseDeleteModal}
             onConfirm={handleConfirmDeleteTask}
-            title={t('contracts.confirmDeleteContract')}
+            title={t('contracts.confirmDeleteContract', { noun })}
             message={t('contracts.confirmDeletionMessage', { title: selectedContract?.title || '' })}
             confirmLabel={t('common.delete')}
             loadingLabel={t('common.deleting')}
             variant="danger"
             loading={isDeleting}
           />
+
+          {/* Phase 2.3: reject-with-reason modal */}
+          <ModalShell
+            isOpen={rejectTargetId !== null}
+            onClose={handleCloseRejectModal}
+            name="RejectMissionModal"
+            labelledBy="reject-mission-title"
+          >
+            <div className="flex flex-col">
+              <div className="p-4 sm:p-5 border-b border-gray-700/50">
+                <h2 id="reject-mission-title" className="text-lg sm:text-xl font-bold text-white pr-10">
+                  {t('contracts.reject.title', { noun })}
+                </h2>
+                <p className="mt-1 text-sm text-white/60">
+                  {t('contracts.reject.subtitle')}
+                </p>
+              </div>
+
+              <div className="p-4 sm:p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="reject-reason" className="text-sm font-medium text-white/70">
+                    {t('contracts.reject.reasonLabel')}
+                  </label>
+                  <CharacterCounter current={rejectReason.length} max={TEXT_LIMITS.rejectionReason} />
+                </div>
+                <textarea
+                  id="reject-reason"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  maxLength={TEXT_LIMITS.rejectionReason}
+                  placeholder={t('contracts.reject.reasonPlaceholder')}
+                  rows={4}
+                  className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition h-24 text-base resize-none"
+                />
+              </div>
+
+              <div className="p-4 sm:p-5 border-t border-gray-700/50 flex flex-col sm:flex-row justify-end gap-3 safe-bottom">
+                <AppButton
+                  type="button"
+                  variant="ghost"
+                  onClick={handleCloseRejectModal}
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]"
+                  disabled={!!rejectTargetId && rejectingTaskId === rejectTargetId}
+                >
+                  {t('common.cancel')}
+                </AppButton>
+                <AppButton
+                  type="button"
+                  variant="danger"
+                  onClick={handleConfirmReject}
+                  loading={!!rejectTargetId && rejectingTaskId === rejectTargetId}
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]"
+                >
+                  {t('contracts.reject.confirm')}
+                </AppButton>
+              </div>
+            </div>
+          </ModalShell>
         </PageContainer>
       </PullToRefresh>
     </>

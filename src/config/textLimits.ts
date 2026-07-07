@@ -15,6 +15,8 @@ export const TEXT_LIMITS = {
   rewardDescription: 200,
   /** User display name */
   displayName: 50,
+  /** Optional reason a creator gives when rejecting a proof (Phase 2.3) */
+  rejectionReason: 300,
 } as const;
 
 // Type for the keys

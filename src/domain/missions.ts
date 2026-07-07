@@ -18,7 +18,28 @@ export interface ApproveMissionParams {
 export interface RejectMissionParams {
   missionId: MissionId;
   issuerId: string;
+  /** Optional free-text reason shown to the assignee (Phase 2.3). */
+  reason?: string;
   supabaseClient?: SupabaseClient;
+}
+
+/**
+ * Postgres "undefined column" error code. supabase-js surfaces PostgREST/PG
+ * errors as an object with a `.code` field; 42703 means the column referenced
+ * in the statement does not exist yet (e.g. rejection_reason before the
+ * migration is applied). We use it to degrade gracefully.
+ */
+const PG_UNDEFINED_COLUMN = '42703';
+
+let warnedMissingRejectionReason = false;
+
+function isUndefinedColumnError(error: unknown): boolean {
+  return (
+    !!error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code?: string }).code === PG_UNDEFINED_COLUMN
+  );
 }
 
 export interface UpdateMissionStatusParams {
@@ -85,14 +106,20 @@ export async function approveMission(params: ApproveMissionParams): Promise<void
 
 /**
  * Rejects a mission that is in 'review' status.
- * 
+ *
  * Flow:
  * 1. Fetch task (validate issuer is creator)
  * 2. Evaluate status change using domain logic
- * 3. Update task status to 'pending' and clear proof
+ * 3. Update task status to 'rejected', clear proof, and store an optional reason
+ *
+ * Phase 2.3: the task is now persisted in the 'rejected' state (not reset to
+ * 'pending') so the assignee sees the rejection and can resubmit. If the
+ * rejection_reason column is not present yet (Postgres 42703 — the migration
+ * has not been applied), we retry the same update without it so status still
+ * lands on 'rejected'.
  */
 export async function rejectMission(params: RejectMissionParams): Promise<void> {
-  const { missionId, issuerId, supabaseClient = supabase } = params;
+  const { missionId, issuerId, reason, supabaseClient = supabase } = params;
 
   // Fetch task to get context
   const { data: task, error: fetchError } = await supabaseClient
@@ -123,17 +150,38 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
     throw new Error(errorMsg);
   }
 
-  // Update task status - rejection resets to pending and clears proof
+  // Update task status - rejection persists the 'rejected' state and clears proof.
+  const trimmedReason = reason?.trim();
+  const baseUpdate = {
+    status: 'rejected',
+    proof_url: null,
+    proof_type: null,
+  } as const;
+
   const { error } = await supabaseClient
     .from('tasks')
-    .update({ 
-      status: 'pending',
-      proof_url: null,
-      proof_type: null,
-    })
+    .update({ ...baseUpdate, rejection_reason: trimmedReason || null })
     .eq('id', missionId);
 
   if (error) {
+    // Graceful degradation: rejection_reason column not deployed yet (42703).
+    // Retry without it so the 'rejected' status still lands.
+    if (isUndefinedColumnError(error)) {
+      if (!warnedMissingRejectionReason) {
+        console.warn(
+          '[missions] rejection_reason column missing (42703); rejecting without storing a reason. Apply migration 20260707220000_add_rejection_reason.sql.'
+        );
+        warnedMissingRejectionReason = true;
+      }
+      const { error: retryError } = await supabaseClient
+        .from('tasks')
+        .update(baseUpdate)
+        .eq('id', missionId);
+      if (retryError) {
+        throw retryError;
+      }
+      return;
+    }
     throw error;
   }
 }
@@ -239,12 +287,20 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
       throw new Error('File is too large. Maximum size is 10MB.');
     }
 
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      throw new Error('Invalid file type. Only images and videos are allowed.');
+    if (
+      !file.type.startsWith('image/') &&
+      !file.type.startsWith('video/') &&
+      file.type !== 'application/pdf'
+    ) {
+      throw new Error('Invalid file type. Only images, videos, and PDFs are allowed.');
     }
 
     // Determine proof_type based on file MIME type
-    proofType = file.type.startsWith('image/') ? 'image' : 'video';
+    proofType = file.type.startsWith('image/')
+      ? 'image'
+      : file.type.startsWith('video/')
+      ? 'video'
+      : 'document';
 
     // Upload to Supabase Storage
     const fileName = `proofs/${missionId}/${Date.now()}_${file.name}`;
@@ -274,11 +330,14 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     proof_url?: string | null;
     proof_description?: string | null;
     proof_type?: string | null;
+    rejection_reason?: string | null;
     status: string;
     completed_at: string;
   } = {
     status: 'review',
     completed_at: new Date().toISOString(),
+    // Phase 2.3: resubmitting clears any prior rejection reason.
+    rejection_reason: null,
   };
 
   if (proofUrl) {
@@ -300,6 +359,27 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     .eq('assigned_to', userId); // Security: only assigned user can submit proof
 
   if (updateError) {
+    // Graceful degradation: rejection_reason column not deployed yet (42703).
+    // Retry without it so the resubmission (status -> 'review') still lands.
+    if (isUndefinedColumnError(updateError)) {
+      if (!warnedMissingRejectionReason) {
+        console.warn(
+          '[missions] rejection_reason column missing (42703); resubmitting without clearing a reason. Apply migration 20260707220000_add_rejection_reason.sql.'
+        );
+        warnedMissingRejectionReason = true;
+      }
+      const { rejection_reason: _omit, ...updateWithoutReason } = updateData;
+      void _omit;
+      const { error: retryError } = await supabaseClient
+        .from('tasks')
+        .update(updateWithoutReason)
+        .eq('id', missionId)
+        .eq('assigned_to', userId);
+      if (retryError) {
+        throw retryError;
+      }
+      return proofUrl || 'text-proof';
+    }
     throw updateError;
   }
 

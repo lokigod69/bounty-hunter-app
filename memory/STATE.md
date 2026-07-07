@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-07 (night)
+Last updated: 2026-07-07 (late night)
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -12,7 +12,8 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
 
 ## In progress
-- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phase 0 and Phase 1 (congruence) DONE as of 2026-07-07 night: dead-CSS purge (8cc83af), shared TabBar, generic ModalShell (5 modals migrated), accent-hex single source (`src/theme/modeAccents.ts`), i18n sweep. Build/lint green, vitest 33/33. Visual normalizations (glass-card surfaces on Create/EditBounty/ProfileEdit) still need an in-browser eyeball by Michael. Next: Phase 2 UX coherence and/or Phase 3 assets.
+- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phases 0–1 DONE (see LOG). Phase 2 UX coherence MOSTLY DONE as of 2026-07-07 late night: noun system implemented (Mission/Chore/Request via theme strings; store = Rewards; dead namespaces purged), tasks realtime + nav action badges (useTasksRealtime/useActionCounts), History nav re-enabled, rejection loop (persisted 'rejected' + reason + resubmit), proof types aligned (PDF allowed end-to-end once bucket migration applies). Vitest 41/41. Remaining Phase 2: invite links (needs live Supabase), mode/onboarding persistence (prod SQL), orphan surfaces (/profile/edit debug leak), collected-rewards "mark redeemed". Visual eyeball by Michael still pending (blocked by Supabase pause).
+- **⚠️ Supabase project PAUSED** — login dead ("Failed to fetch"). Restore checklist: `docs/runbooks/SUPABASE_RESTORE_CHECKLIST.md`. Critical: repo has NO base-schema migration; schema exists only inside the paused project → backup download first. Two new unapplied migrations wait on restore: `20260707220000_add_rejection_reason.sql`, `20260707221000_allow_pdf_proofs.sql` (proposals 009/010). Code degrades gracefully without them (42703 fallback).
 - Image-asset pipeline: Codex image generation + gpt-image-2-skill (`~/.codex/skills/gpt-image-2-skill/`) is proven. Current pilots in `assets-src/generated/`: coin (`coin-pilot-v1*.png`) and gift emblem (`gift-emblem-pilot-v1.png`, solid `#FF00FF` background).
 
 ## Known problems
@@ -25,12 +26,12 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 
 ## Open questions
 - Was the 2026-06-18 "Harden V1 launch readiness" commit fully verified? Is the uncommitted UI refactor finished and meant to be committed?
-- Which of db/proposals 001–008 and the 2026 migrations are applied in production? (Runbooks exist for 003–008; validation docs for 003–005.)
-- Product decision pending (Saya): proof types — PDF/text/private proof allowed or not?
-- DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed.
+- Which of db/proposals 001–008 and the 2026 migrations are applied in production? (Runbooks exist for 003–008; validation docs for 003–005.) The Supabase-pause backup download (restore checklist Step 0) doubles as the schema source of truth to answer this.
+- ~~Proof types~~ DECIDED 2026-07-07: PDF/text/private all allowed (see DECISIONS). "Private" needs no work — storage RLS already limits proofs to creator+assignee.
+- DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed (`rejection_reason` was hand-added meanwhile).
 
 ## Next actions
-1. Phase 2 UX coherence per `docs/premium-v1/ROADMAP.md` — top items: noun system (needs Michael's call), action badges + tasks realtime (wire orphaned `useTasks.ts` channel), rejection loop, re-enable History nav, invite links, persist theme/onboarding to profiles (prod SQL → runbook + Michael's go). Also: Michael should eyeball the Phase-1 visual normalizations in the browser (glass-card modal surfaces).
-2. Continue Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
-3. Reconcile production migration state (which migrations/proposals applied) and record it here.
-4. Work `CODEX_NEXT_STEPS.md` top items: storage bucket/policy verification, task lifecycle RPCs, regenerate DB types.
+1. Michael: restore Supabase per `docs/runbooks/SUPABASE_RESTORE_CHECKLIST.md` (backup download FIRST), apply migrations 20260707220000 + 20260707221000 at restore, then eyeball Phase 1+2 UI in the browser (glass-card modals, badges, reject flow, History tab).
+2. Remaining Phase 2 per ROADMAP: invite links (needs live Supabase), mode/onboarding persistence to profiles (prod SQL → runbook + Michael's go), orphan surfaces (/profile/edit debug leak), collected-rewards "mark redeemed".
+3. Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
+4. Reconcile production migration state (the restore backup answers this) and record it here; then `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs, regenerate DB types.

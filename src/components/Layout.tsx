@@ -26,6 +26,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
+import { useActionCounts } from '../hooks/useActionCounts';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
@@ -35,7 +36,7 @@ import {
   Send,
   ShoppingCart,
   Sparkles,
-  // Book, // Hidden: History tab disabled
+  Book,
   LogOut,
   Menu,
   X,
@@ -59,6 +60,7 @@ export default function Layout() {
   const { strings } = useThemeStrings();
   const { user, profile } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
+  const { reviewCount, rejectedCount } = useActionCounts();
   const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
   const location = useLocation();
 
@@ -143,8 +145,7 @@ export default function Layout() {
     { name: strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
     { name: strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
     { name: strings.storeTitle, path: '/rewards-store', icon: <ShoppingCart size={20} />, sound: 'click1d' },
-    // History tab hidden until feature is ready
-    // { name: strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
+    { name: strings.historyLabel, path: '/archive', icon: <Book size={20} />, sound: 'click1e' },
   ];
 
   const navItemsDesktop = navItems;
@@ -193,6 +194,16 @@ export default function Layout() {
                   {item.path === '/friends' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                       {pendingRequests.length}
+                    </span>
+                  )}
+                  {item.path === '/issued' && reviewCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                      {reviewCount}
+                    </span>
+                  )}
+                  {item.path === '/' && rejectedCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                      {rejectedCount}
                     </span>
                   )}
                 </Link>
@@ -371,6 +382,16 @@ export default function Layout() {
                   {item.path === '/friends' && pendingRequests && pendingRequests.length > 0 && (
                     <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
                       {pendingRequests.length}
+                    </span>
+                  )}
+                  {item.path === '/issued' && reviewCount > 0 && (
+                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
+                      {reviewCount}
+                    </span>
+                  )}
+                  {item.path === '/' && rejectedCount > 0 && (
+                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
+                      {rejectedCount}
                     </span>
                   )}
                 </Link>

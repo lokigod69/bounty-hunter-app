@@ -7,6 +7,7 @@
 // DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Eye, Link, User } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
@@ -97,6 +98,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   refetchTasks,
   isArchived,
 }) => {
+  const { t } = useTranslation();
   const { openModal, clearLayer } = useUI();
   const { theme, themeId } = useTheme(); // P5: Get theme for daily label, R28: themeId for accents
   const [showProofModal, setShowProofModal] = useState(false);
@@ -186,10 +188,15 @@ const TaskCard: React.FC<TaskCardProps> = ({
         // Actions based on role and state
         primaryAction={
           // Assignee: Complete Task button (for pending/in_progress)
+          // Phase 2.3: also allow resubmit after a rejection ('rejected')
           // R31: Branch on proof_required - if false, skip modal and submit directly
-          !isCreatorView && (safeStatus === 'pending' || safeStatus === 'in_progress') && !isArchived
+          !isCreatorView && (safeStatus === 'pending' || safeStatus === 'in_progress' || safeStatus === 'rejected') && !isArchived
             ? {
-                label: actionLoading ? 'Submitting...' : 'Complete Task',
+                label: actionLoading
+                  ? 'Submitting...'
+                  : safeStatus === 'rejected'
+                  ? t('contracts.reject.resubmit')
+                  : 'Complete Task',
                 onClick: async () => {
                   const proofRequired = task.proof_required === true;
                   if (proofRequired) {
@@ -275,6 +282,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
             : undefined
         }
       >
+        {/* Phase 2.3: rejection reason shown to the assignee so they know why */}
+        {!isCreatorView && safeStatus === 'rejected' && task.rejection_reason && (
+          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+            <div className="flex items-center text-red-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wide">
+                {t('contracts.reject.rejectedLabel')}
+              </span>
+            </div>
+            <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
+              {task.rejection_reason}
+            </p>
+          </div>
+        )}
+
         {/* Proof section for assignee (viewing submitted proof) */}
         {task.proof_url && ['review', 'completed', 'archived'].includes(safeStatus) && !isCreatorView && (
           <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
@@ -363,11 +384,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     : undefined
                 }
               >
-                {isArchived ? 'Archived' :
-                 safeStatus === 'pending' ? 'Open' :
-                 safeStatus === 'review' ? 'In Review' :
-                 safeStatus === 'completed' ? 'Done' :
-                 safeStatus === 'rejected' ? 'Rejected' :
+                {isArchived ? t('taskStatus.archived') :
+                 safeStatus === 'pending' ? t('taskStatus.pending') :
+                 safeStatus === 'review' ? t('taskStatus.review') :
+                 safeStatus === 'completed' ? t('taskStatus.completed') :
+                 safeStatus === 'rejected' ? t('taskStatus.rejected') :
                  safeStatus}
               </span>
               <h3 className={`text-base sm:text-lg font-bold ${titleColorClass} min-w-0 line-clamp-2`} title={title}>

@@ -63,6 +63,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const { t } = useTranslation();
   const { theme } = useTheme(); // R14: For couple mode self-assignment prevention
   const { strings } = useThemeStrings();
+  // Phase 2.1: capitalized mode noun (Mission / Chore / Request) for interpolated titles/buttons
+  const noun = strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1);
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state
@@ -135,7 +137,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     }
 
     if (contractType === 'bounty' && !rewardText.trim()) {
-      newErrors.rewardText = t('taskForm.validation.bountyRequired');
+      newErrors.rewardText = t('taskForm.validation.rewardRequired');
     } else if (contractType === 'bounty' && !isWithinLimit(rewardText, TEXT_LIMITS.rewardLabel)) {
       newErrors.rewardText = `Reward must be ${TEXT_LIMITS.rewardLabel} characters or less`;
     } else if (contractType === 'credit' && !rewardText) { // rewardText for credit will be the selected value, e.g., '1', '5'
@@ -201,7 +203,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         className="flex-1 overflow-y-auto mobile-scroll p-4 sm:p-6"
         style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
       >
-        <h2 id="taskform-title" className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
+        <h2 id="taskform-title" className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle', { noun }) : t('taskForm.createTitle', { noun })}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           {/* Task Title - R27: Added character counter */}
@@ -321,8 +323,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               }}
               className="input-field w-full"
             >
-              <option value="bounty">{t('taskForm.bountyContract')}</option>
-              <option value="credit">{t('taskForm.creditContract')}</option>
+              <option value="bounty">{t('taskForm.rewardTypeDirect')}</option>
+              <option value="credit">{t('taskForm.rewardTypeCredit')}</option>
             </select>
           </div>
 
@@ -331,7 +333,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label htmlFor="rewardTextBounty" className="block text-sm font-medium text-[var(--text-secondary)]">
-                  {t('taskForm.bountyDescriptionLabel')}
+                  {t('taskForm.customRewardLabel')}
                 </label>
                 <CharacterCounter current={rewardText.length} max={TEXT_LIMITS.rewardLabel} />
               </div>
@@ -341,7 +343,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 value={rewardText}
                 onChange={(e) => setRewardText(e.target.value)}
                 className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
-                placeholder={t('taskForm.bountyDescriptionPlaceholder')}
+                placeholder={t('taskForm.customRewardPlaceholder')}
                 maxLength={TEXT_LIMITS.rewardLabel}
               />
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
@@ -390,7 +392,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             loading={isSubmitting}
             className="mt-4 sm:mt-2"
           >
-            {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract'))}
+            {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract', { noun }))}
           </AppButton>
         </form>
       </div>

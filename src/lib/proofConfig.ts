@@ -13,13 +13,26 @@ export const PROOF_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const PROOF_MAX_FILE_SIZE_MB = 10;
 
 /**
- * Allowed file types for proof uploads
+ * Allowed file types for proof uploads.
+ * Kept in sync with the 'bounty-proofs' storage bucket's allowed_mime_types
+ * (see supabase/migrations/20260611120000_storage_buckets_and_policies.sql
+ * and 20260707221000_allow_pdf_proofs.sql) and with the server-side check in
+ * src/domain/missions.ts uploadProof().
  */
 export const PROOF_ALLOWED_FILE_TYPES = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'application/pdf': ['.pdf'],
+  'video/mp4': ['.mp4'],
+  'video/quicktime': ['.mov'],
+  'video/webm': ['.webm'],
 } as const;
+
+/**
+ * Human-readable label for the accepted proof file types, used in the
+ * ProofModal dropzone helper text and error messages.
+ */
+export const PROOF_ACCEPTED_TYPES_LABEL = 'PNG, JPG, PDF, or video (MP4, MOV, WebM)';
 
 /**
  * Validates if a URL string is valid and safe to use

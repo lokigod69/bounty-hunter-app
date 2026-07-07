@@ -5,7 +5,7 @@ import { useDropzone, FileRejection } from 'react-dropzone';
 import { UploadCloud, File as FileIcon } from 'lucide-react';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
-import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES } from '../lib/proofConfig';
+import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES, PROOF_ACCEPTED_TYPES_LABEL } from '../lib/proofConfig';
 
 interface ProofModalProps {
   onClose: () => void;
@@ -25,7 +25,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
       if (rejection.errors.some(e => e.code === 'file-too-large')) {
         setError(`File is too large. Maximum size is ${PROOF_MAX_FILE_SIZE_MB}MB.`);
       } else {
-        setError('File type not supported. Please upload an image (JPG, PNG) or PDF.');
+        setError(`File type not supported. Please upload ${PROOF_ACCEPTED_TYPES_LABEL}.`);
       }
       return;
     }
@@ -125,7 +125,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
                   <p className="font-semibold">
                     {isDragActive ? 'Drop the file here...' : 'Drag & drop or click to select'}
                   </p>
-                  <p className="text-xs mt-1">PNG, JPG, or PDF</p>
+                  <p className="text-xs mt-1">{PROOF_ACCEPTED_TYPES_LABEL}</p>
                 </div>
               )}
             </div>

@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { useTasksRealtime } from './useTasksRealtime';
 import { Database } from '../types/database';
 
 // Define BaseTask directly from the Database type for clarity and correctness
@@ -87,6 +88,9 @@ export function useAssignedContracts() {
   useEffect(() => {
     fetchAssignedContracts();
   }, [fetchAssignedContracts]); // Now fetchAssignedContracts is a stable dependency
+
+  // Keep the list live: any change on `tasks` (RLS-scoped) triggers a refetch.
+  useTasksRealtime(user?.id, 'useAssignedContracts', fetchAssignedContracts);
 
   return { contracts, loading, error, refetch: fetchAssignedContracts };
 }

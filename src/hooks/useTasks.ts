@@ -275,6 +275,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       created_by: currentUserId,
       proof_url: null,
       proof_type: null,
+      rejection_reason: null,
       completed_at: null,
       is_archived: false,
             profiles: null, // This is the assignee's profile

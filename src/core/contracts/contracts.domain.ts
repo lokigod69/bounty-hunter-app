@@ -13,7 +13,8 @@ import type { ContractStatus, StatusChangeContext, StatusChangeResult, StreakCon
  * - Creators can approve/reject tasks in 'review' status
  * - If proof_required=false and status='review', auto-complete to 'completed'
  * - Cannot change status if already 'completed'
- * - Rejection resets to 'pending' and clears proof
+ * - Creator rejection moves 'review' -> 'rejected' (proof cleared, reason stored)
+ * - A 'rejected' task can be resubmitted by the assignee (-> 'review'/'completed')
  */
 export function evaluateStatusChange(ctx: StatusChangeContext): StatusChangeResult {
   const { actorId, contractOwnerId, assigneeId, currentStatus, requestedStatus, proofRequired } = ctx;
@@ -57,7 +58,10 @@ export function evaluateStatusChange(ctx: StatusChangeContext): StatusChangeResu
       completed: [], // Cannot change from completed
       archived: [],
       pending_proof: ['review', 'completed'],
-      rejected: ['pending', 'in_progress'], // Can restart after rejection
+      // Phase 2.3: a rejected task can be resubmitted. Resubmit goes to 'review'
+      // (proof required) or auto-completes to 'completed' (proof not required),
+      // and the assignee may also restart it to pending/in_progress.
+      rejected: ['pending', 'in_progress', 'review', 'completed'],
     };
 
     if (!allowedTransitions[currentStatus]?.includes(finalStatus)) {
