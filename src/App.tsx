@@ -13,10 +13,10 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import InvitePage from './pages/InvitePage'; // Phase 2.5: public /invite/:token handler
 import Dashboard from './pages/Dashboard';
 import Friends from './pages/Friends';
 import ArchivePage from './pages/ArchivePage';
-import ProfileEdit from './pages/ProfileEdit'; // Import ProfileEdit page
 import RewardsStorePage from './pages/RewardsStorePage'; // Renamed from BountyStorePage
 import IssuedPage from './pages/IssuedPage'; // Import for Issued Contracts page
 import Onboarding from './pages/Onboarding'; // P2: First-Time Experience onboarding flow
@@ -85,8 +85,10 @@ export default function App() {
           />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
-              {/* Public route */}
+              {/* Public routes */}
               <Route path="/login" element={<Login />} />
+              {/* Phase 2.5: invite link handler - reachable while logged out */}
+              <Route path="/invite/:token" element={<InvitePage />} />
               
               {/* Onboarding route - requires auth, but NOT blocked by FTXGate */}
               <Route path="/onboarding" element={
@@ -107,7 +109,6 @@ export default function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="friends" element={<Friends />} />
                 <Route path="archive" element={<ArchivePage />} />
-                <Route path="profile/edit" element={<ProfileEdit />} />
                 <Route path="rewards-store" element={<RewardsStorePage />} /> {/* Renamed from bounty-store */}
                 <Route path="my-rewards" element={<Navigate to="/rewards-store?tab=collected" replace />} />
                 <Route path="issued" element={<IssuedPage />} /> {/* Route for Issued Contracts */}

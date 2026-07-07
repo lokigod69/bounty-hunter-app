@@ -29,3 +29,7 @@ NUL
 .claude/*
 plugins/
 skills/
+
+# Database backups — never commit
+db_cluster-*.backup/
+*.backup

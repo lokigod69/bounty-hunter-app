@@ -12,7 +12,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateCcw } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
@@ -21,9 +22,11 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
+import { ConfirmModal } from './ui/ConfirmModal';
 import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 import { MODE_ACCENT_HEX } from '../theme/modeAccents';
+import { clearOnboardingFlag } from '../lib/ftxGate';
 
 
 interface ProfileEditModalProps {
@@ -63,11 +66,23 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   // R16: Also pull profileLoading to handle first-time profile scenario
   const { user, profile, profileLoading, refreshProfile } = useAuth();
   const { themeId, setThemeId } = useTheme();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+
+  // Restart Onboarding: reset the FTX flag (localStorage cache + DB profile flag)
+  // then send the user through the first-time flow again. Folded in from the
+  // deleted /profile/edit orphan page.
+  const handleRestartOnboarding = () => {
+    setShowRestartConfirm(false);
+    clearOnboardingFlag();
+    onClose();
+    navigate('/onboarding');
+  };
 
   // R16: Hydrate form state when modal opens - handles both existing profile and first-time scenarios
   useEffect(() => {
@@ -320,6 +335,16 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                   {modeOptions.find(o => o.id === themeId)?.hint || 'Guild Mode is the public V1 launch mode.'}
                 </p>
               </div>
+
+              {/* Restart Onboarding (folded in from the removed /profile/edit page) */}
+              <button
+                type="button"
+                onClick={() => setShowRestartConfirm(true)}
+                className="w-full flex items-center justify-center gap-2 min-h-[44px] p-4 bg-gray-800/50 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-gray-800/80 transition-colors"
+              >
+                <RotateCcw size={18} className="text-white/60" />
+                {t('profile.restartOnboarding')}
+              </button>
             </div>
 
             <AppButton type="submit" variant="cta" fullWidth loading={isUploading} className="mt-6">
@@ -327,6 +352,17 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
             </AppButton>
           </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showRestartConfirm}
+        onClose={() => setShowRestartConfirm(false)}
+        onConfirm={handleRestartOnboarding}
+        variant="default"
+        title={t('profile.restartOnboardingConfirmTitle')}
+        message={t('profile.restartOnboardingConfirmMessage')}
+        confirmLabel={t('profile.restartOnboardingConfirmButton')}
+        cancelLabel={t('common.cancel')}
+      />
     </ModalShell>
   );
 }

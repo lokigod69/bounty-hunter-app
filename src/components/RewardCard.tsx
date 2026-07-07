@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Gift, Check, Undo2 } from 'lucide-react';
 import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
 import { AppButton } from './ui/AppButton';
@@ -28,9 +28,13 @@ interface RewardCardProps {
   currentCredits?: number; // P4: Current user credits for affordability checks
   // R33: Optional props for collected view
   collectedAt?: string;
+  // Phase 2.8: collected reward redeemed/delivered state + toggle
+  redeemedAt?: string | null;
+  onMarkRedeemed?: (redeemed: boolean) => void;
+  isRedeeming?: boolean;
 }
 
-const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0, collectedAt }) => {
+const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0, collectedAt, redeemedAt, onMarkRedeemed, isRedeeming = false }) => {
   const { t } = useTranslation();
   const { themeId } = useTheme();
   const { strings } = useThemeStrings();
@@ -197,19 +201,39 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           </div>
         )}
 
-        {/* R33: Collected view - show collected date and badge */}
+        {/* R33: Collected view - show collected date and badge.
+            Phase 2.8: distinguish redeemed/delivered from merely collected. */}
         {view === 'collected' && collectedAt && (
           <div className="text-center space-y-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/50">
-              ✓ Collected
-            </span>
-            <p className="text-xs text-white/50">
-              {new Date(collectedAt).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </p>
+            {redeemedAt ? (
+              <>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/50">
+                  <Check size={12} /> {t('rewards.rewardCard.redeemedBadge')}
+                </span>
+                <p className="text-xs text-white/50">
+                  {t('rewards.rewardCard.redeemedOn', {
+                    date: new Date(redeemedAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    }),
+                  })}
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/50">
+                  ✓ Collected
+                </span>
+                <p className="text-xs text-white/50">
+                  {new Date(collectedAt).toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </p>
+              </>
+            )}
           </div>
         )}
 
@@ -237,7 +261,31 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
               <span className="text-sm">Delete</span>
             </button>
           </div>
-        ) : view === 'collected' ? null : (
+        ) : view === 'collected' ? (
+          onMarkRedeemed && (
+            redeemedAt ? (
+              <AppButton
+                variant="ghost"
+                fullWidth
+                icon={<Undo2 size={16} />}
+                loading={isRedeeming}
+                onClick={() => onMarkRedeemed(false)}
+              >
+                {t('rewards.rewardCard.markRedeemedUndo')}
+              </AppButton>
+            ) : (
+              <AppButton
+                variant="cta"
+                fullWidth
+                icon={<Gift size={16} />}
+                loading={isRedeeming}
+                onClick={() => onMarkRedeemed(true)}
+              >
+                {t('rewards.rewardCard.markRedeemed')}
+              </AppButton>
+            )
+          )
+        ) : (
           <AppButton
             variant="cta"
             fullWidth

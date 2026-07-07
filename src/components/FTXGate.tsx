@@ -13,9 +13,13 @@ interface FTXGateProps {
 
 export default function FTXGate({ children }: FTXGateProps) {
   // ALL HOOKS AT TOP LEVEL
-  const { user, profileLoading } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   const location = useLocation();
-  const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(user?.id ?? null, profileLoading);
+  const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(
+    user?.id ?? null,
+    profileLoading,
+    profile?.onboarding_completed,
+  );
 
   // NO HOOKS BELOW THIS LINE - only conditional returns
 

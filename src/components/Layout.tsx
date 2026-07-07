@@ -26,6 +26,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
+import { useRedeemPendingInvite } from '../hooks/useInvite';
 import { useActionCounts } from '../hooks/useActionCounts';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../context/UIContext';
@@ -61,6 +62,8 @@ export default function Layout() {
   const { user, profile } = useAuth();
   const { pendingRequests } = useFriends(user?.id);
   const { reviewCount, rejectedCount } = useActionCounts();
+  // Phase 2.5: redeem an invite token stashed before login, once per session.
+  useRedeemPendingInvite();
   const { isMobileMenuOpen, toggleMenu, closeMenu } = useUI();
   const location = useLocation();
 

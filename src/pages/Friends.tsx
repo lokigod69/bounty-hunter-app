@@ -13,10 +13,11 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
+import { useInvite } from '../hooks/useInvite';
 import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
-import { UserPlus, Users, Heart, Mail, CheckCircle, XCircle, UserCheck } from 'lucide-react';
+import { UserPlus, Users, Heart, Mail, CheckCircle, XCircle, UserCheck, Share2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
@@ -100,6 +101,18 @@ export default function Friends() {
   // R25: Handle partner selection
   const handleSelectPartner = async (friendId: string) => {
     await setPartner(friendId);
+  };
+
+  // Phase 2.5: shareable invite link (works for people without an account yet)
+  const { shareInviteLink } = useInvite();
+  const [isSharingInvite, setIsSharingInvite] = useState(false);
+  const handleShareInvite = async () => {
+    setIsSharingInvite(true);
+    try {
+      await shareInviteLink();
+    } finally {
+      setIsSharingInvite(false);
+    }
   };
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
@@ -491,6 +504,18 @@ export default function Friends() {
                     ))}
                   </div>
                 )}
+
+                {/* Phase 2.5: share an invite link with someone not yet on the app */}
+                <div className="mt-4 flex justify-center">
+                  <AppButton
+                    variant="secondary"
+                    icon={<Share2 size={18} />}
+                    loading={isSharingInvite}
+                    onClick={handleShareInvite}
+                  >
+                    {t('invite.shareLink')}
+                  </AppButton>
+                </div>
               </div>
             )}
 
@@ -563,6 +588,18 @@ export default function Friends() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Phase 2.5: share an invite link with someone not yet on the app */}
+          <div className="mb-6 flex justify-center">
+            <AppButton
+              variant="secondary"
+              icon={<Share2 size={18} />}
+              loading={isSharingInvite}
+              onClick={handleShareInvite}
+            >
+              {t('invite.shareLink')}
+            </AppButton>
           </div>
 
           {/* Tabs */}

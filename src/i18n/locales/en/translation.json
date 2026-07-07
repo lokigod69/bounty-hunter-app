@@ -102,6 +102,23 @@
     "cancelRequestConfirm": "Yes, Cancel Request",
     "cancelRequestLoading": "Removing…"
   },
+  "invite": {
+    "shareLink": "Share invite link",
+    "linkCopied": "Link copied",
+    "shareText": "Join me on Bounty Hunter",
+    "generating": "Creating your link…",
+    "error": "Couldn't create your invite link. Please try again.",
+    "page": {
+      "redeeming": "Connecting you…",
+      "success": "You're now connected with {{name}}!",
+      "already": "You're already connected with {{name}}.",
+      "invalid": "This invite link is invalid or has expired.",
+      "selfInvite": "This is your own invite link — share it with a friend instead.",
+      "signInToAccept": "Sign in to accept this invite.",
+      "error": "Something went wrong redeeming this invite.",
+      "continue": "Continue"
+    }
+  },
   "profile": {
     "edit": "Edit Profile",
     "save": "Save Changes",
@@ -117,7 +134,11 @@
     "saveSuccess": "Profile updated!",
     "saveError": "Failed to update profile. Please try again.",
     "toggleCursorTrail": "Toggle Cursor Trail",
-    "account": "Account"
+    "account": "Account",
+    "restartOnboarding": "Restart Onboarding",
+    "restartOnboardingConfirmTitle": "Restart onboarding?",
+    "restartOnboardingConfirmMessage": "You'll see the first-time setup flow again. Your data won't be affected.",
+    "restartOnboardingConfirmButton": "Restart"
   },
   "common": {
     "loading": "Loading...",
@@ -196,8 +217,15 @@
       "editButton": "Edit reward",
       "deleteButton": "Delete reward",
       "claimButton": "Claim",
-      "viewButton": "View"
+      "viewButton": "View",
+      "markRedeemed": "Mark as redeemed",
+      "markRedeemedUndo": "Undo redeemed",
+      "redeemedBadge": "Redeemed",
+      "redeemedOn": "Redeemed {{date}}"
     },
+    "redeemSuccess": "Reward marked as redeemed.",
+    "redeemUndoSuccess": "Reward marked as not redeemed.",
+    "redeemError": "Couldn't update the reward. Please try again.",
     "createModal": {
       "title": "Create a new reward",
       "closeButton": "Close",

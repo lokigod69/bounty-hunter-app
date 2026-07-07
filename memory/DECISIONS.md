@@ -4,6 +4,26 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-08 — 9-migration batch applied to the new test DB (Michael's explicit go)
+**Status:** active
+**Decision:** On "apply the migration and all else," applied the queued 6 hardening migrations PLUS 3 new Phase-2 migrations to `mvbmpcmexkgfairnthux` via the session pooler + psql (NOT `supabase db push` — the remote tracker held only `20231117000000`, so a push would have replayed every intermediate migration against the already-restored schema). Backups taken before each batch; all 9 recorded in `supabase_migrations.schema_migrations`. New schema: `profiles.theme`/`onboarding_completed`, `collected_rewards.redeemed_at` + `mark_reward_redeemed` RPC, `invites` table + `get_or_create_invite`/`redeem_invite` RPCs.
+**Why:** Zero-data test DB + fresh backups made the risk nil; direct psql of the specific files kept the tracker honest where a push could not.
+
+## 2026-07-08 — Invite links: reusable per-user token, redeem = accepted friendship
+**Status:** active
+**Decision:** Shareable friend invites use an `invites` table (owner-only RLS) with a reusable random token per user; the recipient opens `/invite/<token>` (a PUBLIC route), and `redeem_invite()` (SECURITY DEFINER) creates/promotes an **ACCEPTED** friendship between the token owner and the caller — no extra approval step. Logged-out recipients get the token stashed in `localStorage` and redeemed post-login by `useRedeemPendingInvite()` (mounted in the authenticated Layout). No edge-function/email path (relies on the existing magic-link login).
+**Why:** A two-player app must recruit player 2 who has no account yet; the existing add-friend surfaces only found existing accounts. Auto-accept is correct because the inviter consented by sharing. Token table (vs. embedding a raw user id) keeps it revocable and non-enumerable. **Consequence:** a brand-new signup's redemption fires only after onboarding (Layout is behind FTXGate) — token persists until then; acceptable for V1.
+
+## 2026-07-08 — DB type additions go through custom.ts overlay, not the UTF-16 database.ts
+**Status:** active
+**Decision:** New columns/tables (`theme`, `onboarding_completed`, `redeemed_at`, `invites`) were typed by extending `src/types/custom.ts`, leaving the auto-generated UTF-16 `src/types/database.ts` untouched; RPCs not in the generated types are called with the `('name' as never, args as never)` loose-cast already used in the codebase. Persistence writes are fire-and-forget with localStorage as the immediate source of truth.
+**Why:** Hand-editing the UTF-16 file risks encoding corruption, and this is the codebase's established precedent (`partner_user_id`). NB: `npm run build` does NOT typecheck pages (root tsconfig `files: []`) — always run `tsc -p tsconfig.app.json --noEmit` to catch type regressions in pages/hooks (it surfaced 7 masked errors this session).
+
+## 2026-07-08 — Fresh Supabase project restored from Jan-2026 backup; data wiped for testing
+**Status:** active
+**Decision:** Michael abandoned unpausing the old project (`bounty`, ref tsnjpylkgsovjujoczll, us-east-2) and created a new one (`bounty-hunter-app`, ref mvbmpcmexkgfairnthux, **ap-south-1 Mumbai**). The 28-01-2026 cluster backup was restored into it via psql, then ALL data rows were wiped on his explicit instruction (public tables truncated, 9 auth.users deleted, storage.objects empty; the 3 buckets kept) — the new project is a clean test environment. `.env.local` and `supabase link` now point at it.
+**Why:** Faster path back to a working login than the paused-project restore flow; old data not needed for the current testing phase. **Consequences:** (1) the restored schema is the pre-April-2026 state — the credit-write lockdown (20260412*) and storage-policy codification (20260611*) are NOT in it and must be re-applied along with 20260707* (Michael's go still required); (2) real user data, if ever wanted, exists only in the old paused project; (3) direct DB host is IPv6-only — use the session pooler `aws-1-ap-south-1.pooler.supabase.com:5432`, user `postgres.mvbmpcmexkgfairnthux`; (4) Mumbai region means noticeable latency from Europe — acceptable for testing, revisit before real launch.
+
 ## 2026-07-07 — Canonical noun system: Mission / Chore / Request per mode
 **Status:** active
 **Decision:** Michael approved the recommended noun set. The task object is named by mode via the existing `theme.<mode>.*` i18n mechanism: **Mission** (guild), **Chore** (family), **Request** (couple). Store items are plain **Rewards** everywhere ("Bounty" no longer names store items, including guild's `rewardSingular`). **"Bounty" is reserved for the credit pot attached to a mission.** The hardcoded Contract/Mission/Task mixing in `contracts.*`, `taskForm.*`, `navigation.*` and component-level English (e.g. TaskCard status chips) gets purged and routed through theme strings.

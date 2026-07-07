@@ -11,6 +11,8 @@ type Reward = Database['public']['Tables']['rewards_store']['Row'];
 import { useAuth } from './useAuth';
 import { PostgrestError } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
+import { markRewardRedeemed } from '../domain/rewards';
+import type { CollectedRewardRow } from '../types/custom';
 
 // R33: Profile info type for creator
 export interface CreatorProfile {
@@ -22,6 +24,9 @@ export interface CreatorProfile {
 export interface CollectedReward extends Reward {
   collected_at: string;
   collection_id: string;
+  // Always populated by the mapper (null when not yet redeemed); required so the
+  // .filter() type-predicate below narrows cleanly.
+  redeemed_at: string | null;
   creator_profile?: CreatorProfile | null;
 }
 
@@ -30,6 +35,7 @@ export interface UseCollectedRewardsReturn {
   isLoading: boolean;
   error: string | null;
   fetchCollectedRewards: () => Promise<void>;
+  markRedeemed: (collectionId: string, redeemed: boolean) => Promise<void>;
 }
 
 export const useCollectedRewards = (): UseCollectedRewardsReturn => {
@@ -49,11 +55,15 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
     try {
       // Two-step query to avoid silent join failures from RLS
       // Step 1: Get collected_rewards rows (collector always has RLS access)
+      // redeemed_at is not in the generated database types yet (Phase 2.8),
+      // so the typed select string would resolve to a SelectQueryError. Cast the
+      // row shape via .returns<CollectedRewardRow[]>() (overlay from custom.ts).
       const { data: collectedRows, error: crError } = await supabase
         .from('collected_rewards')
-        .select('id, reward_id, collector_id, collected_at')
+        .select('id, reward_id, collector_id, collected_at, redeemed_at')
         .eq('collector_id', user.id)
-        .order('collected_at', { ascending: false });
+        .order('collected_at', { ascending: false })
+        .returns<CollectedRewardRow[]>();
 
       if (crError) {
         throw crError;
@@ -102,15 +112,17 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
       // Step 4: Merge client-side with creator profiles
       const rewardsMap = new Map((rewards || []).map(r => [r.id, r]));
       const transformedData: CollectedReward[] = collectedRows
-        .map((row) => {
+        .map((row): CollectedReward | null => {
           const rewardDetail = row.reward_id ? rewardsMap.get(row.reward_id) : null;
           if (!rewardDetail) {
             return null;
           }
           return {
             ...rewardDetail,
-            collected_at: row.collected_at,
+            collected_at: row.collected_at ?? '',
             collection_id: row.id,
+            // Phase 2.8: redeemed_at (typed via CollectedRewardRow overlay)
+            redeemed_at: row.redeemed_at ?? null,
             creator_profile: rewardDetail.creator_id ? creatorProfiles[rewardDetail.creator_id] || null : null,
           };
         })
@@ -136,6 +148,27 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
     }
   }, [user]);
 
+  // Phase 2.8: mark a collected reward as redeemed/delivered (or reverse it).
+  // Optimistically updates local state; on failure the error is thrown so the
+  // caller (page) can surface a toast, and we refetch to restore truth.
+  const markRedeemed = useCallback(async (collectionId: string, redeemed: boolean) => {
+    const result = await markRewardRedeemed(collectionId, redeemed);
+
+    if (!result.success) {
+      await fetchCollectedRewards();
+      throw new Error(result.message);
+    }
+
+    const nextRedeemedAt = redeemed ? new Date().toISOString() : null;
+    setCollectedRewards((prev) =>
+      prev.map((reward) =>
+        reward.collection_id === collectionId
+          ? { ...reward, redeemed_at: nextRedeemedAt }
+          : reward
+      )
+    );
+  }, [fetchCollectedRewards]);
+
   useEffect(() => {
     fetchCollectedRewards();
   }, [fetchCollectedRewards]);
@@ -145,5 +178,6 @@ export const useCollectedRewards = (): UseCollectedRewardsReturn => {
     isLoading,
     error,
     fetchCollectedRewards,
+    markRedeemed,
   };
 };

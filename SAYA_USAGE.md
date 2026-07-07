@@ -21,7 +21,7 @@ Use it for family chores, couple requests, friend-group accountability, or small
 - Complete mission: Dashboard -> open assigned mission -> submit proof or send for review.
 - Approve mission: `Missions` -> review section -> approve/reject.
 - Claim reward: `Rewards Store` -> available reward -> claim if enough credits.
-- Edit profile/theme: profile menu or `/profile/edit`.
+- Edit profile/theme: profile menu (avatar -> Edit Profile).
 
 ## Local Dev
 

@@ -2,11 +2,13 @@
 // P2: Onboarding Step 3 - Invite Someone (Optional)
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useInvite } from '../../hooks/useInvite';
 import { supabase } from '../../lib/supabase';
 import { BaseCard } from '../ui/BaseCard';
 import { AppButton } from '../ui';
-import { ArrowRight, ArrowLeft, UserPlus, AlertTriangle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, UserPlus, AlertTriangle, Share2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface OnboardingStep3InviteProps {
@@ -20,11 +22,23 @@ export default function OnboardingStep3Invite({
   onSkip,
   onBack,
 }: OnboardingStep3InviteProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const { shareInviteLink } = useInvite();
   const [email, setEmail] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSharingInvite, setIsSharingInvite] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+
+  const handleShareInvite = async () => {
+    setIsSharingInvite(true);
+    try {
+      await shareInviteLink();
+    } finally {
+      setIsSharingInvite(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!email.trim() || !user) return;
@@ -113,6 +127,33 @@ export default function OnboardingStep3Invite({
           </p>
         </div>
 
+        {/* Phase 2.5: share an invite link - works even if they don't have an account yet */}
+        <div className="rounded-lg border border-white/10 p-4 text-center">
+          <p className="text-meta text-white/50 mb-3">
+            Not on Bounty Hunter yet? Send them a link to join and connect with you.
+          </p>
+          <AppButton
+            variant="secondary"
+            type="button"
+            icon={<Share2 size={18} />}
+            fullWidth
+            loading={isSharingInvite}
+            onClick={handleShareInvite}
+            disabled={isSending || isSearching}
+          >
+            {t('invite.shareLink')}
+          </AppButton>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 text-white/50 bg-transparent">or find an existing account</span>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="invite-email" className="block text-sm font-medium text-white/70 mb-2">
@@ -128,7 +169,7 @@ export default function OnboardingStep3Invite({
               disabled={isSending || isSearching}
             />
             <p className="text-meta text-white/50 mt-1">
-              They must already have a Bounty Hunter account.
+              Already on Bounty Hunter? Search by their email.
             </p>
           </div>
 

@@ -114,6 +114,23 @@
     "cancelRequestConfirm": "Ja, Anfrage abbrechen",
     "cancelRequestLoading": "Wird entfernt…"
   },
+  "invite": {
+    "shareLink": "Einladungslink teilen",
+    "linkCopied": "Link kopiert",
+    "shareText": "Mach mit bei Bounty Hunter",
+    "generating": "Dein Link wird erstellt…",
+    "error": "Dein Einladungslink konnte nicht erstellt werden. Bitte versuche es erneut.",
+    "page": {
+      "redeeming": "Du wirst verbunden…",
+      "success": "Du bist jetzt mit {{name}} verbunden!",
+      "already": "Du bist bereits mit {{name}} verbunden.",
+      "invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
+      "selfInvite": "Das ist dein eigener Einladungslink — teile ihn stattdessen mit einer Freundin oder einem Freund.",
+      "signInToAccept": "Melde dich an, um diese Einladung anzunehmen.",
+      "error": "Beim Einlösen dieser Einladung ist etwas schiefgelaufen.",
+      "continue": "Weiter"
+    }
+  },
   "profile": {
     "edit": "Profil bearbeiten",
     "save": "Änderungen speichern",
@@ -129,7 +146,11 @@
     "saveSuccess": "Profil aktualisiert!",
     "saveError": "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
     "toggleCursorTrail": "Laser-Cursor umschalten",
-    "account": "Konto"
+    "account": "Konto",
+    "restartOnboarding": "Einführung neu starten",
+    "restartOnboardingConfirmTitle": "Einführung neu starten?",
+    "restartOnboardingConfirmMessage": "Sie sehen den Einrichtungsablauf für Erstnutzer erneut. Ihre Daten sind davon nicht betroffen.",
+    "restartOnboardingConfirmButton": "Neu starten"
   },
   "common": {
     "loading": "Laden...",
@@ -208,8 +229,15 @@
       "editButton": "Belohnung bearbeiten",
       "deleteButton": "Belohnung löschen",
       "claimButton": "Einfordern",
-      "viewButton": "Ansehen"
+      "viewButton": "Ansehen",
+      "markRedeemed": "Als eingelöst markieren",
+      "markRedeemedUndo": "Einlösung rückgängig",
+      "redeemedBadge": "Eingelöst",
+      "redeemedOn": "Eingelöst am {{date}}"
     },
+    "redeemSuccess": "Belohnung als eingelöst markiert.",
+    "redeemUndoSuccess": "Belohnung als nicht eingelöst markiert.",
+    "redeemError": "Belohnung konnte nicht aktualisiert werden. Bitte versuche es erneut.",
     "createModal": {
       "title": "Neue Belohnung erstellen",
       "closeButton": "Schließen",

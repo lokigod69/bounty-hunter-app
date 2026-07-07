@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-07 (late night)
+Last updated: 2026-07-08
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -8,17 +8,17 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - Core loop end-to-end: create mission for a friend, submit proof, approve, earn credits, claim rewards (per SAYA_USAGE.md and domain tests).
 - Supabase magic-link/OTP auth, onboarding + tutorial flow, i18n (en/de), multi-theme system.
 - Vitest suite (9 test files, 33 tests: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes + accent drift guards, auth redirect). `npm test` = `vitest run src`.
-- Migrations codified through `20260611120000_storage_buckets_and_policies.sql`; credit-table writes locked down (April 2026 migrations).
+- Migrations: all 9 repo migrations are APPLIED to the new test DB as of 2026-07-08 (see LOG); credit-table writes + increment RPC locked down, storage policies live, PDF proofs + rejection_reason + profile persistence + collected redeemed + invites all in the schema. Tracker (`supabase_migrations.schema_migrations`) has 10 rows.
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
 
 ## In progress
-- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phases 0–1 DONE (see LOG). Phase 2 UX coherence MOSTLY DONE as of 2026-07-07 late night: noun system implemented (Mission/Chore/Request via theme strings; store = Rewards; dead namespaces purged), tasks realtime + nav action badges (useTasksRealtime/useActionCounts), History nav re-enabled, rejection loop (persisted 'rejected' + reason + resubmit), proof types aligned (PDF allowed end-to-end once bucket migration applies). Vitest 41/41. Remaining Phase 2: invite links (needs live Supabase), mode/onboarding persistence (prod SQL), orphan surfaces (/profile/edit debug leak), collected-rewards "mark redeemed". Visual eyeball by Michael still pending (blocked by Supabase pause).
-- **⚠️ Supabase project PAUSED** — login dead ("Failed to fetch"). Restore checklist: `docs/runbooks/SUPABASE_RESTORE_CHECKLIST.md`. Critical: repo has NO base-schema migration; schema exists only inside the paused project → backup download first. Two new unapplied migrations wait on restore: `20260707220000_add_rejection_reason.sql`, `20260707221000_allow_pdf_proofs.sql` (proposals 009/010). Code degrades gracefully without them (42703 fallback).
+- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phases 0–1 DONE. **Phase 2 UX coherence COMPLETE as of 2026-07-08:** noun system, tasks realtime + action badges, History nav, rejection loop, proof types (2026-07-07); THEN the leftovers shipped — invite links (2.5: /invite/:token + redeem RPC), mode/onboarding persistence (2.6: profiles.theme/onboarding_completed), orphan /profile/edit deleted + Restart-Onboarding folded into the modal (2.7), collected-rewards mark-redeemed (2.8). Vitest 44/44. Next: **Phase 3 generated assets.** Visual eyeball by Michael still pending (needs dashboard auth config on the new project).
+- **Supabase LIVE again on a NEW project** (2026-07-08): `bounty-hunter-app`, ref `mvbmpcmexkgfairnthux`, region ap-south-1 Mumbai. Jan-2026 cluster backup restored, all data rows wiped for a clean test env (see DECISIONS 2026-07-08). `.env.local` + `supabase link` point at it. DB access from this machine: session pooler `aws-1-ap-south-1.pooler.supabase.com:5432`, user `postgres.mvbmpcmexkgfairnthux` (direct host is IPv6-only; no local IPv6). ✅ 2026-07-08: all 9 repo migrations APPLIED + verified (schema now hardened + Phase-2 columns/RPCs live). Dashboard-side config (auth Site URL/redirects, edge functions, vault secrets) did NOT transfer — auth config still pending, so login/invite round-trip aren't browser-testable yet. Old paused project (`bounty`, tsnjpylkgsovjujoczll) still holds the only copy of real user data. The old restore checklist runbook is now historical.
 - Image-asset pipeline: Codex image generation + gpt-image-2-skill (`~/.codex/skills/gpt-image-2-skill/`) is proven. Current pilots in `assets-src/generated/`: coin (`coin-pilot-v1*.png`) and gift emblem (`gift-emblem-pilot-v1.png`, solid `#FF00FF` background).
 
 ## Known problems
 (mostly from `docs/codex-refactor-pass/10_FINAL_HANDOFF.md` + `CODEX_NEXT_STEPS.md`)
-- Production migration state unknown — which migrations/proposals are actually applied in prod is not recorded. Prod SQL requires backup + Saya review first.
+- ~~Production migration state unknown~~ ~~ANSWERED 2026-07-08: restored schema pre-hardening~~ RESOLVED 2026-07-08 (later): all 9 repo migrations applied to the new test DB — `increment_user_credits` + `user_credits` writes revoked from anon/authenticated, storage policies + PDF + rejection_reason + persistence + redeemed + invites all live; tracker now has 10 rows. Prod SQL still requires backup + Michael's go first (the process held this session).
 - Task lifecycle still uses direct table updates from the client; should move to server RPCs (high effort/high risk item).
 - Legacy Gmail notification Edge Functions need auth hardening or undeployment.
 - Build warnings: unresolved `/img/C1.jpg`, large JS chunk, mixed dynamic/static import of `src/domain/rewards.ts`.
@@ -26,12 +26,12 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 
 ## Open questions
 - Was the 2026-06-18 "Harden V1 launch readiness" commit fully verified? Is the uncommitted UI refactor finished and meant to be committed?
-- Which of db/proposals 001–008 and the 2026 migrations are applied in production? (Runbooks exist for 003–008; validation docs for 003–005.) The Supabase-pause backup download (restore checklist Step 0) doubles as the schema source of truth to answer this.
+- ~~Which migrations are applied in production?~~ ANSWERED 2026-07-08 for the new test project (see Known problems). Residual: whether the OLD paused project (with real user data) had the April/June migrations applied — only matters if its data is ever migrated over.
 - ~~Proof types~~ DECIDED 2026-07-07: PDF/text/private all allowed (see DECISIONS). "Private" needs no work — storage RLS already limits proofs to creator+assignee.
 - DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed (`rejection_reason` was hand-added meanwhile).
 
 ## Next actions
-1. Michael: restore Supabase per `docs/runbooks/SUPABASE_RESTORE_CHECKLIST.md` (backup download FIRST), apply migrations 20260707220000 + 20260707221000 at restore, then eyeball Phase 1+2 UI in the browser (glass-card modals, badges, reject flow, History tab).
-2. Remaining Phase 2 per ROADMAP: invite links (needs live Supabase), mode/onboarding persistence to profiles (prod SQL → runbook + Michael's go), orphan surfaces (/profile/edit debug leak), collected-rewards "mark redeemed".
+1. Michael: (a) ✅ done — 9-migration batch applied; (b) set the new project's dashboard auth config (Site URL + redirect URLs for magic links — localhost:6075 and Vercel domain) so login + the invite round-trip are testable; (c) then eyeball Phase 1+2 UI in the browser (glass-card modals, badges, reject flow, History tab, mark-redeemed, Share invite link); (d) go/no-go to commit the current uncommitted Phase-2 working tree.
+2. ✅ Remaining Phase 2 DONE (invite links, persistence, orphan surface, collected-rewards mark-redeemed) — 2026-07-08.
 3. Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
-4. Reconcile production migration state (the restore backup answers this) and record it here; then `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs, regenerate DB types.
+4. `CODEX_NEXT_STEPS.md` top items: task lifecycle RPCs; regenerate DB types from the new project (types currently overlaid in `src/types/custom.ts` for theme/onboarding_completed/redeemed_at/invites — a full regen would fold these into `database.ts`). Also note `npm run build` skips page typechecking — use `tsc -p tsconfig.app.json --noEmit`.

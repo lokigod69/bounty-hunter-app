@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Plus, ShoppingCart } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
@@ -39,7 +40,7 @@ const RewardsStorePage: React.FC = () => {
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
   const { deleteBounty, isLoading: isDeleting } = useDeleteBounty();
   const { credits: userCredits, loading: creditsLoading, refetch: refetchCredits } = useUserCredits();
-  const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards } = useCollectedRewards();
+  const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards, markRedeemed } = useCollectedRewards();
 
   // State for modals
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -50,6 +51,9 @@ const RewardsStorePage: React.FC = () => {
   const [bountyToDelete, setBountyToDelete] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<Tab>('available');
+
+  // Phase 2.8: track which collected reward is mid-redeem to guard double-clicks
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
 
   useEffect(() => {
     const requestedTab = searchParams.get('tab');
@@ -110,6 +114,21 @@ const RewardsStorePage: React.FC = () => {
       fetchRewards();        // Remove from available list
       refetchCredits();      // Update balance display
       fetchCollectedRewards(); // Update collected tab
+    }
+  };
+
+  // Phase 2.8: toggle a collected reward's redeemed/delivered state
+  const handleMarkRedeemed = async (collectionId: string, redeemed: boolean) => {
+    if (redeemingId) return; // guard against double-clicks
+    setRedeemingId(collectionId);
+    try {
+      await markRedeemed(collectionId, redeemed);
+      toast.success(redeemed ? t('rewards.redeemSuccess') : t('rewards.redeemUndoSuccess'));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('rewards.redeemError');
+      toast.error(message || t('rewards.redeemError'));
+    } finally {
+      setRedeemingId(null);
     }
   };
 
@@ -179,6 +198,9 @@ const RewardsStorePage: React.FC = () => {
               reward={reward as Reward}
               view="collected"
               collectedAt={reward.collected_at}
+              redeemedAt={reward.redeemed_at}
+              onMarkRedeemed={(next) => handleMarkRedeemed(reward.collection_id, next)}
+              isRedeeming={redeemingId === reward.collection_id}
             />
           ))}
         </div>

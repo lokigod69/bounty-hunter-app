@@ -12,6 +12,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { PageState } from '../components/ui';
 import { Check } from 'lucide-react';
+import { markOnboardingCompleted } from '../lib/ftxGate';
 
 // Step components
 import OnboardingStep1Mode from '../components/onboarding/OnboardingStep1Mode';
@@ -69,15 +70,15 @@ export default function Onboarding() {
   };
 
   const handleStep3Complete = () => {
-    // Mark onboarding as completed
-    localStorage.setItem('bounty_onboarding_completed', 'true');
+    // Mark onboarding as completed (localStorage cache + DB profile flag)
+    markOnboardingCompleted();
     // Navigate to Mission Inbox (Dashboard)
     navigate('/', { replace: true });
   };
 
   const handleSkipAll = () => {
     // Skip all steps - mark onboarding complete and go to dashboard
-    localStorage.setItem('bounty_onboarding_completed', 'true');
+    markOnboardingCompleted();
     navigate('/', { replace: true });
   };
 
@@ -101,7 +102,8 @@ export default function Onboarding() {
   ];
 
   // Render onboarding wizard
-  const profileThemeId = (profile as unknown as { theme?: ThemeId } | null | undefined)?.theme;
+  // Phase 2.6: profile.theme is now a real persisted field (typed on custom Profile).
+  const profileThemeId = profile?.theme as ThemeId | undefined;
 
   return (
     <PageContainer>

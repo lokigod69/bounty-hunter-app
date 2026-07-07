@@ -46,6 +46,13 @@ export interface CreateRewardResult {
   message: string;
 }
 
+export interface MarkRewardRedeemedResult {
+  success: boolean;
+  collection_id?: string;
+  redeemed?: boolean;
+  message: string;
+}
+
 /**
  * Purchases a reward from the store.
  *
@@ -137,6 +144,58 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
     message: rpcResponse?.message || 'Reward purchased successfully!',
     collection_id: rpcResponse?.collection_id,
     reward_name: rpcResponse?.reward_name,
+  };
+}
+
+/**
+ * Marks a collected reward as redeemed/delivered (or reverses that).
+ *
+ * Uses RPC: mark_reward_redeemed
+ * The RPC enforces collector_id = auth.uid() and sets redeemed_at = now()
+ * when p_redeemed is true, else null.
+ * Returns json: on success { success: true, collection_id, redeemed },
+ * on failure { success: false, error, message }
+ * (error codes: NOT_AUTHENTICATED / BAD_REQUEST / NOT_FOUND / FORBIDDEN).
+ */
+export async function markRewardRedeemed(
+  collectionId: string,
+  redeemed: boolean,
+  supabaseClient: SupabaseClient<Database> = supabase
+): Promise<MarkRewardRedeemedResult> {
+  const rpcArgs = {
+    p_collection_id: collectionId,
+    p_redeemed: redeemed,
+  };
+
+  const { data: rawData, error: rpcError } = await supabaseClient.rpc('mark_reward_redeemed' as never, rpcArgs as never);
+
+  if (rpcError) {
+    return {
+      success: false,
+      message: rpcError.message || 'Failed to update reward status.',
+    };
+  }
+
+  const rpcResponse = rawData as {
+    success?: boolean;
+    error?: string;
+    message?: string;
+    collection_id?: string;
+    redeemed?: boolean;
+  } | null;
+
+  if (!rpcResponse || rpcResponse.success === false) {
+    return {
+      success: false,
+      message: rpcResponse?.message || 'Failed to update reward status.',
+    };
+  }
+
+  return {
+    success: true,
+    collection_id: rpcResponse.collection_id,
+    redeemed: rpcResponse.redeemed,
+    message: rpcResponse.message || 'Reward status updated.',
   };
 }
 
