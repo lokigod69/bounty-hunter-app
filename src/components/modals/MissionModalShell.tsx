@@ -29,6 +29,8 @@ import {
 } from '../../theme/modalTheme';
 import { StateChip } from './StateChip';
 import { useUI } from '../../context/UIContext';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { AppButton } from '../ui/AppButton';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 import { Coin } from '../visual/Coin';
 import { RewardImageLightbox } from './RewardImageLightbox';
@@ -167,6 +169,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
     }, 200);
   };
 
+  // Close on Escape
+  useEscapeToClose(isOpen, handleClose);
+
   if (!isOpen) return null;
 
   // Get configurations - R10: Use mode-aware getRoleConfig
@@ -303,7 +308,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
               <StateChip state={state} />
               <button
                 onClick={handleClose}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors z-modal-controls"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors z-modal-controls"
                 aria-label="Close modal"
               >
                 <X size={20} className="text-white/60 hover:text-white" />
@@ -460,66 +465,39 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         )}
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-white/10 space-y-3">
+        <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-white/10 space-y-3 safe-bottom">
           {/* Primary/Secondary Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {primaryAction && (
-              <button
+              <AppButton
+                variant={primaryAction.variant === 'danger' ? 'danger' : 'cta'}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   primaryAction.onClick();
                 }}
-                disabled={primaryAction.loading || primaryAction.disabled}
-                className={`
-                  flex-1 sm:flex-none sm:min-w-[140px]
-                  px-6 py-3 rounded-xl font-semibold
-                  transition-all duration-200
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  ${
-                    primaryAction.variant === 'success'
-                      ? 'bg-green-500 hover:bg-green-600 text-black'
-                      : primaryAction.variant === 'danger'
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : ''
-                  }
-                `}
-                style={
-                  !primaryAction.variant || primaryAction.variant === 'accent'
-                    ? {
-                        backgroundColor: modeConfig.accent,
-                        color: '#000',
-                      }
-                    : undefined
-                }
+                loading={primaryAction.loading}
+                disabled={primaryAction.disabled}
+                className="flex-1 sm:flex-none sm:min-w-[140px]"
               >
                 {primaryAction.loading ? 'Loading...' : primaryAction.label}
-              </button>
+              </AppButton>
             )}
 
             {secondaryAction && (
-              <button
+              <AppButton
+                variant={secondaryAction.variant === 'danger' ? 'danger' : 'ghost'}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   secondaryAction.onClick();
                 }}
-                disabled={secondaryAction.loading || secondaryAction.disabled}
-                className={`
-                  flex-1 sm:flex-none sm:min-w-[100px]
-                  px-6 py-3 rounded-xl font-semibold
-                  bg-white/10 hover:bg-white/20 text-white
-                  transition-all duration-200
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  ${
-                    secondaryAction.variant === 'danger'
-                      ? 'text-red-400 hover:bg-red-500/20'
-                      : ''
-                  }
-                `}
+                loading={secondaryAction.loading}
+                disabled={secondaryAction.disabled}
+                className="flex-1 sm:flex-none sm:min-w-[100px]"
               >
                 {secondaryAction.loading ? 'Loading...' : secondaryAction.label}
-              </button>
+              </AppButton>
             )}
           </div>
 

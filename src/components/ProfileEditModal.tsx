@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
+import { AppButton } from './ui/AppButton';
 import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 
@@ -89,6 +91,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       clearLayer(); // Only cleanup when THIS modal closes
     };
   }, [isOpen, openModal, clearLayer]);
+
+  // Close on Escape
+  useEscapeToClose(isOpen, onClose);
 
   // R16: Hydrate form state when modal opens - handles both existing profile and first-time scenarios
   useEffect(() => {
@@ -250,7 +255,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       onClick={handleBackdropClick}
     >
       <div
-        className="glass-card w-full max-w-md mx-2 sm:mx-4 bg-gray-900/80 rounded-xl sm:rounded-2xl border border-gray-700 flex flex-col animate-fade-in-up max-h-[95vh] sm:max-h-[90vh] z-modal-content"
+        className="glass-card w-full max-w-md mx-2 sm:mx-4 bg-gray-900/80 rounded-xl sm:rounded-2xl border border-gray-700 flex flex-col modal-enter max-h-[95vh] sm:max-h-[90vh] z-modal-content"
         onMouseDown={(e) => e.stopPropagation()} // Prevent mousedown inside from being tracked as backdrop
         onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
       >
@@ -377,9 +382,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full py-3 sm:py-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] mt-6" disabled={isUploading}>
+            <AppButton type="submit" variant="cta" fullWidth loading={isUploading} className="mt-6">
               {isUploading ? t('profile.saving') : t('profile.save')}
-            </button>
+            </AppButton>
           </form>
         </div>
       </div>

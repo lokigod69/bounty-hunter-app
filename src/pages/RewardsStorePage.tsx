@@ -6,7 +6,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Plus, ShoppingCart } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
@@ -23,7 +22,8 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
-import { PageState, Fab, ConfirmModal } from '../components/ui';
+import { AppButton, EmptyState, PageState, Fab, ConfirmModal } from '../components/ui';
+import { useUI } from '../context/UIContext';
 import { Coin } from '../components/visual/Coin';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
 
@@ -32,8 +32,8 @@ type Tab = 'available' | 'created' | 'collected';
 const RewardsStorePage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
+  const { isMobileMenuOpen } = useUI();
   const { user } = useAuth();
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
@@ -149,36 +149,24 @@ const RewardsStorePage: React.FC = () => {
     // Handle collected tab separately (uses different data source)
     if (activeTab === 'collected') {
       if (isLoadingCollected) {
-        return (
-          <BaseCard className="transition-all duration-200">
-            <div className="text-center py-12">
-              <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-body text-white/70">Loading collected {strings.rewardPlural}...</p>
-            </div>
-          </BaseCard>
-        );
+        return <PageState state="loading" message={`Loading collected ${strings.rewardPlural}...`} />;
       }
 
       if (collectedRewards.length === 0) {
         return (
-          <BaseCard className="transition-all duration-200 hover:shadow-lg">
-            <div className="text-center py-12">
-              <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
-              <h3 className="text-subtitle text-white/90 mb-2">No collected {strings.rewardPlural} yet</h3>
-              <p className="text-body text-white/70 mb-6">
-                {theme.id === 'guild' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
-                {theme.id === 'family' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
-                {theme.id === 'couple' && `Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
-              </p>
-              <button
-                onClick={() => setActiveTab('available')}
-                className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
-              >
-                <ShoppingCart size={20} />
-                Browse {strings.rewardPlural}
-              </button>
-            </div>
-          </BaseCard>
+          <EmptyState
+            icon={<ShoppingCart />}
+            title={`No collected ${strings.rewardPlural} yet`}
+            body={`Complete ${strings.missionPlural} to earn ${strings.tokenPlural} and claim ${strings.rewardPlural}.`}
+          >
+            <AppButton
+              variant="cta"
+              icon={<ShoppingCart size={20} />}
+              onClick={() => setActiveTab('available')}
+            >
+              Browse {strings.rewardPlural}
+            </AppButton>
+          </EmptyState>
         );
       }
 
@@ -212,22 +200,21 @@ const RewardsStorePage: React.FC = () => {
 
     if (filteredRewards.length === 0) {
       return (
-        <BaseCard className="transition-all duration-200 hover:shadow-lg">
-          <div className="text-center py-12">
-            <ShoppingCart size={64} className="mx-auto mb-4 text-teal-400/50" />
-            <h3 className="text-subtitle text-white/90 mb-2">{strings.storeEmptyTitle}</h3>
-            <p className="text-body text-white/70 mb-6">{strings.storeEmptyBody}</p>
-            {user && (
-              <button
-                onClick={() => setCreateModalOpen(true)}
-                className="btn-primary flex items-center justify-center gap-2 mx-auto min-h-[44px] transition-all duration-200 hover:scale-105"
-              >
-                <Plus size={20} />
-                {strings.storeCreateFirstButton}
-              </button>
-            )}
-          </div>
-        </BaseCard>
+        <EmptyState
+          icon={<ShoppingCart />}
+          title={strings.storeEmptyTitle}
+          body={strings.storeEmptyBody}
+        >
+          {user && (
+            <AppButton
+              variant="cta"
+              icon={<Plus size={20} />}
+              onClick={() => setCreateModalOpen(true)}
+            >
+              {strings.storeCreateFirstButton}
+            </AppButton>
+          )}
+        </EmptyState>
       );
     }
 
@@ -326,7 +313,7 @@ const RewardsStorePage: React.FC = () => {
               onClick={() => setActiveTab('available')} 
               className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'available' 
-                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
                   : 'text-slate-400 hover:text-slate-300'
               }`}
             >
@@ -336,7 +323,7 @@ const RewardsStorePage: React.FC = () => {
               onClick={() => setActiveTab('created')} 
               className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'created' 
-                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
                   : 'text-slate-400 hover:text-slate-300'
               }`}
             >
@@ -346,7 +333,7 @@ const RewardsStorePage: React.FC = () => {
               onClick={() => setActiveTab('collected')} 
               className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'collected' 
-                  ? 'text-teal-400 border-b-2 border-teal-400' 
+                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
                   : 'text-slate-400 hover:text-slate-300'
               }`}
             >
@@ -360,11 +347,13 @@ const RewardsStorePage: React.FC = () => {
         </PageBody>
 
       {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
-      <Fab
-        onClick={() => setCreateModalOpen(true)}
-        label={t('rewards.createBountyButton')}
-        icon={<Plus size={24} />}
-      />
+      {!isMobileMenuOpen && (
+        <Fab
+          onClick={() => setCreateModalOpen(true)}
+          label={t('rewards.createBountyButton')}
+          icon={<Plus size={24} />}
+        />
+      )}
 
       <CreateBountyModal 
         isOpen={isCreateModalOpen} 

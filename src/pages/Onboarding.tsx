@@ -10,6 +10,7 @@ import { ThemeId } from '../theme/theme.types';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
+import { PageState } from '../components/ui';
 import { Check } from 'lucide-react';
 
 // Step components
@@ -45,12 +46,7 @@ export default function Onboarding() {
     return (
       <PageContainer>
         <PageBody>
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="glass-card p-6 text-center">
-              <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Checking your session...</p>
-            </div>
-          </div>
+          <PageState state="loading" message="Checking your session..." />
         </PageBody>
       </PageContainer>
     );
@@ -122,9 +118,9 @@ export default function Onboarding() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
                   step < currentStep
-                    ? 'bg-teal-500 text-white'
+                    ? 'bg-[var(--mode-accent)] text-white'
                     : step === currentStep
-                    ? 'bg-teal-400 text-white ring-2 ring-teal-400 ring-offset-2 ring-offset-gray-900'
+                    ? 'bg-[var(--mode-accent)] text-white ring-2 ring-[var(--mode-accent)] ring-offset-2 ring-offset-gray-900'
                     : 'bg-gray-700 text-gray-400'
                 }`}
               >
@@ -133,7 +129,7 @@ export default function Onboarding() {
               {step < 3 && (
                 <div
                   className={`w-12 h-1 mx-1 transition-all ${
-                    step < currentStep ? 'bg-teal-500' : 'bg-gray-700'
+                    step < currentStep ? 'bg-[var(--mode-accent)]' : 'bg-gray-700'
                   }`}
                 />
               )}

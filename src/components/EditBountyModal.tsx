@@ -16,9 +16,11 @@ import { Reward } from './RewardCard';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
 import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
+import { AppButton } from './ui/AppButton';
 import {
   uploadRewardImage,
   validateRewardImage,
@@ -205,24 +207,27 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
     }
   };
 
+  // Close on Escape
+  useEscapeToClose(isOpen, onClose);
+
   if (!isOpen || !bounty) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end md:items-center z-modal-backdrop backdrop-blur-sm"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-end md:items-center z-modal-backdrop"
       onClick={handleBackdropClick}
       onMouseDown={handleBackdropMouseDown}
     >
       <div
-        className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content"
+        className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content modal-enter"
         onMouseDown={handleContentMouseDown}
       >
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
             <h2 className="text-xl font-bold text-white">{t('rewards.editModal.title')}</h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white" aria-label={t('rewards.createModal.closeButton')}>
-              <X size={24} />
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
+              <X size={20} />
             </button>
           </div>
 
@@ -334,11 +339,13 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
           </div>
 
           {/* Footer */}
-          <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex justify-end space-x-4 flex-shrink-0">
-            <button type="button" onClick={onClose} disabled={isLoading || isUploading} className="px-6 py-3 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold disabled:opacity-50">{t('rewards.editModal.cancelButton')}</button>
-            <button type="submit" disabled={isLoading || isUploading} className="px-6 py-3 rounded-lg bg-teal-500 text-black font-bold hover:bg-teal-600 transition disabled:bg-gray-500">
+          <div className="p-3 sm:p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0 safe-bottom">
+            <AppButton type="button" variant="ghost" onClick={onClose} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]" disabled={isLoading || isUploading}>
+              {t('rewards.editModal.cancelButton')}
+            </AppButton>
+            <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
               {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.editModal.submittingButton')) : t('rewards.editModal.submitButton')}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

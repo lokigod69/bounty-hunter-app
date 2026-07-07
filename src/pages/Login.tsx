@@ -10,7 +10,18 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { getAuthRedirectTo } from '../lib/authRedirect';
-import { AppButton } from '../components/ui';
+import { AppButton, Spinner } from '../components/ui';
+import logo from '../assets/logo5-small.png';
+
+// Full-screen loading state shared by the auth-initializing and redirecting branches
+const AuthLoadingScreen: React.FC<{ message: string }> = ({ message }) => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center">
+      <Spinner size="lg" className="mx-auto mb-4" />
+      <p className="text-white">{message}</p>
+    </div>
+  </div>
+);
 
 const Login: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -170,32 +181,18 @@ const Login: React.FC = () => {
 
   // Show loading state while Supabase is initializing or processing auth callback
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
-        </div>
-      </div>
-    );
+    return <AuthLoadingScreen message="Loading..." />;
   }
 
   // If user is authenticated, the useEffect above will handle redirect
   // But show loading state here as well to prevent flash of login form
   if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white">Signing you in...</p>
-        </div>
-      </div>
-    );
+    return <AuthLoadingScreen message="Signing you in..." />;
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-white p-4">
-      <img src="/logo5.png" alt="Bounty Hunter" className="w-24 h-24 mb-4" />
+      <img src={logo} alt="Bounty Hunter" className="w-24 h-24 mb-4" />
 
       <h1 className="text-display app-title text-[var(--mode-accent)] mb-2">BOUNTY HUNTER</h1>
       <p className="text-meta text-white/50 mb-8">Run missions. Earn credits. Claim loot.</p>

@@ -7,6 +7,7 @@ import { useFriends } from '../hooks/useFriends';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import { Heart, AlertCircle } from 'lucide-react';
+import { Spinner } from './ui/Spinner';
 import { avatarFallback } from '../lib/avatar';
 
 interface FriendSelectorProps {
@@ -53,7 +54,12 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
   const selectedFriendProfile = acceptedFriends.find(f => f.friend.id === selectedFriend)?.friend;
 
   if (loading) {
-    return <div className="text-slate-400">Loading friends...</div>;
+    return (
+      <div className="flex items-center gap-2 text-slate-400">
+        <Spinner size="sm" />
+        <span>Loading friends...</span>
+      </div>
+    );
   }
 
   if (error) {
@@ -75,14 +81,14 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
     const partnerProfile = acceptedFriends.find(f => f.friend?.id === partnerId)?.friend;
     if (partnerProfile) {
       return (
-        <div className={`p-3 bg-gray-800/80 border border-teal-500/30 rounded-lg flex items-center gap-3 ${className}`}>
+        <div className={`p-3 bg-gray-800/80 border border-[var(--mode-accent-muted)] rounded-lg flex items-center gap-3 ${className}`}>
           <img
             src={partnerProfile.avatar_url || avatarFallback(partnerProfile.email)}
             alt={partnerProfile.display_name || 'partner'}
-            className="w-8 h-8 rounded-full border-2 border-teal-400"
+            className="w-8 h-8 rounded-full border-2 border-[var(--mode-accent)]"
           />
           <span className="font-medium flex-1">{partnerProfile.display_name}</span>
-          <Heart size={16} className="text-teal-400" />
+          <Heart size={16} className="text-[var(--mode-accent)]" />
         </div>
       );
     }
@@ -93,7 +99,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition flex items-center justify-between"
+        className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-[var(--mode-accent)] focus:border-[var(--mode-accent)] outline-none transition flex items-center justify-between"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >

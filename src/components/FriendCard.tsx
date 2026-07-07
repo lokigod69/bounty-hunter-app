@@ -6,6 +6,7 @@
 import { Profile } from '../types/custom';  // R25: Use custom Profile type
 import { CheckCircle, X, UserX, Trash2, Check, Heart } from 'lucide-react';
 import { BaseCard } from './ui/BaseCard';
+import { AppButton } from './ui/AppButton';
 
 interface FriendCardProps {
   profile: Profile;
@@ -99,7 +100,7 @@ export default function FriendCard({
             {onRemove && friendshipId && (
               <button
                 onClick={() => onRemove(friendshipId)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-red-400 transition-colors"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-red-400 transition-colors"
                 aria-label="Remove friend"
                 title="Remove friend"
               >
@@ -110,21 +111,23 @@ export default function FriendCard({
         )}
 
         {status === 'pending' && isIncoming && onAccept && onReject && friendshipId && (
-          <div className="flex gap-3 mt-4">
-            <button
+          <div className="flex gap-3">
+            <AppButton
+              variant="cta"
               onClick={() => onAccept(friendshipId)}
-              className="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+              icon={<Check className="w-5 h-5" />}
+              className="flex-1"
             >
-              <Check className="w-5 h-5" />
               Accept
-            </button>
-            <button
+            </AppButton>
+            <AppButton
+              variant="danger"
               onClick={() => onReject(friendshipId)}
-              className="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+              icon={<X className="w-5 h-5" />}
+              className="flex-1"
             >
-              <X className="w-5 h-5" />
               Decline
-            </button>
+            </AppButton>
           </div>
         )}
 
@@ -134,7 +137,7 @@ export default function FriendCard({
             {onCancelSentRequest && friendshipId && (
               <button
                 onClick={() => onCancelSentRequest(friendshipId)}
-                className="p-1.5 rounded-full hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-colors"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-colors"
                 aria-label="Cancel sent request"
                 title="Cancel sent request"
               >

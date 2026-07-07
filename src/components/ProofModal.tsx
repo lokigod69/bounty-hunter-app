@@ -4,6 +4,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone, FileRejection } from 'react-dropzone';
 import { X, UploadCloud, File as FileIcon } from 'lucide-react';
 import { useUI } from '../context/UIContext';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
+import { AppButton } from './ui/AppButton';
 import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES } from '../lib/proofConfig';
 
 interface ProofModalProps {
@@ -25,6 +27,9 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
       clearLayer(); // Phase 2: Clear layer when modal unmounts
     };
   }, [openModal, clearLayer]);
+
+  // Close on Escape (ProofModal is mounted only while open)
+  useEscapeToClose(true, onClose);
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     if (rejectedFiles.length > 0) {
@@ -94,7 +99,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
       }}
     >
       <div 
-        className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content overflow-y-auto max-h-[90vh]" 
+        className="relative glass-card rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content overflow-y-auto max-h-[90vh] modal-enter"
         style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -176,13 +181,15 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
           )}
           
           {/* Submit button */}
-          <button 
-            type="submit" 
-            className="btn-primary w-full py-3 min-h-[44px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all" 
-            disabled={(!file && !textDescription.trim()) || uploadProgress > 0 || isSubmitting}
+          <AppButton
+            type="submit"
+            variant="cta"
+            fullWidth
+            loading={isSubmitting}
+            disabled={(!file && !textDescription.trim()) || uploadProgress > 0}
           >
             {isSubmitting ? 'Submitting...' : uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Submit for Review'}
-          </button>
+          </AppButton>
         </form>
       </div>
     </div>

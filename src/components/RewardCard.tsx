@@ -11,6 +11,7 @@ import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Pencil, Trash2 } from 'lucide-react';
 import { Coin } from './visual/Coin';
 import { BaseCard } from './ui/BaseCard';
+import { AppButton } from './ui/AppButton';
 import { RewardImageLightbox } from './modals/RewardImageLightbox';
 import { getAccentVariant } from '../theme/accentVariants';
 import { avatarFallback } from '../lib/avatar';
@@ -237,17 +238,14 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             </button>
           </div>
         ) : view === 'collected' ? null : (
-          <button
+          <AppButton
+            variant="cta"
+            fullWidth
             onClick={() => onAction?.(id)}
-            className={`w-full px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold rounded-lg transition-all ${
-              canAfford && view === 'available'
-                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-black hover:from-teal-600 hover:to-cyan-600 shadow-lg'
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
             disabled={view !== 'available' || !onAction || !canAfford}
           >
             {view === 'available' ? (canAfford ? t('rewards.rewardCard.claimButton') : strings.storeCantAffordLabel) : t('rewards.rewardCard.viewButton')}
-          </button>
+          </AppButton>
         )}
       </div>
       </BaseCard>

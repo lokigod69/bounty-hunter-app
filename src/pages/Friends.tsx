@@ -16,7 +16,7 @@ import { useFriends } from '../hooks/useFriends';
 import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
-import { UserPlus, Users, AlertTriangle, Heart, Mail, CheckCircle, XCircle, UserCheck } from 'lucide-react';
+import { UserPlus, Users, Heart, Mail, CheckCircle, XCircle, UserCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
@@ -31,8 +31,27 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
-import { AppButton, EmptyState, PageState, ConfirmModal } from '../components/ui';
+import { AppButton, EmptyState, PageState, ConfirmModal, SectionHeader, Spinner } from '../components/ui';
 import { avatarFallback } from '../lib/avatar';
+
+// Shared loading skeleton for friend lists (used while profile or friends load)
+function FriendListSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="glass-card p-5 animate-pulse">
+          <div className="flex items-center">
+            <div className="w-12 h-12 rounded-full bg-white/10 mr-4"></div>
+            <div className="flex-1">
+              <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
+              <div className="h-3 bg-white/10 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Friends() {
   const { t } = useTranslation();
@@ -258,19 +277,7 @@ export default function Friends() {
       <PageContainer>
         <PageHeader title={strings.friendsTitle} />
         <PageBody>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card p-5 animate-pulse">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-white/10 mr-4"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
-                    <div className="h-3 bg-white/10 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FriendListSkeleton />
         </PageBody>
       </PageContainer>
     );
@@ -289,26 +296,9 @@ export default function Friends() {
           <PageBody>
             {/* Loading state */}
             {(loading || partnerState.isLoading) ? (
-              <BaseCard>
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 border-2 border-t-teal-500 border-white/10 rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-body text-white/70">Loading...</p>
-                </div>
-              </BaseCard>
+              <PageState state="loading" />
             ) : error ? (
-              <BaseCard className="bg-red-900/20 border-red-500/30">
-                <div className="text-center py-8">
-                  <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-                  <h3 className="text-subtitle text-white font-semibold mb-2">Error loading</h3>
-                  <p className="text-body text-white/70 mb-4">{error}</p>
-                  <button
-                    onClick={() => refreshFriends?.()}
-                    className="btn-primary flex items-center justify-center gap-2 mx-auto"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </BaseCard>
+              <PageState state="error" message={error} onRetry={() => refreshFriends?.()} />
             ) : selectedPartnerProfile ? (
               /* R25: Partner is selected - show partner card */
               <BaseCard>
@@ -333,18 +323,12 @@ export default function Friends() {
                   </h3>
                   <p className="text-body text-white/70 mb-6">{selectedPartnerProfile.email}</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
-                    <button
-                      onClick={() => navigate('/issued')}
-                      className="btn-primary flex items-center justify-center gap-2"
-                    >
+                    <AppButton variant="cta" onClick={() => navigate('/issued')}>
                       Create request
-                    </button>
-                    <button
-                      onClick={() => navigate('/rewards-store')}
-                      className="btn-secondary flex items-center justify-center gap-2"
-                    >
+                    </AppButton>
+                    <AppButton variant="ghost" onClick={() => navigate('/rewards-store')}>
                       Create gift
-                    </button>
+                    </AppButton>
                   </div>
                   <button
                     onClick={() => setPartner(null)}
@@ -380,7 +364,7 @@ export default function Friends() {
                             />
                             <span className="font-medium">{friend.display_name}</span>
                           </div>
-                          <UserCheck size={20} className="text-teal-400" />
+                          <UserCheck size={20} className="text-[var(--mode-accent)]" />
                         </button>
                       );
                     })}
@@ -399,12 +383,13 @@ export default function Friends() {
                     Waiting for them to accept your invitation.
                   </p>
                   {partnerState.friendshipId && (
-                    <button
+                    <AppButton
+                      variant="ghost"
+                      className="mx-auto"
                       onClick={() => handleRequestCancellationAttempt(partnerState.friendshipId!)}
-                      className="btn-secondary mx-auto"
                     >
                       Cancel invite
-                    </button>
+                    </AppButton>
                   )}
                 </div>
               </BaseCard>
@@ -434,20 +419,20 @@ export default function Friends() {
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     {partnerState.friendshipId && (
                       <>
-                        <button
+                        <AppButton
+                          variant="cta"
+                          icon={<CheckCircle size={20} />}
                           onClick={() => handleAcceptRequest(partnerState.friendshipId!)}
-                          className="btn-primary flex items-center justify-center gap-2"
                         >
-                          <CheckCircle size={20} />
                           Accept
-                        </button>
-                        <button
+                        </AppButton>
+                        <AppButton
+                          variant="ghost"
+                          icon={<XCircle size={20} />}
                           onClick={() => handleRejectRequest(partnerState.friendshipId!)}
-                          className="btn-secondary flex items-center justify-center gap-2"
                         >
-                          <XCircle size={20} />
                           Decline
-                        </button>
+                        </AppButton>
                       </>
                     )}
                   </div>
@@ -479,7 +464,7 @@ export default function Friends() {
                   />
                   {isSearching && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin h-5 w-5 border-2 border-emerald-500 border-t-transparent rounded-full" />
+                      <Spinner size="sm" />
                     </div>
                   )}
                 </div>
@@ -515,11 +500,11 @@ export default function Friends() {
                 isOpen={showCancelModal}
                 onClose={handleCloseCancelModal}
                 onConfirm={handleConfirmCancelRequest}
-                title="Cancel Invite"
-                message="Are you sure you want to cancel this invitation?"
+                title={t('friends.cancelRequestTitle')}
+                message={t('friends.cancelRequestMessage')}
                 variant="danger"
-                confirmLabel="Cancel Invite"
-                loadingLabel="Removing…"
+                confirmLabel={t('friends.cancelRequestConfirm')}
+                loadingLabel={t('friends.cancelRequestLoading')}
                 loading={isCancelling}
               />
             )}
@@ -551,7 +536,7 @@ export default function Friends() {
               />
               {isSearching && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin h-5 w-5 border-2 border-emerald-500 border-t-transparent rounded-full" />
+                  <Spinner size="sm" />
                 </div>
               )}
             </div>
@@ -586,8 +571,8 @@ export default function Friends() {
               <button
                 className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'friends'
-                    ? 'text-teal-400 border-b-2 border-teal-400'
-                    : 'text-white/70 hover:text-white/90'
+                    ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
+                    : 'text-slate-400 hover:text-slate-300'
                 }`}
                 onClick={() => setActiveTab('friends')}
               >
@@ -602,8 +587,8 @@ export default function Friends() {
               <button
                 className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap relative ${
                   activeTab === 'requests'
-                    ? 'text-teal-400 border-b-2 border-teal-400'
-                    : 'text-white/70 hover:text-white/90'
+                    ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
+                    : 'text-slate-400 hover:text-slate-300'
                 }`}
                 onClick={() => setActiveTab('requests')}
               >
@@ -622,21 +607,7 @@ export default function Friends() {
           </div>
 
         {/* Loading State */}
-        {loading && (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card p-5 animate-pulse">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-white/10 mr-4"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
-                    <div className="h-3 bg-white/10 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {loading && <FriendListSkeleton />}
 
         {/* P6: Error State */}
         {error && !loading && (
@@ -648,10 +619,11 @@ export default function Friends() {
           <section className="space-y-4">
             {friends.length > 0 ? (
               <>
-                <h2 className="text-subtitle text-white font-semibold mb-4">
-                  {theme.id === 'guild' && 'Your Crew'}
-                  {theme.id === 'family' && 'Your Family'}
-                </h2>
+                <SectionHeader
+                  title={theme.id === 'family' ? 'Your Family' : 'Your Crew'}
+                  count={friends.length}
+                  className="mb-4"
+                />
                 <div className="space-y-3">
                   {friends.map((friendship) => (
                     <FriendCard
@@ -705,7 +677,7 @@ export default function Friends() {
             {/* Incoming Requests */}
             {pendingRequests.length > 0 && (
               <div>
-                <h2 className="text-subtitle text-white font-semibold mb-4">{t('friends.incomingRequests')}</h2>
+                <SectionHeader title={t('friends.incomingRequests')} count={pendingRequests.length} className="mb-4" />
                 <div className="space-y-3">
                   {pendingRequests.map((friendship) => (
                     <FriendCard
@@ -725,7 +697,7 @@ export default function Friends() {
             {/* Sent Requests */}
             {sentRequests.length > 0 && (
               <div>
-                <h2 className="text-subtitle text-white font-semibold mb-4">{t('friends.sentRequests')}</h2>
+                <SectionHeader title={t('friends.sentRequests')} count={sentRequests.length} className="mb-4" />
                 <div className="space-y-3">
                   {sentRequests.map((request) => (
                     <FriendCard
@@ -766,7 +738,7 @@ export default function Friends() {
               message={t('friends.cancelRequestMessage')}
               variant="danger"
               confirmLabel={t('friends.cancelRequestConfirm')}
-              loadingLabel="Removing…"
+              loadingLabel={t('friends.cancelRequestLoading')}
               loading={isCancelling}
             />
           )}

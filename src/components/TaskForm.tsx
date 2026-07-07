@@ -16,10 +16,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { X, Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { createPortal } from 'react-dom';
 import { useFriends } from '../hooks/useFriends';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { soundManager } from '../utils/soundManager';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
@@ -27,6 +29,7 @@ import { useThemeStrings } from '../hooks/useThemeStrings';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
+import { AppButton } from './ui/AppButton';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -85,6 +88,9 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     onClose(); // this sets isTaskFormOpen = false
     // clearLayer() will run in the useEffect cleanup when the component unmounts
   };
+
+  // Close on Escape (TaskForm is mounted only while open)
+  useEscapeToClose(true, handleClose);
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state
@@ -244,7 +250,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       </button>
 
       <div 
-        className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative animate-fade-in overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-mobile-fade sm:modal-fade-in"
+        className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-enter"
         style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -308,7 +314,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               <div className="animate-pulse h-10 bg-white/10 rounded-lg"></div>
             ) : friends.length === 0 ? (
               <p className="text-[var(--warning-orange)] text-sm">
-                {t('taskForm.noFriendsWarning')}
+                {t('taskForm.noFriendsWarning')}{' '}
+                <Link
+                  to="/friends"
+                  onClick={handleClose}
+                  className="text-[var(--mode-accent)] underline underline-offset-2 hover:opacity-80 transition-opacity"
+                >
+                  {t('taskForm.goToFriends')}
+                </Link>
               </p>
             ) : (
               <>
@@ -425,13 +438,15 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           </div>
 
           {/* Enhanced mobile-friendly submit button */}
-          <button
+          <AppButton
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 sm:py-2.5 px-4 rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4 sm:mt-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto]"
-            disabled={isSubmitting}
+            variant="cta"
+            fullWidth
+            loading={isSubmitting}
+            className="mt-4 sm:mt-2"
           >
             {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract'))}
-          </button>
+          </AppButton>
         </form>
       </div>
     </div>

@@ -4,6 +4,7 @@
 
 import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { BaseCard } from '../ui/BaseCard';
+import { AppButton } from '../ui';
 import { ArrowLeft, Home, Target, Users, FileText, Clock, Coins, Camera, Info } from 'lucide-react';
 
 interface OnboardingStep4MissionProps {
@@ -127,22 +128,24 @@ export default function OnboardingStep4Mission({
 
       {/* Navigation buttons */}
       <div className="flex gap-4">
-        <button
+        <AppButton
+          variant="ghost"
           type="button"
+          icon={<ArrowLeft size={20} />}
+          className="flex-1"
           onClick={onBack}
-          className="btn-secondary flex items-center gap-2 flex-1"
         >
-          <ArrowLeft size={20} />
           Back
-        </button>
-        <button
+        </AppButton>
+        <AppButton
+          variant="cta"
           type="button"
+          icon={<Home size={20} />}
+          className="flex-1"
           onClick={onComplete}
-          className="btn-primary flex items-center gap-2 flex-1"
         >
-          <Home size={20} />
           Enter Dashboard
-        </button>
+        </AppButton>
       </div>
     </div>
   );

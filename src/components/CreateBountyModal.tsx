@@ -17,9 +17,11 @@ import { useCreateBounty } from '../hooks/useCreateBounty';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
 import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
+import { AppButton } from './ui/AppButton';
 import {
   uploadRewardImage,
   validateRewardImage,
@@ -159,16 +161,19 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   // Handle backdrop click while respecting text selection
   const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } = useModalBackdropClick({ onClose });
 
+  // Close on Escape
+  useEscapeToClose(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop backdrop-blur-sm"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop"
       onClick={handleBackdropClick}
       onMouseDown={handleBackdropMouseDown}
     >
       <div
-        className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content"
+        className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content modal-enter"
         onMouseDown={handleContentMouseDown}
       >
         <form onSubmit={handleSubmit} className="flex flex-col">
@@ -287,16 +292,13 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
           </div>
 
           {/* Sticky footer - always visible on iOS Safari */}
-          <div
-            className="p-3 sm:p-4 bg-gray-900 border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0"
-            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
-          >
-            <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg text-white bg-gray-700 hover:bg-gray-600 transition font-semibold min-h-[48px] sm:min-h-[auto] text-base sm:text-sm" disabled={isLoading || isUploading}>
+          <div className="p-3 sm:p-4 bg-gray-900 border-t border-gray-700/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0 safe-bottom">
+            <AppButton type="button" variant="ghost" onClick={onClose} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]" disabled={isLoading || isUploading}>
               {t('rewards.createModal.cancelButton')}
-            </button>
-            <button type="submit" className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg text-black bg-teal-400 hover:bg-teal-500 font-bold transition disabled:bg-gray-500 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[auto] text-base sm:text-sm" disabled={isLoading || isUploading}>
+            </AppButton>
+            <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
               {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.createModal.submittingButton')) : t('rewards.createModal.submitButton')}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

@@ -1,4 +1,4 @@
-# NEXT STEP — Bounty Hunter/main — updated 2026-07-07
+# NEXT STEP — Bounty Hunter/main — updated 2026-07-07 (evening)
 
 ## FOR YOU
 Nothing needed. Paste the block below into a fresh chat whenever you want work to continue.
@@ -6,6 +6,6 @@ Nothing needed. Paste the block below into a fresh chat whenever you want work t
 ## PASTE THIS
 Resume Bounty Hunter, workstream main, under protocol-os.
 Read protocol/PROTOCOL.md, then protocol/NEXT_STEP.md (this file), then memory/INDEX.md and memory/STATE.md.
-Verify state: run `git status --short` — expect the uncommitted UI-primitives refactor (~27 files: new src/components/ui/*, src/lib/avatar.ts, deleted old modals) still pending. If it was already committed, check protocol/LOG.md and continue from BOARD.md instead.
-Then: verify the refactor — `npm run build`, `npm run lint`, `npm test` — fix what breaks, smoke-test the app on port 6075, then commit the refactor with a descriptive message.
+Verify state: `git log --oneline -3` — expect 8a18540 (UI refactor, verified: build/lint/tests green) and b17469b (protocol/brain) on main.
+Then: continue the premium-polish session — full congruence/UX audit results live in protocol/ and memory/ (check BOARD.md for the current phase). Next concrete work item is whatever BOARD.md "Next" says for workstream main.
 Mode 2 rules apply. Update NEXT_STEP.md after every completed step. End every turn with the Status Block.

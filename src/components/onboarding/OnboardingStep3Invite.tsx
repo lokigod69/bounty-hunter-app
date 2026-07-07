@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { BaseCard } from '../ui/BaseCard';
+import { AppButton } from '../ui';
 import { ArrowRight, ArrowLeft, UserPlus, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -150,31 +151,34 @@ export default function OnboardingStep3Invite({
           )}
 
           <div className="flex gap-4">
-            <button
+            <AppButton
+              variant="ghost"
               type="button"
+              icon={<ArrowLeft size={20} />}
+              className="flex-1"
               onClick={onBack}
-              className="btn-secondary flex items-center gap-2 flex-1"
               disabled={isSending || isSearching}
             >
-              <ArrowLeft size={20} />
               Back
-            </button>
-            <button
+            </AppButton>
+            <AppButton
+              variant="ghost"
               type="button"
+              className="flex-1"
               onClick={onSkip}
-              className="btn-secondary flex items-center gap-2 flex-1"
               disabled={isSending || isSearching}
             >
               Skip for Now
-            </button>
-            <button
+            </AppButton>
+            <AppButton
+              variant="cta"
               type="submit"
+              className="flex-1"
               disabled={!email.trim() || isSending || isSearching}
-              className="btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send Invite
               <ArrowRight size={20} />
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

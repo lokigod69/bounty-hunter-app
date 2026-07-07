@@ -471,9 +471,7 @@ export default function Dashboard() {
               <BaseCard>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-subtitle text-white font-semibold mb-2">
-                      {strings.sectionIssuedSummaryTitle}
-                    </h3>
+                    <SectionHeader title={strings.sectionIssuedSummaryTitle} className="mb-2" />
                     <div className="flex flex-wrap gap-4 text-sm">
                       {issuedStats.awaitingProof > 0 && (
                         <span className="text-white/70">
@@ -490,13 +488,14 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
-                  <button
+                  <AppButton
+                    variant="ghost"
                     onClick={() => navigate('/issued')}
-                    className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+                    className="whitespace-nowrap"
                   >
                     Manage {strings.missionsLabel}
                     <ArrowRight size={20} />
-                  </button>
+                  </AppButton>
                 </div>
               </BaseCard>
             </div>
@@ -515,13 +514,14 @@ export default function Dashboard() {
                       You have {userCredits} {userCredits === 1 ? strings.tokenSingular : strings.tokenPlural} to spend. Check out available {strings.rewardPlural}!
                     </p>
                   </div>
-                  <button
+                  <AppButton
+                    variant="secondary"
+                    icon={<ShoppingCart size={20} />}
                     onClick={() => navigate('/rewards-store')}
-                    className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                    className="whitespace-nowrap"
                   >
-                    <ShoppingCart size={20} />
                     Go to {strings.storeTitle}
-                  </button>
+                  </AppButton>
                 </div>
               </BaseCard>
             </div>

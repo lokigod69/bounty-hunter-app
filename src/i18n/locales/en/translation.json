@@ -84,7 +84,8 @@
     "sentRequests": "Sent Requests",
     "cancelRequestTitle": "Cancel Friend Request",
     "cancelRequestMessage": "Are you sure you want to cancel this friend request? This action cannot be undone.",
-    "cancelRequestConfirm": "Yes, Cancel Request"
+    "cancelRequestConfirm": "Yes, Cancel Request",
+    "cancelRequestLoading": "Removing…"
   },
   "bounties": {
     "title": "Bounties",
@@ -139,6 +140,7 @@
     "assignToLabel": "Assign To*",
     "assignToPlaceholder": "Select a friend",
     "noFriendsWarning": "You need to add friends first to assign tasks.",
+    "goToFriends": "Go to Friends",
     "deadlineLabel": "Deadline (Optional)",
     "contractTypeLabel": "Contract Type",
     "bountyContract": "Bounty Contract (Direct Reward)",
