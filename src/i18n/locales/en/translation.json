@@ -40,6 +40,11 @@
     "myMissionsDescription": "Missions you have created for others to complete.",
     "createNewMission": "Create New Mission",
     "noMissions": "You haven't created any missions yet.",
+    "noMissionsYet": "No missions yet",
+    "createOneForCrew": "Create one for your {{crewLabel}}!",
+    "allMissionsStarted": "All missions have been started!",
+    "nothingWaitingForReview": "Nothing waiting for your review.",
+    "noCompletedMissionsYet": "No completed missions yet.",
     "loadingMissions": "Loading Your MISSIONS...",
     "errorLoadingMissions": "Error loading contracts: {{error}}",
     "errorLoadingSuggestion": "Please try refreshing the page. If the problem persists, contact support.",
@@ -54,12 +59,19 @@
     "taskNotFoundOrNotCreator": "Task not found or you are not the creator.",
     "approvalFailedAward": "Task approved, but failed to award {{amount}} credits.",
     "awardSuccess": "{{amount}} credits awarded to assignee!",
+    "approvingProof": "Approving proof...",
     "approveSuccess": "Contract approved and completed!",
     "approvalFailed": "Approval failed: {{message}}",
     "approvalFailedUnknown": "Approval failed due to an unknown error.",
+    "rejectingProof": "Rejecting proof...",
     "rejectSuccess": "Contract has been rejected.",
     "rejectionFailed": "Rejection failed: {{message}}",
     "rejectionFailedUnknown": "Rejection failed due to an unknown error.",
+    "archivingMission": "Moving to History...",
+    "archiveSuccess": "Task moved to History!",
+    "archiveFailed": "Failed to archive task.",
+    "updateSuccess": "Contract updated",
+    "confirmDeleteContract": "Confirm Delete Contract",
     "createFailedLoggedIn": "You must be logged in to create a contract.",
     "createSuccess": "Contract created successfully!",
     "createFailedUnknown": "Failed to create contract due to an unknown error."
@@ -73,6 +85,7 @@
     "requestFailed": "Failed to send friend request",
     "tabGuildMembers": "Guild Members",
     "tabRequests": "Requests",
+    "tabsLabel": "Friends and requests",
     "errorLoading": "Error loading friends: {{error}}",
     "noFriendsTitle": "No friends yet",
     "noFriendsMessage": "Add friends to start assigning tasks and sending rewards.",
@@ -127,7 +140,11 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "tryAgain": "Try again",
+    "deleting": "Deleting...",
+    "somethingWentWrong": "Something went wrong",
+    "loadingCredits": "Loading credits..."
   },
   "taskForm": {
     "editTitle": "Edit Contract",
@@ -173,6 +190,7 @@
   "rewards": {
     "title": "Bounties",
     "tabs": {
+      "label": "Reward categories",
       "available": "Available",
       "created": "My Bounties",
       "collected": "Collected"
@@ -223,7 +241,8 @@
     }
   },
   "history": {
-    "description": "Review your history of completed and expired contracts."
+    "description": "Review your history of completed and expired contracts.",
+    "creditsEarned": "Credits earned"
   },
   "languageSwitcher": {
     "language": "Language",

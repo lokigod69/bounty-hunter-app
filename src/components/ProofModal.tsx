@@ -1,11 +1,10 @@
 // src/components/ProofModal.tsx
 // Phase 2: Updated to use UIContext for modal coordination.
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone, FileRejection } from 'react-dropzone';
-import { X, UploadCloud, File as FileIcon } from 'lucide-react';
-import { useUI } from '../context/UIContext';
-import { useEscapeToClose } from '../hooks/useEscapeToClose';
+import { UploadCloud, File as FileIcon } from 'lucide-react';
 import { AppButton } from './ui/AppButton';
+import { ModalShell } from './ui/ModalShell';
 import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES } from '../lib/proofConfig';
 
 interface ProofModalProps {
@@ -15,21 +14,10 @@ interface ProofModalProps {
 }
 
 const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress }) => {
-  const { openModal, clearLayer } = useUI();
   const [file, setFile] = useState<File | null>(null);
   const [textDescription, setTextDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    openModal(); // Phase 2: Use UIContext to coordinate overlay layers
-    return () => {
-      clearLayer(); // Phase 2: Clear layer when modal unmounts
-    };
-  }, [openModal, clearLayer]);
-
-  // Close on Escape (ProofModal is mounted only while open)
-  useEscapeToClose(true, onClose);
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     if (rejectedFiles.length > 0) {
@@ -91,29 +79,12 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
   };
 
   return (
-    <div 
-      data-overlay="ProofModal"
-      className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/70 backdrop-blur-sm" 
-      onClick={() => {
-        onClose();
-      }}
-    >
-      <div 
-        className="relative glass-card rounded-lg shadow-xl w-[90vw] max-w-md p-6 z-modal-content overflow-y-auto max-h-[90vh] modal-enter"
+    <ModalShell isOpen onClose={onClose} name="ProofModal" labelledBy="proofmodal-title">
+      <div
+        className="flex-1 overflow-y-auto p-6"
         style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
-        onClick={(e) => e.stopPropagation()}
       >
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }} 
-          title="Close" 
-          className="absolute top-3 right-3 text-slate-400 hover:text-white z-modal-controls p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-        >
-          <X size={24} />
-        </button>
-        <h2 className="text-2xl font-bold text-white mb-4">Submit Proof</h2>
+        <h2 id="proofmodal-title" className="text-2xl font-bold text-white mb-4">Submit Proof</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Text description input */}
           <div>
@@ -192,7 +163,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
           </AppButton>
         </form>
       </div>
-    </div>
+    </ModalShell>
   );
 };
 

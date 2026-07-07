@@ -3,6 +3,7 @@
 // Defines mode colors, role configurations, and state indicators
 
 import { ThemeId } from './theme.types';
+import { MODE_ACCENT_HEX, MODE_ACCENT_RGB } from './modeAccents';
 
 // ============================================================================
 // Types
@@ -23,26 +24,28 @@ export interface ModeColors {
   icon: 'Shield' | 'Home' | 'Heart';
 }
 
+// Accent hex/RGB come from the single source of truth in modeAccents.ts;
+// the soft/muted rgba shades are derived from the RGB triplet here.
 export const modeColors: Record<ThemeId, ModeColors> = {
   guild: {
-    accent: '#20F9D2',
-    accentRgb: '32, 249, 210',
-    accentSoft: 'rgba(32, 249, 210, 0.12)',
-    accentMuted: 'rgba(32, 249, 210, 0.5)',
+    accent: MODE_ACCENT_HEX.guild,
+    accentRgb: MODE_ACCENT_RGB.guild,
+    accentSoft: `rgba(${MODE_ACCENT_RGB.guild}, 0.12)`,
+    accentMuted: `rgba(${MODE_ACCENT_RGB.guild}, 0.5)`,
     icon: 'Shield',
   },
   family: {
-    accent: '#F5D76E',
-    accentRgb: '245, 215, 110',
-    accentSoft: 'rgba(245, 215, 110, 0.12)',
-    accentMuted: 'rgba(245, 215, 110, 0.5)',
+    accent: MODE_ACCENT_HEX.family,
+    accentRgb: MODE_ACCENT_RGB.family,
+    accentSoft: `rgba(${MODE_ACCENT_RGB.family}, 0.12)`,
+    accentMuted: `rgba(${MODE_ACCENT_RGB.family}, 0.5)`,
     icon: 'Home',
   },
   couple: {
-    accent: '#FF6FAE',
-    accentRgb: '255, 111, 174',
-    accentSoft: 'rgba(255, 111, 174, 0.12)',
-    accentMuted: 'rgba(255, 111, 174, 0.5)',
+    accent: MODE_ACCENT_HEX.couple,
+    accentRgb: MODE_ACCENT_RGB.couple,
+    accentSoft: `rgba(${MODE_ACCENT_RGB.couple}, 0.12)`,
+    accentMuted: `rgba(${MODE_ACCENT_RGB.couple}, 0.5)`,
     icon: 'Heart',
   },
 };

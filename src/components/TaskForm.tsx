@@ -14,22 +14,19 @@
 // PHASE 1 FIX: Enhanced mobile menu coordination and improved modal behavior to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized positioning logic.
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { X, Calendar, Award, Users } from 'lucide-react';
+import { Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { createPortal } from 'react-dom';
 import { useFriends } from '../hooks/useFriends';
-import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { soundManager } from '../utils/soundManager';
-import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { useThemeStrings } from '../hooks/useThemeStrings';
-import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
 import { AppButton } from './ui/AppButton';
+import { ModalShell } from './ui/ModalShell';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -66,31 +63,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const { t } = useTranslation();
   const { theme } = useTheme(); // R14: For couple mode self-assignment prevention
   const { strings } = useThemeStrings();
-  const { openModal, clearLayer } = useUI();
-  const hasOpenedModalRef = useRef(false);
-  
-  // Phase 7: Use UIContext to coordinate overlay layers and scroll locking
-  // Only call openModal() once when component mounts, prevent duplicate calls
-  useEffect(() => {
-    if (!hasOpenedModalRef.current) {
-      openModal();
-      hasOpenedModalRef.current = true;
-    }
-    return () => {
-      clearLayer(); // Phase 7: Clear layer when modal unmounts
-      hasOpenedModalRef.current = false;
-    };
-  }, [openModal, clearLayer]);
-
-  // Phase 9: Simplified close handler - let cleanup effect handle clearLayer()
-  const handleClose = () => {
-    // Local state controls mount/unmount via IssuedPage
-    onClose(); // this sets isTaskFormOpen = false
-    // clearLayer() will run in the useEffect cleanup when the component unmounts
-  };
-
-  // Close on Escape (TaskForm is mounted only while open)
-  useEscapeToClose(true, handleClose);
   const { friends, loading } = useFriends(userId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState(''); // Added description state
@@ -202,7 +174,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
         soundManager.play('create');
       }
       // Close modal after successful submission
-      handleClose();
+      onClose();
     } catch (error: unknown) {
       let errorMessage = t('taskForm.submissionError');
       if (error instanceof Error) {
@@ -223,41 +195,14 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   // const rewardTypes array is no longer directly used for the primary selector, but parts might be reused or adapted if old types are still supported elsewhere.
   // For now, it's superseded by the new contractType logic.
 
-  // Phase 7: Portal TaskForm to overlay-root to fix stacking context issues
-  const overlayRoot = getOverlayRoot();
-  if (!overlayRoot) {
-    return null;
-  }
-
-  const modalContent = (
-    <div 
-      data-overlay="TaskForm"
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-modal-backdrop p-2 sm:p-4"
-      onClick={() => {
-        handleClose();
-      }}
-    >
-      {/* Enhanced responsive close button with better touch targets */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClose();
-        }}
-        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-modal-controls p-3 sm:p-2 bg-slate-700/50 hover:bg-slate-600/70 rounded-full transition-colors shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
-        aria-label={t('taskForm.closeButton')}
-      >
-        <X size={20} />
-      </button>
-
-      <div 
-        className="glass-card w-full max-w-md mx-2 sm:mx-4 p-4 sm:p-6 relative overflow-y-auto mobile-scroll max-h-[95vh] sm:max-h-[85vh] z-modal-content rounded-lg sm:rounded-2xl modal-enter"
+  return (
+    <ModalShell isOpen onClose={onClose} name="TaskForm" labelledBy="taskform-title">
+      <div
+        className="flex-1 overflow-y-auto mobile-scroll p-4 sm:p-6"
         style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* Original close button removed from here */}
-        
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
-        
+        <h2 id="taskform-title" className="text-lg sm:text-xl font-semibold mb-4 sm:mb-5 gradient-text text-center">{editingTask ? t('taskForm.editTitle') : t('taskForm.createTitle')}</h2>
+
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           {/* Task Title - R27: Added character counter */}
           <div>
@@ -317,7 +262,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
                 {t('taskForm.noFriendsWarning')}{' '}
                 <Link
                   to="/friends"
-                  onClick={handleClose}
+                  onClick={onClose}
                   className="text-[var(--mode-accent)] underline underline-offset-2 hover:opacity-80 transition-opacity"
                 >
                   {t('taskForm.goToFriends')}
@@ -449,8 +394,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
           </AppButton>
         </form>
       </div>
-    </div>
+    </ModalShell>
   );
-
-  return createPortal(modalContent, overlayRoot);
 }

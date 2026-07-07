@@ -152,7 +152,7 @@ export default function IssuedPage() {
 
     setApprovingTaskId(taskId);
     const toastId = `approve-${taskId}`;
-    toast.loading('Approving proof...', { id: toastId });
+    toast.loading(t('contracts.approvingProof'), { id: toastId });
 
     try {
       await approveMission({
@@ -199,7 +199,7 @@ export default function IssuedPage() {
 
     setRejectingTaskId(taskId);
     const toastId = `reject-${taskId}`;
-    toast.loading('Rejecting proof...', { id: toastId });
+    toast.loading(t('contracts.rejectingProof'), { id: toastId });
 
     try {
       await rejectMission({
@@ -229,7 +229,7 @@ export default function IssuedPage() {
     }
 
     const toastId = `archive-${taskId}`;
-    toast.loading('Moving to History...', { id: toastId });
+    toast.loading(t('contracts.archivingMission'), { id: toastId });
 
     try {
       await archiveMission({
@@ -237,12 +237,12 @@ export default function IssuedPage() {
         userId: user.id,
       });
 
-      toast.success('Task moved to History!', { id: toastId });
+      toast.success(t('contracts.archiveSuccess'), { id: toastId });
       await refetchIssuedContracts();
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
-        : 'Failed to archive task.';
+        : t('contracts.archiveFailed');
       toast.error(errorMessage, { id: toastId });
     }
   };
@@ -292,7 +292,7 @@ export default function IssuedPage() {
         }
 
         await refetchIssuedContracts();
-        toast.success('Contract updated');
+        toast.success(t('contracts.updateSuccess'));
         setEditingTask(null);
         return;
       }
@@ -438,7 +438,7 @@ export default function IssuedPage() {
           {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
             <Fab
               onClick={handleCreateNewContract}
-              label="Create new mission"
+              label={t('contracts.createNewMission')}
               icon={<Plus size={24} />}
             />
           )}
@@ -471,17 +471,17 @@ export default function IssuedPage() {
               /* R21: Simplified empty state - uses theme strings */
               <EmptyState
                 icon={<Send />}
-                title="No missions yet"
-                body={`Create one for your ${strings.crewLabel}!`}
+                title={t('contracts.noMissionsYet')}
+                body={t('contracts.createOneForCrew', { crewLabel: strings.crewLabel })}
               >
                 <AppButton
                   variant="cta"
                   onClick={handleCreateNewContract}
                   icon={<Plus size={20} />}
                   data-testid="missions-empty-cta"
-                  aria-label="Create new mission"
+                  aria-label={t('contracts.createNewMission')}
                 >
-                  Create new mission
+                  {t('contracts.createNewMission')}
                 </AppButton>
               </EmptyState>
             ) : (
@@ -489,12 +489,12 @@ export default function IssuedPage() {
                 {/* Section 1 - Pending/Active Missions */}
                 <div className="space-y-4">
                   <SectionHeader
-                    title={t('contracts.open', 'Pending')}
+                    title={t('contracts.open')}
                     count={pendingMissions.length}
                     accent="default"
                   />
                   {pendingMissions.length === 0 ? (
-                    <EmptyState icon={<Send />} title="All missions have been started!" />
+                    <EmptyState icon={<Send />} title={t('contracts.allMissionsStarted')} />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {pendingMissions.map(task => (
@@ -519,12 +519,12 @@ export default function IssuedPage() {
                 {/* Section 2 - Ready for Review */}
                 <div className="space-y-4">
                   <SectionHeader
-                    title={t('contracts.inReview', 'Ready for Review')}
+                    title={t('contracts.inReview')}
                     count={reviewMissions.length}
                     accent="warning"
                   />
                   {reviewMissions.length === 0 ? (
-                    <EmptyState icon={<Clock3 />} title="Nothing waiting for your review." />
+                    <EmptyState icon={<Clock3 />} title={t('contracts.nothingWaitingForReview')} />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {reviewMissions.map(task => (
@@ -549,12 +549,12 @@ export default function IssuedPage() {
                 {/* Section 3 - Completed Missions */}
                 <div className="space-y-4">
                   <SectionHeader
-                    title={t('contracts.completed', 'Completed')}
+                    title={t('contracts.completed')}
                     count={completedMissions.length}
                     accent="success"
                   />
                   {completedMissions.length === 0 ? (
-                    <EmptyState icon={<CheckCircle />} title="No completed missions yet." />
+                    <EmptyState icon={<CheckCircle />} title={t('contracts.noCompletedMissionsYet')} />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
                       {completedMissions.map(task => (
@@ -590,10 +590,10 @@ export default function IssuedPage() {
             isOpen={isDeleteModalOpen}
             onClose={handleCloseDeleteModal}
             onConfirm={handleConfirmDeleteTask}
-            title="Confirm Delete Contract"
-            message={`Are you sure you want to delete the contract "${selectedContract?.title || ''}"? This action cannot be undone.`}
-            confirmLabel="Delete"
-            loadingLabel="Deleting…"
+            title={t('contracts.confirmDeleteContract')}
+            message={t('contracts.confirmDeletionMessage', { title: selectedContract?.title || '' })}
+            confirmLabel={t('common.delete')}
+            loadingLabel={t('common.deleting')}
             variant="danger"
             loading={isDeleting}
           />

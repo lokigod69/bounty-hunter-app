@@ -5,22 +5,18 @@
 // A modal for editing an existing bounty.
 
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import EmojiPicker from './EmojiPicker';
 import { FileUpload } from './FileUpload';
-import { X, Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2 } from 'lucide-react';
 import { useUpdateBounty } from '../hooks/useUpdateBounty';
 import { Reward } from './RewardCard';
-import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
-import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
-import { useEscapeToClose } from '../hooks/useEscapeToClose';
-import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
 import { AppButton } from './ui/AppButton';
+import { ModalShell } from './ui/ModalShell';
 import {
   uploadRewardImage,
   validateRewardImage,
@@ -41,8 +37,6 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
   const supabase = useSupabaseClient();
   const { user } = useAuth();
   const { updateBounty, isLoading } = useUpdateBounty();
-  const { openModal, clearLayer } = useUI();
-  const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } = useModalBackdropClick({ onClose });
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -100,15 +94,6 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
       setUploadError(null);
     }
   }, [bounty]);
-
-  // R7 FIX: Only setup overlay when THIS modal is open
-  useEffect(() => {
-    if (!isOpen) return;
-    openModal();
-    return () => {
-      clearLayer();
-    };
-  }, [isOpen, openModal, clearLayer]);
 
   const validateImageUrl = (url: string) => {
     if (!url) return true;
@@ -207,32 +192,26 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
     }
   };
 
-  // Close on Escape
-  useEscapeToClose(isOpen, onClose);
+  if (!bounty) return null;
 
-  if (!isOpen || !bounty) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-end md:items-center z-modal-backdrop"
-      onClick={handleBackdropClick}
-      onMouseDown={handleBackdropMouseDown}
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      name="EditBountyModal"
+      size="lg"
+      sheet
+      tall
+      labelledBy="editbounty-title"
     >
-      <div
-        className="bg-gray-900 w-full h-[95vh] md:h-auto md:max-w-lg rounded-t-2xl md:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content modal-enter"
-        onMouseDown={handleContentMouseDown}
-      >
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
-            <h2 className="text-xl font-bold text-white">{t('rewards.editModal.title')}</h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
-              <X size={20} />
-            </button>
-          </div>
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b border-gray-700/50 flex-shrink-0">
+          <h2 id="editbounty-title" className="text-xl font-bold text-white">{t('rewards.editModal.title')}</h2>
+        </div>
 
-          {/* Form Content (scrollable) */}
-          <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
+        {/* Form Content (scrollable) */}
+        <div className="flex-grow min-h-0 overflow-y-auto p-4 md:p-6 space-y-6">
             {/* R27: Name field with character counter */}
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -346,11 +325,9 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
             <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
               {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.editModal.submittingButton')) : t('rewards.editModal.submitButton')}
             </AppButton>
-          </div>
-        </form>
-      </div>
-    </div>,
-    getOverlayRoot() // Phase 2: Portal into overlay-root
+        </div>
+      </form>
+    </ModalShell>
   );
 };
 

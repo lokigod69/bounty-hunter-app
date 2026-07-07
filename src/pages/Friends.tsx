@@ -31,7 +31,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
-import { AppButton, EmptyState, PageState, ConfirmModal, SectionHeader, Spinner } from '../components/ui';
+import { AppButton, EmptyState, PageState, ConfirmModal, SectionHeader, Spinner, TabBar } from '../components/ui';
 import { avatarFallback } from '../lib/avatar';
 
 // Shared loading skeleton for friend lists (used while profile or friends load)
@@ -566,45 +566,28 @@ export default function Friends() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10 mb-6 overflow-x-auto">
-            <div className="flex gap-1 sm:gap-0 w-full">
-              <button
-                className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap ${
-                  activeTab === 'friends'
-                    ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-                onClick={() => setActiveTab('friends')}
-              >
-                <Users size={16} className="inline mr-1" />
-                {strings.friendsTabLabel}
-                {friends.length > 0 && (
-                  <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
-                    {friends.length}
-                  </span>
-                )}
-              </button>
-              <button
-                className={`px-4 py-2 sm:py-3 font-medium text-sm sm:text-base flex-1 text-center min-h-[44px] transition-all duration-200 whitespace-nowrap relative ${
-                  activeTab === 'requests'
-                    ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-                onClick={() => setActiveTab('requests')}
-              >
-                <UserPlus size={16} className="inline mr-1" />
-                {t('friends.tabRequests')}
-                {(pendingRequests.length > 0 || sentRequests.length > 0) && (
-                  <span className="ml-2 bg-white/10 rounded-full px-2 py-0.5 text-xs">
-                    {pendingRequests.length + sentRequests.length}
-                  </span>
-                )}
-                {pendingRequests.length > 0 && (
-                  <span className="ml-1 bg-amber-500 rounded-full h-2 w-2 inline-block absolute top-2 right-2 sm:top-3 sm:right-3"></span>
-                )}
-              </button>
-            </div>
-          </div>
+          <TabBar
+            tabs={[
+              {
+                id: 'friends',
+                label: strings.friendsTabLabel,
+                icon: <Users size={16} />,
+                count: friends.length,
+              },
+              {
+                id: 'requests',
+                label: t('friends.tabRequests'),
+                icon: <UserPlus size={16} />,
+                count: pendingRequests.length + sentRequests.length,
+                showDot: pendingRequests.length > 0,
+              },
+            ]}
+            activeId={activeTab}
+            onChange={(id) => setActiveTab(id as 'friends' | 'requests')}
+            fullWidth
+            className="mb-6"
+            aria-label={t('friends.tabsLabel')}
+          />
 
         {/* Loading State */}
         {loading && <FriendListSkeleton />}

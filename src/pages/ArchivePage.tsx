@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { CheckCircle, Coins, Trophy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import TaskCard from '../components/TaskCard';
@@ -15,6 +16,7 @@ import { PageState, EmptyState } from '../components/ui';
 const ArchivePage: React.FC = () => {
   const { archivedTasks, loading, error, refetch: refetchArchivedTasks } = useArchivedContracts();
   const { strings } = useThemeStrings();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -56,13 +58,13 @@ const ArchivePage: React.FC = () => {
                 {
                   icon: <CheckCircle />,
                   value: totalCompleted,
-                  label: 'Completed',
+                  label: t('contracts.completed'),
                   iconColor: 'text-green-400',
                 },
                 {
                   icon: <Coins />,
                   value: creditsEarned,
-                  label: 'Credits earned',
+                  label: t('history.creditsEarned'),
                   iconColor: 'text-yellow-400',
                 },
               ]}

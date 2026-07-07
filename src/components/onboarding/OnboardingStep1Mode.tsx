@@ -5,19 +5,15 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { themesById } from '../../theme/themes';
 import { ThemeId } from '../../theme/theme.types';
+import { MODE_ACCENT_HEX } from '../../theme/modeAccents';
 import { BaseCard } from '../ui/BaseCard';
 import { AppButton } from '../ui';
 import { Check, ArrowRight, ScrollText, Home, Heart } from 'lucide-react';
 
 const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = ['guild'];
 
-// VISUAL: Per-mode accent hex + icon used to preview each mode's identity.
-const MODE_ACCENT_HEX: Record<ThemeId, string> = {
-  guild: '#20F9D2',
-  family: '#F5D76E',
-  couple: '#FF6FAE',
-};
-
+// VISUAL: Per-mode icon used to preview each mode's identity. Accent hex comes
+// from theme/modeAccents.ts (single source of truth).
 const MODE_ICON: Record<ThemeId, typeof ScrollText> = {
   guild: ScrollText,
   family: Home,

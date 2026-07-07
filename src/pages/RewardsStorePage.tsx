@@ -22,7 +22,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
-import { AppButton, EmptyState, PageState, Fab, ConfirmModal } from '../components/ui';
+import { AppButton, EmptyState, PageState, Fab, ConfirmModal, TabBar } from '../components/ui';
 import { useUI } from '../context/UIContext';
 import { Coin } from '../components/visual/Coin';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
@@ -307,40 +307,17 @@ const RewardsStorePage: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="mb-6 sm:mb-8 flex justify-center border-b border-gray-700 overflow-x-auto px-2">
-          <div className="flex gap-0 sm:gap-2">
-            <button 
-              onClick={() => setActiveTab('available')} 
-              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'available' 
-                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
-                  : 'text-slate-400 hover:text-slate-300'
-              }`}
-            >
-              {t('rewards.tabs.available')}
-            </button>
-            <button 
-              onClick={() => setActiveTab('created')} 
-              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'created' 
-                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
-                  : 'text-slate-400 hover:text-slate-300'
-              }`}
-            >
-              {t('rewards.tabs.created')}
-            </button>
-            <button 
-              onClick={() => setActiveTab('collected')} 
-              className={`px-4 py-2 sm:py-3 text-sm sm:text-lg font-medium min-h-[44px] transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'collected' 
-                  ? 'text-[var(--mode-accent)] border-b-2 border-[var(--mode-accent)]'
-                  : 'text-slate-400 hover:text-slate-300'
-              }`}
-            >
-              {t('rewards.tabs.collected')}
-            </button>
-          </div>
-        </div>
+        <TabBar
+          tabs={[
+            { id: 'available', label: t('rewards.tabs.available') },
+            { id: 'created', label: t('rewards.tabs.created') },
+            { id: 'collected', label: t('rewards.tabs.collected') },
+          ]}
+          activeId={activeTab}
+          onChange={(id) => setActiveTab(id as Tab)}
+          className="mb-6 sm:mb-8"
+          aria-label={t('rewards.tabs.label')}
+        />
 
         <PageBody>
           {renderContent()}

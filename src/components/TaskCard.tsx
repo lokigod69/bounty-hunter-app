@@ -10,10 +10,8 @@ import React, { useState, useEffect } from 'react';
 
 import { Eye, Link, User } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
-import { createPortal } from 'react-dom';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
-import { getOverlayRoot } from '../lib/overlayRoot';
 import { BaseCard } from './ui/BaseCard';
 import { Coin } from './visual/Coin';
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
@@ -405,7 +403,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </BaseCard>
 
-      {showProofModal && createPortal(
+      {showProofModal && (
         <ProofModal
           onClose={() => setShowProofModal(false)}
           onSubmit={async (file: File | null, textDescription?: string) => {
@@ -422,8 +420,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             }
           }}
           uploadProgress={uploadProgress}
-        />,
-        getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
+        />
       )}
     </>
   );

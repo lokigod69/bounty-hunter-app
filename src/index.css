@@ -873,6 +873,11 @@ body {
   --color-info-rgb: 139, 92, 246;
 
   /* Default mode colors (Guild) - can be overridden via data-mode */
+  /* SYNC NOTE: these hexes are duplicated (by necessity - plain CSS can't
+     import TS) from the single source of truth at src/theme/modeAccents.ts.
+     If you change a value here, update modeAccents.ts to match (and vice
+     versa) - that file is imported by modalTheme.ts, ProfileEditModal.tsx,
+     and OnboardingStep1Mode.tsx. */
   --mode-accent: #20F9D2;
   --mode-accent-rgb: 32, 249, 210;
   --mode-accent-soft: rgba(32, 249, 210, 0.12);
@@ -880,6 +885,7 @@ body {
 }
 
 /* Mode-specific color overrides */
+/* SYNC NOTE: see src/theme/modeAccents.ts - keep these hexes in sync. */
 [data-mode="family"] {
   --mode-accent: #F5D76E;
   --mode-accent-rgb: 245, 215, 110;

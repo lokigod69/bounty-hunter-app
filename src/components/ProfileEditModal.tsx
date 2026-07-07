@@ -9,34 +9,27 @@
 // PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
 // PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { UserCircle, UploadCloud, X, Volume2, VolumeX, Shield, Home, Heart } from 'lucide-react';
+import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
-import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { AppButton } from './ui/AppButton';
+import { ModalShell } from './ui/ModalShell';
 import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
+import { MODE_ACCENT_HEX } from '../theme/modeAccents';
 
 
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// VISUAL: Per-mode accent hex used to preview each mode's identity (matches Onboarding).
-const MODE_ACCENT_HEX: Record<ThemeId, string> = {
-  guild: '#20F9D2',
-  family: '#F5D76E',
-  couple: '#FF6FAE',
-};
 
 // Icons per mode; labels/descriptions are sourced from theme definitions below.
 const MODE_ICON: Record<ThemeId, typeof Shield> = {
@@ -69,31 +62,12 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const { t } = useTranslation();
   // R16: Also pull profileLoading to handle first-time profile scenario
   const { user, profile, profileLoading, refreshProfile } = useAuth();
-  const { openModal, clearLayer } = useUI();
   const { themeId, setThemeId } = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
-
-  // R19: Track if mousedown occurred on backdrop (not inside modal content)
-  // This prevents closing the modal when user is selecting text and drags outside
-  const mouseDownOnBackdropRef = useRef(false);
-
-  // Phase 2: Use UIContext to coordinate overlay layers and scroll locking
-  // R7 FIX: Only setup overlay when THIS modal is open. Don't call clearLayer in else branch
-  // as it would cancel other modals (e.g., TaskCard expansion) when this component re-renders.
-  useEffect(() => {
-    if (!isOpen) return; // Early exit - no effect if not open
-    openModal();
-    return () => {
-      clearLayer(); // Only cleanup when THIS modal closes
-    };
-  }, [isOpen, openModal, clearLayer]);
-
-  // Close on Escape
-  useEscapeToClose(isOpen, onClose);
 
   // R16: Hydrate form state when modal opens - handles both existing profile and first-time scenarios
   useEffect(() => {
@@ -227,49 +201,15 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     }
   };
 
-  if (!isOpen) return null;
-
-  // R19: Handle backdrop click - only close if mousedown also started on backdrop
-  const handleBackdropMouseDown = (e: React.MouseEvent) => {
-    // If the target is the backdrop itself (not a child), record it
-    if (e.target === e.currentTarget) {
-      mouseDownOnBackdropRef.current = true;
-    } else {
-      mouseDownOnBackdropRef.current = false;
-    }
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only close if both mousedown AND click occurred on the backdrop
-    // This prevents closing when user selects text and drags outside
-    if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) {
-      onClose();
-    }
-    mouseDownOnBackdropRef.current = false;
-  };
-
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-modal-backdrop p-2 sm:p-4"
-      onMouseDown={handleBackdropMouseDown}
-      onClick={handleBackdropClick}
-    >
-      <div
-        className="glass-card w-full max-w-md mx-2 sm:mx-4 bg-gray-900/80 rounded-xl sm:rounded-2xl border border-gray-700 flex flex-col modal-enter max-h-[95vh] sm:max-h-[90vh] z-modal-content"
-        onMouseDown={(e) => e.stopPropagation()} // Prevent mousedown inside from being tracked as backdrop
-        onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
-      >
-        {/* Modal Header with enhanced mobile touch targets */}
-        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
-          <div className="w-8"></div> {/* Spacer */}
-          <h2 className="text-lg sm:text-xl font-bold text-center flex-grow">{t('profile.edit')}</h2>
-          <button onClick={onClose} className="min-w-[44px] min-h-[44px] w-11 h-11 p-2 bg-gray-800/60 hover:bg-gray-700/80 rounded-full transition-colors z-modal-controls flex items-center justify-center" aria-label="Close profile edit modal">
-            <X size={20} />
-          </button>
-        </div>
+    <ModalShell isOpen={isOpen} onClose={onClose} name="ProfileEditModal" labelledBy="profileedit-title">
+      {/* Modal Header with enhanced mobile touch targets */}
+      <div className="flex items-center justify-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
+        <h2 id="profileedit-title" className="text-lg sm:text-xl font-bold text-center">{t('profile.edit')}</h2>
+      </div>
 
-        {/* Modal Body (Scrollable) with enhanced mobile spacing */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-grow">
+      {/* Modal Body (Scrollable) with enhanced mobile spacing */}
+      <div className="p-4 sm:p-6 overflow-y-auto flex-grow">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col items-center space-y-3">
               {avatarPreview ? (
@@ -386,8 +326,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               {isUploading ? t('profile.saving') : t('profile.save')}
             </AppButton>
           </form>
-        </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

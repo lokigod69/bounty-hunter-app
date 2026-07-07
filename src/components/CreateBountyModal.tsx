@@ -4,24 +4,20 @@
 // R27: Added character limits and counters
 // A modal form for creating a new bounty and assigning it to a friend.
 
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import toast from 'react-hot-toast';
 import FriendSelector from './FriendSelector';
 import EmojiPicker from './EmojiPicker';
 import { FileUpload } from './FileUpload';
-import { X, Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2 } from 'lucide-react';
 import { useCreateBounty } from '../hooks/useCreateBounty';
-import { useUI } from '../context/UIContext';
 import { useAuth } from '../hooks/useAuth';
-import { useModalBackdropClick } from '../hooks/useModalBackdropClick';
-import { useEscapeToClose } from '../hooks/useEscapeToClose';
-import { getOverlayRoot } from '../lib/overlayRoot';
 import { TEXT_LIMITS } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
 import { AppButton } from './ui/AppButton';
+import { ModalShell } from './ui/ModalShell';
 import {
   uploadRewardImage,
   validateRewardImage,
@@ -40,7 +36,6 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   const supabase = useSupabaseClient();
   const { user } = useAuth();
   const { createBounty, isLoading } = useCreateBounty();
-  const { openModal, clearLayer } = useUI();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditCost, setCreditCost] = useState<number | ''>('');
@@ -149,53 +144,30 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
     }
   };
 
-  // R7 FIX: Only setup overlay when THIS modal is open
-  useEffect(() => {
-    if (!isOpen) return;
-    openModal();
-    return () => {
-      clearLayer();
-    };
-  }, [isOpen, openModal, clearLayer]);
-
-  // Handle backdrop click while respecting text selection
-  const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } = useModalBackdropClick({ onClose });
-
-  // Close on Escape
-  useEscapeToClose(isOpen, onClose);
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-end sm:items-center p-0 sm:p-4 z-modal-backdrop"
-      onClick={handleBackdropClick}
-      onMouseDown={handleBackdropMouseDown}
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      name="CreateBountyModal"
+      size="lg"
+      sheet
+      labelledBy="createbounty-title"
     >
-      <div
-        className="bg-gray-900 w-full md:max-w-lg rounded-t-2xl sm:rounded-xl md:border md:border-gray-700 flex flex-col z-modal-content modal-enter"
-        onMouseDown={handleContentMouseDown}
-      >
-        <form onSubmit={handleSubmit} className="flex flex-col">
-          {/* Header - fixed at top */}
-          <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
-            <h2 className="text-lg sm:text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition z-modal-controls p-3 sm:p-2 rounded-full hover:bg-gray-700/50 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label={t('rewards.createModal.closeButton')}>
-              <X size={20} />
-            </button>
-          </div>
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        {/* Header - fixed at top */}
+        <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
+          <h2 id="createbounty-title" className="text-lg sm:text-xl font-bold text-white">{t('rewards.createModal.title')}</h2>
+        </div>
 
-          {/* Single scroll container - iOS Safari optimized */}
-          <div
-            className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
-            style={{
-              maxHeight: 'calc(100dvh - 200px)',
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-              touchAction: 'pan-y',
-            }}
-          >
+        {/* Single scroll container - iOS Safari optimized */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            touchAction: 'pan-y',
+          }}
+        >
             <FriendSelector selectedFriend={assignedTo} setSelectedFriend={setAssignedTo} placeholder={t('rewards.createModal.assignBountyPlaceholder')} />
 
             {/* R27: Name field with character counter */}
@@ -299,11 +271,9 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
               {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.createModal.submittingButton')) : t('rewards.createModal.submitButton')}
             </AppButton>
-          </div>
-        </form>
-      </div>
-    </div>,
-    getOverlayRoot() // Phase 2: Portal into overlay-root instead of document.body
+        </div>
+      </form>
+    </ModalShell>
   );
 };
 

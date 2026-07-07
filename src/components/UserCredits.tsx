@@ -10,6 +10,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useTranslation } from 'react-i18next';
 import { Coin } from './visual/Coin';
 
 // Several UserCredits instances can be mounted at once (desktop header, mobile
@@ -177,13 +178,14 @@ function useCountUp(target: number, duration = 600): number {
 
 const UserCredits: React.FC = () => {
   const { credits, loading, error } = useUserCredits();
+  const { t } = useTranslation();
   const animatedValue = useCountUp(credits ?? 0);
 
   if (loading) {
     return (
       <div className="flex items-center space-x-2 text-sm text-slate-400">
         <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-        <span>Loading credits...</span>
+        <span>{t('common.loadingCredits')}</span>
       </div>
     );
   }

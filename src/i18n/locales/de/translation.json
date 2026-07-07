@@ -40,6 +40,11 @@
     "myMissionsDescription": "Missionen, die Sie für andere erstellt haben.",
     "createNewMission": "Neue Mission erstellen",
     "noMissions": "Sie haben noch keine Missionen erstellt.",
+    "noMissionsYet": "Noch keine Missionen",
+    "createOneForCrew": "Erstelle eine für deine {{crewLabel}}!",
+    "allMissionsStarted": "Alle Missionen wurden gestartet!",
+    "nothingWaitingForReview": "Nichts wartet auf deine Prüfung.",
+    "noCompletedMissionsYet": "Noch keine abgeschlossenen Missionen.",
     "loadingMissions": "Lade deine MISSIONEN...",
     "errorLoadingMissions": "Fehler beim Laden der Verträge: {{error}}",
     "errorLoadingSuggestion": "Bitte versuchen Sie, die Seite zu aktualisieren. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
@@ -54,18 +59,26 @@
     "taskNotFoundOrNotCreator": "Aufgabe nicht gefunden oder Sie sind nicht der Ersteller.",
     "approvalFailedAward": "Aufgabe genehmigt, aber die Vergabe von {{amount}} Credits ist fehlgeschlagen.",
     "awardSuccess": "{{amount}} Credits an den Beauftragten vergeben!",
+    "approvingProof": "Beweis wird genehmigt...",
     "approveSuccess": "Vertrag genehmigt und abgeschlossen!",
     "approvalFailed": "Genehmigung fehlgeschlagen: {{message}}",
     "approvalFailedUnknown": "Genehmigung aufgrund eines unbekannten Fehlers fehlgeschlagen.",
+    "rejectingProof": "Beweis wird abgelehnt...",
     "rejectSuccess": "Vertrag wurde abgelehnt.",
     "rejectionFailed": "Ablehnung fehlgeschlagen: {{message}}",
     "rejectionFailedUnknown": "Ablehnung aufgrund eines unbekannten Fehlers fehlgeschlagen.",
+    "archivingMission": "Wird in den Verlauf verschoben...",
+    "archiveSuccess": "Aufgabe in den Verlauf verschoben!",
+    "archiveFailed": "Aufgabe konnte nicht archiviert werden.",
+    "updateSuccess": "Vertrag aktualisiert",
+    "confirmDeleteContract": "Vertrag löschen bestätigen",
     "createFailedLoggedIn": "Sie müssen angemeldet sein, um einen Vertrag zu erstellen.",
     "createSuccess": "Vertrag erfolgreich erstellt!",
     "createFailedUnknown": "Erstellen des Vertrags aufgrund eines unbekannten Fehlers fehlgeschlagen."
   },
   "history": {
-    "description": "Überprüfen Sie Ihren Verlauf abgeschlossener und abgelaufener Verträge."
+    "description": "Überprüfen Sie Ihren Verlauf abgeschlossener und abgelaufener Verträge.",
+    "creditsEarned": "Verdiente Credits"
   },
   "friends": {
     "title": "GILDENLISTE",
@@ -77,6 +90,7 @@
     "requestFailed": "Senden der Freundschaftsanfrage fehlgeschlagen",
     "tabGuildMembers": "Gildenmitglieder",
     "tabRequests": "Anfragen",
+    "tabsLabel": "Freunde und Anfragen",
     "errorLoading": "Fehler beim Laden der Freunde: {{error}}",
     "noFriendsTitle": "Noch keine Freunde",
     "noFriendsMessage": "Fügen Sie Freunde hinzu, um Aufgaben zuzuweisen und Belohnungen zu senden.",
@@ -131,7 +145,11 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "close": "Schließen",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "tryAgain": "Nochmal versuchen",
+    "deleting": "Wird gelöscht...",
+    "somethingWentWrong": "Da ist etwas schiefgelaufen",
+    "loadingCredits": "Credits werden geladen..."
   },
   "taskForm": {
     "editTitle": "Vertrag bearbeiten",
@@ -177,6 +195,7 @@
   "rewards": {
     "title": "Kopfgelder",
     "tabs": {
+      "label": "Belohnungskategorien",
       "available": "Verfügbar",
       "created": "Meine Kopfgelder",
       "collected": "Gesammelt"
@@ -208,6 +227,13 @@
       "cancelButton": "Abbrechen",
       "submitButton": "Kopfgeld erstellen",
       "submittingButton": "Wird erstellt..."
+    },
+    "confirmDialog": {
+      "deleteTitle": "Kopfgeld löschen",
+      "deleteMessage": "Möchtest du dieses Kopfgeld wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancelButton": "Abbrechen",
+      "confirmButton": "Bestätigen",
+      "deletingButton": "Wird gelöscht..."
     }
   },
   "theme": {

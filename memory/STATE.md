@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-07 (late evening)
+Last updated: 2026-07-07 (night)
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -7,12 +7,12 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 ## Working now
 - Core loop end-to-end: create mission for a friend, submit proof, approve, earn credits, claim rewards (per SAYA_USAGE.md and domain tests).
 - Supabase magic-link/OTP auth, onboarding + tutorial flow, i18n (en/de), multi-theme system.
-- Vitest suite (8 test files: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes, auth redirect). `npm test` = `vitest run src`.
+- Vitest suite (9 test files, 33 tests: domain logic in `src/core/` + `src/domain/`, security policy tests in `src/security/`, themes + accent drift guards, auth redirect). `npm test` = `vitest run src`.
 - Migrations codified through `20260611120000_storage_buckets_and_policies.sql`; credit-table writes locked down (April 2026 migrations).
 - As of the June 2026 codex pass: `npm run build` passed, `npm run lint` 3 warnings / 0 errors, `npm audit --omit=dev` clean. ⚠️ unverified against the current uncommitted tree.
 
 ## In progress
-- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phase 0 done, Phase 1 (congruence) nearly done — dead-CSS purge pending as of this update. The June UI refactor is committed and verified (8a18540 + fixes 2c569a3); build/lint green, vitest 31/31.
+- **Premium V1 polish phase** (roadmap: `docs/premium-v1/ROADMAP.md`, 5 phases). Phase 0 and Phase 1 (congruence) DONE as of 2026-07-07 night: dead-CSS purge (8cc83af), shared TabBar, generic ModalShell (5 modals migrated), accent-hex single source (`src/theme/modeAccents.ts`), i18n sweep. Build/lint green, vitest 33/33. Visual normalizations (glass-card surfaces on Create/EditBounty/ProfileEdit) still need an in-browser eyeball by Michael. Next: Phase 2 UX coherence and/or Phase 3 assets.
 - Image-asset pipeline: Codex image generation + gpt-image-2-skill (`~/.codex/skills/gpt-image-2-skill/`) is proven. Current pilots in `assets-src/generated/`: coin (`coin-pilot-v1*.png`) and gift emblem (`gift-emblem-pilot-v1.png`, solid `#FF00FF` background).
 
 ## Known problems
@@ -30,7 +30,7 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - DB types (`src/types/database.ts`) regeneration pending until production schema source is confirmed.
 
 ## Next actions
-1. Finish Phase 1 (dead-CSS purge), then Phase 2 UX coherence per `docs/premium-v1/ROADMAP.md` — top items: noun system (needs Michael's call), action badges + tasks realtime (wire orphaned `useTasks.ts` channel), rejection loop, re-enable History nav, invite links, persist theme/onboarding to profiles (prod SQL → runbook + Michael's go).
+1. Phase 2 UX coherence per `docs/premium-v1/ROADMAP.md` — top items: noun system (needs Michael's call), action badges + tasks realtime (wire orphaned `useTasks.ts` channel), rejection loop, re-enable History nav, invite links, persist theme/onboarding to profiles (prod SQL → runbook + Michael's go). Also: Michael should eyeball the Phase-1 visual normalizations in the browser (glass-card modal surfaces).
 2. Continue Phase 3 generated assets via Codex/gpt-image-2: credit emblem, mode art, empty states, reward-store placeholders, app icon/splash. Gift emblem pilot exists.
 3. Reconcile production migration state (which migrations/proposals applied) and record it here.
 4. Work `CODEX_NEXT_STEPS.md` top items: storage bucket/policy verification, task lifecycle RPCs, regenerate DB types.
