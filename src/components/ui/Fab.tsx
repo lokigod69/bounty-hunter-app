@@ -5,6 +5,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { feedback } from '../../utils/feedback';
 
 interface FabProps {
   onClick: () => void;
@@ -16,7 +17,10 @@ interface FabProps {
 export function Fab({ onClick, label, icon, className }: FabProps) {
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        feedback.tap();
+        onClick();
+      }}
       aria-label={label}
       className={cn(
         'fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110',

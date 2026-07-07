@@ -25,6 +25,7 @@ import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, Fab, ConfirmModal, TabBar } from '../components/ui';
 import { useUI } from '../context/UIContext';
+import { feedback } from '../utils/feedback';
 import { Coin } from '../components/visual/Coin';
 import emptyStore from '../assets/generated/empty-store.webp';
 // R14: CreditDisplay removed - using simplified balance layout with just the number
@@ -111,6 +112,7 @@ const RewardsStorePage: React.FC = () => {
     const result = await purchaseBounty(rewardId);
 
     if (result?.success) {
+      feedback.payday();
       // R29: Refetch all affected data after successful claim
       fetchRewards();        // Remove from available list
       refetchCredits();      // Update balance display
@@ -124,6 +126,7 @@ const RewardsStorePage: React.FC = () => {
     setRedeemingId(collectionId);
     try {
       await markRedeemed(collectionId, redeemed);
+      if (redeemed) feedback.success();
       toast.success(redeemed ? t('rewards.redeemSuccess') : t('rewards.redeemUndoSuccess'));
     } catch (err) {
       const message = err instanceof Error ? err.message : t('rewards.redeemError');

@@ -46,44 +46,48 @@ class SoundManager {
     // Every key requested anywhere in the app must be registered here —
     // play() silently no-ops on unknown keys, which is how half the app's
     // sounds went missing for months.
-    const soundFiles = {
-      acceptContract: '/sounds/success.mp3',
-      success: '/sounds/success.mp3',
-      click1: '/sounds/click1a.mp3', // trimmed variant; click1.mp3 is a 5.4 MB full track
-      click2: '/sounds/click2a.mp3',
+    // Volumes (Phase 4 pass): UI clicks stay quiet, completion sounds sit in
+    // the middle, the coin payout is the loudest moment in the app.
+    const soundFiles: Record<string, { path: string; volume: number }> = {
+      acceptContract: { path: '/sounds/success.mp3', volume: 0.5 },
+      success: { path: '/sounds/success.mp3', volume: 0.5 },
+      click1: { path: '/sounds/click1a.mp3', volume: 0.35 }, // trimmed variant; click1.mp3 is a 5.4 MB full track
+      click2: { path: '/sounds/click2a.mp3', volume: 0.35 },
       // Nav tab clicks (Layout)
-      click1a: '/sounds/click1a.mp3',
-      click1b: '/sounds/click1b.mp3',
-      click1c: '/sounds/click1c.mp3',
-      click1d: '/sounds/click1d.mp3',
-      notification: '/sounds/notification.mp3',
-      coin: '/sounds/coin.mp3',
-      create: '/sounds/create.mp3',
-      delete: '/sounds/delete lowD.mp3',
+      click1a: { path: '/sounds/click1a.mp3', volume: 0.35 },
+      click1b: { path: '/sounds/click1b.mp3', volume: 0.35 },
+      click1c: { path: '/sounds/click1c.mp3', volume: 0.35 },
+      click1d: { path: '/sounds/click1d.mp3', volume: 0.35 },
+      notification: { path: '/sounds/notification.mp3', volume: 0.5 },
+      coin: { path: '/sounds/coin.mp3', volume: 0.65 },
+      create: { path: '/sounds/create.mp3', volume: 0.5 },
+      delete: { path: '/sounds/delete lowD.mp3', volume: 0.45 },
       // Action aliases used across pages/modals
-      upload: '/sounds/click2c.mp3',
-      saveProfile: '/sounds/success.mp3',
-      toggleOn: '/sounds/click2b.mp3',
-      saveContract: '/sounds/create.mp3',
-      friendRequest: '/sounds/notification.mp3',
-      approveProof: '/sounds/success.mp3',
+      upload: { path: '/sounds/click2c.mp3', volume: 0.35 },
+      saveProfile: { path: '/sounds/success.mp3', volume: 0.5 },
+      toggleOn: { path: '/sounds/click2b.mp3', volume: 0.35 },
+      saveContract: { path: '/sounds/create.mp3', volume: 0.5 },
+      friendRequest: { path: '/sounds/notification.mp3', volume: 0.5 },
+      approveProof: { path: '/sounds/success.mp3', volume: 0.5 },
+      // Credit award moment (feedback.payday). Same file as `coin` for now —
+      // a distinct payday sound is parked for the audio audition.
+      payday: { path: '/sounds/coin.mp3', volume: 0.65 },
     };
 
-    Object.entries(soundFiles).forEach(([name, path]) => {
+    Object.entries(soundFiles).forEach(([name, { path, volume }]) => {
       const audio = new Audio(path);
-      
+      audio.volume = volume;
+
       // Android-specific optimizations
       if (this.isAndroid) {
         audio.preload = 'none'; // Don't preload on Android to save bandwidth
-        audio.volume = 0.7; // Slightly lower volume for Android speakers
-        
+
         // Set audio context to handle Android audio policies
         if (this.androidVersion >= 9) {
           audio.setAttribute('playsinline', 'true');
         }
       } else {
         audio.preload = 'auto';
-        audio.volume = 0.5;
       }
 
       this.sounds[name] = audio;

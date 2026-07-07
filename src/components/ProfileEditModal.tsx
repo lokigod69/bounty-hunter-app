@@ -17,6 +17,7 @@ import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateC
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
@@ -143,7 +144,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
 
         if (uploadError) throw uploadError;
 
-        soundManager.play('upload');
+        feedback.tap('upload');
 
         const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
         avatarUrl = publicUrlData.publicUrl;
@@ -187,7 +188,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         return; // Don't proceed on error - don't pretend save succeeded
       }
 
-      soundManager.play('saveProfile');
+      feedback.success('saveProfile');
 
       toast.success(t('profile.saveSuccess'), { id: toastId });
 
@@ -272,7 +273,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                   onClick={() => {
                     const newState = soundManager.toggle();
                     setLocalSoundEnabled(newState);
-                    if (newState) soundManager.play('toggleOn');
+                    if (newState) feedback.tap('toggleOn');
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 ${
                     localSoundEnabled ? 'bg-emerald-500' : 'bg-gray-600'
@@ -306,7 +307,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                         type="button"
                         onClick={() => {
                           setThemeId(option.id);
-                          soundManager.play('toggleOn');
+                          feedback.tap('toggleOn');
                         }}
                         style={
                           isActive

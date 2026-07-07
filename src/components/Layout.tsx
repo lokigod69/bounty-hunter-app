@@ -52,7 +52,7 @@ import UserCredits from './UserCredits';
 
 import ProfileEditModal from './ProfileEditModal';
 
-import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { avatarFallback } from '../lib/avatar';
 
 export default function Layout() {
@@ -185,7 +185,7 @@ export default function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => item.sound && soundManager.play(item.sound)}
+                  onClick={() => feedback.tap(item.sound)}
                   className={`relative nav-item-galactic flex items-center space-x-1 ${
                     location.pathname === item.path
                       ? 'nav-item-galactic-active'
@@ -376,7 +376,7 @@ export default function Layout() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (item.sound) soundManager.play(item.sound);
+                    feedback.tap(item.sound);
                     closeMenu();
                   }}
                 >

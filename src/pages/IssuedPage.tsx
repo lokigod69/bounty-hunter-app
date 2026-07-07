@@ -36,7 +36,7 @@ import { Clock, AlertTriangle, CheckCircle, Plus, Clock3, Send } from 'lucide-re
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { useUI } from '../context/UIContext';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -116,7 +116,7 @@ export default function IssuedPage() {
         throw deleteError;
       }
 
-      soundManager.play('delete');
+      feedback.warning('delete');
       toast.success(t('contracts.deleteSuccess', { title: selectedContract.title }));
       await refetchIssuedContracts(); // Refresh the list
     } catch (error: unknown) {
@@ -169,10 +169,9 @@ export default function IssuedPage() {
         issuerId: user.id,
       });
 
-      // Play sounds only once (after successful approval)
-      soundManager.play('approveProof');
-      soundManager.play('success');
-      soundManager.play('coin');
+      // Fire feedback only once (after successful approval): success haptic,
+      // approve sound + coin payout. The old triple-play stacked success.mp3 twice.
+      feedback.payday('approveProof');
 
       toast.success(t('contracts.approveSuccess'), { id: toastId });
       await refetchIssuedContracts();
@@ -233,6 +232,7 @@ export default function IssuedPage() {
         reason: rejectReason,
       });
 
+      feedback.warning();
       toast.success(t('contracts.rejectSuccess'), { id: toastId });
       setRejectTargetId(null);
       setRejectReason('');

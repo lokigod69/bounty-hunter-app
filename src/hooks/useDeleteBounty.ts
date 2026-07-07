@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from './useAuth';
-import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { deleteReward } from '../domain/rewards';
 
 export const useDeleteBounty = () => {
@@ -24,7 +24,7 @@ export const useDeleteBounty = () => {
         userId: user.id,
       });
 
-      soundManager.play('delete');
+      feedback.warning('delete');
       toast.success('Bounty deleted successfully!');
       setIsLoading(false);
       return { success: true };

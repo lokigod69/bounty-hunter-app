@@ -24,7 +24,7 @@ import { Database } from '../types/database';
 import { useNavigate } from 'react-router-dom';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -221,7 +221,7 @@ export default function Friends() {
 
       if (error) throw error;
       
-      soundManager.play('friendRequest');
+      feedback.success('friendRequest');
       toast.success(t('friends.requestSent', { name: toUser.display_name }));
       setSearchTerm('');
       setShowDropdown(false);
@@ -242,8 +242,7 @@ export default function Friends() {
 
   const handleAcceptRequest = async (friendshipId: string) => {
     await respondToFriendRequest(friendshipId, true);
-    soundManager.play('notification');
-    soundManager.play('success');
+    feedback.success();
   };
 
   const handleRejectRequest = async (friendshipId: string) => {

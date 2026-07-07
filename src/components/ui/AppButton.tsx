@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { feedback } from '../../utils/feedback';
 
 export type AppButtonVariant = 'cta' | 'secondary' | 'ghost' | 'danger';
 
@@ -33,6 +34,7 @@ export function AppButton({
   className,
   children,
   disabled,
+  onClick,
   ...props
 }: AppButtonProps) {
   return (
@@ -44,6 +46,10 @@ export function AppButton({
         className
       )}
       disabled={disabled || loading}
+      onClick={(e) => {
+        feedback.tap();
+        onClick?.(e);
+      }}
       {...props}
     >
       {loading ? (

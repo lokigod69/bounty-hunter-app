@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
-import { soundManager } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
@@ -169,11 +169,11 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     setIsSubmitting(true);
     try {
       await onSubmit(taskPayload, editingTask ? editingTask.id : undefined);
-      // Play sound on success
+      // Fire feedback on success
       if (editingTask) {
-        soundManager.play('saveContract');
+        feedback.success('saveContract');
       } else {
-        soundManager.play('create');
+        feedback.success('create');
       }
       // Close modal after successful submission
       onClose();

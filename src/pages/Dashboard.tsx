@@ -24,7 +24,7 @@ import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { PageQuote } from '../components/layout/PageQuote';
 import { useDailyQuote } from '../hooks/useDailyQuote';
-import { soundManager as sm } from '../utils/soundManager';
+import { feedback } from '../utils/feedback';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
@@ -62,7 +62,7 @@ export default function Dashboard() {
     }
 
     try {
-      sm.play('upload');
+      feedback.tap('upload');
       const proofUrl = await uploadProof({
         missionId: taskId,
         file: file || undefined,
@@ -100,7 +100,7 @@ export default function Dashboard() {
       });
 
       toast.success('Task submitted for review!', { id: toastId });
-      sm.play('success');
+      feedback.success();
       if (refetchAssignedContracts) refetchAssignedContracts();
       return true;
     } catch (error: unknown) {
@@ -162,13 +162,7 @@ export default function Dashboard() {
       
       if (status === 'completed') {
         toast.success('🎉 Task completed successfully!', { id: toastId, duration: 4000 });
-        // Enhanced sound feedback for mobile
-        try {
-          sm.play('acceptContract');
-          sm.play('success');
-        } catch {
-          void 0;
-        }
+        feedback.success('acceptContract');
       } else if (status === 'review') {
         toast.success('Task submitted for review!', { id: toastId });
       } else {
