@@ -161,7 +161,7 @@ export default function Layout() {
 
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
-      <header className={`sticky top-0 z-header transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
+      <header className={`sticky top-0 z-header safe-top transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
 
         <div className="container mx-auto px-4 py-3 flex items-center">
           {/* Left side: Logo and Nav */}
@@ -242,7 +242,7 @@ export default function Layout() {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="p-2 rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
                   aria-label="Log out"
                 >
                   <LogOut size={20} className="text-gray-400 hover:text-white" />
@@ -263,8 +263,8 @@ export default function Layout() {
                 type="button"
                 onClick={() => {
                   toggleMenu();
-                }} 
-                className="text-white p-2" 
+                }}
+                className="text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -296,8 +296,8 @@ export default function Layout() {
             }}
           />
           {/* Menu Content */}
-          <div 
-            className="glass-card fixed inset-0 pt-16 bg-indigo-950/95 backdrop-blur-lg"
+          <div
+            className="glass-card fixed inset-0 pt-16 safe-top bg-indigo-950/95 backdrop-blur-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -305,7 +305,7 @@ export default function Layout() {
               onClick={() => {
                 closeMenu();
               }}
-              className="absolute top-3 right-4 text-white p-2 z-mobile-menu-close"
+              className="absolute top-3 right-4 text-white min-w-[44px] min-h-[44px] flex items-center justify-center z-mobile-menu-close"
               aria-label="Close menu"
             >
               <X size={24} />

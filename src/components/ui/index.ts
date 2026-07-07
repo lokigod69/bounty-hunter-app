@@ -9,3 +9,4 @@ export { PageState } from './PageState';
 export { SectionHeader } from './SectionHeader';
 export { Fab } from './Fab';
 export { ConfirmModal } from './ConfirmModal';
+export { Spinner } from './Spinner';

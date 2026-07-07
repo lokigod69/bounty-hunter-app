@@ -1,7 +1,5 @@
-/* src/index.css */
-/* Implemented Font System Option A (Revised): Mandalore (local) for headers/badges, Futura/Poppins (Google Fonts) for titles/body. Corrected @import order. Added specific styles for app title, card titles. Status text now targeted by '.task-status-text' class. */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+﻿/* src/index.css */
+/* Font system: Mandalore (local) for display/headers, Poppins (loaded via <link> in index.html) for body. */
 
 /* Universal Box Sizing & Android Fixes */
 *, *::before, *::after {
@@ -50,6 +48,7 @@ html, body {
   src: url('/fonts/mandalore/mandalore.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -57,6 +56,7 @@ html, body {
   src: url('/fonts/mandalore/mandalorerough.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -64,16 +64,17 @@ html, body {
   src: url('/fonts/mandalore/mandaloretitle.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
-/* (Howdybun display font removed — card titles now use the standard Poppins type scale) */
+/* (Howdybun display font removed â€” card titles now use the standard Poppins type scale) */
 
 /* Apply Custom Fonts */
 
 /* App Title - MORE SPACING */
 .app-title,
 header h1 {
-  font-family: 'MandaloreTitle', 'Mandalore', 'Bebas Neue';
+  font-family: 'MandaloreTitle', 'Mandalore', sans-serif;
   letter-spacing: 0.3em; /* Wide spacing like Star Wars */
   text-transform: uppercase;
 }
@@ -88,54 +89,56 @@ header h1 {
 /* General Headers (fallback if .app-title or header h1 isn't used) */
 .gradient-text,
 h1 {
-  font-family: 'Mandalore', 'Bebas Neue';
+  font-family: 'Mandalore', sans-serif;
 }
 
-/* (Card-title font override removed — titles inherit the Poppins type scale for cross-card consistency) */
+/* (Card-title font override removed â€” titles inherit the Poppins type scale for cross-card consistency) */
 
 /* Body Text */
-/* (Removed broken C1.jpg body background — the canonical starfield radial-gradient is defined later) */
+/* (Removed broken C1.jpg body background â€” the canonical starfield radial-gradient is defined later) */
 
+/* Note: no `.text-sm` here â€” this block sits after @tailwind utilities, so
+   matching a Tailwind utility class would override font-semibold/bold on
+   every small text element back to 500. */
 body,
-p,
-.text-sm {
-  font-family: 'Poppins', 'Inter', 'Bebas Neue'; /* Futura Medium equivalent */
+p {
+  font-family: 'Poppins', sans-serif;
   font-weight: 500; /* Explicitly medium */
 }
 
 /* Status text in cards */
 .status-badge, /* Original class for dedicated badge elements */
 .task-status-text /* New class for status text within cards */ {
-  font-family: 'MandaloreRough', 'Mandalore', 'Bebas Neue';
+  font-family: 'MandaloreRough', 'Mandalore', sans-serif;
 }
 /* --- FONT SYSTEM OPTION A (REVISED) END --- */
 
 /* Phase 1: Typography Scale - Standardized text roles */
 .text-display {
   @apply text-4xl sm:text-5xl font-bold;
-  font-family: 'MandaloreTitle', 'Mandalore', 'Bebas Neue';
+  font-family: 'MandaloreTitle', 'Mandalore', sans-serif;
   letter-spacing: 0.1em;
 }
 
 .text-title {
   @apply text-3xl font-bold;
-  font-family: 'Mandalore', 'Bebas Neue';
+  font-family: 'Mandalore', sans-serif;
 }
 
 .text-subtitle {
   @apply text-xl font-semibold;
-  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+  font-family: 'Poppins', sans-serif;
 }
 
 .text-body {
   @apply text-base leading-relaxed;
-  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+  font-family: 'Poppins', sans-serif;
   font-weight: 500;
 }
 
 .text-meta {
   @apply text-xs sm:text-sm;
-  font-family: 'Poppins', 'Inter', 'Bebas Neue';
+  font-family: 'Poppins', sans-serif;
   font-weight: 400;
 }
 
@@ -524,9 +527,9 @@ p,
   --text-header: var(--accent-cyan);
 
   /* Font Families (re-pointed to fonts actually loaded by the app) */
-  --font-headers: 'MandaloreTitle', 'Bebas Neue', sans-serif;
-  --font-body: 'Poppins', 'Inter', 'Segoe UI', sans-serif;
-  --font-accent: 'Poppins', 'Inter', monospace;
+  --font-headers: 'MandaloreTitle', 'Mandalore', sans-serif;
+  --font-body: 'Poppins', 'Segoe UI', sans-serif;
+  --font-accent: 'Poppins', 'Segoe UI', sans-serif;
 }
 
 /* Route 66 Motel Sign Task Card Redesign */
@@ -868,7 +871,7 @@ body {
     transform: scale(0.98);
   }
   
-  /* CTA button — the single primary action per screen (solid mode accent). */
+  /* CTA button â€” the single primary action per screen (solid mode accent). */
   .btn-cta {
     @apply relative px-5 py-2.5 rounded-lg font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm;
     background-color: var(--mode-accent);
@@ -2053,12 +2056,35 @@ body {
   animation: modal-scale-down 0.15s ease-in forwards;
 }
 
+/* Standard modal entrance for every modal in the app:
+   bottom-sheet slide-up on mobile, scale-up on desktop. */
+.modal-enter {
+  animation: modal-slide-up 0.25s ease-out forwards;
+}
+
+@media (min-width: 640px) {
+  .modal-enter {
+    animation: modal-scale-up 0.2s ease-out forwards;
+  }
+}
+
+/* iOS safe-area helpers (viewport-fit=cover): header/menus under the notch,
+   sheet footers above the home indicator. */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 /* Reduced motion support for modal animations */
 @media (prefers-reduced-motion: reduce) {
   .animate-modal-slide-up,
   .animate-modal-slide-down,
   .animate-modal-scale-up,
   .animate-modal-scale-down,
+  .modal-enter,
   .animate-fade-in,
   .animate-fade-out {
     animation: none;

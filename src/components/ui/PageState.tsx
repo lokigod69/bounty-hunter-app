@@ -5,6 +5,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { BaseCard } from './BaseCard';
 import { AppButton } from './AppButton';
+import { Spinner } from './Spinner';
 
 interface PageStateProps {
   state: 'loading' | 'error';
@@ -18,7 +19,7 @@ export function PageState({ state, message, onRetry, retryLabel = 'Try again' }:
     return (
       <BaseCard>
         <div className="text-center py-12">
-          <div className="w-12 h-12 border-2 border-t-[var(--mode-accent)] border-white/10 rounded-full animate-spin mx-auto mb-4" />
+          <Spinner size="lg" className="mx-auto mb-4" />
           <p className="text-body text-white/70">{message ?? 'Loading…'}</p>
         </div>
       </BaseCard>

@@ -43,15 +43,30 @@ class SoundManager {
   }
 
   private preloadSounds(): void {
+    // Every key requested anywhere in the app must be registered here —
+    // play() silently no-ops on unknown keys, which is how half the app's
+    // sounds went missing for months.
     const soundFiles = {
       acceptContract: '/sounds/success.mp3',
       success: '/sounds/success.mp3',
-      click1: '/sounds/click1.mp3',
-      click2: '/sounds/click2.mp3',
+      click1: '/sounds/click1a.mp3', // trimmed variant; click1.mp3 is a 5.4 MB full track
+      click2: '/sounds/click2a.mp3',
+      // Nav tab clicks (Layout)
+      click1a: '/sounds/click1a.mp3',
+      click1b: '/sounds/click1b.mp3',
+      click1c: '/sounds/click1c.mp3',
+      click1d: '/sounds/click1d.mp3',
       notification: '/sounds/notification.mp3',
       coin: '/sounds/coin.mp3',
       create: '/sounds/create.mp3',
       delete: '/sounds/delete lowD.mp3',
+      // Action aliases used across pages/modals
+      upload: '/sounds/click2c.mp3',
+      saveProfile: '/sounds/success.mp3',
+      toggleOn: '/sounds/click2b.mp3',
+      saveContract: '/sounds/create.mp3',
+      friendRequest: '/sounds/notification.mp3',
+      approveProof: '/sounds/success.mp3',
     };
 
     Object.entries(soundFiles).forEach(([name, path]) => {
@@ -88,6 +103,9 @@ class SoundManager {
 
     const audio = this.sounds[soundName];
     if (!audio) {
+      if (import.meta.env.DEV) {
+        console.warn(`soundManager: unknown sound key "${soundName}"`);
+      }
       return;
     }
 
