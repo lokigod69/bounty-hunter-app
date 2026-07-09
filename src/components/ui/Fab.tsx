@@ -23,7 +23,8 @@ export function Fab({ onClick, label, icon, className }: FabProps) {
       }}
       aria-label={label}
       className={cn(
-        'fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110',
+        'fixed z-fab rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform touch-manipulation',
+        'motion-safe:hover:scale-110 motion-safe:active:scale-95 active:duration-75',
         'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-[var(--mode-accent)]',
         'text-[#06231d] flex items-center justify-center min-w-[56px] min-h-[56px] p-4',
         'right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto',

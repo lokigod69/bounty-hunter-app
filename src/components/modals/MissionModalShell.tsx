@@ -265,10 +265,12 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           ${animationClass}
         `}
         style={{
-          background: 'rgba(12, 18, 40, 0.92)',
-          backdropFilter: isMobile ? 'blur(16px)' : 'blur(24px)',
-          WebkitBackdropFilter: isMobile ? 'blur(16px)' : 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          // Material from the shared modal tokens (index.css) so the
+          // prefers-reduced-transparency fallback applies here too.
+          background: 'var(--modal-bg)',
+          backdropFilter: isMobile ? 'blur(var(--modal-blur-mobile))' : 'blur(var(--modal-blur-desktop))',
+          WebkitBackdropFilter: isMobile ? 'blur(var(--modal-blur-mobile))' : 'blur(var(--modal-blur-desktop))',
+          border: '1px solid var(--modal-border)',
           boxShadow: `
             0 8px 32px rgba(0, 0, 0, 0.4),
             0 0 0 1px rgba(255, 255, 255, 0.05) inset,

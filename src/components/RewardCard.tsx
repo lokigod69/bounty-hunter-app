@@ -146,7 +146,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       {/* R27: Apply subtle accent border glow based on mode */}
       <BaseCard
         variant="solid"
-        className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg hover:scale-[1.02]'}`}
+        className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 touch-manipulation ${!canAfford && view === 'available' ? 'opacity-75' : 'hover:shadow-lg motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.99] active:duration-100'}`}
         style={{
           borderColor: accentVariant.borderColor,
           boxShadow: canAfford || view !== 'available' ? `0 0 12px ${accentVariant.glowColor}` : undefined,

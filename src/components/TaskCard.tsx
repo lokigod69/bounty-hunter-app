@@ -333,7 +333,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {/* R28: Apply mode-aware accent border for pending tasks */}
       <BaseCard
         variant="glass"
-        className={`relative cursor-pointer overflow-visible ${collapsedCardBgColor} p-4 sm:p-5`}
+        className={`relative cursor-pointer overflow-visible touch-manipulation motion-safe:active:scale-[0.99] active:duration-100 ${collapsedCardBgColor} p-4 sm:p-5`}
         style={
           !isArchived && safeStatus === 'pending'
             ? {

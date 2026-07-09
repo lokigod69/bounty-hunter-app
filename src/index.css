@@ -569,10 +569,24 @@ body {
 
   .btn-danger-galactic:active {
     background-color: rgba(var(--warning-orange-rgb), 0.3);
-    box-shadow: 
+    box-shadow:
       0 0 5px var(--warning-orange),
       inset 0 0 10px rgba(var(--warning-orange-rgb), 0.5);
     transform: scale(0.98);
+  }
+
+  /* Press response (Apple-design audit): the pressed state must land within
+     ~1 frame of pointer-down. Base transitions stay slow (graceful hover and
+     release-settle); only the transition INTO :active is shortened. */
+  .btn-primary, .btn-secondary, .btn-cta, .btn-danger-galactic,
+  .nav-item-galactic, .modal-icon-button {
+    touch-action: manipulation; /* no double-tap-zoom tap delay on iOS Safari */
+  }
+
+  .btn-primary:active, .btn-secondary:active, .btn-cta:active,
+  .btn-danger-galactic:active {
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
   }
 }
 
@@ -862,6 +876,11 @@ body {
   --modal-blur-desktop: 24px;
   --modal-blur-mobile: 16px;
 
+  /* Fluid motion curves (Apple-design audit): enter and exit travel the same
+     spatial path, so the exit easing is the mirror of the enter easing. */
+  --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-exit: cubic-bezier(1, 0, 0.68, 0.28);
+
   /* Semantic Colors for States */
   --color-success: #22c55e;
   --color-success-rgb: 34, 197, 94;
@@ -953,11 +972,11 @@ body {
 }
 
 .animate-modal-slide-up {
-  animation: modal-slide-up 0.25s ease-out forwards;
+  animation: modal-slide-up 0.35s var(--ease-enter) forwards;
 }
 
 .animate-modal-slide-down {
-  animation: modal-slide-down 0.2s ease-in forwards;
+  animation: modal-slide-down 0.2s var(--ease-exit) forwards;
 }
 
 /* Desktop: Scale-up animation */
@@ -984,22 +1003,22 @@ body {
 }
 
 .animate-modal-scale-up {
-  animation: modal-scale-up 0.2s ease-out forwards;
+  animation: modal-scale-up 0.25s var(--ease-enter) forwards;
 }
 
 .animate-modal-scale-down {
-  animation: modal-scale-down 0.15s ease-in forwards;
+  animation: modal-scale-down 0.15s var(--ease-exit) forwards;
 }
 
 /* Standard modal entrance for every modal in the app:
    bottom-sheet slide-up on mobile, scale-up on desktop. */
 .modal-enter {
-  animation: modal-slide-up 0.25s ease-out forwards;
+  animation: modal-slide-up 0.35s var(--ease-enter) forwards;
 }
 
 @media (min-width: 640px) {
   .modal-enter {
-    animation: modal-scale-up 0.2s ease-out forwards;
+    animation: modal-scale-up 0.25s var(--ease-enter) forwards;
   }
 }
 
@@ -1013,19 +1032,79 @@ body {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-/* Reduced motion support for modal animations */
+/* Reduced motion support for modal animations.
+   Reduced motion is not "no feedback": slides/scales become short cross-fades
+   (opacity-only, non-vestibular) so open/close still reads. */
 @media (prefers-reduced-motion: reduce) {
   .animate-modal-slide-up,
-  .animate-modal-slide-down,
   .animate-modal-scale-up,
-  .animate-modal-scale-down,
-  .modal-enter,
-  .animate-fade-in,
-  .animate-fade-out {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .modal-enter {
+    animation: modal-fade-in 0.15s ease-out forwards;
+  }
+
+  .animate-modal-slide-down,
+  .animate-modal-scale-down {
+    animation: modal-fade-out 0.15s ease-in forwards;
   }
 }
 
 /* End of R9 Modal System */
+
+/* =============================================================================
+   ACCESSIBILITY MOTION & TRANSPARENCY FALLBACKS (Apple-design audit)
+   ============================================================================= */
+
+/* Decorative loops and transform motion off under reduced motion.
+   Opacity/color press feedback stays (comprehension), movement goes. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-coin-subtle-spin,
+  .animate-coin-flip,
+  .animate-coin-spin-2d {
+    animation: none;
+  }
+
+  .credit-badge::before {
+    animation: none; /* coin sheen sweep */
+  }
+
+  .cursor-trail-particle {
+    display: none;
+  }
+
+  .btn-primary:hover::before,
+  .btn-secondary:hover::before,
+  .btn-danger-galactic:hover::before {
+    animation: none; /* scan-line sweep */
+    opacity: 0;
+  }
+
+  .btn-primary:active::after {
+    animation: none; /* laser pulse */
+  }
+
+  .btn-primary:hover, .btn-primary:active,
+  .btn-secondary:hover, .btn-secondary:active,
+  .btn-cta:hover, .btn-cta:active,
+  .btn-danger-galactic:hover, .btn-danger-galactic:active {
+    transform: none;
+  }
+}
+
+/* Frost the glass when the user asks for reduced transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --modal-bg: rgb(13, 18, 38);
+    --modal-blur-desktop: 0px;
+    --modal-blur-mobile: 0px;
+  }
+
+  .glass-card {
+    backdrop-filter: none;
+    background-color: rgba(13, 18, 38, 0.96);
+  }
+
+  .input-field {
+    backdrop-filter: none;
+    background-color: rgba(13, 18, 38, 0.9);
+  }
+}
