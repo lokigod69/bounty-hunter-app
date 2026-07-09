@@ -1,28 +1,24 @@
-# BOARD — Bounty Hunter — updated 2026-07-08 late night (session 2)
+# BOARD — Bounty Hunter — updated 2026-07-10
 
 ## ⚠️ WAITING ON YOU
-- **Supabase dashboard auth config** (Authentication → URL Configuration). Site URL = `https://bountyhunter.xyz`; Redirect URLs = `http://localhost:6075/**`, `https://bountyhunter.xyz/**`, `bountyhunter://auth/callback`. Magic-link login + invite round-trip stay dead until this is saved. (Use exact Vercel prod domain if not bountyhunter.xyz.)
-- **Test on your phone at bountyhunter.xyz in the browser** — NOT TestFlight/Expo. This is a Capacitor-wrapped web app; the browser covers ~everything except haptics + push. Eyeball Phases 1–4 (art, invite/reject/redeem flows, sound volumes) + try a PDF/video proof upload (just unblocked).
-- **Decision: task-lifecycle RPCs** — want Claude (Opus) to draft the proposal + runbook + migration (draft only, no SQL applied)? It's the credit-award security boundary → highest-intelligence + your review, NOT a Fable task.
+- **Vercel env vars (the empty-screen fix)**: Vercel dashboard → bounty-hunter-app project → Settings → Environment Variables → add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (exact values in protocol/NEXT_STEP.md — anon/publishable key, NEVER the service-role key), all environments → then **Redeploy** (env is baked in at build time). Auth config (Site URL + redirects) you've already done ✅.
+- **Then eyeball on your phone at bountyhunter.xyz**: Phases 1–4 (art, invite/reject/redeem flows, sound volumes, PDF/video proof) PLUS the new apple-design pass — buttons/cards should feel instantly "grabby" on press, modals should glide in with an iOS-sheet feel.
+- **Review proposal 011 (task-lifecycle RPCs)** — `db/proposals/011_task_lifecycle_rpcs.md`. Draft only, NO SQL applied. 4 open points (A–D) need your call before anything runs.
 
 ## Workstreams
 | Workstream | Phase/Gate | Last done | Next | State |
 |---|---|---|---|---|
-| main | Premium V1 polish — **Phases 0–4 COMPLETE**; backend debt burn-down started | Jul 8 late night s2: DB types regenerated from the live project, typecheck now fully CLEAN (15→0 errors), PDF/video proof-validation bug found+fixed, 59/59 tests (fcb830d) | Your auth config + eyeball/audition; then Phase 5 ship vehicle or task-lifecycle RPCs | 🟢 active |
+| main | Premium V1 polish — Phases 0–4 COMPLETE; apple-design pass applied; RPC proposal drafted | Jul 10: apple-design audit implemented (press response, mirrored modal easing, reduced-motion/transparency) + proposal 011 drafted (5 lifecycle RPCs, zero SQL applied) | Your env vars + eyeball + 011 review; then 011 client refactor or Phase 5 ship vehicle | 🟢 active |
 
 ## Standing decisions parked for you (not blocking yet)
+- Proposal 011 open points A–D (proof_type whitelist, reject semantics, archive gating, live policy names) — in the proposal .md.
 - Prod SQL go/no-go whenever a runbook comes up — backup + your review required, always.
 - ~~Noun system~~ DECIDED 2026-07-07: Mission/Chore/Request; store items = Rewards; "Bounty" = mission credit pot.
 - ~~Proof types~~ DECIDED 2026-07-07: PDF/text/private all allowed.
 
 ## Recently finished (last 5)
-- 2026-07-08 (late night s2) **DB types regen + typecheck clean (fcb830d)**: database.ts regenerated from the live project (UTF-8 now, legacy marketplace types gone, all new tables/RPCs in), custom.ts overlays slimmed, `tsc -p tsconfig.app.json` 15→0 errors; found + fixed real bug: PDF/video proofs were rejected by domain validation ("Unknown proof type") — never caught because browser testing was blocked; +10 proof-validation tests (59 total)
-- 2026-07-08 (late night) **Phase 4 sound & haptics shipped + committed (70bdff3)**: `feedback.ts` semantic API (tap/success/payday/warning/error) pairs sound + haptic and respects the sound toggle; AppButton/Fab light-impact on tap; approve = success buzz + coin, reject = warning (was silent), claim = payday (was silent); per-sound volume pass + `payday` key; 5 new tests (49 total); found + fixed: static @capacitor import white-screens vite dev → lazy import rule recorded in DECISIONS
-- 2026-07-08 (night) **Phase 3 visual identity shipped + committed (37b3a4b)**: 16 masters generated via Codex/gpt-image-2 (3 race-duplicates caught by eyeball + regenerated serialized), 17 WebP wired by 5 reviewed sub-agents — raster coin, per-mode gift emblems, type-based card accents, onboarding heroes, 5 empty-state illustrations, 4 store placeholders, iOS icon/splash; Phase-2 tree committed first (47e7eb7)
-- 2026-07-08 (later) Applied all 9 migrations (6-batch hardening + 3 new: profiles theme/onboarding, collected redeemed, invites) to the new DB via psql/pooler, backups first, tracker→10 rows; shipped Phase 2 leftovers via 3 reviewed sub-agents — invite links (/invite/:token + redeem RPC + post-login round-trip), mode/onboarding persistence, orphan /profile/edit deleted + Restart-Onboarding folded into modal, collected-rewards mark-redeemed; build/lint/test green (44), 0 net-new type errors (caught + fixed a build-masked type regression); UNCOMMITTED pending Michael's go
-- 2026-07-08 Supabase revived: Jan-2026 cluster backup restored into NEW project mvbmpcmexkgfairnthux (ap-south-1) via IPv4 session pooler; all data wiped for clean testing (buckets kept); .env.local + supabase link switched; found schema is pre-April-2026 hardening → 6-migration batch queued for Michael's go
-- 2026-07-07 Phase 2 UX coherence (4 sub-agents, 2 waves): noun system implemented per Michael's call, tasks realtime + action badges (review//issued, rejected//), History nav back, rejection loop (persisted 'rejected' + reason + resubmit; migration 20260707220000 unapplied), PDF proofs aligned (migration 20260707221000 unapplied); 41/41 tests
-- 2026-07-07 Supabase found PAUSED → restore runbook written (docs/runbooks/SUPABASE_RESTORE_CHECKLIST.md); decisions recorded: nouns + proof types (memory/DECISIONS.md)
-- 2026-07-07 Phase 1 congruence COMPLETE: shared TabBar, generic ModalShell (5 modals migrated, −151 lines), accent single-source (src/theme/modeAccents.ts + drift-guard tests), i18n sweep (~26 strings, de confirmDialog block)
-- 2026-07-07 Gift emblem pilot generated: assets-src/generated/gift-emblem-pilot-v1.png, solid #FF00FF background
-- 2026-07-07 Congruence pass committed (3e3191d); assets 71→2 MB (b0d5a61); white-screen fixes (2c569a3)
+- 2026-07-10 **Apple-design pass applied** (docs/premium-v1/APPLE_DESIGN_AUDIT.md): instant press response (0.08s :active), touch-action:manipulation everywhere tappable, press states added to TaskCard/Fab/RewardCard (had none), mirrored modal easing tokens (--ease-enter/--ease-exit, iOS sheet curve), reduced-motion coverage completed (cross-fade modals, decorative loops off), new prefers-reduced-transparency fallback, MissionModalShell material tokenized, tailwind duplicate animation key fixed; build/tsc/lint/59 tests green
+- 2026-07-10 **Task-lifecycle RPCs drafted — proposal 011, ZERO SQL applied**: submit_proof/reject_task/set_task_status/archive_task/delete_task (SECURITY DEFINER, approve_task-v3 pattern), drops legacy double-credit trigger + broad assignee UPDATE policies; up/down/validation SQL + draft runbook; built from a full map of both client write paths (useTasks.ts and missions.ts/IssuedPage.tsx)
+- 2026-07-08 (late night s2) **DB types regen + typecheck clean (fcb830d)**: database.ts regenerated (UTF-8), tsc 15→0 errors; found + fixed PDF/video proof-validation bug; 59 tests
+- 2026-07-08 (late night) **Phase 4 sound & haptics (70bdff3)**: feedback.ts semantic API, tap haptics on AppButton/Fab, approve/reject/delete/claim wired, volume pass
+- 2026-07-08 (night) **Phase 3 visual identity (37b3a4b)**: 16 masters → 17 WebP wired (coin, emblems, type accents, heroes, empty states, placeholders, iOS icon/splash)
