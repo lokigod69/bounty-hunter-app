@@ -2,9 +2,12 @@
 
 ## FOR YOU
 1. ✅ DONE 2026-07-08 late night s2: **DB types regenerated + typecheck fully clean (fcb830d)** — `database.ts` now matches the live DB (15 type errors → 0), and this surfaced+fixed a real bug: PDF and video proof uploads were being rejected by validation before they ever reached storage. 59/59 tests.
-2. **Supabase dashboard → Authentication → URL Configuration** for `bounty-hunter-app`: set Site URL + redirect URLs for `http://localhost:6075` and your Vercel domain — magic-link login won't work until then. This still blocks all browser testing.
-3. Then log in and eyeball Phases 1–4: Phase-3 art (coin, gift emblems, card accents, heroes, empty states, store placeholders), Phase-2 flows (invite round-trip, reject/resubmit, mark-redeemed), Phase-4 sounds (volume balance; tell me which placeholder sounds bug you — upload/toggle reuse click files, "payday" reuses the coin sound). Now also worth trying: submit a PDF or video as proof — that path just got unblocked.
-4. FYI: haptics only vibrate on a real phone (needs `npx cap sync ios` — Phase 5). Desktop browser = sounds only.
+2. **Supabase dashboard → `bounty-hunter-app` → Authentication → URL Configuration** (blocks ALL login/testing until saved):
+   - Site URL: `https://bountyhunter.xyz`  (use your exact Vercel prod domain if different)
+   - Redirect URLs (add all three): `http://localhost:6075/**` , `https://bountyhunter.xyz/**` , `bountyhunter://auth/callback`
+3. **Test on your phone by opening bountyhunter.xyz in the browser** — NOT Expo Go / NOT TestFlight. This is a Capacitor-wrapped web app; the browser covers everything except haptics (vibration) + push. Add-to-Home-Screen for an app feel. Then eyeball Phases 1–4: Phase-3 art (coin, gift emblems, card accents, heroes, empty states, store placeholders), Phase-2 flows (invite round-trip, reject/resubmit, mark-redeemed), Phase-4 sounds (volume balance; upload/toggle reuse click files, "payday" reuses the coin sound — tell me which to replace), and submit a **PDF or video proof** (path just unblocked).
+4. **Decision:** want Claude (Opus) to draft the task-lifecycle-RPC proposal + runbook + migration (DRAFT only, no SQL applied)? It's the credit-award security boundary → needs highest intelligence + your review, NOT a Fable job. Say the word.
+5. FYI: haptics only vibrate on a real phone (needs `npx cap sync ios` + Xcode — Phase 5). Browser = sounds only.
 
 ## PASTE THIS
 Resume Bounty Hunter, workstream main, under protocol-os.

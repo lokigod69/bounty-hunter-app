@@ -1,8 +1,9 @@
 # BOARD — Bounty Hunter — updated 2026-07-08 late night (session 2)
 
 ## ⚠️ WAITING ON YOU
-- **New project dashboard config** — magic-link login (and the invite round-trip) won't work until Site URL + redirect URLs are set in the Supabase dashboard (Authentication → URL Configuration): add http://localhost:6075 and your Vercel domain.
-- **Browser eyeball of Phases 1–4** (all the new art PLUS the Phase-4 sound pass: volumes, which placeholder sounds to replace) — unblocked once auth config is set.
+- **Supabase dashboard auth config** (Authentication → URL Configuration). Site URL = `https://bountyhunter.xyz`; Redirect URLs = `http://localhost:6075/**`, `https://bountyhunter.xyz/**`, `bountyhunter://auth/callback`. Magic-link login + invite round-trip stay dead until this is saved. (Use exact Vercel prod domain if not bountyhunter.xyz.)
+- **Test on your phone at bountyhunter.xyz in the browser** — NOT TestFlight/Expo. This is a Capacitor-wrapped web app; the browser covers ~everything except haptics + push. Eyeball Phases 1–4 (art, invite/reject/redeem flows, sound volumes) + try a PDF/video proof upload (just unblocked).
+- **Decision: task-lifecycle RPCs** — want Claude (Opus) to draft the proposal + runbook + migration (draft only, no SQL applied)? It's the credit-award security boundary → highest-intelligence + your review, NOT a Fable task.
 
 ## Workstreams
 | Workstream | Phase/Gate | Last done | Next | State |
