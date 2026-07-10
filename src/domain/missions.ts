@@ -6,9 +6,73 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import type { StatusChangeContext } from '../core/contracts/contracts.types';
-import type { TaskStatus } from '../types/custom';
+import type {
+  DatabaseWithTaskLifecycleRpcs,
+  TaskLifecycleRpcErrorCode,
+  TaskLifecycleRpcResult,
+  TaskStatus,
+} from '../types/custom';
 
 export type MissionId = string;
+type TaskLifecycleClient = SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
+type TaskLifecycleOperation = 'archive' | 'delete' | 'reject' | 'status' | 'submit';
+
+const taskLifecycleSupabase = supabase as unknown as TaskLifecycleClient;
+
+const operationFallbacks: Record<TaskLifecycleOperation, string> = {
+  archive: 'Failed to archive task.',
+  delete: 'Failed to delete task.',
+  reject: 'Failed to reject task.',
+  status: 'Failed to update task status.',
+  submit: 'Failed to submit task for review.',
+};
+
+export function getTaskLifecycleRpcErrorMessage(
+  code: TaskLifecycleRpcErrorCode | string | undefined,
+  operation: TaskLifecycleOperation,
+): string {
+  switch (code) {
+    case 'not_authenticated':
+      return `You must be logged in to ${operation} this task.`;
+    case 'task_not_found':
+      return 'Task not found or has been deleted.';
+    case 'not_assignee':
+      return 'You are not assigned to this task.';
+    case 'not_creator':
+      return operation === 'reject'
+        ? 'Only the task creator can reject this task.'
+        : 'You can only delete tasks that you created.';
+    case 'not_participant':
+      return 'Only the creator or assignee can archive this task.';
+    case 'wrong_status':
+      return 'This task is not in the correct status for that action.';
+    case 'proof_required':
+      return 'This task requires proof. Please upload proof to complete.';
+    case 'invalid_proof_type':
+      return 'Invalid proof type. Use an image, video, PDF, or text proof.';
+    case 'status_not_allowed':
+      return 'This status change is not allowed.';
+    default:
+      return operationFallbacks[operation];
+  }
+}
+
+export function requireTaskLifecycleRpcSuccess(
+  data: unknown,
+  operation: TaskLifecycleOperation,
+): TaskLifecycleRpcResult {
+  const result = data as TaskLifecycleRpcResult | null;
+
+  if (result?.success === false) {
+    throw new Error(getTaskLifecycleRpcErrorMessage(result.error, operation));
+  }
+
+  if (result?.success !== true) {
+    throw new Error(operationFallbacks[operation]);
+  }
+
+  return result;
+}
 
 export interface ApproveMissionParams {
   missionId: MissionId;
@@ -21,33 +85,14 @@ export interface RejectMissionParams {
   issuerId: string;
   /** Optional free-text reason shown to the assignee (Phase 2.3). */
   reason?: string;
-  supabaseClient?: SupabaseClient;
-}
-
-/**
- * Postgres "undefined column" error code. supabase-js surfaces PostgREST/PG
- * errors as an object with a `.code` field; 42703 means the column referenced
- * in the statement does not exist yet (e.g. rejection_reason before the
- * migration is applied). We use it to degrade gracefully.
- */
-const PG_UNDEFINED_COLUMN = '42703';
-
-let warnedMissingRejectionReason = false;
-
-function isUndefinedColumnError(error: unknown): boolean {
-  return (
-    !!error &&
-    typeof error === 'object' &&
-    'code' in error &&
-    (error as { code?: string }).code === PG_UNDEFINED_COLUMN
-  );
+  supabaseClient?: TaskLifecycleClient;
 }
 
 export interface UpdateMissionStatusParams {
   missionId: MissionId;
   status: TaskStatus;
   userId: string;
-  supabaseClient?: SupabaseClient;
+  supabaseClient?: TaskLifecycleClient;
 }
 
 export interface UploadProofParams {
@@ -55,19 +100,19 @@ export interface UploadProofParams {
   file?: File | null;
   textDescription?: string;
   userId: string;
-  supabaseClient?: SupabaseClient;
+  supabaseClient?: TaskLifecycleClient;
 }
 
 export interface ArchiveMissionParams {
   missionId: MissionId;
   userId: string;
-  supabaseClient?: SupabaseClient;
+  supabaseClient?: TaskLifecycleClient;
 }
 
 export interface SubmitForReviewParams {
   missionId: MissionId;
   userId: string;
-  supabaseClient?: SupabaseClient;
+  supabaseClient?: TaskLifecycleClient;
 }
 
 /**
@@ -113,14 +158,11 @@ export async function approveMission(params: ApproveMissionParams): Promise<void
  * 2. Evaluate status change using domain logic
  * 3. Update task status to 'rejected', clear proof, and store an optional reason
  *
- * Phase 2.3: the task is now persisted in the 'rejected' state (not reset to
- * 'pending') so the assignee sees the rejection and can resubmit. If the
- * rejection_reason column is not present yet (Postgres 42703 — the migration
- * has not been applied), we retry the same update without it so status still
- * lands on 'rejected'.
+ * Phase 2.3: the task is persisted in the 'rejected' state (not reset to
+ * 'pending') so the assignee sees the rejection and can resubmit.
  */
 export async function rejectMission(params: RejectMissionParams): Promise<void> {
-  const { missionId, issuerId, reason, supabaseClient = supabase } = params;
+  const { missionId, issuerId, reason, supabaseClient = taskLifecycleSupabase } = params;
 
   // Fetch task to get context
   const { data: task, error: fetchError } = await supabaseClient
@@ -151,40 +193,17 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
     throw new Error(errorMsg);
   }
 
-  // Update task status - rejection persists the 'rejected' state and clears proof.
   const trimmedReason = reason?.trim();
-  const baseUpdate = {
-    status: 'rejected',
-    proof_url: null,
-    proof_type: null,
-  } as const;
-
-  const { error } = await supabaseClient
-    .from('tasks')
-    .update({ ...baseUpdate, rejection_reason: trimmedReason || null })
-    .eq('id', missionId);
+  const { data, error } = await supabaseClient.rpc('reject_task', {
+    p_task_id: missionId,
+    p_rejection_reason: trimmedReason || null,
+  });
 
   if (error) {
-    // Graceful degradation: rejection_reason column not deployed yet (42703).
-    // Retry without it so the 'rejected' status still lands.
-    if (isUndefinedColumnError(error)) {
-      if (!warnedMissingRejectionReason) {
-        console.warn(
-          '[missions] rejection_reason column missing (42703); rejecting without storing a reason. Apply migration 20260707220000_add_rejection_reason.sql.'
-        );
-        warnedMissingRejectionReason = true;
-      }
-      const { error: retryError } = await supabaseClient
-        .from('tasks')
-        .update(baseUpdate)
-        .eq('id', missionId);
-      if (retryError) {
-        throw retryError;
-      }
-      return;
-    }
-    throw error;
+    throw new Error(error.message || 'Failed to reject task.');
   }
+
+  requireTaskLifecycleRpcSuccess(data, 'reject');
 }
 
 /**
@@ -196,7 +215,7 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
  * 3. Update task status
  */
 export async function updateMissionStatus(params: UpdateMissionStatusParams): Promise<void> {
-  const { missionId, status, userId, supabaseClient = supabase } = params;
+  const { missionId, status, userId, supabaseClient = taskLifecycleSupabase } = params;
 
   // Step 1: Fetch task without restrictive filters - let RLS handle permissions
   const { data: task, error: fetchError } = await supabaseClient
@@ -237,31 +256,20 @@ export async function updateMissionStatus(params: UpdateMissionStatusParams): Pr
 
   const finalStatus = statusChangeResult.newStatus!;
 
-  // Step 3: Update task
-  const updateData: { status: string; completed_at?: string } = { status: finalStatus };
-  
-  // Set completion timestamp if domain logic says so
-  if (statusChangeResult.shouldSetCompletedAt) {
-    updateData.completed_at = new Date().toISOString();
+  if (finalStatus !== 'pending' && finalStatus !== 'in_progress') {
+    throw new Error('This status change must use its dedicated task action.');
   }
 
-  const { error: updateError } = await supabaseClient
-    .from('tasks')
-    .update(updateData)
-    .eq('id', missionId);
+  const { data, error: updateError } = await supabaseClient.rpc('set_task_status', {
+    p_task_id: missionId,
+    p_status: finalStatus,
+  });
 
   if (updateError) {
-    // Provide specific error messages for common issues
-    let errorMessage = 'Failed to update task status.';
-    if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
-      errorMessage = 'You do not have permission to update this task.';
-    } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
-      errorMessage = 'Task not found or has been deleted.';
-    } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
-      errorMessage = 'Network error. Please check your connection and try again.';
-    }
-    throw new Error(errorMessage);
+    throw new Error(updateError.message || 'Failed to update task status.');
   }
+
+  requireTaskLifecycleRpcSuccess(data, 'status');
 }
 
 /**
@@ -272,7 +280,7 @@ export async function updateMissionStatus(params: UpdateMissionStatusParams): Pr
  * 2. Update task with proof_url (if file) or proof_description (if text), and set status to 'review'
  */
 export async function uploadProof(params: UploadProofParams): Promise<string> {
-  const { missionId, file, textDescription, userId, supabaseClient = supabase } = params;
+  const { missionId, file, textDescription, supabaseClient = taskLifecycleSupabase } = params;
 
   if (!file && !textDescription) {
     throw new Error('Please provide either a file or text description.');
@@ -325,65 +333,22 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     proofUrl = publicUrlData.publicUrl;
   }
 
-  // Update task with proof data and set status to 'review'
-  // Also set completed_at (submission timestamp) for streak calculation
-  const updateData: {
-    proof_url?: string | null;
-    proof_description?: string | null;
-    proof_type?: string | null;
-    rejection_reason?: string | null;
-    status: string;
-    completed_at: string;
-  } = {
-    status: 'review',
-    completed_at: new Date().toISOString(),
-    // Phase 2.3: resubmitting clears any prior rejection reason.
-    rejection_reason: null,
-  };
-
-  if (proofUrl) {
-    updateData.proof_url = proofUrl;
-    updateData.proof_type = proofType;
+  if (textDescription && !proofType) {
+    proofType = 'text';
   }
 
-  if (textDescription) {
-    updateData.proof_description = textDescription;
-    if (!proofType) {
-      updateData.proof_type = 'text';
-    }
-  }
-
-  const { error: updateError } = await supabaseClient
-    .from('tasks')
-    .update(updateData)
-    .eq('id', missionId)
-    .eq('assigned_to', userId); // Security: only assigned user can submit proof
+  const { data, error: updateError } = await supabaseClient.rpc('submit_proof', {
+    p_task_id: missionId,
+    p_proof_url: proofUrl,
+    p_proof_type: proofType,
+    p_proof_description: textDescription || null,
+  });
 
   if (updateError) {
-    // Graceful degradation: rejection_reason column not deployed yet (42703).
-    // Retry without it so the resubmission (status -> 'review') still lands.
-    if (isUndefinedColumnError(updateError)) {
-      if (!warnedMissingRejectionReason) {
-        console.warn(
-          '[missions] rejection_reason column missing (42703); resubmitting without clearing a reason. Apply migration 20260707220000_add_rejection_reason.sql.'
-        );
-        warnedMissingRejectionReason = true;
-      }
-      const { rejection_reason: _omit, ...updateWithoutReason } = updateData;
-      void _omit;
-      const { error: retryError } = await supabaseClient
-        .from('tasks')
-        .update(updateWithoutReason)
-        .eq('id', missionId)
-        .eq('assigned_to', userId);
-      if (retryError) {
-        throw retryError;
-      }
-      return proofUrl || 'text-proof';
-    }
-    throw updateError;
+    throw new Error(updateError.message || 'Failed to submit task for review.');
   }
 
+  requireTaskLifecycleRpcSuccess(data, 'submit');
   return proofUrl || 'text-proof';
 }
 
@@ -393,7 +358,7 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
  * Both creator and assignee can archive (it's a global archive for the task).
  */
 export async function archiveMission(params: ArchiveMissionParams): Promise<void> {
-  const { missionId, userId, supabaseClient = supabase } = params;
+  const { missionId, userId, supabaseClient = taskLifecycleSupabase } = params;
 
   // First, verify the user is either the creator or assignee
   const { data: task, error: fetchError } = await supabaseClient
@@ -410,15 +375,15 @@ export async function archiveMission(params: ArchiveMissionParams): Promise<void
     throw new Error('Only the creator or assignee can archive this task.');
   }
 
-  // Archive the task
-  const { error } = await supabaseClient
-    .from('tasks')
-    .update({ is_archived: true })
-    .eq('id', missionId);
+  const { data, error } = await supabaseClient.rpc('archive_task', {
+    p_task_id: missionId,
+  });
 
   if (error) {
-    throw error;
+    throw new Error(error.message || 'Failed to archive task.');
   }
+
+  requireTaskLifecycleRpcSuccess(data, 'archive');
 }
 
 /**
@@ -431,7 +396,7 @@ export async function archiveMission(params: ArchiveMissionParams): Promise<void
  * 3. Update task status to 'review'
  */
 export async function submitForReviewNoProof(params: SubmitForReviewParams): Promise<void> {
-  const { missionId, userId, supabaseClient = supabase } = params;
+  const { missionId, userId, supabaseClient = taskLifecycleSupabase } = params;
 
   // Step 1: Fetch task to verify assignment and proof_required
   const { data: task, error: fetchError } = await supabaseClient
@@ -464,19 +429,14 @@ export async function submitForReviewNoProof(params: SubmitForReviewParams): Pro
     throw new Error(`Cannot complete task with status '${task.status}'.`);
   }
 
-  // Step 5: Update task status to 'review' and set completed_at (submission timestamp)
-  // This timestamp is used for streak calculation (not approval date)
-  const { error: updateError } = await supabaseClient
-    .from('tasks')
-    .update({
-      status: 'review',
-      completed_at: new Date().toISOString(),
-    })
-    .eq('id', missionId)
-    .eq('assigned_to', userId); // Security: only assigned user can update
+  const { data, error: updateError } = await supabaseClient.rpc('submit_proof', {
+    p_task_id: missionId,
+  });
 
   if (updateError) {
-    throw new Error('Failed to submit task for review. Please try again.');
+    throw new Error(updateError.message || 'Failed to submit task for review. Please try again.');
   }
+
+  requireTaskLifecycleRpcSuccess(data, 'submit');
 }
 

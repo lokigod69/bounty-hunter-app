@@ -41,8 +41,17 @@ ORDER BY polname;
 -- After apply: the assignee-side UPDATE policies are gone; creator-side
 -- "Users can update own created tasks" (and INSERT/SELECT/DELETE policies) remain.
 
--- 5. Current proof_type CHECK constraint (Open Point A in the proposal).
+-- 5. proof_type CHECK constraint (Open Point A — decided: image/video/document/text).
+--    PRE-FLIGHT: records the old definition. AFTER APPLY: expect the new set.
 SELECT conname, pg_get_constraintdef(oid)
 FROM pg_constraint
 WHERE conrelid = 'public.tasks'::regclass AND contype = 'c'
 ORDER BY conname;
+
+-- 5b. PRE-FLIGHT: any existing rows outside the new proof_type set would make
+--     the ADD CONSTRAINT in up.sql section 0.5 fail — expect zero rows here.
+SELECT proof_type, count(*)
+FROM public.tasks
+WHERE proof_type IS NOT NULL
+  AND proof_type NOT IN ('image', 'video', 'document', 'text')
+GROUP BY proof_type;

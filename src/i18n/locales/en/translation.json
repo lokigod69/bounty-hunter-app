@@ -46,6 +46,7 @@
     "deleteFailed": "Failed to delete.",
     "deleteFailedMessage": "Failed: {{message}}",
     "deleteFailedUnknown": "Failed to delete due to an unknown error.",
+    "proofCleanupFailed": "The task was deleted, but its proof file could not be removed.",
     "proofUploadDisabled": "Proof upload functionality is not applicable here or disabled.",
     "mustBeLoggedIn": "You must be logged in.",
     "taskNotFoundOrNotCreator": "Task not found or you are not the creator.",

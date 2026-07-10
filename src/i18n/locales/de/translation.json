@@ -46,6 +46,7 @@
     "deleteFailed": "Löschen fehlgeschlagen.",
     "deleteFailedMessage": "Fehlgeschlagen: {{message}}",
     "deleteFailedUnknown": "Löschen aufgrund eines unbekannten Fehlers fehlgeschlagen.",
+    "proofCleanupFailed": "Die Aufgabe wurde gelöscht, aber die Beweisdatei konnte nicht entfernt werden.",
     "proofUploadDisabled": "Das Hochladen von Beweisen ist hier nicht anwendbar oder deaktiviert.",
     "mustBeLoggedIn": "Sie müssen angemeldet sein.",
     "taskNotFoundOrNotCreator": "Aufgabe nicht gefunden oder Sie sind nicht der Ersteller.",

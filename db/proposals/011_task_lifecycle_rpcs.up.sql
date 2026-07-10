@@ -18,6 +18,22 @@ BEGIN;
 DROP TRIGGER IF EXISTS award_credits_on_completion ON public.tasks;
 
 -- ---------------------------------------------------------------------------
+-- 0.5. Normalize the proof_type CHECK constraint (Open Point A, decided
+--      2026-07-10): canonical set is image / video / document / text.
+--      Every schema snapshot still shows the original ('image','video') CHECK
+--      and no migration ever widened it — proposal 010 only widened the
+--      STORAGE bucket mime types. The client already writes 'document' (for
+--      PDFs) and 'text', so this fixes a live constraint violation hazard.
+--      NULL stays allowed (no-proof submissions). 'pdf' is NOT in the set:
+--      the client maps application/pdf -> 'document' (missions.ts uploadProof).
+--      Pre-flight: validation #5 records the old definition + distinct values.
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.tasks DROP CONSTRAINT IF EXISTS tasks_proof_type_check;
+ALTER TABLE public.tasks ADD CONSTRAINT tasks_proof_type_check
+  CHECK (proof_type IS NULL
+         OR proof_type IN ('image', 'video', 'document', 'text'));
+
+-- ---------------------------------------------------------------------------
 -- 1. submit_proof — assignee submits proof (or submits for review w/o proof
 --    when proof_required is false). Replaces:
 --      useTasks.ts:581-595, missions.ts:356-378 (uploadProof),
@@ -68,10 +84,10 @@ BEGIN
     RETURN json_build_object('success', false, 'error', 'proof_required');
   END IF;
 
-  -- Keep in sync with src/domain/proofValidation.ts and the live
-  -- tasks_proof_type_check constraint (see proposal .md, Open Point A).
+  -- Keep in sync with src/core/proofs/proofs.domain.ts (ProofType) and the
+  -- tasks_proof_type_check constraint normalized in section 0.5 above.
   IF p_proof_type IS NOT NULL
-     AND p_proof_type NOT IN ('image', 'video', 'pdf', 'document', 'text') THEN
+     AND p_proof_type NOT IN ('image', 'video', 'document', 'text') THEN
     RETURN json_build_object('success', false, 'error', 'invalid_proof_type');
   END IF;
 
@@ -257,10 +273,11 @@ COMMENT ON FUNCTION public.archive_task(uuid)
   IS 'Proposal 011: creator or assignee archives a task (is_archived=true).';
 
 -- ---------------------------------------------------------------------------
--- 5. delete_task — creator deletes own task. Returns proof_url so the client
---    can clean up the storage object afterwards (storage delete stays
---    client-side; the bucket RLS already restricts it). Replaces
---    useTasks.ts:685-689 and IssuedPage.tsx:110-113.
+-- 5. delete_task — creator deletes own task. Returns proof_url for logging /
+--    verification. NOTE: the client must remove the storage object BEFORE
+--    calling this RPC — the bounty-proofs delete policy joins public.tasks by
+--    the folder's task id, so once the row is gone the file can no longer be
+--    removed under RLS. Replaces useTasks.ts:685-689 and IssuedPage.tsx:110-113.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.delete_task(
   p_task_id uuid

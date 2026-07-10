@@ -19,6 +19,7 @@
 // PHASE 1 FIX: Enhanced state coordination between TaskForm modal and mobile menu to prevent UI conflicts.
 
 import { useState, useEffect, useRef } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client (still used for create/delete)
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
@@ -46,7 +47,16 @@ import { AppButton, EmptyState, PageState, SectionHeader, Fab, ConfirmModal } fr
 import { ModalShell } from '../components/ui/ModalShell';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import { TEXT_LIMITS } from '../config/textLimits';
-import { approveMission, rejectMission, archiveMission } from '../domain/missions';
+import {
+  approveMission,
+  archiveMission,
+  rejectMission,
+  requireTaskLifecycleRpcSuccess,
+} from '../domain/missions';
+import type {
+  DatabaseWithTaskLifecycleRpcs,
+  TaskLifecycleRpcResult,
+} from '../types/custom';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import emptyIssued from '../assets/generated/empty-issued.webp';
 
@@ -107,14 +117,44 @@ export default function IssuedPage() {
 
     setIsDeleting(true);
     try {
-      const { error: deleteError } = await supabase
-        .from('tasks')
-        .delete()
-        .match({ id: selectedContract.id, created_by: user.id });
+      const lifecycleClient = supabase as unknown as SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
+
+      // Storage cleanup MUST happen before the row delete: the bounty-proofs
+      // delete policy requires the tasks row to still exist, so post-delete
+      // removal always fails RLS and orphans the file.
+      if (typeof selectedContract.proof_url === 'string' && selectedContract.proof_url.trim() !== '') {
+        try {
+          const filePath = new URL(selectedContract.proof_url).pathname.split('/bounty-proofs/')[1];
+          if (filePath) {
+            await lifecycleClient.storage.from('bounty-proofs').remove([filePath]);
+          }
+        } catch {
+          toast.error(t('contracts.proofCleanupFailed'));
+        }
+      }
+
+      const { data, error: deleteError } = await lifecycleClient.rpc('delete_task', {
+        p_task_id: selectedContract.id,
+      });
 
       if (deleteError) {
-        throw deleteError;
+        throw new Error(deleteError.message || t('contracts.deleteFailed'));
       }
+
+      const rpcResult = data as TaskLifecycleRpcResult | null;
+      if (rpcResult?.success === false) {
+        if (rpcResult.error === 'not_authenticated') {
+          throw new Error(t('contracts.mustBeLoggedIn'));
+        }
+        if (rpcResult.error === 'task_not_found') {
+          throw new Error(t('contracts.taskNotFound'));
+        }
+        if (rpcResult.error === 'not_creator') {
+          throw new Error(t('contracts.taskNotFoundOrNotCreator'));
+        }
+      }
+
+      requireTaskLifecycleRpcSuccess(data, 'delete');
 
       feedback.warning('delete');
       toast.success(t('contracts.deleteSuccess', { title: selectedContract.title }));

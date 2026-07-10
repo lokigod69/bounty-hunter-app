@@ -1,13 +1,13 @@
 param(
-  # Defaults updated 2026-07-10 to the CURRENT live project (mvbmpcmexkgfairnthux,
-  # ap-south-1). The old paused project (tsnjpylkgsovjujoczll) needs explicit params.
   [string]$DbHost = "aws-1-ap-south-1.pooler.supabase.com",
   [int]$DbPort    = 5432,
   [string]$DbUser = "postgres.mvbmpcmexkgfairnthux",
-  [string]$DbName = "postgres"
+  [string]$DbName = "postgres",
+  [string]$Sql    = "db\proposals\011_task_lifecycle_rpcs.down.sql"
 )
 
 if ($env:PROD_CONFIRM -ne "YES") { throw "Set PROD_CONFIRM=YES to allow prod actions." }
+if (-not (Test-Path $Sql)) { throw "Rollback file not found: $Sql" }
 
 function Read-Plain([string]$prompt) {
   $sec = Read-Host $prompt -AsSecureString
@@ -17,10 +17,8 @@ function Read-Plain([string]$prompt) {
 
 if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password" }
 
-$ts = Get-Date -Format "yyyyMMdd_HHmmss"
-& pg_dump --schema-only --no-owner --no-privileges --quote-all-identifiers --role=postgres `
-  --host $DbHost --port $DbPort --username $DbUser --dbname $DbName `
-  -f "supabase\schema_backup_$ts.sql"
+$psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
+& $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -v ON_ERROR_STOP=1 -f $Sql
 
 $env:PGPASSWORD = $null
-Write-Host "Backup written: supabase\schema_backup_$ts.sql" -ForegroundColor Green
+Write-Host "Rolled back: $Sql (remember: redeploy the previous frontend build)" -ForegroundColor Yellow

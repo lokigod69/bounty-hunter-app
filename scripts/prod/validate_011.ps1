@@ -1,10 +1,9 @@
 param(
-  # Defaults updated 2026-07-10 to the CURRENT live project (mvbmpcmexkgfairnthux,
-  # ap-south-1). The old paused project (tsnjpylkgsovjujoczll) needs explicit params.
   [string]$DbHost = "aws-1-ap-south-1.pooler.supabase.com",
   [int]$DbPort    = 5432,
   [string]$DbUser = "postgres.mvbmpcmexkgfairnthux",
-  [string]$DbName = "postgres"
+  [string]$DbName = "postgres",
+  [string]$Sql  = "db\proposals\011_validation.sql"
 )
 
 if ($env:PROD_CONFIRM -ne "YES") { throw "Set PROD_CONFIRM=YES to allow prod actions." }
@@ -15,12 +14,11 @@ function Read-Plain([string]$prompt) {
   try { [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
 }
 
+if (-not (Test-Path $Sql)) { throw "Validation queries not found: $Sql" }
 if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password" }
 
-$ts = Get-Date -Format "yyyyMMdd_HHmmss"
-& pg_dump --schema-only --no-owner --no-privileges --quote-all-identifiers --role=postgres `
-  --host $DbHost --port $DbPort --username $DbUser --dbname $DbName `
-  -f "supabase\schema_backup_$ts.sql"
+$psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
+& $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -f $Sql
 
 $env:PGPASSWORD = $null
-Write-Host "Backup written: supabase\schema_backup_$ts.sql" -ForegroundColor Green
+Write-Host "Validation complete (read-only; run before AND after apply)" -ForegroundColor Green

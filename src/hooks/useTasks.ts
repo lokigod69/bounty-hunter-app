@@ -22,10 +22,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../types/database';
-import type { NewTaskData, Task, TaskStatus, ProofType, TaskWithProfiles } from '../types/custom';
+import type {
+  DatabaseWithTaskLifecycleRpcs,
+  NewTaskData,
+  ProofType,
+  Task,
+  TaskStatus,
+  TaskWithProfiles,
+} from '../types/custom';
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
-import { validateProofPayload, getStatusAfterProofSubmission } from '../core/proofs/proofs.domain';
+import { validateProofPayload } from '../core/proofs/proofs.domain';
+import { requireTaskLifecycleRpcSuccess } from '../domain/missions';
 
 // Helper to reliably get an error message string
 interface ErrorWithMessage {
@@ -65,6 +73,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const currentUserId = user?.id;
+  const lifecycleClient = client as unknown as SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
 
   const fetchTasks = useCallback(async () => {
     if (!user) {
@@ -363,9 +372,12 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     const updates: Partial<Database['public']['Tables']['tasks']['Update']> = {};
 
     if (requestedStatus === 'rejected') {
-      updates.status = 'pending';
+      updates.status = 'rejected';
       updates.proof_url = null;
+      updates.proof_type = null;
+      updates.proof_description = null;
       updates.completed_at = null; // Ensure task is not marked as completed
+      updates.rejection_reason = null;
     } else {
       updates.status = requestedStatus;
       const currentActualStatus = originalTask.status as TaskStatus;
@@ -426,36 +438,58 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
         updatedTaskResult = approvedTask as TaskWithProfiles;
       } else {
-        const { data, error: updateError } = await client
+        let lifecycleData: unknown;
+        let lifecycleError: { code?: string; message: string } | null;
+
+        if (requestedStatus === 'rejected') {
+          const result = await lifecycleClient.rpc('reject_task', {
+            p_task_id: taskId,
+            p_rejection_reason: null,
+          });
+          lifecycleData = result.data;
+          lifecycleError = result.error;
+        } else if (requestedStatus === 'pending' || requestedStatus === 'in_progress') {
+          const result = await lifecycleClient.rpc('set_task_status', {
+            p_task_id: taskId,
+            p_status: requestedStatus,
+          });
+          lifecycleData = result.data;
+          lifecycleError = result.error;
+        } else {
+          throw new Error('This status change must use its dedicated task action.');
+        }
+
+        if (lifecycleError) {
+          let errorMessage = lifecycleError.message || 'Failed to update task status.';
+          if (lifecycleError.message.includes('permission') || lifecycleError.code === 'PGRST301') {
+            errorMessage = 'You do not have permission to update this task.';
+          } else if (lifecycleError.message.includes('not found') || lifecycleError.code === 'PGRST116') {
+            errorMessage = 'Task not found or has been deleted.';
+          } else if (lifecycleError.message.includes('network') || lifecycleError.code === 'PGRST000') {
+            errorMessage = 'Network error. Please check your connection and try again.';
+          }
+          throw new Error(errorMessage);
+        }
+
+        requireTaskLifecycleRpcSuccess(
+          lifecycleData,
+          requestedStatus === 'rejected' ? 'reject' : 'status',
+        );
+
+        const { data: refreshedTask, error: refreshedTaskError } = await client
           .from('tasks')
-          .update(updates)
-          .eq('id', taskId)
           .select(`
             *,
             profiles:profiles!assigned_to ( id, display_name, email ),
             creator_profile:profiles!created_by ( id, display_name, email )
           `)
+          .eq('id', taskId)
           .single();
 
-        if (updateError) {
-          // Enhanced error handling with specific messages
-          let errorMessage = 'Failed to update task status.';
-          if (updateError.message.includes('permission') || updateError.code === 'PGRST301') {
-            errorMessage = 'You do not have permission to update this task.';
-          } else if (updateError.message.includes('not found') || updateError.code === 'PGRST116') {
-            errorMessage = 'Task not found or has been deleted.';
-          } else if (updateError.message.includes('network') || updateError.code === 'PGRST000') {
-            errorMessage = 'Network error. Please check your connection and try again.';
-          }
+        if (refreshedTaskError) throw refreshedTaskError;
+        if (!refreshedTask) throw new Error('Task status update returned no data.');
 
-          throw new Error(errorMessage);
-        }
-
-        if (!data) {
-          throw new Error('Task status update returned no data.');
-        }
-
-        updatedTaskResult = data as TaskWithProfiles;
+        updatedTaskResult = refreshedTask as TaskWithProfiles;
       }
 
       if (!updatedTaskResult) {
@@ -474,8 +508,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           id: toastId, 
           duration: isAndroid ? 5000 : 4000 
         });
-      } else if (requestedStatus === 'review') {
-        toast.success('Task submitted for review!', { id: toastId });
       } else {
         toast.success('Task status updated!', { id: toastId });
       }
@@ -538,15 +570,12 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       return false;
     }
 
-    // Determine status after proof submission using domain logic
-    const statusAfterProof = getStatusAfterProofSubmission(taskToUpdate.proof_required ?? false);
-
     const originalTaskState = { ...taskToUpdate }; // For rollback
     // Optimistic UI update
     const optimisticTaskUpdate = {
       ...taskToUpdate,
       proof_type: proofType,
-      status: statusAfterProof as TaskStatus, 
+      status: 'review' as TaskStatus,
     };
     setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? optimisticTaskUpdate : t));
 
@@ -577,34 +606,36 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       }
       const proofUrl = urlData.publicUrl;
 
-      // Update task record in database - remove restrictive filter to let RLS handle permissions
-      const { data: updatedTask, error: dbUpdateError } = await client
-        .from('tasks')
-        .update({
-          proof_url: proofUrl,
-          proof_type: proofType,
-          status: statusAfterProof as TaskStatus,
-        })
-        .eq('id', taskId)
-        // Remove .eq('assigned_to', currentUserId) to let RLS handle permissions
-        .select(`
-            *,
-            assignee:profiles!tasks_assigned_to_fkey(display_name, avatar_url),
-            creator:profiles!tasks_created_by_fkey(display_name, avatar_url)
-        `)
-        .single();
+      const { data: submissionData, error: dbUpdateError } = await lifecycleClient.rpc('submit_proof', {
+        p_task_id: taskId,
+        p_proof_url: proofUrl,
+        p_proof_type: proofType,
+        p_proof_description: null,
+      });
 
       if (dbUpdateError) {
-        // Enhanced error handling for proof upload
-        let errorMessage = 'Failed to update task with proof details.';
+        let errorMessage = dbUpdateError.message || 'Failed to update task with proof details.';
         if (dbUpdateError.message.includes('permission') || dbUpdateError.code === 'PGRST301') {
           errorMessage = 'You do not have permission to submit proof for this task.';
         } else if (dbUpdateError.message.includes('not found') || dbUpdateError.code === 'PGRST116') {
           errorMessage = 'Task not found or has been deleted.';
         }
-        
         throw new Error(errorMessage);
       }
+
+      requireTaskLifecycleRpcSuccess(submissionData, 'submit');
+
+      const { data: updatedTask, error: refreshedTaskError } = await client
+        .from('tasks')
+        .select(`
+          *,
+          profiles:profiles!assigned_to ( id, display_name, email ),
+          creator_profile:profiles!created_by ( id, display_name, email )
+        `)
+        .eq('id', taskId)
+        .single();
+
+      if (refreshedTaskError) throw refreshedTaskError;
       if (!updatedTask) throw new Error('Failed to update task record with proof details.');
 
       // Final state update with data from DB
@@ -668,11 +699,13 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     toast.loading('Deleting task...', { id: toastId });
 
     try {
-      // If there's a proof_url, attempt to delete the associated file from storage
+      // Storage cleanup MUST happen before the row delete: the bounty-proofs
+      // delete policy requires the tasks row to still exist (it joins
+      // public.tasks by the folder's task id), so post-delete removal always
+      // fails RLS and orphans the file.
       if (typeof taskToDelete.proof_url === 'string' && taskToDelete.proof_url.trim() !== '') {
-        const proofUrlString: string = taskToDelete.proof_url;
         try {
-          const filePath = new URL(proofUrlString).pathname.split('/bounty-proofs/')[1];
+          const filePath = new URL(taskToDelete.proof_url).pathname.split('/bounty-proofs/')[1];
           if (filePath) {
             await client.storage.from('bounty-proofs').remove([filePath]);
           }
@@ -682,13 +715,13 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         }
       }
 
-      const { error: deleteError } = await client
-        .from('tasks')
-        .delete()
-        .eq('id', taskId)
-        .eq('created_by', currentUserId); // Ensure only the creator can delete
+      const { data, error: deleteError } = await lifecycleClient.rpc('delete_task', {
+        p_task_id: taskId,
+      });
 
-      if (deleteError) throw deleteError;
+      if (deleteError) throw new Error(deleteError.message || 'Failed to delete task.');
+
+      requireTaskLifecycleRpcSuccess(data, 'delete');
 
       toast.success('Task deleted successfully!', { id: toastId });
       return true;

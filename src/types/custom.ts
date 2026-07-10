@@ -4,6 +4,66 @@
 
 import type { Database } from './database';
 
+type Json = Database['public']['Functions']['approve_task']['Returns'];
+
+type TaskLifecycleFunctions = {
+  archive_task: {
+    Args: { p_task_id: string };
+    Returns: Json;
+  };
+  delete_task: {
+    Args: { p_task_id: string };
+    Returns: Json;
+  };
+  reject_task: {
+    Args: { p_rejection_reason?: string | null; p_task_id: string };
+    Returns: Json;
+  };
+  set_task_status: {
+    Args: { p_status: string; p_task_id: string };
+    Returns: Json;
+  };
+  submit_proof: {
+    Args: {
+      p_proof_description?: string | null;
+      p_proof_type?: string | null;
+      p_proof_url?: string | null;
+      p_task_id: string;
+    };
+    Returns: Json;
+  };
+};
+
+// Overlay for proposal-011 RPCs until the functions exist on the live database
+// and src/types/database.ts can be regenerated from Supabase.
+export type DatabaseWithTaskLifecycleRpcs = Omit<Database, 'public'> & {
+  public: Omit<Database['public'], 'Functions'> & {
+    Functions: Database['public']['Functions'] & TaskLifecycleFunctions;
+  };
+};
+
+export type TaskLifecycleRpcErrorCode =
+  | 'not_authenticated'
+  | 'task_not_found'
+  | 'not_assignee'
+  | 'not_creator'
+  | 'not_participant'
+  | 'wrong_status'
+  | 'proof_required'
+  | 'invalid_proof_type'
+  | 'status_not_allowed';
+
+export type TaskLifecycleRpcResult = {
+  success?: boolean;
+  error?: TaskLifecycleRpcErrorCode | string;
+  proof_url?: string | null;
+  already_submitted?: boolean;
+  already_rejected?: boolean;
+  already_archived?: boolean;
+  already_deleted?: boolean;
+  unchanged?: boolean;
+};
+
 // Base table types
 export type Task = Database['public']['Tables']['tasks']['Row'] & {
   updated_at?: string | null;
@@ -29,4 +89,4 @@ export type Invite = Database['public']['Tables']['invites']['Row'];
 export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'archived' | 'pending_proof' | 'rejected';
 // 'video' and 'document' (PDF) reflect what src/domain/missions.ts uploadProof()
 // actually writes to tasks.proof_type based on the uploaded file's MIME type.
-export type ProofType = 'text' | 'url' | 'image' | 'video' | 'document';
+export type ProofType = 'text' | 'image' | 'video' | 'document';
