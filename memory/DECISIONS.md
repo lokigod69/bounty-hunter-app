@@ -4,8 +4,13 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
-## 2026-07-10 — Task lifecycle is RPC-authoritative; proposal-011 rollout is DB first
-**Status:** active once proposal 011 is applied; client is statically ready, SQL still unapplied
+## 2026-07-10 (later) — Password handling for prod-SQL runbooks when Michael pastes the credential in chat
+**Status:** active
+**Decision:** Michael pasted the live DB password directly into chat to authorize running the 011 runbook. Accepted as explicit go (Iron Rule satisfied: backup taken, review checkpoint enforced by the permission gate between backup and apply), but flagged clearly that the plaintext password now lives in the conversation transcript regardless of in-session handling, and recommended rotation afterward. In-session handling: set only via `$env:PGPASSWORD` for the duration of each script call, cleared immediately after, never echoed/written to a file/logged.
+**Why:** The runbook scripts (`Read-Host -AsSecureString`) exist specifically to keep the password out of scrollback — pasting it in chat defeats that, so the safest recovery is transparency (tell Michael it's exposed) + minimal blast radius (narrow the env var's lifetime) rather than silently proceeding as if nothing happened. [[reference-prod-sql-process]]
+
+## 2026-07-10 — Task lifecycle is RPC-authoritative; proposal-011 APPLIED live
+**Status:** ✅ active — applied to production 2026-07-10 by Michael via the runbook scripts; client refactor pushed (610773a, 2f8436f); types regenerated, temporary overlay removed
 **Decision:** The proposal-011 SQL is the contract for submit/reject/start-stop/archive/delete: JSON logical errors are mapped client-side, idempotent flags are success, rejection canonically lands in `rejected`, submit always lands in `review`, and Storage proof cleanup happens BEFORE `delete_task` (the bounty-proofs delete policy joins the tasks row — post-delete removal always fails RLS; caught in central review of the codex diff). The only remaining direct `tasks.update` calls are the two deliberate creator-edit paths reserved for Phase B. Deployment order is strict: backup + explicit go → apply/validate RPCs and policies → regenerate DB types/remove temporary overlay → runtime-test → deploy client.
 **Why:** Moving lifecycle authorization/status preconditions into SECURITY DEFINER functions closes broad assignee-update authority without breaking creator editing. DB-first ordering prevents a deployed client from calling functions that do not exist yet.
 

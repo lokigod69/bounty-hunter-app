@@ -1,6 +1,6 @@
 # Proposal 011: Task Lifecycle RPCs
 
-**Status**: 🟢 APPROVED 2026-07-10 (Michael: PDF proofs confirmed allowed; points B–D delegated to Claude, decisions recorded below). **No SQL applied yet — apply requires Michael running the runbook scripts (DB password is not stored on this machine).**
+**Status**: ✅ APPLIED 2026-07-10 (Michael ran the runbook live: pre-flight → backup `supabase\schema_backup_20260710_121149.sql` → apply → `git push` → post-validate, all clean). Client already refactored to call these RPCs; `database.ts` regenerated; temporary `custom.ts` overlay removed. See `memory/LOG.md` for full verification detail.
 **Priority**: P1 (last item on the v1-done definition: "task lifecycle writes moved to server RPCs")
 **Estimated Time**: SQL apply ~2 min; client refactor ~2–4 h; full test pass after
 **Risk Level**: 🔴 High (touches the core loop: submit → reject → archive → delete)
@@ -100,10 +100,10 @@ See [011_task_lifecycle_rpcs.down.sql](011_task_lifecycle_rpcs.down.sql).
 ## Approval Checklist
 - [x] Michael reviewed (2026-07-10): PDF proofs confirmed; B–D delegated, decisions recorded above
 - [x] Open points A–D decided (see above)
-- [ ] Validation #3 (trigger), #4 (policy names), #5/#5b (constraint + data) run against live, results recorded — needs DB password (Michael runs `scripts/prod/validate_011.ps1` — read-only, run before AND after apply)
-- [ ] Fresh backup taken (`scripts/prod/backup_schema.ps1`)
-- [x] Go given for apply (Michael 2026-07-10: "I agree with all of them … let's continue") — execution still gated on Michael entering the DB password for the scripts
+- [x] Validation #3 (no legacy trigger), #4 (policy names matched exactly), #5/#5b (old constraint confirmed, 0 offending rows) run pre-flight; post-apply validation confirmed the new state
+- [x] Fresh backup taken: `supabase\schema_backup_20260710_121149.sql` (215 KB / 4,981 lines, verified contains `tasks` table + `approve_task`)
+- [x] Go given and executed 2026-07-10 by Michael via the runbook sequence
 
 **Created**: 2026-07-10
 **Author**: Claude (Fable), from the task-lifecycle write map (session 2026-07-10)
-**Review Status**: 🟢 approved 2026-07-10; decisions A–D recorded; apply pending password-gated runbook execution
+**Review Status**: ✅ applied and verified 2026-07-10

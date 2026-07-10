@@ -4,43 +4,9 @@
 
 import type { Database } from './database';
 
-type Json = Database['public']['Functions']['approve_task']['Returns'];
-
-type TaskLifecycleFunctions = {
-  archive_task: {
-    Args: { p_task_id: string };
-    Returns: Json;
-  };
-  delete_task: {
-    Args: { p_task_id: string };
-    Returns: Json;
-  };
-  reject_task: {
-    Args: { p_rejection_reason?: string | null; p_task_id: string };
-    Returns: Json;
-  };
-  set_task_status: {
-    Args: { p_status: string; p_task_id: string };
-    Returns: Json;
-  };
-  submit_proof: {
-    Args: {
-      p_proof_description?: string | null;
-      p_proof_type?: string | null;
-      p_proof_url?: string | null;
-      p_task_id: string;
-    };
-    Returns: Json;
-  };
-};
-
-// Overlay for proposal-011 RPCs until the functions exist on the live database
-// and src/types/database.ts can be regenerated from Supabase.
-export type DatabaseWithTaskLifecycleRpcs = Omit<Database, 'public'> & {
-  public: Omit<Database['public'], 'Functions'> & {
-    Functions: Database['public']['Functions'] & TaskLifecycleFunctions;
-  };
-};
+// Proposal 011: submit_proof/reject_task/set_task_status/archive_task/delete_task
+// are live in src/types/database.ts (regenerated 2026-07-10 after the SQL apply) —
+// no client-side overlay needed; SupabaseClient<Database> covers them natively.
 
 export type TaskLifecycleRpcErrorCode =
   | 'not_authenticated'

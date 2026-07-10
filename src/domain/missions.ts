@@ -6,18 +6,16 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import type { StatusChangeContext } from '../core/contracts/contracts.types';
+import type { Database } from '../types/database';
 import type {
-  DatabaseWithTaskLifecycleRpcs,
   TaskLifecycleRpcErrorCode,
   TaskLifecycleRpcResult,
   TaskStatus,
 } from '../types/custom';
 
 export type MissionId = string;
-type TaskLifecycleClient = SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
+type TaskLifecycleClient = SupabaseClient<Database>;
 type TaskLifecycleOperation = 'archive' | 'delete' | 'reject' | 'status' | 'submit';
-
-const taskLifecycleSupabase = supabase as unknown as TaskLifecycleClient;
 
 const operationFallbacks: Record<TaskLifecycleOperation, string> = {
   archive: 'Failed to archive task.',
@@ -162,7 +160,7 @@ export async function approveMission(params: ApproveMissionParams): Promise<void
  * 'pending') so the assignee sees the rejection and can resubmit.
  */
 export async function rejectMission(params: RejectMissionParams): Promise<void> {
-  const { missionId, issuerId, reason, supabaseClient = taskLifecycleSupabase } = params;
+  const { missionId, issuerId, reason, supabaseClient = supabase } = params;
 
   // Fetch task to get context
   const { data: task, error: fetchError } = await supabaseClient
@@ -196,7 +194,7 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
   const trimmedReason = reason?.trim();
   const { data, error } = await supabaseClient.rpc('reject_task', {
     p_task_id: missionId,
-    p_rejection_reason: trimmedReason || null,
+    p_rejection_reason: trimmedReason || undefined,
   });
 
   if (error) {
@@ -215,7 +213,7 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
  * 3. Update task status
  */
 export async function updateMissionStatus(params: UpdateMissionStatusParams): Promise<void> {
-  const { missionId, status, userId, supabaseClient = taskLifecycleSupabase } = params;
+  const { missionId, status, userId, supabaseClient = supabase } = params;
 
   // Step 1: Fetch task without restrictive filters - let RLS handle permissions
   const { data: task, error: fetchError } = await supabaseClient
@@ -280,7 +278,7 @@ export async function updateMissionStatus(params: UpdateMissionStatusParams): Pr
  * 2. Update task with proof_url (if file) or proof_description (if text), and set status to 'review'
  */
 export async function uploadProof(params: UploadProofParams): Promise<string> {
-  const { missionId, file, textDescription, supabaseClient = taskLifecycleSupabase } = params;
+  const { missionId, file, textDescription, supabaseClient = supabase } = params;
 
   if (!file && !textDescription) {
     throw new Error('Please provide either a file or text description.');
@@ -339,9 +337,9 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
 
   const { data, error: updateError } = await supabaseClient.rpc('submit_proof', {
     p_task_id: missionId,
-    p_proof_url: proofUrl,
-    p_proof_type: proofType,
-    p_proof_description: textDescription || null,
+    p_proof_url: proofUrl ?? undefined,
+    p_proof_type: proofType ?? undefined,
+    p_proof_description: textDescription || undefined,
   });
 
   if (updateError) {
@@ -358,7 +356,7 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
  * Both creator and assignee can archive (it's a global archive for the task).
  */
 export async function archiveMission(params: ArchiveMissionParams): Promise<void> {
-  const { missionId, userId, supabaseClient = taskLifecycleSupabase } = params;
+  const { missionId, userId, supabaseClient = supabase } = params;
 
   // First, verify the user is either the creator or assignee
   const { data: task, error: fetchError } = await supabaseClient
@@ -396,7 +394,7 @@ export async function archiveMission(params: ArchiveMissionParams): Promise<void
  * 3. Update task status to 'review'
  */
 export async function submitForReviewNoProof(params: SubmitForReviewParams): Promise<void> {
-  const { missionId, userId, supabaseClient = taskLifecycleSupabase } = params;
+  const { missionId, userId, supabaseClient = supabase } = params;
 
   // Step 1: Fetch task to verify assignment and proof_required
   const { data: task, error: fetchError } = await supabaseClient

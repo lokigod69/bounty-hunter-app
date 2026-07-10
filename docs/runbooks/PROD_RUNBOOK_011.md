@@ -1,7 +1,7 @@
 # PROD Runbook 011 — Task Lifecycle RPCs
 Move submit/reject/status/archive/delete task transitions to server RPCs; normalize the proof_type CHECK; tighten tasks RLS
 
-**Date**: READY 2026-07-10 (proposal approved, open points A–D decided — see proposal .md)
+**Date**: APPLIED 2026-07-10 (Michael ran the sequence live; see LOG for verification detail)
 **Priority**: P1 | **Risk**: 🔴 High | **Downtime**: none if steps 3–4 ship back-to-back
 
 ## What This Does
@@ -60,7 +60,7 @@ build finishing should be minutes).
 ## Step 5: Validate
 `scripts\prod\validate_011.ps1` again. Check:
 - **#1**: 5 rows, `security_definer = t`, config contains `search_path=public`.
-- **#2**: `authenticated = t`, `anon = f` for all five.
+- **#2**: `authenticated = t` for all five. `anon` also shows `t` — this is Supabase's platform default (new `public`-schema functions auto-grant EXECUTE to `anon`/`authenticated`/`service_role`; `REVOKE ALL FROM PUBLIC` doesn't undo it), confirmed identical on `approve_task`/`purchase_reward`/`mark_reward_redeemed`. Harmless: every RPC checks `auth.uid()` first and returns `{success:false, error:'not_authenticated'}` for anon callers.
 - **#4**: both assignee-side UPDATE policies GONE; creator-side
   `"Users can update own created tasks"` (+ INSERT/SELECT/DELETE policies) remain.
 - **#5**: constraint now `image/video/document/text`.

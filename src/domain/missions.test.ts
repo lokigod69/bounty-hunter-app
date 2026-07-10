@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { DatabaseWithTaskLifecycleRpcs } from '../types/custom';
+import type { Database } from '../types/database';
 import {
   archiveMission,
   getTaskLifecycleRpcErrorMessage,
@@ -11,7 +11,7 @@ import {
   uploadProof,
 } from './missions';
 
-type LifecycleClient = SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
+type LifecycleClient = SupabaseClient<Database>;
 
 function makeClient(task: Record<string, unknown> | null = null) {
   const query = {
@@ -123,7 +123,7 @@ describe('mission lifecycle RPC routing', () => {
 
     expect(rpc).toHaveBeenCalledWith('submit_proof', {
       p_task_id: 'task-3',
-      p_proof_url: null,
+      p_proof_url: undefined,
       p_proof_type: 'text',
       p_proof_description: 'Finished and verified.',
     });

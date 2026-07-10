@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -433,6 +433,7 @@ export type Database = {
     }
     Functions: {
       approve_task: { Args: { p_task_id: string }; Returns: Json }
+      archive_task: { Args: { p_task_id: string }; Returns: Json }
       create_reward_store_item: {
         Args: {
           p_assigned_to: string
@@ -444,6 +445,7 @@ export type Database = {
         Returns: Json
       }
       delete_reward_store_item: { Args: { p_reward_id: string }; Returns: Json }
+      delete_task: { Args: { p_task_id: string }; Returns: Json }
       get_or_create_invite: { Args: never; Returns: Json }
       increment_user_credits: {
         Args: { amount_param: number; user_id_param: string }
@@ -458,6 +460,23 @@ export type Database = {
         Returns: Json
       }
       redeem_invite: { Args: { p_token: string }; Returns: Json }
+      reject_task: {
+        Args: { p_rejection_reason?: string; p_task_id: string }
+        Returns: Json
+      }
+      set_task_status: {
+        Args: { p_status: string; p_task_id: string }
+        Returns: Json
+      }
+      submit_proof: {
+        Args: {
+          p_proof_description?: string
+          p_proof_type?: string
+          p_proof_url?: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
       update_reward_store_item: {
         Args: {
           p_bounty_id: string

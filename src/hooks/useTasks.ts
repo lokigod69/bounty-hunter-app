@@ -23,7 +23,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../types/database';
 import type {
-  DatabaseWithTaskLifecycleRpcs,
   NewTaskData,
   ProofType,
   Task,
@@ -73,7 +72,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const currentUserId = user?.id;
-  const lifecycleClient = client as unknown as SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
+  const lifecycleClient = client as unknown as SupabaseClient<Database>;
 
   const fetchTasks = useCallback(async () => {
     if (!user) {
@@ -444,7 +443,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         if (requestedStatus === 'rejected') {
           const result = await lifecycleClient.rpc('reject_task', {
             p_task_id: taskId,
-            p_rejection_reason: null,
           });
           lifecycleData = result.data;
           lifecycleError = result.error;
@@ -610,7 +608,6 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         p_task_id: taskId,
         p_proof_url: proofUrl,
         p_proof_type: proofType,
-        p_proof_description: null,
       });
 
       if (dbUpdateError) {

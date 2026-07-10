@@ -19,7 +19,6 @@
 // PHASE 1 FIX: Enhanced state coordination between TaskForm modal and mobile menu to prevent UI conflicts.
 
 import { useState, useEffect, useRef } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase'; // Import supabase client (still used for create/delete)
 import { useIssuedContracts } from '../hooks/useIssuedContracts'; // To be confirmed/created if not existing
@@ -53,10 +52,7 @@ import {
   rejectMission,
   requireTaskLifecycleRpcSuccess,
 } from '../domain/missions';
-import type {
-  DatabaseWithTaskLifecycleRpcs,
-  TaskLifecycleRpcResult,
-} from '../types/custom';
+import type { TaskLifecycleRpcResult } from '../types/custom';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import emptyIssued from '../assets/generated/empty-issued.webp';
 
@@ -117,8 +113,6 @@ export default function IssuedPage() {
 
     setIsDeleting(true);
     try {
-      const lifecycleClient = supabase as unknown as SupabaseClient<DatabaseWithTaskLifecycleRpcs>;
-
       // Storage cleanup MUST happen before the row delete: the bounty-proofs
       // delete policy requires the tasks row to still exist, so post-delete
       // removal always fails RLS and orphans the file.
@@ -126,14 +120,14 @@ export default function IssuedPage() {
         try {
           const filePath = new URL(selectedContract.proof_url).pathname.split('/bounty-proofs/')[1];
           if (filePath) {
-            await lifecycleClient.storage.from('bounty-proofs').remove([filePath]);
+            await supabase.storage.from('bounty-proofs').remove([filePath]);
           }
         } catch {
           toast.error(t('contracts.proofCleanupFailed'));
         }
       }
 
-      const { data, error: deleteError } = await lifecycleClient.rpc('delete_task', {
+      const { data, error: deleteError } = await supabase.rpc('delete_task', {
         p_task_id: selectedContract.id,
       });
 
