@@ -31,10 +31,13 @@ export async function checkFTXGate(
   onboardingCompletedFlag?: boolean | null,
 ): Promise<FTXGateResult> {
   // Phase 2.6: the DB-persisted profile flag OR the localStorage cache count as
-  // gate-passed. localStorage stays the immediate/offline source of truth.
+  // gate-passed. The cache stores the completing user's id (not 'true') so a
+  // flag left behind by a previous account on this device can't skip onboarding
+  // for a brand-new account. Legacy 'true' values simply stop matching and the
+  // gate falls through to the DB flag / missions check.
   const onboardingCompleted =
     onboardingCompletedFlag === true ||
-    localStorage.getItem(ONBOARDING_COMPLETED_KEY) === 'true';
+    (userId !== null && localStorage.getItem(ONBOARDING_COMPLETED_KEY) === userId);
 
   if (onboardingCompleted) {
     return {
@@ -109,11 +112,19 @@ async function persistOnboardingCompleted(value: boolean): Promise<void> {
 }
 
 /**
- * Marks onboarding as completed in localStorage (offline cache) AND, for
- * logged-in users, persists onboarding_completed = true to the profile.
+ * Marks onboarding as completed in localStorage (offline cache, scoped to the
+ * completing user's id) AND, for logged-in users, persists
+ * onboarding_completed = true to the profile. Pass the userId when available so
+ * the cache is set synchronously (the async fallback resolves it itself).
  */
-export function markOnboardingCompleted(): void {
-  localStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
+export function markOnboardingCompleted(userId?: string | null): void {
+  if (userId) {
+    localStorage.setItem(ONBOARDING_COMPLETED_KEY, userId);
+  } else {
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) localStorage.setItem(ONBOARDING_COMPLETED_KEY, user.id);
+    });
+  }
   void persistOnboardingCompleted(true);
 }
 

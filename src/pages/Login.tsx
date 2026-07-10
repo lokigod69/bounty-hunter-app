@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, MailCheck } from 'lucide-react';
 import { getAuthRedirectTo } from '../lib/authRedirect';
 import { AppButton, Spinner } from '../components/ui';
 import logo from '../assets/logo5-small.png';
@@ -32,6 +32,9 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showOtherOptions, setShowOtherOptions] = useState(false);
+  // After a signup that requires email confirmation, swap the form for a
+  // dedicated "check your email" view (a toast alone reads like nothing happened).
+  const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
 
   // Redirect authenticated users away from /login
   useEffect(() => {
@@ -71,7 +74,7 @@ const Login: React.FC = () => {
         toast.error(error.message);
       } else if (data.user && !data.session) {
         // User created but needs email confirmation
-        toast.success('Check your email to confirm your account!');
+        setConfirmationSentTo(email.trim().toLowerCase());
       } else if (data.session) {
         // Auto-confirmed (email confirmations disabled in Supabase)
         toast.success('Account created successfully!');
@@ -188,6 +191,36 @@ const Login: React.FC = () => {
   // But show loading state here as well to prevent flash of login form
   if (user) {
     return <AuthLoadingScreen message="Signing you in..." />;
+  }
+
+  // Post-signup confirmation screen
+  if (confirmationSentTo) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white p-4">
+        <img src={logo} alt="Bounty Hunter" className="w-24 h-24 mb-4" />
+
+        <h1 className="text-display app-title text-[var(--mode-accent)] mb-2">BOUNTY HUNTER</h1>
+        <p className="text-meta text-white/50 mb-8">Run missions. Earn credits. Claim loot.</p>
+
+        <div className="glass-card w-full max-w-sm p-8 rounded-2xl text-center">
+          <MailCheck size={48} className="mx-auto mb-4 text-[var(--mode-accent)]" />
+          <h2 className="text-subtitle text-white mb-3">Check your email</h2>
+          <p className="text-body text-white/70 mb-1">We sent a confirmation link to</p>
+          <p className="text-body text-white font-semibold mb-6 break-all">{confirmationSentTo}</p>
+          <p className="text-sm text-white/50 mb-6">
+            Click the link in that email to activate your account, then come back here to log in.
+            Don't see it? Check your spam folder.
+          </p>
+          <AppButton
+            variant="secondary"
+            fullWidth
+            onClick={() => setConfirmationSentTo(null)}
+          >
+            Back to sign in
+          </AppButton>
+        </div>
+      </div>
+    );
   }
 
   return (

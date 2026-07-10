@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { themesById } from '../../theme/themes';
+import { themesById, PUBLIC_THEME_IDS, toPublicThemeId } from '../../theme/themes';
 import { ThemeId } from '../../theme/theme.types';
 import { MODE_ACCENT_HEX } from '../../theme/modeAccents';
 import { BaseCard } from '../ui/BaseCard';
@@ -13,7 +13,8 @@ import heroGuild from '../../assets/generated/hero-guild.webp';
 import heroFamily from '../../assets/generated/hero-family.webp';
 import heroCouple from '../../assets/generated/hero-couple.webp';
 
-const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = ['guild'];
+// Shared V1 public gating list — see src/theme/themes.ts.
+const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = PUBLIC_THEME_IDS;
 
 // VISUAL: Per-mode icon used to preview each mode's identity. Accent hex comes
 // from theme/modeAccents.ts (single source of truth).
@@ -36,7 +37,7 @@ interface OnboardingStep1ModeProps {
 }
 
 function getPublicThemeId(themeId: ThemeId | null | undefined): ThemeId {
-  return themeId && PUBLIC_ONBOARDING_THEME_IDS.includes(themeId) ? themeId : 'guild';
+  return toPublicThemeId(themeId);
 }
 
 export default function OnboardingStep1Mode({
@@ -60,6 +61,9 @@ export default function OnboardingStep1Mode({
 
   const handleNext = () => {
     if (selectedThemeId) {
+      // The card is preselected, so the user may press Next without ever
+      // clicking it — commit the choice here or nothing gets persisted.
+      setThemeId(selectedThemeId);
       onComplete(selectedThemeId);
     }
   };
@@ -97,7 +101,9 @@ export default function OnboardingStep1Mode({
                     : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'
                 }`}
               >
-                <div className="relative h-28 w-full">
+                {/* Hero art is 1024x683 (3:2); scale banner height with viewport so
+                    desktop shows a real slice of the art, not a thin strip. */}
+                <div className="relative h-28 sm:h-40 md:h-48 w-full">
                   <img
                     src={MODE_HERO[theme.id]}
                     alt=""

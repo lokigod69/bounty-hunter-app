@@ -345,18 +345,22 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
           className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4"
           style={{ overscrollBehavior: 'contain' }}
         >
-          {/* R30: CSS Grid layout - content-sized, description scrolls when needed */}
+          {/* R30: CSS Grid layout - content-sized, description scrolls when needed.
+              With no description/children the reward is the only content: use a
+              single centered column instead of a lopsided empty left column. */}
           <div
             className="grid gap-4"
             style={{
-              gridTemplateColumns: isMobile
-                ? '1fr'
-                : reward
-                ? 'minmax(0, 2fr) minmax(180px, auto)'
-                : '1fr',
+              gridTemplateColumns:
+                isMobile || !(description || children)
+                  ? '1fr'
+                  : reward
+                  ? 'minmax(0, 2fr) minmax(180px, auto)'
+                  : '1fr',
             }}
           >
             {/* Description Column - max height with scroll when needed */}
+            {(description || children) && (
             <div className="flex flex-col gap-4">
               {description && (
                 <div
@@ -374,10 +378,19 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 <div className="flex-shrink-0">{children}</div>
               )}
             </div>
+            )}
 
             {/* R30: Reward Column - compact, vertically centered */}
             {reward && (
-              <div className={isMobile ? 'flex-shrink-0' : 'self-start'}>
+              <div
+                className={
+                  isMobile
+                    ? 'flex-shrink-0'
+                    : description || children
+                    ? 'self-start'
+                    : 'self-start mx-auto w-full max-w-[240px]'
+                }
+              >
                 <div
                   className="w-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
                   style={{

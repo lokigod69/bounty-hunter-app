@@ -18,6 +18,17 @@ interface FriendWithProfile extends Friendship {
   friend: Profile;
 }
 
+// Cross-instance sync: Layout and Friends each own a useFriends instance, so a
+// mutation in one (accept/reject/remove) must nudge the others to refetch. The
+// realtime channel below covers cross-CLIENT changes but depends on the
+// friendships table being in the supabase_realtime publication; this local
+// event makes same-client updates (e.g. the nav badge) deterministic.
+const FRIENDSHIPS_CHANGED_EVENT = 'bounty:friendships-changed';
+
+function notifyFriendshipsChanged() {
+  window.dispatchEvent(new Event(FRIENDSHIPS_CHANGED_EVENT));
+}
+
 export function useFriends(userId: string | undefined) {
   const [friends, setFriends] = useState<FriendWithProfile[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendWithProfile[]>([]);
@@ -148,8 +159,13 @@ export function useFriends(userId: string | undefined) {
       // Still allow the UI to show the initial fetch results
     }
 
+    // Same-client sync: refetch when another useFriends instance mutates.
+    const onLocalChange = () => fetchFriendships(userId);
+    window.addEventListener(FRIENDSHIPS_CHANGED_EVENT, onLocalChange);
+
     // Cleanup on unmount or userId change
     return () => {
+      window.removeEventListener(FRIENDSHIPS_CHANGED_EVENT, onLocalChange);
       if (channelRef.current) {
         try {
           channelRef.current.unsubscribe();
@@ -205,6 +221,7 @@ export function useFriends(userId: string | undefined) {
       if (userId) {
         await fetchFriendships(userId); // Re-fetch friendships to update UI
       }
+      notifyFriendshipsChanged();
       return data;
     } catch (error) {
       setError((error as Error).message ?? null);
@@ -230,6 +247,7 @@ export function useFriends(userId: string | undefined) {
 
         if (error) throw error;
         if (userId) await fetchFriendships(userId); // Re-fetch after successful update
+        notifyFriendshipsChanged();
         return data;
       } else {
         // Reject by deleting the request
@@ -240,6 +258,7 @@ export function useFriends(userId: string | undefined) {
 
         if (error) throw error;
         if (userId) await fetchFriendships(userId); // Re-fetch after successful delete
+        notifyFriendshipsChanged();
         return null;
       }
     } catch (error) {
@@ -271,6 +290,7 @@ export function useFriends(userId: string | undefined) {
 
       // Re-fetch friendships to update the UI
       await fetchFriendships(userId);
+      notifyFriendshipsChanged();
       return true;
     } catch (error) {
       setError((error as Error).message ?? null);
@@ -294,6 +314,7 @@ export function useFriends(userId: string | undefined) {
       if (userId) {
         await fetchFriendships(userId);
       }
+      notifyFriendshipsChanged();
       return true;
     } catch (error) {
       setError((error as Error).message ?? null);

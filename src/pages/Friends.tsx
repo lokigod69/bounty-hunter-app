@@ -671,13 +671,8 @@ export default function Friends() {
                 <AppButton
                   variant="cta"
                   icon={<UserPlus size={20} />}
-                  onClick={() => {
-                    // Focus the search input
-                    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                    if (searchInput) {
-                      searchInput.focus();
-                    }
-                  }}
+                  loading={isSharingInvite}
+                  onClick={handleShareInvite}
                 >
                   Invite someone
                 </AppButton>

@@ -35,10 +35,15 @@ describe('launch quick-fix regressions', () => {
   });
 
   it('keeps public onboarding Guild-only for V1', () => {
+    // The allowlist moved to a shared policy in themes.ts (theme-leak hardening
+    // 2026-07-11); onboarding must consume it, and the policy itself must stay
+    // Guild-only for V1.
     const source = readRepoFile('src/components/onboarding/OnboardingStep1Mode.tsx');
-
-    expect(source).toContain("PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = ['guild']");
+    expect(source).toContain('PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = PUBLIC_THEME_IDS');
     expect(source).not.toContain('Object.values(themesById).map');
+
+    const policySource = readRepoFile('src/theme/themes.ts');
+    expect(policySource).toContain("PUBLIC_THEME_IDS: ThemeId[] = ['guild']");
   });
 
   it('keeps the profile mode switcher internal/dev-only for non-Guild modes', () => {

@@ -4,6 +4,11 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-11 — Theme resolution: profile is authoritative, device storage is only a cache, public surfaces are guild-only
+**Status:** active
+**Decision:** `profiles.theme` is the authority for a logged-in user's theme; `localStorage.bounty_theme` is a cache. Logged-out pages and accounts with `theme=null` can only render `PUBLIC_THEME_IDS` (V1: guild — single source of truth in `src/theme/themes.ts`, consumed by onboarding, ProfileEditModal, and ThemeProvider; guarded by tests in themes.test.ts + launchQuickFixes.test.ts). Logout/account-switch clears the cache; a fresh account gets normalized to guild (cache + profile write); onboarding Next and Skip both persist explicitly. The per-device onboarding flag (`bounty_onboarding_completed`) stores the completing user's id, not `'true'`.
+**Why:** Michael's live two-browser test surfaced the leak: stale `family` localStorage from an earlier session painted the login page yellow for an invite recipient and leaked family strings into a brand-new account (which also skipped onboarding via the stale flag). Internal family/couple testing stays possible via profile.theme on dev accounts.
+
 ## 2026-07-10 (later) — Password handling for prod-SQL runbooks when Michael pastes the credential in chat
 **Status:** active
 **Decision:** Michael pasted the live DB password directly into chat to authorize running the 011 runbook. Accepted as explicit go (Iron Rule satisfied: backup taken, review checkpoint enforced by the permission gate between backup and apply), but flagged clearly that the plaintext password now lives in the conversation transcript regardless of in-session handling, and recommended rotation afterward. In-session handling: set only via `$env:PGPASSWORD` for the duration of each script call, cleared immediately after, never echoed/written to a file/logged.

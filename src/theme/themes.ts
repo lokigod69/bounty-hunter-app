@@ -143,3 +143,19 @@ export const themesById: Record<ThemeId, ThemeDefinition> = {
 
 export const DEFAULT_THEME_ID: ThemeId = 'guild';
 
+// V1 public gating: themes normal users may end up in. Family/Couple stay in
+// code for internal/dev testing (dev builds of ProfileEditModal expose them),
+// but must never surface from stale device state on public pages or for fresh
+// accounts. Single source of truth — onboarding, profile modal, and the
+// ThemeProvider all consume this list.
+export const PUBLIC_THEME_IDS: ThemeId[] = ['guild'];
+
+export function isThemeId(value: unknown): value is ThemeId {
+  return value === 'guild' || value === 'family' || value === 'couple';
+}
+
+// Normalize any stored/persisted value to a theme allowed on public surfaces.
+export function toPublicThemeId(value: unknown): ThemeId {
+  return isThemeId(value) && PUBLIC_THEME_IDS.includes(value) ? value : DEFAULT_THEME_ID;
+}
+

@@ -1,0 +1,58 @@
+<!-- Supabase Auth email template: Magic Link -->
+<!-- Paste into: Supabase Dashboard → Authentication → Emails → "Magic Link".
+     Suggested subject: Your sign-in link — Bounty Hunter
+     Uses Supabase template variables: {{ .ConfirmationURL }}, {{ .SiteURL }}. -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0b1120;padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
+        <!-- Logo + wordmark -->
+        <tr>
+          <td align="center" style="padding-bottom:24px;">
+            <img src="{{ .SiteURL }}/favicon.png" width="56" height="56" alt="Bounty Hunter" style="display:block;border-radius:12px;" />
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;letter-spacing:6px;color:#20F9D2;padding-top:14px;">
+              BOUNTY&nbsp;HUNTER
+            </div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8b93a7;padding-top:6px;">
+              Run missions. Earn credits. Claim loot.
+            </div>
+          </td>
+        </tr>
+        <!-- Card -->
+        <tr>
+          <td style="background-color:#111a2e;border:1px solid #1f2b45;border-radius:16px;padding:32px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;padding-bottom:12px;">
+              Your sign-in link
+            </div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#c3c9d6;padding-bottom:24px;">
+              Tap the button below to sign in to Bounty Hunter. This link works once and expires shortly.
+            </div>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td align="center">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:inline-block;background-color:#20F9D2;color:#06231d;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 32px;border-radius:10px;">
+                    Sign in to Bounty Hunter
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#8b93a7;padding-top:24px;">
+              Button not working? Copy this link into your browser:<br />
+              <a href="{{ .ConfirmationURL }}" style="color:#20F9D2;word-break:break-all;">{{ .ConfirmationURL }}</a>
+            </div>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td align="center" style="padding-top:24px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#5c6478;">
+              You received this email because a sign-in was requested for this address.<br />
+              If that wasn't you, you can safely ignore this email.
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

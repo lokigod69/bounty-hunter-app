@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../context/ThemeContext';
 import { ThemeId } from '../theme/theme.types';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -29,11 +30,13 @@ interface OnboardingState {
 export default function Onboarding() {
   // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
   const {
+    user,
     profile,
     authLoading,
     hasSession,
   } = useAuth();
   const navigate = useNavigate();
+  const { themeId: effectiveThemeId, setThemeId } = useTheme();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
   const [state, setState] = useState<OnboardingState>({
     themeId: null,
@@ -71,14 +74,18 @@ export default function Onboarding() {
 
   const handleStep3Complete = () => {
     // Mark onboarding as completed (localStorage cache + DB profile flag)
-    markOnboardingCompleted();
+    markOnboardingCompleted(user?.id);
     // Navigate to Mission Inbox (Dashboard)
     navigate('/', { replace: true });
   };
 
   const handleSkipAll = () => {
-    // Skip all steps - mark onboarding complete and go to dashboard
-    markOnboardingCompleted();
+    // Skip all steps - mark onboarding complete and go to dashboard.
+    // Persist the effective theme explicitly: a skipping user never touches the
+    // step-1 card, and an account with no persisted theme must not inherit
+    // whatever stale value the device happens to hold.
+    setThemeId(effectiveThemeId);
+    markOnboardingCompleted(user?.id);
     navigate('/', { replace: true });
   };
 
@@ -141,6 +148,9 @@ export default function Onboarding() {
       </div>
 
       <PageBody>
+        {/* Onboarding is a single-column wizard: cap it at a comfortable reading
+            width on desktop instead of the full page container. */}
+        <div className="mx-auto w-full max-w-2xl">
         {/* Skip all option */}
         <div className="mb-4 text-center">
           <button
@@ -173,6 +183,7 @@ export default function Onboarding() {
             onBack={handleBack}
           />
         )}
+        </div>
       </PageBody>
     </PageContainer>
   );

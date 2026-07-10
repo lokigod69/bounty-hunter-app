@@ -3,7 +3,13 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import en from '../i18n/locales/en/translation.json';
 import de from '../i18n/locales/de/translation.json';
-import { themesById } from './themes';
+import {
+  themesById,
+  DEFAULT_THEME_ID,
+  PUBLIC_THEME_IDS,
+  isThemeId,
+  toPublicThemeId,
+} from './themes';
 import type { ThemeId } from './theme.types';
 import { MODE_ACCENT_HEX, MODE_ACCENT_RGB } from './modeAccents';
 import { modeColors } from './modalTheme';
@@ -94,5 +100,33 @@ describe('mode accent single source of truth (theme/modeAccents.ts)', () => {
         new RegExp(`--mode-accent:\\s*${MODE_ACCENT_HEX[themeId]}\\s*;`, 'i')
       );
     }
+  });
+});
+
+// V1 public gating policy (theme-leak hardening, 2026-07-11): stale device
+// state must never surface a non-public theme on public pages or for fresh
+// accounts. These guard the shared policy helpers every consumer relies on.
+describe('public theme policy', () => {
+  it('V1 exposes only guild publicly, and the default is public', () => {
+    expect(PUBLIC_THEME_IDS).toEqual(['guild']);
+    expect(PUBLIC_THEME_IDS).toContain(DEFAULT_THEME_ID);
+  });
+
+  it('isThemeId accepts exactly the known theme ids', () => {
+    for (const id of themeIds) expect(isThemeId(id)).toBe(true);
+    for (const bad of [null, undefined, '', 'GUILD', 'dark', 42, {}]) {
+      expect(isThemeId(bad)).toBe(false);
+    }
+  });
+
+  it('toPublicThemeId keeps public themes and normalizes everything else to the default', () => {
+    expect(toPublicThemeId('guild')).toBe('guild');
+    // Gated themes are valid ThemeIds but must not pass through.
+    expect(toPublicThemeId('family')).toBe(DEFAULT_THEME_ID);
+    expect(toPublicThemeId('couple')).toBe(DEFAULT_THEME_ID);
+    // Garbage and absent values fall back to the default.
+    expect(toPublicThemeId(null)).toBe(DEFAULT_THEME_ID);
+    expect(toPublicThemeId(undefined)).toBe(DEFAULT_THEME_ID);
+    expect(toPublicThemeId('not-a-theme')).toBe(DEFAULT_THEME_ID);
   });
 });

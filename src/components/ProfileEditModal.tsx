@@ -24,7 +24,7 @@ import { useTheme } from '../context/ThemeContext';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
 import { ConfirmModal } from './ui/ConfirmModal';
-import { themesById } from '../theme/themes';
+import { themesById, PUBLIC_THEME_IDS } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 import { MODE_ACCENT_HEX } from '../theme/modeAccents';
 import { clearOnboardingFlag } from '../lib/ftxGate';
@@ -51,10 +51,11 @@ const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: stri
     hint: theme.description,
   }));
 
-// Temporary V1 public gating: Family/Couple remain available in dev for internal testing.
+// Temporary V1 public gating: Family/Couple remain available in dev for internal
+// testing. Shared allowlist lives in src/theme/themes.ts (PUBLIC_THEME_IDS).
 const VISIBLE_PROFILE_MODE_OPTIONS = import.meta.env.DEV
   ? modeOptions
-  : modeOptions.filter((option) => option.id === 'guild');
+  : modeOptions.filter((option) => PUBLIC_THEME_IDS.includes(option.id));
 
 // R16: Helper to derive display name from email
 function deriveDisplayNameFromEmail(email: string | undefined): string {
