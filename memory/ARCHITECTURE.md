@@ -1,5 +1,5 @@
 # Architecture
-Last verified: 2026-07-07
+Last verified: 2026-07-10
 
 ## Overview
 Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking directly to Supabase — no separate backend server. Supabase provides Postgres with RLS, magic-link auth, Storage (proof/avatar/reward images), Realtime subscriptions, PL/pgSQL RPCs for anything credit-touching, and Deno Edge Functions for notifications. Frontend deploys to Vercel; a Capacitor iOS shell exists but the web app is primary. Local dev runs on port 6075 (see PORTS.md).
@@ -21,7 +21,7 @@ Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking d
 | Edge Functions | `supabase/functions/` | notify-reward-creator and legacy Gmail notifiers (need hardening/removal) |
 
 ## Data flow
-Client hooks query/mutate Supabase tables directly (tasks, friendships, profiles, rewards_store, collected_rewards) under RLS; credit changes and reward purchases go through RPCs only (client credit writes are locked down by migration). Realtime `postgres_changes` subscriptions keep task/friend views live. Proof files upload to the `bounty-proofs` bucket, avatars to `avatars`, reward images to `reward-images`.
+Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; only creator task-content edits remain direct table updates pending Phase B. Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions keep task/friend views live. Proof files upload to the `bounty-proofs` bucket before `submit_proof`; on delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS — the RPC's returned `proof_url` is informational). Until proposal 011 is live, its signatures are overlaid in `src/types/custom.ts`; regenerate `database.ts` and remove the overlay after rollout.
 
 ## External services & dependencies that matter
 - Supabase Cloud project (Postgres, Auth, Storage, Edge Functions) — the entire backend; env vars in `.env.local` from `.env.example`.

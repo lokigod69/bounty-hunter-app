@@ -1,20 +1,26 @@
-# NEXT STEP — Bounty Hunter/main — updated 2026-07-10 (apple-design pass + RPC draft)
+# NEXT STEP — Bounty Hunter/main — updated 2026-07-10 (011 approved; refactor committed, unpushed)
 
 ## FOR YOU
-1. **Fix the empty screen — add the 2 Vercel env vars, then redeploy.** Vercel dashboard → your bounty-hunter project → Settings → Environment Variables → add BOTH, for all environments (Production/Preview/Development):
-   - Name: `VITE_SUPABASE_URL`  →  Value: `https://mvbmpcmexkgfairnthux.supabase.co`
-   - Name: `VITE_SUPABASE_ANON_KEY`  →  Value: `sb_publishable_hd2zXdd8V6ANi4Pdo0ll1w_dveaqEIe`
-   - ⚠️ That's the **anon/publishable** key — do NOT put the service-role key in Vercel env for the frontend; it would ship admin access to every browser. The frontend never needs it.
-   - Then Deployments → ⋯ on the latest → **Redeploy** (env vars are baked in at build time; without a redeploy nothing changes).
-2. **Then eyeball on your phone** (bountyhunter.xyz in the browser): Phases 1–4 as before (art, invite/reject/redeem, sounds, PDF/video proof) **plus the new apple-design pass** — buttons/cards should respond the instant your finger touches them, modals should glide like iOS sheets. Full audit: `docs/premium-v1/APPLE_DESIGN_AUDIT.md`.
-3. **Review proposal 011 — task-lifecycle RPCs** (`db/proposals/011_task_lifecycle_rpcs.md`). DRAFT ONLY, zero SQL applied. Decide the 4 open points (A: proof_type whitelist, B: reject = 'rejected' not 'pending', C: archive gating, D: policy names) and give the go — then I apply + refactor the client to the RPCs.
-4. Sound audition still open: upload/toggle reuse click files, payday reuses coin — tell me which to replace.
+1. **Run the proposal-011 rollout — only you can (scripts prompt for the DB password, which is deliberately not on this machine).** PowerShell, repo root:
+   ```powershell
+   $env:PROD_CONFIRM = "YES"
+   scripts\prod\validate_011.ps1     # pre-flight, read-only — check #4 policy names match, #5b returns 0 rows
+   scripts\prod\backup_schema.ps1    # backup — confirm the dump file appears in supabase\
+   scripts\prod\apply_011_up.ps1     # the apply (one transaction, aborts whole on any error)
+   git push                          # ships the RPC client build to Vercel
+   scripts\prod\validate_011.ps1     # post-check — the two assignee UPDATE policies must be GONE
+   ```
+   Details/expected outputs: `docs/runbooks/PROD_RUNBOOK_011.md`. If anything looks wrong: `scripts\prod\rollback_011.ps1` + redeploy the previous Vercel build.
+2. **Finish the Vercel redeploy you started** (env vars ✅). Safe any time BEFORE the apply above — it redeploys the old build. After the apply, the `git push` in step 1 ships the new one.
+3. **Eyeball on your phone** (bountyhunter.xyz): Phases 1–4 (art, invite/reject/redeem, sounds, PDF/video proof) + apple-design pass (instant press response, iOS-sheet modals). After the 011 apply, also run the core loop: create → start → submit (file/text/no-proof) → reject with reason → resubmit → approve (credits land ONCE) → archive → delete.
+4. Sound audition still open (upload/toggle/payday placeholders).
 
 ## PASTE THIS
 Resume Bounty Hunter, workstream main, under protocol-os.
-Read protocol/PROTOCOL.md, protocol/NEXT_STEP.md (this file), memory/INDEX.md, memory/STATE.md, and docs/premium-v1/ROADMAP.md.
-Verify state: `git log --oneline -4` — expect apple-design pass + proposal-011 draft + bookkeeping commits on top of ef4d31b; `npm run build` + `npm test` green (59 tests); `tsc -p tsconfig.app.json --noEmit` = 0 errors (protect this; build alone does NOT typecheck pages). Supabase LIVE on mvbmpcmexkgfairnthux (ap-south-1), session pooler aws-1-ap-south-1.pooler.supabase.com:5432 user postgres.mvbmpcmexkgfairnthux; all 9 migrations applied (tracker 10 rows).
-DONE: Phases 0–4 of docs/premium-v1/ROADMAP.md; DB-types regen (fcb830d); apple-design pass 2026-07-10 (press response, mirrored modal easings, reduced-motion/transparency — docs/premium-v1/APPLE_DESIGN_AUDIT.md; restraint rules in memory/DECISIONS.md); task-lifecycle RPC DRAFT = proposal 011 (db/proposals/011_*, runbook PROD_RUNBOOK_011.md) — NO SQL APPLIED, awaiting Michael's review of 4 open points.
-PENDING MICHAEL: (a) Vercel env vars VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY + redeploy (fixes the blank deployed site; values in FOR YOU above / .env.local); (b) browser eyeball Phases 1–4 + apple-design pass + PDF/video proof; (c) sound audition; (d) proposal-011 review; (e) any prod SQL — never without explicit go.
-Then: on 011 approval → apply via runbook + client refactor (useTasks.ts, domain/missions.ts, IssuedPage.tsx → RPCs) + types regen; or Phase 5 ship vehicle (cap sync ios, TestFlight — needs a Mac).
-Mode 2 rules apply. Update NEXT_STEP.md after every completed step. End every turn with the Status Block.
+Read protocol/PROTOCOL.md, protocol/NEXT_STEP.md (this file), memory/INDEX.md, memory/STATE.md.
+Verify state: `git log --oneline -3` — expect two new commits on top of 47a024d: (1) proposal-011 finalized (A–D decided + proof_type constraint normalization in up.sql) + client RPC refactor + scripts/runbook, (2) session bookkeeping. `npx tsc -p tsconfig.app.json --noEmit` = 0 (protect; build does NOT typecheck pages); `npm run build` + `npm test` green (14 files / 79 tests). Supabase LIVE on mvbmpcmexkgfairnthux (ap-south-1), pooler aws-1-ap-south-1.pooler.supabase.com:5432 user postgres.mvbmpcmexkgfairnthux.
+DONE: 011 APPROVED 2026-07-10 (Michael: PDF yes, B–D delegated; decisions in db/proposals/011_*.md); client refactor to the 5 RPCs committed (codex-executed, centrally reviewed — delete-flow storage cleanup runs BEFORE delete_task because the bucket delete policy joins the tasks row); scripts/prod/{validate,apply,rollback}_011*.ps1 + retargeted backup_schema.ps1; runbook READY.
+CRITICAL ORDERING: the refactor commit is LOCAL-ONLY. Do NOT `git push` until Michael has applied 011 via the runbook (RPCs don't exist on live yet; equally, once policies drop the OLD build can't submit/reject/archive/delete — push immediately after apply).
+PENDING MICHAEL: (a) run the runbook 5-command sequence (needs his DB password); (b) finish Vercel redeploy of the old build (env vars in); (c) browser eyeball Phases 1–4 + apple-design + post-011 core loop; (d) sound audition.
+AFTER 011 IS LIVE: regen types (`supabase gen types --project-id mvbmpcmexkgfairnthux` → database.ts, then REMOVE the temporary RPC overlay in src/types/custom.ts), tsc/build/test, commit; then Phase B (create/update_task RPCs, drop remaining client write policies) or Phase 5 ship vehicle (cap sync ios, TestFlight — needs a Mac).
+Mode 2 rules apply. One LOG line per step; checkpoint per Iron Rule 3; end checkpoints with the Status Block.
