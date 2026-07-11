@@ -36,6 +36,9 @@ import { getOverlayRoot } from '../../lib/overlayRoot';
 import { Coin } from '../visual/Coin';
 import { TypeEmblem } from '../visual/TypeEmblem'; // R35: mode gift emblem for text rewards
 import { RewardImageLightbox } from './RewardImageLightbox';
+import heroGuild from '../../assets/generated/hero-guild.webp';
+import heroFamily from '../../assets/generated/hero-family.webp';
+import heroCouple from '../../assets/generated/hero-couple.webp';
 
 // ============================================================================
 // Types
@@ -113,6 +116,16 @@ const roleIconMap = {
   PenSquare,
   Heart,
   Gift,
+};
+
+// Mode hero key art (1024x683, same set as onboarding step 1) rendered behind
+// the modal header. objectPosition picks the focal slice per image: guild's
+// bounty board sits right of center, family's star chart hugs the right edge,
+// couple's gift exchange is centered slightly below the midline.
+const modeHero: Record<ThemeId, { src: string; position: string }> = {
+  guild: { src: heroGuild, position: '62% 30%' },
+  family: { src: heroFamily, position: '65% 28%' },
+  couple: { src: heroCouple, position: '50% 42%' },
 };
 
 // ============================================================================
@@ -282,61 +295,97 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         {/* State Border Accent */}
         {stateConf.hasBorderAccent && (
           <div
-            className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
+            className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl z-10"
             style={{
               background: `linear-gradient(90deg, transparent, ${stateConf.color}, transparent)`,
             }}
           />
         )}
 
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-white/10">
-          {/* Top row: Role label + State chip + Close */}
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <div
-                className="p-1.5 rounded-lg"
-                style={{ backgroundColor: modeConfig.accentSoft }}
-              >
-                <RoleIcon size={16} style={{ color: modeConfig.accent }} />
+        {/* Header — mode hero art behind the role/title/context rows */}
+        <div className="relative flex-shrink-0 border-b border-white/10 overflow-hidden">
+          <img
+            src={modeHero[mode].src}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover select-none"
+            style={{ objectPosition: modeHero[mode].position }}
+          />
+          {/* Legibility scrim: darkens toward the bottom so the title/context
+              rows melt into the modal material, plus a faint mode-accent wash
+              at the top to tie the art to the theme. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(5,8,14,0.40) 0%, rgba(5,8,14,0.60) 55%, rgba(5,8,14,0.92) 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(180deg, rgba(${modeConfig.accentRgb}, 0.10) 0%, transparent 65%)`,
+            }}
+          />
+
+          <div className="relative px-4 sm:px-6 pt-5 pb-4 sm:pt-6">
+            {/* Top row: Role label + State chip + Close */}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="p-1.5 rounded-lg backdrop-blur-sm"
+                  style={{ backgroundColor: modeConfig.accentSoft }}
+                >
+                  <RoleIcon size={16} style={{ color: modeConfig.accent }} />
+                </div>
+                <span
+                  className="text-sm font-medium"
+                  style={{
+                    color: modeConfig.accent,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                  }}
+                >
+                  {roleConf.headerLabel}
+                </span>
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{ color: modeConfig.accent }}
-              >
-                {roleConf.headerLabel}
-              </span>
+
+              <div className="flex items-center gap-3">
+                <StateChip state={state} className="backdrop-blur-sm" />
+                <button
+                  onClick={handleClose}
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors z-modal-controls"
+                  aria-label="Close modal"
+                >
+                  <X size={20} className="text-white/60 hover:text-white" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <StateChip state={state} />
-              <button
-                onClick={handleClose}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors z-modal-controls"
-                aria-label="Close modal"
-              >
-                <X size={20} className="text-white/60 hover:text-white" />
-              </button>
+            {/* Title */}
+            <h2
+              className="text-xl sm:text-2xl font-bold text-white mb-2 line-clamp-2"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}
+            >
+              {title}
+            </h2>
+
+            {/* Context row: Avatar + From/To */}
+            <div
+              className="flex items-center gap-2 text-sm text-white/70"
+              style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              {contextUser?.avatar ? (
+                <img
+                  src={contextUser.avatar}
+                  alt={contextUser.name}
+                  className="w-5 h-5 rounded-full object-cover"
+                />
+              ) : (
+                <User size={16} className="text-white/40" />
+              )}
+              <span>{contextLabel}</span>
             </div>
-          </div>
-
-          {/* Title */}
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 line-clamp-2">
-            {title}
-          </h2>
-
-          {/* Context row: Avatar + From/To */}
-          <div className="flex items-center gap-2 text-sm text-white/60">
-            {contextUser?.avatar ? (
-              <img
-                src={contextUser.avatar}
-                alt={contextUser.name}
-                className="w-5 h-5 rounded-full object-cover"
-              />
-            ) : (
-              <User size={16} className="text-white/40" />
-            )}
-            <span>{contextLabel}</span>
           </div>
         </div>
 
