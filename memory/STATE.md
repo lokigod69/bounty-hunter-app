@@ -1,5 +1,5 @@
 # Current State
-Last updated: 2026-07-11
+Last updated: 2026-07-14
 
 ## What this is
 Private gamified chores/missions app for small trusted groups: missions → proof → approval → credits → custom rewards. React 18/Vite/TS + Supabase, deployed on Vercel, Capacitor iOS scaffold exists. Not intended as a public marketplace.
@@ -30,7 +30,7 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - ~~Production migration state unknown~~ ~~ANSWERED 2026-07-08: restored schema pre-hardening~~ RESOLVED 2026-07-08 (later): all 9 repo migrations applied to the new test DB — `increment_user_credits` + `user_credits` writes revoked from anon/authenticated, storage policies + PDF + rejection_reason + persistence + redeemed + invites all live; tracker now has 10 rows. Prod SQL still requires backup + Michael's go first (the process held this session).
 - ~~Proposal-011 RPCs do not exist on the live DB yet~~ RESOLVED 2026-07-10: applied + pushed (see "In progress"). Runtime lifecycle testing (create → start → submit → reject → resubmit → approve → archive → delete, two real users) is still un-browser-tested — next thing to verify.
 - Legacy Gmail notification Edge Functions need auth hardening or undeployment.
-- Build warnings: unresolved `/img/C1.jpg`, large JS chunk, mixed dynamic/static import of `src/domain/rewards.ts`.
+- ~~Build warnings~~ RESOLVED 2026-07-14 (fa0d3bf): build is warning-free — vite manualChunks vendor split (main chunk 722→388 kB, gzip 213→111 kB), useRewardsStore dynamic imports made static, C1.jpg had already been fixed earlier (docs were stale). Route-level lazy loading deliberately skipped (stale-chunk-404-after-redeploy risk on Vercel > ~40 kB gain).
 - README.md is stale in spots (claims no test script; vitest suite exists). docs/overview.md + docs/open-questions.md are 2025-10 vintage — several issues there were since fixed by proposals 001–008; treat as historical.
 
 ## Open questions
