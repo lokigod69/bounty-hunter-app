@@ -35,10 +35,11 @@ npm run dev -- --host 127.0.0.1 --port 6075
 ```powershell
 npm run build
 npm run lint
+npm test
 npm audit --omit=dev
 ```
 
-There is no `npm test` script yet.
+`npm test` runs the Vitest suite (`vitest run src`): domain logic, task-lifecycle RPC envelopes, security policy guards, themes, auth redirect, and feedback contract tests. Typecheck pages explicitly with `npx tsc -p tsconfig.app.json --noEmit` — `npm run build` alone does not typecheck pages.
 
 ## Supabase
 
