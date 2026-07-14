@@ -11,6 +11,7 @@ import { Database } from '../types/database';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useAuth } from './useAuth';
 import { toast } from 'react-hot-toast';
+import { createReward as createRewardDomain, purchaseReward as purchaseRewardDomain } from '../domain/rewards';
 
 // These types point to 'rewards_store'. They will throw TS errors until 'database.ts' is regenerated.
 export type RewardStoreItemBase = Database['public']['Tables']['rewards_store']['Row'];
@@ -132,7 +133,6 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setCreateRewardError(null);
 
     try {
-      const { createReward: createRewardDomain } = await import('../domain/rewards');
       const result = await createRewardDomain({
         data: {
           p_name: newReward.name,
@@ -173,7 +173,6 @@ export const useRewardsStore = (): UseRewardsStoreReturn => {
     setPurchaseRewardError(null);
 
     try {
-      const { purchaseReward: purchaseRewardDomain } = await import('../domain/rewards');
       // RPC uses auth.uid() internally for security
       const result = await purchaseRewardDomain({
         rewardId,

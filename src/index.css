@@ -64,7 +64,7 @@ html, body {
   font-display: swap;
 }
 
-/* (Howdybun display font removed â€” card titles now use the standard Poppins type scale) */
+/* (Howdybun display font removed — card titles now use the standard Poppins type scale) */
 
 /* Apply Custom Fonts */
 
@@ -89,12 +89,12 @@ h1 {
   font-family: 'Mandalore', sans-serif;
 }
 
-/* (Card-title font override removed â€” titles inherit the Poppins type scale for cross-card consistency) */
+/* (Card-title font override removed — titles inherit the Poppins type scale for cross-card consistency) */
 
 /* Body Text */
-/* (Removed broken C1.jpg body background â€” the canonical starfield radial-gradient is defined later) */
+/* (Removed broken C1.jpg body background — the canonical starfield radial-gradient is defined later) */
 
-/* Note: no `.text-sm` here â€” this block sits after @tailwind utilities, so
+/* Note: no `.text-sm` here — this block sits after @tailwind utilities, so
    matching a Tailwind utility class would override font-semibold/bold on
    every small text element back to 500. */
 body,
@@ -417,7 +417,7 @@ body {
     transform: scale(0.98);
   }
   
-  /* CTA button â€” the single primary action per screen (solid mode accent). */
+  /* CTA button — the single primary action per screen (solid mode accent). */
   .btn-cta {
     @apply relative px-5 py-2.5 rounded-lg font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm;
     background-color: var(--mode-accent);
