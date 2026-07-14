@@ -1,7 +1,7 @@
 // src/lib/profileBootstrap.ts
 // Profile bootstrapping helper - ensures a profile exists for a user, creating one if missing.
 // Uses .maybeSingle() to handle missing profiles gracefully instead of throwing errors.
-// Always returns Profile | null - never throws, never hangs.
+// Always returns a profile/error result object - never throws, never hangs.
 //
 // R15 INVARIANT: This function NEVER modifies an existing profile.
 // - If a profile row exists, return it AS-IS (including any user-set avatar_url/display_name)
@@ -20,7 +20,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 export async function ensureProfileForUser(
   supabase: SupabaseClient,
   user: User
-): Promise<Profile | null> {
+): Promise<{ profile: Profile | null; error: Error | null }> {
   try {
     // 1. Try to load existing profile
     const { data: profile, error } = await supabase
@@ -32,13 +32,13 @@ export async function ensureProfileForUser(
     // .maybeSingle() returns null data when no rows found, not an error
     // Only real errors (network, RLS violations, etc.) will have error set
     if (error) {
-      return null;
+      return { profile: null, error: new Error(error.message) };
     }
 
     // R15: CRITICAL - If profile exists, return it WITHOUT modification
     // Never overwrite user-chosen display_name or avatar_url here
     if (profile) {
-      return profile as Profile;
+      return { profile: profile as Profile, error: null };
     }
 
     // 2. No profile exists → create default
@@ -67,28 +67,42 @@ export async function ensureProfileForUser(
       // RACE CONDITION HANDLING: If another request already created the profile,
       // we'll get a unique violation (code 23505). Fetch the existing profile instead.
       if (insertError.code === '23505') {
-        const { data: existingProfile } = await supabase
+        const { data: existingProfile, error: refetchError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .maybeSingle();
 
-        return existingProfile as Profile | null;
+        if (refetchError) {
+          return { profile: null, error: new Error(refetchError.message) };
+        }
+
+        if (existingProfile) {
+          return { profile: existingProfile as Profile, error: null };
+        }
+
+        return {
+          profile: null,
+          error: new Error('Profile was not found after resolving a profile creation race.'),
+        };
       }
 
-      // Other errors - return null
-      return null;
+      // Other errors - return the failure
+      return { profile: null, error: new Error(insertError.message) };
     }
 
     if (!inserted) {
-      return null;
+      return { profile: null, error: new Error('Profile creation returned no profile.') };
     }
 
-    return inserted as Profile;
+    return { profile: inserted as Profile, error: null };
 
-  } catch {
+  } catch (error) {
     // Catch any unexpected errors (network failures, etc.)
-    return null;
+    return {
+      profile: null,
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
   }
 }
 

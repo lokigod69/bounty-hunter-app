@@ -63,8 +63,6 @@ export async function checkFTXGate(
     .or(`created_by.eq.${userId},assigned_to.eq.${userId}`)
     .limit(1);
 
-  const hasMissions = !missionsError && missionsData && missionsData.length > 0;
-
   // Check if user has any rewards (created or assigned)
   const { data: rewardsData, error: rewardsError } = await supabase
     .from('rewards_store')
@@ -72,7 +70,17 @@ export async function checkFTXGate(
     .or(`creator_id.eq.${userId},assigned_to.eq.${userId}`)
     .limit(1);
 
-  const hasRewards = !rewardsError && rewardsData && rewardsData.length > 0;
+  // Query failures must fail closed so an offline existing user is never sent to onboarding.
+  if (missionsError || rewardsError) {
+    return {
+      shouldShowOnboarding: false,
+      hasMissions: false,
+      hasRewards: false,
+    };
+  }
+
+  const hasMissions = Boolean(missionsData?.length);
+  const hasRewards = Boolean(rewardsData?.length);
 
   // Show onboarding only if user has no missions AND no rewards
   const shouldShowOnboarding = !hasMissions && !hasRewards;
@@ -151,25 +159,39 @@ export function useFTXGateLogic(
   const [shouldRedirectToOnboarding, setShouldRedirectToOnboarding] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function checkGate() {
       if (loading) {
-        setReady(false);
+        if (!cancelled) {
+          setReady(false);
+        }
         return;
       }
 
       if (!userId) {
         // Not logged in, don't gate
-        setReady(true);
-        setShouldRedirectToOnboarding(false);
+        if (!cancelled) {
+          setReady(true);
+          setShouldRedirectToOnboarding(false);
+        }
         return;
       }
 
       const result = await checkFTXGate(userId, onboardingCompleted);
+      if (cancelled) {
+        return;
+      }
+
       setShouldRedirectToOnboarding(result.shouldShowOnboarding);
       setReady(true);
     }
 
     checkGate();
+
+    return () => {
+      cancelled = true;
+    };
   }, [userId, loading, onboardingCompleted]);
 
   return { ready, shouldRedirectToOnboarding };

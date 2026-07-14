@@ -13,7 +13,7 @@ interface FTXGateProps {
 
 export default function FTXGate({ children }: FTXGateProps) {
   // ALL HOOKS AT TOP LEVEL
-  const { user, profile, profileLoading } = useAuth();
+  const { user, profile, profileLoading, profileError } = useAuth();
   const location = useLocation();
   const { ready, shouldRedirectToOnboarding } = useFTXGateLogic(
     user?.id ?? null,
@@ -35,8 +35,9 @@ export default function FTXGate({ children }: FTXGateProps) {
     );
   }
 
+  // A failed profile bootstrap (for example, offline) must never route an existing user into onboarding.
   // If user needs onboarding and not already on /onboarding, redirect there
-  if (shouldRedirectToOnboarding && location.pathname !== '/onboarding') {
+  if (shouldRedirectToOnboarding && profileError === null && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 

@@ -2,7 +2,37 @@
   "auth": {
     "signIn": "Sign In",
     "signOut": "Sign Out",
-    "email": "Email"
+    "email": "Email",
+    "login": {
+      "loading": "Loading...",
+      "signingYouIn": "Signing you in...",
+      "tagline": "Run missions. Earn credits. Claim loot.",
+      "welcome": "Welcome",
+      "continueWithGoogle": "Continue with Google",
+      "signingIn": "Signing in...",
+      "orUseEmail": "or use email",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Email address",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Password (min 6 characters)",
+      "logIn": "Log In",
+      "signUp": "Sign Up",
+      "otherOptions": "Other options",
+      "magicLinkDescription": "Sign in without a password using a magic link sent to your email.",
+      "sendMagicLink": "Send Magic Link",
+      "enterEmailFirst": "Enter your email above first",
+      "checkYourEmail": "Check your email",
+      "confirmationSentTo": "We sent a confirmation link to",
+      "confirmationInstructions": "Click the link in that email to activate your account, then come back here to log in. Don't see it? Check your spam folder.",
+      "backToSignIn": "Back to sign in",
+      "enterCredentials": "Please enter both email and password.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "accountCreated": "Account created successfully!",
+      "enterEmail": "Please enter your email address.",
+      "magicLinkSent": "Check your email for the magic link!",
+      "unexpectedError": "An unexpected error occurred.",
+      "googleSignInFailed": "Failed to sign in with Google"
+    }
   },
   "contracts": {
     "title": "My Contracts",

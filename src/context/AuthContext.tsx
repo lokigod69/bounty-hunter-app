@@ -104,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (error) throw error;
         }
       } catch {
+        // No established imperative i18n pattern exists for this native callback fallback.
         toast.error('Could not complete sign in. Please try again.');
       }
     }).then((handle) => {
@@ -146,17 +147,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfileLoading(true);
         setProfileError(null);
 
-        const profileData = await ensureProfileForUser(supabase, ensuredSessionUser);
+        const { profile: profileData, error: bootstrapError } = await ensureProfileForUser(
+          supabase,
+          ensuredSessionUser,
+        );
 
         if (cancelled) {
           return;
         }
 
-        if (profileData) {
-          setProfile(profileData);
-          setProfileError(null);
-        } else {
+        if (bootstrapError) {
           setProfile(null);
+          setProfileError(bootstrapError);
+        } else {
+          setProfile(profileData);
           setProfileError(null);
         }
       } catch (err) {
@@ -203,13 +207,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileLoading(true);
       setProfileError(null);
 
-      const profileData = await ensureProfileForUser(supabase, ensuredSessionUser);
+      const { profile: profileData, error: bootstrapError } = await ensureProfileForUser(
+        supabase,
+        ensuredSessionUser,
+      );
 
-      if (profileData) {
-        setProfile(profileData);
-        setProfileError(null);
-      } else {
+      if (bootstrapError) {
         setProfile(null);
+        setProfileError(bootstrapError);
+      } else {
+        setProfile(profileData);
         setProfileError(null);
       }
     } catch (err) {

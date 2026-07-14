@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, MailCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getAuthRedirectTo } from '../lib/authRedirect';
 import { AppButton, Spinner } from '../components/ui';
 import logo from '../assets/logo5-small.png';
@@ -26,6 +27,7 @@ const AuthLoadingScreen: React.FC<{ message: string }> = ({ message }) => (
 const Login: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Form state
   const [email, setEmail] = useState('');
@@ -50,11 +52,11 @@ const Login: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      toast.error('Please enter both email and password.');
+      toast.error(t('auth.login.enterCredentials'));
       return;
     }
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters.');
+      toast.error(t('auth.login.passwordTooShort'));
       return;
     }
 
@@ -77,13 +79,13 @@ const Login: React.FC = () => {
         setConfirmationSentTo(email.trim().toLowerCase());
       } else if (data.session) {
         // Auto-confirmed (email confirmations disabled in Supabase)
-        toast.success('Account created successfully!');
+        toast.success(t('auth.login.accountCreated'));
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error('An unexpected error occurred.');
+        toast.error(t('auth.login.unexpectedError'));
       }
     } finally {
       setLoading(false);
@@ -94,7 +96,7 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      toast.error('Please enter both email and password.');
+      toast.error(t('auth.login.enterCredentials'));
       return;
     }
 
@@ -113,7 +115,7 @@ const Login: React.FC = () => {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error('An unexpected error occurred.');
+        toast.error(t('auth.login.unexpectedError'));
       }
     } finally {
       setLoading(false);
@@ -134,14 +136,14 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        toast.error(error.message || 'Failed to sign in with Google');
+        toast.error(error.message || t('auth.login.googleSignInFailed'));
       }
       // Note: If successful, user will be redirected to Google
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error('An unexpected error occurred.');
+        toast.error(t('auth.login.unexpectedError'));
       }
     } finally {
       setLoading(false);
@@ -151,7 +153,7 @@ const Login: React.FC = () => {
   // Magic Link (passwordless)
   const handleMagicLink = async () => {
     if (!email.trim()) {
-      toast.error('Please enter your email address.');
+      toast.error(t('auth.login.enterEmail'));
       return;
     }
 
@@ -169,13 +171,13 @@ const Login: React.FC = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Check your email for the magic link!');
+        toast.success(t('auth.login.magicLinkSent'));
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error('An unexpected error occurred.');
+        toast.error(t('auth.login.unexpectedError'));
       }
     } finally {
       setLoading(false);
@@ -184,13 +186,13 @@ const Login: React.FC = () => {
 
   // Show loading state while Supabase is initializing or processing auth callback
   if (authLoading) {
-    return <AuthLoadingScreen message="Loading..." />;
+    return <AuthLoadingScreen message={t('auth.login.loading')} />;
   }
 
   // If user is authenticated, the useEffect above will handle redirect
   // But show loading state here as well to prevent flash of login form
   if (user) {
-    return <AuthLoadingScreen message="Signing you in..." />;
+    return <AuthLoadingScreen message={t('auth.login.signingYouIn')} />;
   }
 
   // Post-signup confirmation screen
@@ -200,23 +202,22 @@ const Login: React.FC = () => {
         <img src={logo} alt="Bounty Hunter" className="w-24 h-24 mb-4" />
 
         <h1 className="text-display app-title text-[var(--mode-accent)] mb-2">BOUNTY HUNTER</h1>
-        <p className="text-meta text-white/50 mb-8">Run missions. Earn credits. Claim loot.</p>
+        <p className="text-meta text-white/50 mb-8">{t('auth.login.tagline')}</p>
 
         <div className="glass-card w-full max-w-sm p-8 rounded-2xl text-center">
           <MailCheck size={48} className="mx-auto mb-4 text-[var(--mode-accent)]" />
-          <h2 className="text-subtitle text-white mb-3">Check your email</h2>
-          <p className="text-body text-white/70 mb-1">We sent a confirmation link to</p>
+          <h2 className="text-subtitle text-white mb-3">{t('auth.login.checkYourEmail')}</h2>
+          <p className="text-body text-white/70 mb-1">{t('auth.login.confirmationSentTo')}</p>
           <p className="text-body text-white font-semibold mb-6 break-all">{confirmationSentTo}</p>
           <p className="text-sm text-white/50 mb-6">
-            Click the link in that email to activate your account, then come back here to log in.
-            Don't see it? Check your spam folder.
+            {t('auth.login.confirmationInstructions')}
           </p>
           <AppButton
             variant="secondary"
             fullWidth
             onClick={() => setConfirmationSentTo(null)}
           >
-            Back to sign in
+            {t('auth.login.backToSignIn')}
           </AppButton>
         </div>
       </div>
@@ -228,10 +229,10 @@ const Login: React.FC = () => {
       <img src={logo} alt="Bounty Hunter" className="w-24 h-24 mb-4" />
 
       <h1 className="text-display app-title text-[var(--mode-accent)] mb-2">BOUNTY HUNTER</h1>
-      <p className="text-meta text-white/50 mb-8">Run missions. Earn credits. Claim loot.</p>
+      <p className="text-meta text-white/50 mb-8">{t('auth.login.tagline')}</p>
 
       <div className="glass-card w-full max-w-sm p-8 rounded-2xl">
-        <h2 className="text-subtitle text-white text-center mb-6">Welcome</h2>
+        <h2 className="text-subtitle text-white text-center mb-6">{t('auth.login.welcome')}</h2>
 
         {/* Google OAuth Button - Primary option */}
         <button
@@ -257,7 +258,7 @@ const Login: React.FC = () => {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          {loading ? 'Signing in...' : 'Continue with Google'}
+          {loading ? t('auth.login.signingIn') : t('auth.login.continueWithGoogle')}
         </button>
 
         {/* Divider */}
@@ -266,18 +267,18 @@ const Login: React.FC = () => {
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-white/50">or use email</span>
+            <span className="px-2 text-white/50">{t('auth.login.orUseEmail')}</span>
           </div>
         </div>
 
         {/* Email + Password Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="sr-only">Email</label>
+            <label htmlFor="email" className="sr-only">{t('auth.login.emailLabel')}</label>
             <input
               id="email"
               type="email"
-              placeholder="Email address"
+              placeholder={t('auth.login.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="input-field w-full"
@@ -285,11 +286,11 @@ const Login: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="sr-only">Password</label>
+            <label htmlFor="password" className="sr-only">{t('auth.login.passwordLabel')}</label>
             <input
               id="password"
               type="password"
-              placeholder="Password (min 6 characters)"
+              placeholder={t('auth.login.passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input-field w-full"
@@ -299,8 +300,8 @@ const Login: React.FC = () => {
 
           {/* Login / Sign Up Buttons */}
           <div className="flex gap-3">
-            <AppButton variant="cta" type="submit" loading={loading} fullWidth>Log In</AppButton>
-            <AppButton variant="ghost" type="button" onClick={handleSignUp} loading={loading} fullWidth>Sign Up</AppButton>
+            <AppButton variant="cta" type="submit" loading={loading} fullWidth>{t('auth.login.logIn')}</AppButton>
+            <AppButton variant="ghost" type="button" onClick={handleSignUp} loading={loading} fullWidth>{t('auth.login.signUp')}</AppButton>
           </div>
         </form>
 
@@ -311,14 +312,14 @@ const Login: React.FC = () => {
             onClick={() => setShowOtherOptions(!showOtherOptions)}
             className="w-full flex items-center justify-center gap-2 text-sm text-white/50 hover:text-white/70 transition-colors"
           >
-            Other options
+            {t('auth.login.otherOptions')}
             {showOtherOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
           {showOtherOptions && (
             <div className="mt-4 p-4 rounded-lg border border-white/10">
               <p className="text-sm text-white/50 mb-3">
-                Sign in without a password using a magic link sent to your email.
+                {t('auth.login.magicLinkDescription')}
               </p>
               <AppButton
                 variant="secondary"
@@ -328,11 +329,11 @@ const Login: React.FC = () => {
                 onClick={handleMagicLink}
                 disabled={loading || !email.trim()}
               >
-                Send Magic Link
+                {t('auth.login.sendMagicLink')}
               </AppButton>
               {!email.trim() && (
                 <p className="text-xs text-white/40 mt-2 text-center">
-                  Enter your email above first
+                  {t('auth.login.enterEmailFirst')}
                 </p>
               )}
             </div>

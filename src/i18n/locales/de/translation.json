@@ -2,7 +2,37 @@
   "auth": {
     "signIn": "Anmelden",
     "signOut": "Abmelden",
-    "email": "E-Mail"
+    "email": "E-Mail",
+    "login": {
+      "loading": "Wird geladen...",
+      "signingYouIn": "Du wirst angemeldet...",
+      "tagline": "Erfülle Missionen. Verdiene Credits. Hol dir Beute.",
+      "welcome": "Willkommen",
+      "continueWithGoogle": "Mit Google fortfahren",
+      "signingIn": "Anmeldung läuft...",
+      "orUseEmail": "oder E-Mail verwenden",
+      "emailLabel": "E-Mail",
+      "emailPlaceholder": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "Passwort (mind. 6 Zeichen)",
+      "logIn": "Anmelden",
+      "signUp": "Registrieren",
+      "otherOptions": "Weitere Optionen",
+      "magicLinkDescription": "Melde dich ohne Passwort über einen Magic Link an, den wir dir per E-Mail schicken.",
+      "sendMagicLink": "Magic Link senden",
+      "enterEmailFirst": "Gib oben zuerst deine E-Mail-Adresse ein",
+      "checkYourEmail": "Prüfe deine E-Mails",
+      "confirmationSentTo": "Wir haben einen Bestätigungslink gesendet an",
+      "confirmationInstructions": "Klicke auf den Link in der E-Mail, um dein Konto zu aktivieren. Kehre danach hierher zurück und melde dich an. Keine E-Mail zu sehen? Prüfe deinen Spam-Ordner.",
+      "backToSignIn": "Zurück zur Anmeldung",
+      "enterCredentials": "Bitte gib deine E-Mail-Adresse und dein Passwort ein.",
+      "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "accountCreated": "Konto erfolgreich erstellt!",
+      "enterEmail": "Bitte gib deine E-Mail-Adresse ein.",
+      "magicLinkSent": "Prüfe deine E-Mails – dein Magic Link ist unterwegs!",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten.",
+      "googleSignInFailed": "Anmeldung mit Google fehlgeschlagen"
+    }
   },
   "contracts": {
     "title": "Meine Aufträge",
