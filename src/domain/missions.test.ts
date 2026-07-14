@@ -1,17 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
+import type { DatabaseWithTaskMutationRpcs } from '../types/custom';
 import {
   archiveMission,
+  createTaskViaRpc,
   getTaskLifecycleRpcErrorMessage,
   rejectMission,
   requireTaskLifecycleRpcSuccess,
   submitForReviewNoProof,
+  updateTaskViaRpc,
   updateMissionStatus,
   uploadProof,
 } from './missions';
 
 type LifecycleClient = SupabaseClient<Database>;
+type MutationClient = SupabaseClient<DatabaseWithTaskMutationRpcs>;
 
 function makeClient(task: Record<string, unknown> | null = null) {
   const query = {
@@ -30,6 +34,14 @@ function makeClient(task: Record<string, unknown> | null = null) {
   } as unknown as LifecycleClient;
 
   return { client, rpc };
+}
+
+function makeMutationClient(result: Record<string, unknown>) {
+  const rpc = vi.fn().mockResolvedValue({ data: result, error: null });
+  return {
+    client: { rpc } as unknown as MutationClient,
+    rpc,
+  };
 }
 
 describe('task lifecycle RPC result handling', () => {
@@ -158,5 +170,62 @@ describe('mission lifecycle RPC routing', () => {
     });
 
     expect(rpc).toHaveBeenCalledWith('archive_task', { p_task_id: 'task-5' });
+  });
+});
+
+describe('task create/update RPC routing', () => {
+  it('extracts task_id from a successful create_task envelope', async () => {
+    const { client, rpc } = makeMutationClient({ success: true, task_id: 'task-created' });
+    const args = {
+      p_title: 'New mission',
+      p_description: 'Bring the package home.',
+      p_assigned_to: 'assignee',
+      p_deadline: '2026-07-20',
+      p_reward_type: 'credit',
+      p_reward_text: '25',
+      p_proof_required: true,
+      p_is_daily: false,
+    };
+
+    await expect(createTaskViaRpc(args, client)).resolves.toBe('task-created');
+    expect(rpc).toHaveBeenCalledWith('create_task', args);
+  });
+
+  it('maps create_task logical errors through the shared envelope parser', async () => {
+    const { client } = makeMutationClient({ success: false, error: 'title_required' });
+
+    await expect(createTaskViaRpc({ p_title: '' }, client))
+      .rejects.toThrow('Task title is required.');
+  });
+
+  it('passes the exact update_task patch through unchanged', async () => {
+    const { client, rpc } = makeMutationClient({ success: true });
+    const patch = {
+      title: 'Updated title',
+      description: null,
+      assigned_to: 'new-assignee',
+      deadline: '2026-07-31',
+      reward_type: 'gift',
+      reward_text: 'Coffee',
+      proof_required: false,
+      is_daily: true,
+    };
+
+    await updateTaskViaRpc('task-update', patch, client);
+
+    expect(rpc).toHaveBeenCalledWith('update_task', {
+      p_task_id: 'task-update',
+      p_patch: patch,
+    });
+  });
+
+  it.each([
+    ['invalid_field', 'Task update contains fields that cannot be changed.'],
+    ['not_creator', 'You can only edit tasks that you created.'],
+  ])('maps update_task %s errors', async (error, expected) => {
+    const { client } = makeMutationClient({ success: false, error });
+
+    await expect(updateTaskViaRpc('task-update', { title: 'Nope' }, client))
+      .rejects.toThrow(expected);
   });
 });

@@ -48,8 +48,10 @@ import { TEXT_LIMITS } from '../config/textLimits';
 import {
   approveMission,
   archiveMission,
+  createTaskViaRpc,
   rejectMission,
   requireTaskLifecycleRpcSuccess,
+  updateTaskViaRpc,
 } from '../domain/missions';
 import type { TaskLifecycleRpcResult } from '../types/custom';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -345,14 +347,7 @@ export default function IssuedPage() {
           is_daily: taskData.is_daily,
         };
 
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update(updatePayload)
-          .match({ id: taskId, created_by: user.id });
-
-        if (updateError) {
-          throw updateError;
-        }
+        await updateTaskViaRpc(taskId, updatePayload);
 
         await refetchIssuedContracts();
         toast.success(t('contracts.updateSuccess', { noun }));
@@ -360,23 +355,17 @@ export default function IssuedPage() {
         return;
       }
 
-      const newContract = {
-        ...taskData,
-        created_by: user.id,
-        status: 'pending' as TaskStatus,
+      await createTaskViaRpc({
+        p_title: taskData.title,
+        p_description: taskData.description,
+        p_assigned_to: taskData.assigned_to,
+        p_deadline: taskData.deadline,
+        p_reward_type: taskData.reward_type,
+        p_reward_text: taskData.reward_text,
         // R31d: Ensure proof_required is explicitly boolean, never undefined
-        proof_required: taskData.proof_required === true,
-      };
-
-      const { error: createError } = await supabase
-        .from('tasks')
-        .insert([newContract])
-        .select()
-        .single();
-
-      if (createError) {
-        throw createError;
-      }
+        p_proof_required: taskData.proof_required === true,
+        p_is_daily: taskData.is_daily,
+      });
 
       await refetchIssuedContracts();
       toast.success(t('contracts.createSuccess', { noun }));

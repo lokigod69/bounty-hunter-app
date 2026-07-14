@@ -23,6 +23,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../types/database';
 import type {
+  DatabaseWithTaskMutationRpcs,
   NewTaskData,
   ProofType,
   Task,
@@ -32,7 +33,12 @@ import type {
 import { toast } from 'react-hot-toast';
 import { User, RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
 import { validateProofPayload } from '../core/proofs/proofs.domain';
-import { requireTaskLifecycleRpcSuccess } from '../domain/missions';
+import {
+  createTaskViaRpc,
+  requireTaskLifecycleRpcSuccess,
+  updateTaskViaRpc,
+  type TaskUpdatePatch,
+} from '../domain/missions';
 
 // Helper to reliably get an error message string
 interface ErrorWithMessage {
@@ -73,6 +79,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
   const currentUserId = user?.id;
   const lifecycleClient = client as unknown as SupabaseClient<Database>;
+  const taskMutationClient = client as unknown as SupabaseClient<DatabaseWithTaskMutationRpcs>;
 
   const fetchTasks = useCallback(async () => {
     if (!user) {
@@ -216,7 +223,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
     try {
       // Prepare data for Supabase, ensuring only allowed fields are sent
-      const dataToUpdate: Partial<Database['public']['Tables']['tasks']['Update']> = {};
+      const dataToUpdate: TaskUpdatePatch = {};
       if (taskData.title !== undefined) dataToUpdate.title = taskData.title;
       if (taskData.description !== undefined) dataToUpdate.description = taskData.description;
       if (taskData.reward_type !== undefined) dataToUpdate.reward_type = taskData.reward_type;
@@ -224,19 +231,20 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       if (taskData.assigned_to !== undefined) dataToUpdate.assigned_to = taskData.assigned_to;
       if (taskData.deadline !== undefined) dataToUpdate.deadline = taskData.deadline;
       if (taskData.proof_required !== undefined) dataToUpdate.proof_required = taskData.proof_required;
+      if (taskData.is_daily !== undefined) dataToUpdate.is_daily = taskData.is_daily;
       // 'status' can also be updated, but typically through updateTaskStatus. If general edit includes status:
       // if (taskData.status !== undefined) dataToUpdate.status = taskData.status;
 
+      await updateTaskViaRpc(taskId, dataToUpdate, taskMutationClient);
+
       const { data: updatedTask, error: updateError } = await client
         .from('tasks')
-        .update(dataToUpdate)
-        .eq('id', taskId)
-        .eq('created_by', currentUserId) // Ensure creator is the one updating
         .select(`
           *,
           profiles:profiles!assigned_to ( id, display_name, email ),
           creator_profile:profiles!created_by ( id, display_name, email )
         `)
+        .eq('id', taskId)
         .single();
 
       if (updateError) throw updateError;
@@ -301,27 +309,25 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
     toast.loading('Creating task...', { id: toastId });
 
     try {
-      const taskToInsert: Database['public']['Tables']['tasks']['Insert'] = {
-        title: newTaskData.title,
-        description: newTaskData.description || '',
-        reward_type: newTaskData.reward_type,
-        reward_text: newTaskData.reward_text,
-        created_by: currentUserId,
-        assigned_to: newTaskData.assigned_to,
-        deadline: newTaskData.deadline || null,
-        status: 'pending' as TaskStatus,
-        proof_required: newTaskData.proof_required === undefined ? false : newTaskData.proof_required, // Ensure it's part of the insert
-        is_daily: newTaskData.is_daily ?? false,
-      };
+      const createdTaskId = await createTaskViaRpc({
+        p_title: newTaskData.title,
+        p_description: newTaskData.description || '',
+        p_reward_type: newTaskData.reward_type,
+        p_reward_text: newTaskData.reward_text,
+        p_assigned_to: newTaskData.assigned_to,
+        p_deadline: newTaskData.deadline || null,
+        p_proof_required: newTaskData.proof_required ?? false,
+        p_is_daily: newTaskData.is_daily ?? false,
+      }, taskMutationClient);
 
       const { data: createdTask, error: createError } = await client
         .from('tasks')
-        .insert(taskToInsert)
         .select(`
           *,
           profiles:profiles!assigned_to ( id, display_name, email ),
           creator_profile:profiles!created_by ( id, display_name, email )
         `)
+        .eq('id', createdTaskId)
         .single();
 
       if (createError) throw createError;

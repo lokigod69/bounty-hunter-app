@@ -8,6 +8,7 @@ import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import type { Database } from '../types/database';
 import type {
+  DatabaseWithTaskMutationRpcs,
   TaskLifecycleRpcErrorCode,
   TaskLifecycleRpcResult,
   TaskStatus,
@@ -15,14 +16,32 @@ import type {
 
 export type MissionId = string;
 type TaskLifecycleClient = SupabaseClient<Database>;
-type TaskLifecycleOperation = 'archive' | 'delete' | 'reject' | 'status' | 'submit';
+type TaskMutationClient = SupabaseClient<DatabaseWithTaskMutationRpcs>;
+type TaskLifecycleOperation = 'archive' | 'create' | 'delete' | 'reject' | 'status' | 'submit' | 'update';
+
+export type CreateTaskRpcArgs =
+  DatabaseWithTaskMutationRpcs['public']['Functions']['create_task']['Args'];
+
+export type TaskUpdatePatch = Partial<Pick<
+  Database['public']['Tables']['tasks']['Update'],
+  | 'title'
+  | 'description'
+  | 'assigned_to'
+  | 'deadline'
+  | 'reward_type'
+  | 'reward_text'
+  | 'proof_required'
+  | 'is_daily'
+>>;
 
 const operationFallbacks: Record<TaskLifecycleOperation, string> = {
   archive: 'Failed to archive task.',
+  create: 'Failed to create task.',
   delete: 'Failed to delete task.',
   reject: 'Failed to reject task.',
   status: 'Failed to update task status.',
   submit: 'Failed to submit task for review.',
+  update: 'Failed to update task.',
 };
 
 export function getTaskLifecycleRpcErrorMessage(
@@ -39,6 +58,8 @@ export function getTaskLifecycleRpcErrorMessage(
     case 'not_creator':
       return operation === 'reject'
         ? 'Only the task creator can reject this task.'
+        : operation === 'update'
+        ? 'You can only edit tasks that you created.'
         : 'You can only delete tasks that you created.';
     case 'not_participant':
       return 'Only the creator or assignee can archive this task.';
@@ -50,6 +71,10 @@ export function getTaskLifecycleRpcErrorMessage(
       return 'Invalid proof type. Use an image, video, PDF, or text proof.';
     case 'status_not_allowed':
       return 'This status change is not allowed.';
+    case 'title_required':
+      return 'Task title is required.';
+    case 'invalid_field':
+      return 'Task update contains fields that cannot be changed.';
     default:
       return operationFallbacks[operation];
   }
@@ -70,6 +95,41 @@ export function requireTaskLifecycleRpcSuccess(
   }
 
   return result;
+}
+
+export async function createTaskViaRpc(
+  args: CreateTaskRpcArgs,
+  supabaseClient: TaskMutationClient = supabase as unknown as TaskMutationClient,
+): Promise<string> {
+  const { data, error } = await supabaseClient.rpc('create_task', args);
+
+  if (error) {
+    throw new Error(error.message || operationFallbacks.create);
+  }
+
+  const result = requireTaskLifecycleRpcSuccess(data, 'create');
+  if (typeof result.task_id !== 'string' || !result.task_id) {
+    throw new Error('Task creation returned no data.');
+  }
+
+  return result.task_id;
+}
+
+export async function updateTaskViaRpc(
+  taskId: string,
+  patch: TaskUpdatePatch,
+  supabaseClient: TaskMutationClient = supabase as unknown as TaskMutationClient,
+): Promise<void> {
+  const { data, error } = await supabaseClient.rpc('update_task', {
+    p_task_id: taskId,
+    p_patch: patch,
+  });
+
+  if (error) {
+    throw new Error(error.message || operationFallbacks.update);
+  }
+
+  requireTaskLifecycleRpcSuccess(data, 'update');
 }
 
 export interface ApproveMissionParams {

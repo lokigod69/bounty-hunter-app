@@ -8,6 +8,36 @@ import type { Database } from './database';
 // are live in src/types/database.ts (regenerated 2026-07-10 after the SQL apply) —
 // no client-side overlay needed; SupabaseClient<Database> covers them natively.
 
+type Json = Database['public']['Functions']['approve_task']['Returns'];
+
+type TaskMutationFunctions = {
+  create_task: {
+    Args: {
+      p_assigned_to?: string | null;
+      p_deadline?: string | null;
+      p_description?: string | null;
+      p_is_daily?: boolean;
+      p_proof_required?: boolean;
+      p_reward_text?: string | null;
+      p_reward_type?: string | null;
+      p_title: string;
+    };
+    Returns: Json;
+  };
+  update_task: {
+    Args: { p_patch: Json; p_task_id: string };
+    Returns: Json;
+  };
+};
+
+// TEMPORARY proposal-012 overlay until the SQL is applied and database.ts is
+// regenerated from Supabase. Mirrors the proposal-011 Functions intersection.
+export type DatabaseWithTaskMutationRpcs = Omit<Database, 'public'> & {
+  public: Omit<Database['public'], 'Functions'> & {
+    Functions: Database['public']['Functions'] & TaskMutationFunctions;
+  };
+};
+
 export type TaskLifecycleRpcErrorCode =
   | 'not_authenticated'
   | 'task_not_found'
@@ -17,11 +47,15 @@ export type TaskLifecycleRpcErrorCode =
   | 'wrong_status'
   | 'proof_required'
   | 'invalid_proof_type'
-  | 'status_not_allowed';
+  | 'status_not_allowed'
+  | 'title_required'
+  | 'invalid_field';
 
 export type TaskLifecycleRpcResult = {
   success?: boolean;
   error?: TaskLifecycleRpcErrorCode | string;
+  fields?: string[];
+  task_id?: string;
   proof_url?: string | null;
   already_submitted?: boolean;
   already_rejected?: boolean;
