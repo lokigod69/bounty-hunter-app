@@ -4,6 +4,11 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-14 (later) — Private proofs are signed at render time; cleanup failures preserve task rows
+**Status:** active (commit 4dc0ab7)
+**Decision:** Stored proof_url values keep the public-URL shape for compatibility (cleanup code extracts the path by splitting on '/bounty-proofs/'; the RPC doesn't validate format), but rendering validates and exchanges the path for a one-hour `createSignedUrl` anchor (`ProofLink` in TaskCard). Storage-object lifecycle rules: delete cleanup stays BEFORE `delete_task` (RLS delete policy joins the tasks row) and now ABORTS the deletion when object removal fails; failed submit and successful reject clean their proof objects best-effort — a rejection must still stand when stale-proof cleanup fails.
+**Why:** The bucket is private, so its public-style URL is never servable — signing at render is the only client-side fix that needs no data migration and no format change. Aborting delete on failed cleanup prevents permanently orphaned private objects (post-delete cleanup is impossible under the RLS join); best-effort ordering everywhere else keeps the user-visible lifecycle action authoritative over housekeeping.
+
 ## 2026-07-14 — Bundle strategy: vendor manualChunks yes, route-level lazy loading no
 **Status:** active
 **Decision:** vite `manualChunks` splits react-vendor/supabase/i18n into stable cacheable chunks (main chunk 722→388 kB, commit fa0d3bf). Route-level `React.lazy` code-splitting was assessed and deliberately rejected for now.
