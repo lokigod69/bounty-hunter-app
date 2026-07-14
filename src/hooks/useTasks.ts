@@ -474,6 +474,18 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           requestedStatus === 'rejected' ? 'reject' : 'status',
         );
 
+        if (requestedStatus === 'rejected' && typeof originalTask.proof_url === 'string') {
+          const filePath = originalTask.proof_url.split('/bounty-proofs/')[1];
+          if (filePath) {
+            try {
+              const { error: cleanupError } = await client.storage.from('bounty-proofs').remove([filePath]);
+              if (cleanupError) throw cleanupError;
+            } catch {
+              // A failed proof cleanup must not undo a successful rejection.
+            }
+          }
+        }
+
         const { data: refreshedTask, error: refreshedTaskError } = await client
           .from('tasks')
           .select(`
@@ -604,23 +616,34 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       }
       const proofUrl = urlData.publicUrl;
 
-      const { data: submissionData, error: dbUpdateError } = await lifecycleClient.rpc('submit_proof', {
-        p_task_id: taskId,
-        p_proof_url: proofUrl,
-        p_proof_type: proofType,
-      });
+      try {
+        const { data: submissionData, error: dbUpdateError } = await lifecycleClient.rpc('submit_proof', {
+          p_task_id: taskId,
+          p_proof_url: proofUrl,
+          p_proof_type: proofType,
+        });
 
-      if (dbUpdateError) {
-        let errorMessage = dbUpdateError.message || 'Failed to update task with proof details.';
-        if (dbUpdateError.message.includes('permission') || dbUpdateError.code === 'PGRST301') {
-          errorMessage = 'You do not have permission to submit proof for this task.';
-        } else if (dbUpdateError.message.includes('not found') || dbUpdateError.code === 'PGRST116') {
-          errorMessage = 'Task not found or has been deleted.';
+        if (dbUpdateError) {
+          let errorMessage = dbUpdateError.message || 'Failed to update task with proof details.';
+          if (dbUpdateError.message.includes('permission') || dbUpdateError.code === 'PGRST301') {
+            errorMessage = 'You do not have permission to submit proof for this task.';
+          } else if (dbUpdateError.message.includes('not found') || dbUpdateError.code === 'PGRST116') {
+            errorMessage = 'Task not found or has been deleted.';
+          }
+          throw new Error(errorMessage);
         }
-        throw new Error(errorMessage);
-      }
 
-      requireTaskLifecycleRpcSuccess(submissionData, 'submit');
+        requireTaskLifecycleRpcSuccess(submissionData, 'submit');
+      } catch (submitError) {
+        // The path is timestamped, so a failed submit would orphan this upload on every retry.
+        try {
+          const { error: cleanupError } = await client.storage.from('bounty-proofs').remove([filePath]);
+          if (cleanupError) throw cleanupError;
+        } catch {
+          // Preserve the submit failure even if best-effort cleanup also fails.
+        }
+        throw submitError;
+      }
 
       const { data: updatedTask, error: refreshedTaskError } = await client
         .from('tasks')
@@ -703,12 +726,15 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       if (typeof taskToDelete.proof_url === 'string' && taskToDelete.proof_url.trim() !== '') {
         try {
           const filePath = new URL(taskToDelete.proof_url).pathname.split('/bounty-proofs/')[1];
-          if (filePath) {
-            await client.storage.from('bounty-proofs').remove([filePath]);
+          if (!filePath) {
+            throw new Error('Could not delete associated proof file.');
           }
-        } catch (storageError) {
-          // Log error but don't block task deletion if file removal fails
-          toast.error('Could not delete associated proof file, but will proceed with task deletion.', { duration: 5000 });
+          const { error: storageError } = await client.storage.from('bounty-proofs').remove([filePath]);
+          if (storageError) {
+            throw storageError;
+          }
+        } catch {
+          throw new Error('Could not delete associated proof file.');
         }
       }
 

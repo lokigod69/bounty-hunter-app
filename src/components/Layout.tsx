@@ -108,7 +108,14 @@ export default function Layout() {
   // R31: Brute-force logout - always redirect regardless of errors
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        try {
+          await supabase.auth.signOut({ scope: 'local' });
+        } catch {
+          // Redirect below remains the final logout fallback.
+        }
+      }
     } finally {
       // Hard reset client state - this ensures we always redirect
       window.location.assign('/login');

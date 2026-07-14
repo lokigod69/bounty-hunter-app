@@ -19,6 +19,7 @@ import { Coin } from './visual/Coin';
 import { TypeEmblem } from './visual/TypeEmblem'; // R35: Contract-type gift emblem
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 import { useThemeStrings } from '../hooks/useThemeStrings'; // R35: dailyLabel string
+import { supabase } from '../lib/supabase';
 
 import { safeUrlRender } from '../lib/proofConfig';
 import { getTypeAccentVariant } from '../theme/accentVariants'; // R35: Type-based card accents
@@ -86,6 +87,86 @@ const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> 
   );
 };
 
+interface ProofLinkProps {
+  proofUrl: string;
+  className: string;
+  withIcon: boolean;
+}
+
+const ProofLink: React.FC<ProofLinkProps> = ({ proofUrl, className, withIcon }) => {
+  const { isValid, url: safeUrl } = safeUrlRender(proofUrl);
+  const [result, setResult] = useState<{
+    proofUrl: string | null;
+    signedUrl: string | null;
+    status: 'loading' | 'success' | 'error';
+  }>({ proofUrl: null, signedUrl: null, status: 'loading' });
+
+  useEffect(() => {
+    let active = true;
+
+    if (!isValid || !safeUrl) {
+      setResult({ proofUrl, signedUrl: null, status: 'error' });
+      return () => {
+        active = false;
+      };
+    }
+
+    const filePath = safeUrl.split('/bounty-proofs/')[1];
+    if (!filePath) {
+      setResult({ proofUrl, signedUrl: null, status: 'error' });
+      return () => {
+        active = false;
+      };
+    }
+
+    setResult({ proofUrl, signedUrl: null, status: 'loading' });
+    void supabase.storage.from('bounty-proofs').createSignedUrl(filePath, 3600)
+      .then(({ data, error }) => {
+        if (!active) return;
+        setResult({
+          proofUrl,
+          signedUrl: data?.signedUrl ?? null,
+          status: error || !data?.signedUrl ? 'error' : 'success',
+        });
+      })
+      .catch(() => {
+        if (active) {
+          setResult({ proofUrl, signedUrl: null, status: 'error' });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [proofUrl, isValid, safeUrl]);
+
+  const isCurrentResult = result.proofUrl === proofUrl;
+  if (!isValid || !safeUrl || (isCurrentResult && result.status === 'error')) {
+    return (
+      <span className={className}>
+        {withIcon && <Link size={20} className="mr-2" />}
+        Proof URL (invalid)
+      </span>
+    );
+  }
+
+  if (!isCurrentResult || result.status === 'loading' || !result.signedUrl) {
+    return (
+      <span className={className}>
+        {withIcon && <Link size={20} className="mr-2" />}
+        View Submitted Proof…
+      </span>
+    );
+  }
+
+  return (
+    <a href={result.signedUrl} target="_blank" rel="noopener noreferrer" className={className}>
+      {withIcon && <Link size={20} className="mr-2" />}
+      View Submitted Proof
+    </a>
+  );
+};
+
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   isCreatorView,
@@ -132,26 +213,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const safeStatus = (status || 'pending') as TaskStatus;
 
   const actorName: string = isCreatorView ? (assignee?.display_name ?? 'N/A') : (creator?.display_name ?? 'N/A');
-
-  const renderProofLink = (url: string, className: string, withIcon: boolean = false) => {
-    // Validate URL before rendering as link
-    const { isValid, url: safeUrl } = safeUrlRender(url);
-    if (!isValid || !safeUrl) {
-      // Render as plain text if URL is invalid
-      return (
-        <span className={className}>
-          {withIcon && <Link size={20} className="mr-2" />}
-          Proof URL (invalid)
-        </span>
-      );
-    }
-    return (
-      <a href={safeUrl} target="_blank" rel="noopener noreferrer" className={className}>
-        {withIcon && <Link size={20} className="mr-2" />}
-        View Submitted Proof
-      </a>
-    );
-  };
 
   // R28: Mode-aware card backgrounds with accent borders from accentVariants
   // Archived/completed/review have specific colors, pending uses mode accent
@@ -279,6 +340,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     await onArchive(id);
                     handleClose();
                     if (refetchTasks) refetchTasks();
+                  } catch {
+                    // Page-level handlers display archive failures; keep the modal open.
                   } finally {
                     setInternalActionLoading(false);
                   }
@@ -310,7 +373,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <span className="text-xs font-semibold uppercase tracking-wide">Submitted Proof</span>
             </div>
             <div className="text-center">
-              {renderProofLink(task.proof_url!, 'inline-flex items-center text-teal-400 hover:text-teal-300 underline text-sm font-medium')}
+              <ProofLink proofUrl={task.proof_url!} className="inline-flex items-center text-teal-400 hover:text-teal-300 underline text-sm font-medium" withIcon={false} />
             </div>
           </div>
         )}
@@ -323,7 +386,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <span className="text-xs font-semibold uppercase tracking-wide">Proof for Review</span>
             </div>
             <div className="text-center">
-              {renderProofLink(task.proof_url!, 'inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 underline text-sm font-medium py-2 px-4 rounded-lg hover:bg-teal-500/10 transition-colors', true)}
+              <ProofLink proofUrl={task.proof_url!} className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 underline text-sm font-medium py-2 px-4 rounded-lg hover:bg-teal-500/10 transition-colors" withIcon />
             </div>
           </div>
         )}

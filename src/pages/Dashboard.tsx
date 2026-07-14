@@ -117,7 +117,7 @@ export default function Dashboard() {
   const handleArchive = async (taskId: string): Promise<void> => {
     if (!user) {
       toast.error('You must be logged in to archive tasks.');
-      return;
+      throw new Error('You must be logged in to archive tasks.');
     }
 
     const toastId = `archive-${taskId}`;
@@ -137,6 +137,7 @@ export default function Dashboard() {
         message = error.message || message;
       }
       toast.error(message, { id: toastId });
+      throw error instanceof Error ? error : new Error(message);
     }
   };
 

@@ -154,7 +154,8 @@
     "tryAgain": "Try again",
     "deleting": "Deleting...",
     "somethingWentWrong": "Something went wrong",
-    "loadingCredits": "Loading credits..."
+    "loadingCredits": "Loading credits...",
+    "loadingContracts": "Loading missions…"
   },
   "taskForm": {
     "editTitle": "Edit {{noun}}",
@@ -236,6 +237,8 @@
       "creditCostPlaceholder": "Credit Cost",
       "useEmoji": "Use Emoji",
       "useImageUrl": "Use URL",
+      "imageUrlError": "Please use a direct image URL (jpg, png, gif, webp)",
+      "imageUrlPlaceholder": "https://example.com/image.jpg",
       "cancelButton": "Cancel",
       "submitButton": "Create reward",
       "submittingButton": "Creating..."

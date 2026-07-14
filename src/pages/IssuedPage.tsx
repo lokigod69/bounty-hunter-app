@@ -119,11 +119,15 @@ export default function IssuedPage() {
       if (typeof selectedContract.proof_url === 'string' && selectedContract.proof_url.trim() !== '') {
         try {
           const filePath = new URL(selectedContract.proof_url).pathname.split('/bounty-proofs/')[1];
-          if (filePath) {
-            await supabase.storage.from('bounty-proofs').remove([filePath]);
+          if (!filePath) {
+            throw new Error(t('contracts.proofCleanupFailed'));
+          }
+          const { error: storageError } = await supabase.storage.from('bounty-proofs').remove([filePath]);
+          if (storageError) {
+            throw storageError;
           }
         } catch {
-          toast.error(t('contracts.proofCleanupFailed'));
+          throw new Error(t('contracts.proofCleanupFailed'));
         }
       }
 
@@ -287,7 +291,7 @@ export default function IssuedPage() {
   const handleArchive = async (taskId: string): Promise<void> => {
     if (!user) {
       toast.error(t('contracts.mustBeLoggedIn'));
-      return;
+      throw new Error(t('contracts.mustBeLoggedIn'));
     }
 
     const toastId = `archive-${taskId}`;
@@ -306,6 +310,7 @@ export default function IssuedPage() {
         ? (error as { message: string }).message
         : t('contracts.archiveFailed');
       toast.error(errorMessage, { id: toastId });
+      throw error instanceof Error ? error : new Error(errorMessage);
     }
   };
 
@@ -326,8 +331,7 @@ export default function IssuedPage() {
 
   const handleSubmitContract = async (taskData: TaskFormData, taskId?: string) => {
     if (!user) {
-      toast.error(t('contracts.createFailedLoggedIn'));
-      return;
+      throw new Error(t('contracts.createFailedLoggedIn'));
     }
 
     try {
@@ -383,9 +387,9 @@ export default function IssuedPage() {
       // Type guard to check if it's a Supabase-like error object (PostgrestError)
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
-        toast.error(t('contracts.createFailedMessage', { message: supabaseError.message }));
+        throw new Error(t('contracts.createFailedMessage', { message: supabaseError.message }));
       } else {
-        toast.error(t('contracts.createFailedUnknown'));
+        throw new Error(t('contracts.createFailedUnknown'));
       }
     }
   };

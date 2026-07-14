@@ -165,7 +165,7 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
   // Fetch task to get context
   const { data: task, error: fetchError } = await supabaseClient
     .from('tasks')
-    .select('assigned_to, created_by, status')
+    .select('assigned_to, created_by, status, proof_url')
     .eq('id', missionId)
     .eq('created_by', issuerId)
     .single();
@@ -202,6 +202,18 @@ export async function rejectMission(params: RejectMissionParams): Promise<void> 
   }
 
   requireTaskLifecycleRpcSuccess(data, 'reject');
+
+  if (typeof task.proof_url === 'string') {
+    const filePath = task.proof_url.split('/bounty-proofs/')[1];
+    if (filePath) {
+      try {
+        const { error: cleanupError } = await supabaseClient.storage.from('bounty-proofs').remove([filePath]);
+        if (cleanupError) throw cleanupError;
+      } catch {
+        // A failed proof cleanup must not undo a successful rejection.
+      }
+    }
+  }
 }
 
 /**
@@ -286,6 +298,7 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
 
   let proofUrl: string | null = null;
   let proofType: string | null = null;
+  let uploadedFileName: string | null = null;
 
   // Handle file upload if provided
   if (file) {
@@ -318,6 +331,7 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     if (uploadError) {
       throw uploadError;
     }
+    uploadedFileName = fileName;
 
     // Get the public URL for the uploaded file
     const { data: publicUrlData } = supabaseClient.storage
@@ -335,18 +349,31 @@ export async function uploadProof(params: UploadProofParams): Promise<string> {
     proofType = 'text';
   }
 
-  const { data, error: updateError } = await supabaseClient.rpc('submit_proof', {
-    p_task_id: missionId,
-    p_proof_url: proofUrl ?? undefined,
-    p_proof_type: proofType ?? undefined,
-    p_proof_description: textDescription || undefined,
-  });
+  try {
+    const { data, error: updateError } = await supabaseClient.rpc('submit_proof', {
+      p_task_id: missionId,
+      p_proof_url: proofUrl ?? undefined,
+      p_proof_type: proofType ?? undefined,
+      p_proof_description: textDescription || undefined,
+    });
 
-  if (updateError) {
-    throw new Error(updateError.message || 'Failed to submit task for review.');
+    if (updateError) {
+      throw new Error(updateError.message || 'Failed to submit task for review.');
+    }
+
+    requireTaskLifecycleRpcSuccess(data, 'submit');
+  } catch (error) {
+    if (uploadedFileName) {
+      try {
+        const { error: cleanupError } = await supabaseClient.storage.from('bounty-proofs').remove([uploadedFileName]);
+        if (cleanupError) throw cleanupError;
+      } catch {
+        // Preserve the submit failure even if best-effort cleanup also fails.
+      }
+    }
+    throw error;
   }
 
-  requireTaskLifecycleRpcSuccess(data, 'submit');
   return proofUrl || 'text-proof';
 }
 
@@ -437,4 +464,3 @@ export async function submitForReviewNoProof(params: SubmitForReviewParams): Pro
 
   requireTaskLifecycleRpcSuccess(data, 'submit');
 }
-

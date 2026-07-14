@@ -166,7 +166,8 @@
     "tryAgain": "Nochmal versuchen",
     "deleting": "Wird gelöscht...",
     "somethingWentWrong": "Da ist etwas schiefgelaufen",
-    "loadingCredits": "Credits werden geladen..."
+    "loadingCredits": "Credits werden geladen...",
+    "loadingContracts": "Missionen werden geladen…"
   },
   "taskForm": {
     "editTitle": "{{noun}} bearbeiten",
@@ -248,6 +249,8 @@
       "creditCostPlaceholder": "Credit-Kosten",
       "useEmoji": "Emoji verwenden",
       "useImageUrl": "Bild-URL verwenden",
+      "imageUrlError": "Bitte eine direkte Bild-URL verwenden (jpg, png, gif, webp)",
+      "imageUrlPlaceholder": "https://beispiel.de/bild.jpg",
       "cancelButton": "Abbrechen",
       "submitButton": "Belohnung erstellen",
       "submittingButton": "Wird erstellt..."
@@ -268,6 +271,11 @@
       "confirmButton": "Bestätigen",
       "deletingButton": "Wird gelöscht..."
     }
+  },
+  "languageSwitcher": {
+    "language": "Sprache",
+    "en": "Englisch",
+    "de": "Deutsch"
   },
   "theme": {
     "guild": {

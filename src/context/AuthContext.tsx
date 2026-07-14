@@ -94,12 +94,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         if (authParams.code) {
-          await supabase.auth.exchangeCodeForSession(authParams.code);
+          const { error } = await supabase.auth.exchangeCodeForSession(authParams.code);
+          if (error) throw error;
         } else if (authParams.accessToken && authParams.refreshToken) {
-          await supabase.auth.setSession({
+          const { error } = await supabase.auth.setSession({
             access_token: authParams.accessToken,
             refresh_token: authParams.refreshToken,
           });
+          if (error) throw error;
         }
       } catch {
         toast.error('Could not complete sign in. Please try again.');
