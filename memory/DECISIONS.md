@@ -4,6 +4,16 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-15 — Proposal 012 design: jsonb-patch update_task with a column whitelist; all client write policies on tasks dropped; client refactor parked on a branch
+**Status:** 🟡 drafted, unapplied (proposal committed 23ca5ec; client branch `phase-b-client-rpcs` f3927cb local-only)
+**Decision:** (1) `update_task(task_id, jsonb patch)` instead of a fixed-arg signature — both call sites keep their exact partial/full-form semantics, and the key whitelist (title/description/assigned_to/deadline/reward_type/reward_text/proof_required/is_daily) makes lifecycle columns unreachable by construction; unknown keys are a hard `invalid_field` error, empty patch is idempotent success. (2) `create_task` server-sets `created_by`/`status` — the client can no longer choose either. (3) The up.sql also drops `"Users can delete own tasks"` (DELETE policy) — dead weight since delete_task shipped in 011 but still usable by hand-crafted requests. (4) The Phase B client refactor lives on branch `phase-b-client-rpcs`, NOT unpushed-on-main like 011 did — main stays deployable while the SQL waits for Michael. Recommendations recorded in the proposal for his call: keep edit-gating parity, keep no-friendship-check parity.
+**Why:** Fixed-arg update RPCs either force full-replace semantics (breaking useTasks' partial edits) or need presence-sentinels; jsonb presence checks are the native fit. The branch strategy fixes the 011 pain where an unpushed commit froze main. Whitelist-not-blacklist because the threat is column reach, not values — table CHECKs stay authoritative for values.
+
+## 2026-07-15 — Capacitor plugin configs must be backed by installed packages
+**Status:** active (fixed in 23ca5ec)
+**Decision:** `capacitor.config.ts` had StatusBar/SplashScreen/Keyboard config blocks while none of the three packages were installed — Capacitor silently ignores config for absent plugins, so the intended native status-bar/splash/keyboard behavior never existed. Installed all three; rule going forward: any `plugins:` entry in capacitor.config.ts must correspond to a package in package.json (cap sync's plugin list is the check).
+**Why:** Silent no-op config is a trap for device testing — the app would have shipped to TestFlight with a white status bar and default splash and the config would have looked correct in review.
+
 ## 2026-07-14 (later) — Private proofs are signed at render time; cleanup failures preserve task rows
 **Status:** active (commit 4dc0ab7)
 **Decision:** Stored proof_url values keep the public-URL shape for compatibility (cleanup code extracts the path by splitting on '/bounty-proofs/'; the RPC doesn't validate format), but rendering validates and exchanges the path for a one-hour `createSignedUrl` anchor (`ProofLink` in TaskCard). Storage-object lifecycle rules: delete cleanup stays BEFORE `delete_task` (RLS delete policy joins the tasks row) and now ABORTS the deletion when object removal fails; failed submit and successful reject clean their proof objects best-effort — a rejection must still stand when stale-proof cleanup fails.
