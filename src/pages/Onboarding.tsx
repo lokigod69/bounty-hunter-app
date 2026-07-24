@@ -127,9 +127,9 @@ export default function Onboarding() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
                   step < currentStep
-                    ? 'bg-[var(--mode-accent)] text-white'
+                    ? 'bg-[var(--mode-accent)] text-[var(--mode-accent-ink)]'
                     : step === currentStep
-                    ? 'bg-[var(--mode-accent)] text-white ring-2 ring-[var(--mode-accent)] ring-offset-2 ring-offset-gray-900'
+                    ? 'bg-[var(--mode-accent)] text-[var(--mode-accent-ink)] ring-2 ring-[var(--mode-accent)] ring-offset-2 ring-offset-gray-900'
                     : 'bg-gray-700 text-gray-400'
                 }`}
               >

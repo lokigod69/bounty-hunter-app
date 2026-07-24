@@ -1,5 +1,7 @@
-// Guards the Phase-4 feedback contract: every semantic event fires the right
-// haptic + sound pair, and the single sound toggle silences BOTH channels.
+// Guards the feedback contract: every semantic event fires the right
+// haptic + sound pair, and the two channels are INDEPENDENT — muting sound
+// must not remove haptics (THE REGISTER Wave 0 split; supersedes the old
+// single-toggle contract).
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -33,6 +35,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 describe('feedback', () => {
   beforeEach(() => {
     enabled = true;
+    feedback.setHapticsEnabled(true);
     impact.mockClear();
     notification.mockClear();
     play.mockClear();
@@ -46,6 +49,12 @@ describe('feedback', () => {
 
     feedback.tap('click1a');
     expect(play).toHaveBeenCalledWith('click1a');
+  });
+
+  it('press fires a medium impact (a commitment landing)', async () => {
+    feedback.press();
+    await flush();
+    expect(impact).toHaveBeenCalledWith({ style: 'MEDIUM' });
   });
 
   it('success fires a success haptic with the success sound by default', async () => {
@@ -81,8 +90,19 @@ describe('feedback', () => {
     expect(notification).toHaveBeenCalledWith({ type: 'ERROR' });
   });
 
-  it('the sound toggle silences haptics too', async () => {
-    enabled = false;
+  it('muting sound does NOT silence haptics — the channels are independent', async () => {
+    enabled = false; // sound toggle off
+    feedback.tap('click1a');
+    feedback.success();
+    await flush();
+
+    // Haptics still fire (sound gating happens inside soundManager.play).
+    expect(impact).toHaveBeenCalledWith({ style: 'LIGHT' });
+    expect(notification).toHaveBeenCalledWith({ type: 'SUCCESS' });
+  });
+
+  it('the haptics preference silences haptics without touching sound', async () => {
+    feedback.setHapticsEnabled(false);
     feedback.tap('click1a');
     feedback.success();
     feedback.payday();
@@ -92,7 +112,17 @@ describe('feedback', () => {
 
     expect(impact).not.toHaveBeenCalled();
     expect(notification).not.toHaveBeenCalled();
-    // sounds themselves are gated inside soundManager.play; feedback still
-    // delegates the keys it was asked for
+    // Sound keys are still delegated — the sound channel has its own toggle.
+    expect(play).toHaveBeenCalledWith('click1a');
+    expect(play).toHaveBeenCalledWith('payday');
+  });
+
+  it('the haptics preference round-trips through the setter', () => {
+    // (Storage persistence is guarded try/catch in the implementation; this
+    // suite runs in a node environment without localStorage.)
+    feedback.setHapticsEnabled(false);
+    expect(feedback.isHapticsEnabled()).toBe(false);
+    feedback.setHapticsEnabled(true);
+    expect(feedback.isHapticsEnabled()).toBe(true);
   });
 });

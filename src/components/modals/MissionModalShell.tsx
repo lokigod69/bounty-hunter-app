@@ -461,7 +461,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                               : parseInt(String(reward.value), 10) || 0
                           }
                           size="lg"
-                          variant="subtle-spin"
+                          variant="static"
                         />
                       </div>
                     ) : reward.imageUrl ? (

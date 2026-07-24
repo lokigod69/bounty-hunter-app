@@ -59,7 +59,8 @@ const animationClasses2D: Record<CoinVariant, string> = {
 const Coin: React.FC<CoinProps> = ({
   value,
   size = 'md',
-  variant = 'subtle-spin',
+  // Motion law: nothing idles. Coins sit still unless a ceremony moves them.
+  variant = 'static',
   label,
   className = '',
   showValue = true,

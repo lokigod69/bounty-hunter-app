@@ -53,6 +53,7 @@ import UserCredits from './UserCredits';
 import ProfileEditModal from './ProfileEditModal';
 
 import { feedback } from '../utils/feedback';
+import type { SoundKey } from '../utils/soundManager';
 import { avatarFallback } from '../lib/avatar';
 
 export default function Layout() {
@@ -149,8 +150,10 @@ export default function Layout() {
     return <Send size={20} />;
   };
 
-  // Navigation items - using translated theme strings and mode-specific icons
-  const navItems = [
+  // Navigation items - using translated theme strings and mode-specific icons.
+  // sound is typed as SoundKey so an unregistered key is a compile error
+  // (click1e was silently mute for months before the registry was typed).
+  const navItems: { name: string; path: string; icon: JSX.Element; sound: SoundKey }[] = [
     { name: strings.contractsLabel, path: '/', icon: getContractsIcon(), sound: 'click1a' },
     { name: strings.missionsLabel, path: '/issued', icon: getMissionsIcon(), sound: 'click1b' },
     { name: strings.friendsTitle, path: '/friends', icon: <Users size={20} />, sound: 'click1c' },
@@ -168,7 +171,10 @@ export default function Layout() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-indigo-950">
+    // No background on this wrapper: the body's starfield gradient (index.css)
+    // is the app's sky. An opaque bg-indigo-950 here painted over it on every
+    // signed-in screen for months.
+    <div className="h-screen flex flex-col">
 
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
@@ -183,7 +189,7 @@ export default function Layout() {
                 alt="Bounty Hunter Logo" 
                 className="h-10 w-10"
               />
-              <span className="app-title text-2xl font-bold text-white">{strings.appName}</span>
+              <span className="app-title text-2xl text-white">{strings.appName}</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -238,9 +244,9 @@ export default function Layout() {
                   className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
                   aria-label="Toggle cursor trail"
                 >
-                  <Sparkles 
-                    size={20} 
-                    className={isCursorTrailEnabled ? 'text-cyan-400 animate-pulse' : 'text-gray-500'} 
+                  <Sparkles
+                    size={20}
+                    className={isCursorTrailEnabled ? 'text-cyan-400' : 'text-gray-500'}
                   />
                 </button>
                 <div className="absolute top-full right-0 mt-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-tooltip">

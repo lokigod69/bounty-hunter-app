@@ -1,6 +1,8 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+# iOS floor aligned with Capacitor 8's own minimum (Capacitor.podspec: 15.0).
+# The old 14.0 floor was stale — an iOS 14 install would fail at the pod layer.
+platform :ios, '15.0'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires

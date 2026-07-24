@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateCcw } from 'lucide-react';
+import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateCcw, Vibrate, VibrateOff } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
@@ -74,6 +74,9 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundManager.isEnabled());
+  // Haptics are an independent channel since the Wave-0 feedback split —
+  // muting sound no longer removes vibration.
+  const [localHapticsEnabled, setLocalHapticsEnabled] = useState(feedback.isHapticsEnabled());
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   // Restart Onboarding: reset the FTX flag (localStorage cache + DB profile flag)
@@ -283,6 +286,33 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                       localSoundEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Haptics Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                <label className="text-sm font-medium flex items-center">
+                  {localHapticsEnabled ? <Vibrate size={18} className="mr-2 text-cyan-400" /> : <VibrateOff size={18} className="mr-2 text-gray-500"/>}
+                  {t('profile.haptics')}
+                </label>
+                <button
+                  type="button"
+                  aria-label={localHapticsEnabled ? t('profile.disableHaptics') : t('profile.enableHaptics')}
+                  onClick={() => {
+                    const next = !feedback.isHapticsEnabled();
+                    feedback.setHapticsEnabled(next);
+                    setLocalHapticsEnabled(next);
+                    if (next) feedback.tap(); // immediate demo pulse
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 ${
+                    localHapticsEnabled ? 'bg-emerald-500' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      localHapticsEnabled ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>

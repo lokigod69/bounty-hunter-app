@@ -295,8 +295,10 @@ const RewardsStorePage: React.FC = () => {
                   <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
                     {strings.storeCreditsLabel}
                   </span>
-                  {/* V1: Gold shimmering balance number is the currency identity */}
-                  <span className="text-display font-bold leading-none animate-shimmer-credit">
+                  {/* V1: Static gold balance number is the currency identity.
+                      (The old shimmer rendered blank for reduced-motion and
+                      high-contrast users — its overrides never restored a color.) */}
+                  <span className="text-display leading-none credit-gold-text">
                     {userCredits ?? 0}
                   </span>
                   {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
@@ -326,7 +328,7 @@ const RewardsStorePage: React.FC = () => {
                   ) : null}
                 </div>
                 {/* R32: Coin with value is now the primary balance display */}
-                <Coin size="xl" variant="subtle-spin" value={userCredits ?? 0} />
+                <Coin size="xl" variant="static" value={userCredits ?? 0} />
               </div>
             </BaseCard>
           </div>

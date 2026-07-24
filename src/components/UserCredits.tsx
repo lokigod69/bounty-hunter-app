@@ -194,7 +194,7 @@ const UserCredits: React.FC = () => {
     // Display 0 credits with an error indicator
     return (
       <div className="credit-badge">
-        <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
+        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
         <span>0</span>
       </div>
     );
@@ -204,7 +204,7 @@ const UserCredits: React.FC = () => {
   if (credits === null && !loading) {
      return (
       <div className="credit-badge">
-        <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
+        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
         <span>0</span>
       </div>
     );
@@ -220,7 +220,7 @@ const UserCredits: React.FC = () => {
   return (
     <div className="credit-badge">
       {/* Decorative coin with ¢ symbol - balance shown as text */}
-      <Coin size="sm" variant="subtle-spin" label="¢" showValue={false} className="mr-2" />
+      <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
       <span>{formatCredits(animatedValue)}</span>
     </div>
   );
