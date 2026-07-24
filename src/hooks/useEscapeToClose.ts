@@ -1,8 +1,32 @@
 // src/hooks/useEscapeToClose.ts
-// Shared Escape-key handler for modals: closes the modal when Escape is pressed.
-// Keeps the latest onClose in a ref so callers don't need to memoize it.
+// Shared LIFO Escape stack: one key press closes only the topmost dialog.
+// Keeps each latest onClose in a ref so callers don't need to memoize it.
 
 import { useEffect, useRef } from 'react';
+
+interface EscapeEntry {
+  id: symbol;
+  close: () => void;
+}
+
+const escapeStack: EscapeEntry[] = [];
+
+function handleEscape(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return;
+  const top = escapeStack[escapeStack.length - 1];
+  if (!top) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  top.close();
+}
+
+function syncEscapeListener() {
+  document.removeEventListener('keydown', handleEscape, true);
+  if (escapeStack.length > 0) {
+    document.addEventListener('keydown', handleEscape, true);
+  }
+}
 
 export function useEscapeToClose(isOpen: boolean, onClose: () => void) {
   const onCloseRef = useRef(onClose);
@@ -10,13 +34,19 @@ export function useEscapeToClose(isOpen: boolean, onClose: () => void) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onCloseRef.current();
-      }
+
+    const entry: EscapeEntry = {
+      id: Symbol('dialog-escape-handler'),
+      close: () => onCloseRef.current(),
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    escapeStack.push(entry);
+    syncEscapeListener();
+
+    return () => {
+      const index = escapeStack.findIndex((candidate) => candidate.id === entry.id);
+      if (index >= 0) escapeStack.splice(index, 1);
+      syncEscapeListener();
+    };
   }, [isOpen]);
 }
 

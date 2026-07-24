@@ -1,10 +1,8 @@
 // src/pages/IssuedPage.tsx
 // This component serves as the "MISSIONS" view, displaying contracts (missions) created BY the user.
 // - Uses `useIssuedContracts` hook for data fetching.
-// - Sorts contracts by status: pending (top), review (middle), completed (bottom).
-// - TaskCard interactions (status updates, proof uploads, deletions) are effectively DISABLED
-//   as `useIssuedContracts` hook (assumed v1) likely only returns read-only data.
-//   Handler functions are provided to TaskCard to satisfy prop requirements but will be no-ops.
+// - Sorts contracts by status and keeps sent-back work visible between review and completed.
+// - Creator actions are RPC-authoritative; create/update form ownership remains isolated below.
 // - Lint fixes applied for hasOwnProperty, error message access (now correctly displaying string error), unused parameter warnings, and dailyQuote property access.
 // - Integrated TaskForm to allow contract creation, triggered by location state. Corrected TaskForm props (onSubmit, userId).
 // - Implemented list refresh using refetch() after contract creation and ensured success toast.
@@ -319,7 +317,7 @@ export default function IssuedPage() {
 
   useEffect(() => {
     const sortedContracts = [...(issuedContracts || [])].sort((a, b) => {
-      const order = { pending: 0, review: 1, completed: 2 } as const;
+      const order = { pending: 0, in_progress: 0, review: 1, rejected: 2, completed: 3 } as const;
       // Handle potential null or undefined status if data is not clean
       const statusA = a.status && Object.prototype.hasOwnProperty.call(order, a.status) ? a.status : 'pending'; 
       const statusB = b.status && Object.prototype.hasOwnProperty.call(order, b.status) ? b.status : 'pending';
@@ -422,7 +420,7 @@ export default function IssuedPage() {
     }
   };
 
-  if (loading) {
+  if (loading && issuedContracts.length === 0) {
     return (
       <PageContainer>
         <PageHeader
@@ -461,6 +459,7 @@ export default function IssuedPage() {
   // Section filtering for grouped display
   const pendingMissions = sortedIssuedContracts.filter(task => task.status === 'pending' || task.status === 'in_progress');
   const reviewMissions = sortedIssuedContracts.filter(task => task.status === 'review');
+  const rejectedMissions = sortedIssuedContracts.filter(task => task.status === 'rejected');
   const completedMissions = sortedIssuedContracts.filter(task => task.status === 'completed');
 
   const stats = {
@@ -612,7 +611,35 @@ export default function IssuedPage() {
                   )}
                 </div>
 
-                {/* Section 3 - Completed Missions */}
+                {/* Section 3 - Sent Back Missions */}
+                {rejectedMissions.length > 0 && (
+                  <div className="space-y-4">
+                    <SectionHeader
+                      title={t('contracts.sentBack')}
+                      count={rejectedMissions.length}
+                      accent="warning"
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                      {rejectedMissions.map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          isCreatorView={true}
+                          onStatusUpdate={() => {}}
+                          onApprove={() => handleApprove(task.id)}
+                          onReject={() => handleReject(task.id)}
+                          onProofUpload={handleProofUpload}
+                          uploadProgress={0}
+                          onDeleteTaskRequest={handleDeleteTaskRequest}
+                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                          onEditTaskRequest={handleEditTaskRequest}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 4 - Completed Missions */}
                 <div className="space-y-4">
                   <SectionHeader
                     title={t('contracts.completed')}

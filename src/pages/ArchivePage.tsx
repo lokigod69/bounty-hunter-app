@@ -1,10 +1,12 @@
 // src/pages/ArchivePage.tsx
+// Wave B: The ledger includes both issued and assigned archived contracts.
 // This page displays a history of archived tasks — a "Contract Ledger" / trophy view.
 
 import React from 'react';
 import { CheckCircle, Coins } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
+import { useAuth } from '../hooks/useAuth';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import TaskCard from '../components/TaskCard';
 import { PageContainer } from '../components/layout/PageContainer';
@@ -15,11 +17,12 @@ import { PageState, EmptyState } from '../components/ui';
 import emptyArchive from '../assets/generated/empty-archive.webp';
 
 const ArchivePage: React.FC = () => {
+  const { user } = useAuth();
   const { archivedTasks, loading, error, refetch: refetchArchivedTasks } = useArchivedContracts();
   const { strings } = useThemeStrings();
   const { t } = useTranslation();
 
-  if (loading) {
+  if (loading && archivedTasks.length === 0) {
     return (
       <PageContainer>
         <PageHeader title={strings.archiveTitle} subtitle={strings.archiveSubtitle} />
@@ -75,7 +78,7 @@ const ArchivePage: React.FC = () => {
                 <TaskCard
                   key={task.id}
                   task={task}
-                  isCreatorView={false}
+                  isCreatorView={task.created_by === user?.id}
                   onStatusUpdate={() => {}}
                   onProofUpload={async () => null}
                   onDeleteTaskRequest={() => {}}

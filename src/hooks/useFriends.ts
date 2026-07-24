@@ -4,6 +4,7 @@
 // - Use unique channel name per user
 // - Only unsubscribe this specific channel on cleanup (not removeAllChannels)
 // - Create channel once per userId change
+// Wave B: friendship lists now revalidate without replacing populated UI with a spinner.
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
@@ -34,15 +35,24 @@ export function useFriends(userId: string | undefined) {
   const [pendingRequests, setPendingRequests] = useState<FriendWithProfile[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
+  const loadedUserIdRef = useRef<string | null>(null);
 
   // R8 FIX: Track channel ref to properly cleanup only this channel
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   // Memoize fetchFriendships so it can be called from subscription callback
   const fetchFriendships = useCallback(async (uid: string) => {
+    const isInitialLoad =
+      !hasLoadedRef.current || loadedUserIdRef.current !== uid;
     try {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setError(null);
 
       // Get all friendships where user is involved
@@ -92,6 +102,8 @@ export function useFriends(userId: string | undefined) {
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
+      hasLoadedRef.current = true;
+      loadedUserIdRef.current = uid;
     } catch (e) {
       let errorMessage: string | null = null;
       if (e instanceof Error) {
@@ -103,7 +115,8 @@ export function useFriends(userId: string | undefined) {
       }
       setError(errorMessage);
     } finally {
-      setLoading(false);
+      if (isInitialLoad) setLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
@@ -115,6 +128,9 @@ export function useFriends(userId: string | undefined) {
       setPendingRequests([]);
       setSentRequests([]);
       setLoading(false);
+      setIsRefreshing(false);
+      hasLoadedRef.current = false;
+      loadedUserIdRef.current = null;
       return;
     }
 
@@ -180,7 +196,6 @@ export function useFriends(userId: string | undefined) {
 
   const sendFriendRequest = async (friendEmail: string) => {
     try {
-      setLoading(true);
       setError(null);
 
       if (!userId) throw new Error('User not authenticated');
@@ -226,14 +241,11 @@ export function useFriends(userId: string | undefined) {
     } catch (error) {
       setError((error as Error).message ?? null);
       return null;
-    } finally {
-      setLoading(false);
     }
   };
 
   const respondToFriendRequest = async (friendshipId: string, accept: boolean) => {
     try {
-      setLoading(true);
       setError(null);
 
       if (accept) {
@@ -264,8 +276,6 @@ export function useFriends(userId: string | undefined) {
     } catch (error) {
       setError((error as Error).message ?? null);
       return null;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -276,7 +286,6 @@ export function useFriends(userId: string | undefined) {
     }
 
     try {
-      setLoading(true);
       setError(null);
 
       const { error: deleteError } = await supabase
@@ -295,14 +304,11 @@ export function useFriends(userId: string | undefined) {
     } catch (error) {
       setError((error as Error).message ?? null);
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
   const removeFriend = async (friendshipId: string) => {
     try {
-      setLoading(true);
       setError(null);
 
       const { error } = await supabase
@@ -319,8 +325,6 @@ export function useFriends(userId: string | undefined) {
     } catch (error) {
       setError((error as Error).message ?? null);
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -329,6 +333,7 @@ export function useFriends(userId: string | undefined) {
     pendingRequests,
     sentRequests,
     loading,
+    isRefreshing,
     error,
     sendFriendRequest,
     respondToFriendRequest,

@@ -1,11 +1,13 @@
 // src/components/modals/MissionModalShell.tsx
 // R9: Unified modal shell for mission-related modals
+// Wave B: Synchronous mobile layout plus accessible dialog focus management.
 // R27: Fixed height layout with internal scroll, reward thumbnail + lightbox
 // R35: Text-reward branch uses the mode gift emblem (TypeEmblem) instead of a raw 🎁
 // Implements glassmorphism design with mode/role/state theming
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   Target,
@@ -31,6 +33,7 @@ import {
 import { StateChip } from './StateChip';
 import { useUI } from '../../context/UIContext';
 import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { AppButton } from '../ui/AppButton';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 import { Coin } from '../visual/Coin';
@@ -150,16 +153,23 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   archiveAction,
   children,
 }) => {
+  const { t } = useTranslation();
   const { openModal, clearLayer } = useUI();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 639px)').matches
+  );
   // R27: Lightbox state for reward images
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Check if mobile
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
+    const mediaQuery = window.matchMedia('(max-width: 639px)');
+    const checkMobile = () => setIsMobile(mediaQuery.matches);
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -186,6 +196,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
   // Close on Escape
   useEscapeToClose(isOpen, handleClose);
+  useFocusTrap(dialogRef, isOpen);
 
   if (!isOpen) return null;
 
@@ -269,6 +280,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
       {/* Modal Content - R30: Use max-height instead of fixed height */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className={`
           relative z-modal-content
           w-full ${isMobile ? 'max-h-[90vh]' : 'max-w-2xl max-h-[85vh]'}
@@ -355,7 +371,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 <button
                   onClick={handleClose}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors z-modal-controls"
-                  aria-label="Close modal"
+                  aria-label={t('common.close')}
                 >
                   <X size={20} className="text-white/60 hover:text-white" />
                 </button>
@@ -364,6 +380,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
             {/* Title */}
             <h2
+              id={titleId}
               className="text-xl sm:text-2xl font-bold text-white mb-2 line-clamp-2"
               style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}
             >

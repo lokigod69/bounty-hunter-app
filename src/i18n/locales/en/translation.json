@@ -38,11 +38,13 @@
     "title": "My Contracts",
     "description": "Contracts assigned to you for completion.",
     "create": "Create Contract",
+    "accept": "Accept contract",
     "deadline": "Deadline",
     "status": "Status",
     "open": "Open",
     "inReview": "In Review",
     "completed": "Completed",
+    "sentBack": "Sent back",
     "complete": "Complete",
     "approve": "Approve",
     "reject": "Reject",
@@ -106,7 +108,19 @@
       "reasonPlaceholder": "What needs to change before you approve it?",
       "confirm": "Reject",
       "resubmit": "Resubmit",
-      "rejectedLabel": "Rejected"
+      "rejectedLabel": "Sent back"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "hunterReport": "Hunter's report",
+      "submittedProof": "Submitted proof",
+      "submittedProofAlt": "Submitted proof",
+      "submittedVideo": "Submitted proof video",
+      "loadingProof": "Loading submitted proof...",
+      "proofUnavailable": "Submitted proof is unavailable.",
+      "openProof": "Open submitted proof",
+      "pdfProof": "Submitted PDF",
+      "openPdf": "Open submitted PDF"
     }
   },
   "friends": {
@@ -300,9 +314,11 @@
   "taskStatus": {
     "archived": "Archived",
     "pending": "Open",
+    "inProgress": "In progress",
     "review": "In Review",
     "completed": "Done",
-    "rejected": "Rejected"
+    "rejected": "Sent back",
+    "overdue": "Overdue"
   },
   "languageSwitcher": {
     "language": "Language",

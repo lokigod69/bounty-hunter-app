@@ -9,6 +9,7 @@
 // - Imported ConfirmDeleteModal and necessary state/handlers.
 // - Passed cancel handler to FriendCard for sent requests.
 // P1: Updated page header title to use theme strings.
+// Wave B: Populated roster and request lists stay mounted during refreshes.
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -85,6 +86,14 @@ export default function Friends() {
     const partnerFriend = acceptedFriends.find(f => f.friend?.id === profile.partner_user_id);
     return partnerFriend?.friend || null;
   }, [profile?.partner_user_id, acceptedFriends]);
+  const hasFriendshipData =
+    friends.length > 0 || pendingRequests.length > 0 || sentRequests.length > 0;
+  const initialFriendsLoading = loading && !hasFriendshipData;
+  const initialPartnerLoading =
+    partnerState.isLoading &&
+    !selectedPartnerProfile &&
+    !partnerState.partnerProfile &&
+    !hasFriendshipData;
 
   // R25: Auto-clear partner_user_id if partner is no longer in friends list
   useEffect(() => {
@@ -308,7 +317,7 @@ export default function Friends() {
 
           <PageBody>
             {/* Loading state */}
-            {(loading || partnerState.isLoading) ? (
+            {(initialFriendsLoading || initialPartnerLoading) ? (
               <PageState state="loading" />
             ) : error ? (
               <PageState state="error" message={error} onRetry={() => refreshFriends?.()} />
@@ -627,15 +636,15 @@ export default function Friends() {
           />
 
         {/* Loading State */}
-        {loading && <FriendListSkeleton />}
+        {initialFriendsLoading && <FriendListSkeleton />}
 
         {/* P6: Error State */}
-        {error && !loading && (
+        {error && !initialFriendsLoading && (
           <PageState state="error" message={error} onRetry={() => refreshFriends?.()} />
         )}
 
         {/* Friends List */}
-        {!loading && !error && activeTab === 'friends' && (
+        {!initialFriendsLoading && !error && activeTab === 'friends' && (
           <section className="space-y-4">
             {friends.length > 0 ? (
               <>
@@ -687,7 +696,7 @@ export default function Friends() {
         )}
 
         {/* Requests List */}
-        {!loading && !error && activeTab === 'requests' && (
+        {!initialFriendsLoading && !error && activeTab === 'requests' && (
           <section className="space-y-6">
             {/* Incoming Requests */}
             {pendingRequests.length > 0 && (

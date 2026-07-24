@@ -38,11 +38,13 @@
     "title": "Meine Aufträge",
     "description": "Ihnen zur Erledigung zugewiesene Verträge.",
     "create": "Vertrag erstellen",
+    "accept": "Auftrag annehmen",
     "deadline": "Frist",
     "status": "Status",
     "open": "Offen",
     "inReview": "In Prüfung",
     "completed": "Abgeschlossen",
+    "sentBack": "Zurückgesendet",
     "complete": "Abschließen",
     "approve": "Genehmigen",
     "reject": "Ablehnen",
@@ -106,7 +108,19 @@
       "reasonPlaceholder": "Was muss geändert werden, bevor Sie es genehmigen?",
       "confirm": "Ablehnen",
       "resubmit": "Erneut einreichen",
-      "rejectedLabel": "Abgelehnt"
+      "rejectedLabel": "Zurückgesendet"
+    },
+    "evidence": {
+      "title": "Beweise",
+      "hunterReport": "Bericht des Jägers",
+      "submittedProof": "Eingereichter Beweis",
+      "submittedProofAlt": "Eingereichter Beweis",
+      "submittedVideo": "Video des eingereichten Beweises",
+      "loadingProof": "Eingereichter Beweis wird geladen...",
+      "proofUnavailable": "Der eingereichte Beweis ist nicht verfügbar.",
+      "openProof": "Eingereichten Beweis öffnen",
+      "pdfProof": "Eingereichte PDF-Datei",
+      "openPdf": "Eingereichte PDF-Datei öffnen"
     }
   },
   "history": {
@@ -116,9 +130,11 @@
   "taskStatus": {
     "archived": "Archiviert",
     "pending": "Offen",
+    "inProgress": "In Bearbeitung",
     "review": "In Prüfung",
     "completed": "Erledigt",
-    "rejected": "Abgelehnt"
+    "rejected": "Zurückgesendet",
+    "overdue": "Überfällig"
   },
   "friends": {
     "title": "GILDENLISTE",

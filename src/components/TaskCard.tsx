@@ -6,11 +6,12 @@
 // UI REFINEMENT: Consolidated status display at the bottom of the expanded card modal.
 // DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
 // R35: Type-based card accent (gold=credit / mode=gift), TypeEmblem indicator, daily badge.
+// Wave B: Pending contracts can be accepted; dossier evidence renders text and private media.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Eye, Link, User, Flame } from 'lucide-react';
+import { User, Flame } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
@@ -19,20 +20,19 @@ import { Coin } from './visual/Coin';
 import { TypeEmblem } from './visual/TypeEmblem'; // R35: Contract-type gift emblem
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 import { useThemeStrings } from '../hooks/useThemeStrings'; // R35: dailyLabel string
-import { supabase } from '../lib/supabase';
-
-import { safeUrlRender } from '../lib/proofConfig';
 import { getTypeAccentVariant } from '../theme/accentVariants'; // R35: Type-based card accents
 import { mapTaskStatusToModalState } from '../theme/modalTheme';
+import { feedback } from '../utils/feedback';
 
 import ProofModal from './ProofModal';
 import MissionModalShell from './modals/MissionModalShell';
+import EvidencePanel from './EvidencePanel';
 
 interface TaskCardProps {
   refetchTasks?: () => void;
   task: AssignedContract;
   isCreatorView: boolean;
-  onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void;
+  onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void | Promise<void>;
   onProofUpload: (file: File | null, taskId: string, textDescription?: string) => Promise<string | null>;
   onDirectComplete?: (taskId: string) => Promise<boolean>; // R31: For completing tasks without proof
   onDeleteTaskRequest: (taskId: string) => void;
@@ -87,89 +87,10 @@ const CountdownTimer: React.FC<{ deadline: string | null; baseColor?: string }> 
   );
 };
 
-interface ProofLinkProps {
-  proofUrl: string;
-  className: string;
-  withIcon: boolean;
-}
-
-const ProofLink: React.FC<ProofLinkProps> = ({ proofUrl, className, withIcon }) => {
-  const { isValid, url: safeUrl } = safeUrlRender(proofUrl);
-  const [result, setResult] = useState<{
-    proofUrl: string | null;
-    signedUrl: string | null;
-    status: 'loading' | 'success' | 'error';
-  }>({ proofUrl: null, signedUrl: null, status: 'loading' });
-
-  useEffect(() => {
-    let active = true;
-
-    if (!isValid || !safeUrl) {
-      setResult({ proofUrl, signedUrl: null, status: 'error' });
-      return () => {
-        active = false;
-      };
-    }
-
-    const filePath = safeUrl.split('/bounty-proofs/')[1];
-    if (!filePath) {
-      setResult({ proofUrl, signedUrl: null, status: 'error' });
-      return () => {
-        active = false;
-      };
-    }
-
-    setResult({ proofUrl, signedUrl: null, status: 'loading' });
-    void supabase.storage.from('bounty-proofs').createSignedUrl(filePath, 3600)
-      .then(({ data, error }) => {
-        if (!active) return;
-        setResult({
-          proofUrl,
-          signedUrl: data?.signedUrl ?? null,
-          status: error || !data?.signedUrl ? 'error' : 'success',
-        });
-      })
-      .catch(() => {
-        if (active) {
-          setResult({ proofUrl, signedUrl: null, status: 'error' });
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [proofUrl, isValid, safeUrl]);
-
-  const isCurrentResult = result.proofUrl === proofUrl;
-  if (!isValid || !safeUrl || (isCurrentResult && result.status === 'error')) {
-    return (
-      <span className={className}>
-        {withIcon && <Link size={20} className="mr-2" />}
-        Proof URL (invalid)
-      </span>
-    );
-  }
-
-  if (!isCurrentResult || result.status === 'loading' || !result.signedUrl) {
-    return (
-      <span className={className}>
-        {withIcon && <Link size={20} className="mr-2" />}
-        View Submitted Proof…
-      </span>
-    );
-  }
-
-  return (
-    <a href={result.signedUrl} target="_blank" rel="noopener noreferrer" className={className}>
-      {withIcon && <Link size={20} className="mr-2" />}
-      View Submitted Proof
-    </a>
-  );
-};
-
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   isCreatorView,
+  onStatusUpdate,
   onProofUpload,
   onDirectComplete, // R31: For completing tasks without proof
   onDeleteTaskRequest,
@@ -211,6 +132,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   const { id, title, description, deadline, reward_type, reward_text, status, creator, assignee } = task;
   const safeStatus = (status || 'pending') as TaskStatus;
+  const hasEvidence = Boolean(task.proof_url || task.proof_description?.trim());
 
   const actorName: string = isCreatorView ? (assignee?.display_name ?? 'N/A') : (creator?.display_name ?? 'N/A');
 
@@ -254,10 +176,24 @@ const TaskCard: React.FC<TaskCardProps> = ({
         } : undefined}
         // Actions based on role and state
         primaryAction={
-          // Assignee: Complete Task button (for pending/in_progress)
-          // Phase 2.3: also allow resubmit after a rejection ('rejected')
-          // R31: Branch on proof_required - if false, skip modal and submit directly
-          !isCreatorView && (safeStatus === 'pending' || safeStatus === 'in_progress' || safeStatus === 'rejected') && !isArchived
+          // Assignee: accept pending work before proof submission becomes available.
+          !isCreatorView && safeStatus === 'pending' && !isArchived
+            ? {
+                label: t('contracts.accept'),
+                onClick: async () => {
+                  feedback.press('acceptContract');
+                  setInternalActionLoading(true);
+                  try {
+                    await onStatusUpdate(id, 'in_progress');
+                  } finally {
+                    setInternalActionLoading(false);
+                  }
+                },
+                loading: actionLoading,
+              }
+            // Assignee: submit proof after acceptance; rejected work keeps the resubmit flow.
+            // R31: Branch on proof_required - if false, skip modal and submit directly.
+            : !isCreatorView && (safeStatus === 'in_progress' || safeStatus === 'rejected') && !isArchived
             ? {
                 label: actionLoading
                   ? 'Submitting...'
@@ -353,8 +289,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
       >
         {/* Phase 2.3: rejection reason shown to the assignee so they know why */}
         {!isCreatorView && safeStatus === 'rejected' && task.rejection_reason && (
-          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-            <div className="flex items-center text-red-400 mb-2">
+          <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30">
+            <div className="flex items-center text-orange-400 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wide">
                 {t('contracts.reject.rejectedLabel')}
               </span>
@@ -365,30 +301,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         )}
 
-        {/* Proof section for assignee (viewing submitted proof) */}
-        {task.proof_url && ['review', 'completed', 'archived'].includes(safeStatus) && !isCreatorView && (
-          <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center text-white/60 mb-3 justify-center">
-              <Eye size={16} className="mr-2 text-indigo-400" />
-              <span className="text-xs font-semibold uppercase tracking-wide">Submitted Proof</span>
-            </div>
-            <div className="text-center">
-              <ProofLink proofUrl={task.proof_url!} className="inline-flex items-center text-teal-400 hover:text-teal-300 underline text-sm font-medium" withIcon={false} />
-            </div>
-          </div>
-        )}
-
-        {/* Proof section for creator (reviewing proof) */}
-        {isCreatorView && safeStatus === 'review' && task.proof_url && (
-          <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center justify-center text-white/60 mb-3">
-              <Eye size={16} className="mr-2 text-indigo-400" />
-              <span className="text-xs font-semibold uppercase tracking-wide">Proof for Review</span>
-            </div>
-            <div className="text-center">
-              <ProofLink proofUrl={task.proof_url!} className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 underline text-sm font-medium py-2 px-4 rounded-lg hover:bg-teal-500/10 transition-colors" withIcon />
-            </div>
-          </div>
+        {/* Evidence remains visible to both parties throughout review and resolution. */}
+        {hasEvidence && ['review', 'completed', 'rejected'].includes(safeStatus) && (
+          <EvidencePanel task={task} />
         )}
       </MissionModalShell>
 
@@ -398,7 +313,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         variant="glass"
         className={`relative cursor-pointer overflow-visible touch-manipulation motion-safe:active:scale-[0.99] active:duration-100 ${collapsedCardBgColor} p-4 sm:p-5`}
         style={
-          !isArchived && safeStatus === 'pending'
+          !isArchived && (safeStatus === 'pending' || safeStatus === 'in_progress')
             ? {
                 borderColor: accentVariant.borderColor,
                 boxShadow: `0 0 8px ${accentVariant.glowColor}`,
@@ -439,11 +354,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     : safeStatus === 'review'
                     ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
                     : safeStatus === 'rejected'
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50'
                     : '' // Pending - styled via inline style below
                 }`}
                 style={
-                  !isArchived && safeStatus === 'pending'
+                  !isArchived && (safeStatus === 'pending' || safeStatus === 'in_progress')
                     ? {
                         backgroundColor: `${accentVariant.glowColor}`,
                         borderColor: accentVariant.borderColor,
@@ -455,6 +370,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               >
                 {isArchived ? t('taskStatus.archived') :
                  safeStatus === 'pending' ? t('taskStatus.pending') :
+                 safeStatus === 'in_progress' ? t('taskStatus.inProgress') :
                  safeStatus === 'review' ? t('taskStatus.review') :
                  safeStatus === 'completed' ? t('taskStatus.completed') :
                  safeStatus === 'rejected' ? t('taskStatus.rejected') :
@@ -472,7 +388,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </h3>
             </div>
             <div className="flex-shrink-0 text-right">
-              <CountdownTimer deadline={deadline} />
+              {!isArchived && <CountdownTimer deadline={deadline} />}
             </div>
           </div>
 

@@ -8,6 +8,7 @@
 //   Handler functions provide clear error messages explaining why delete is not available.
 // P1: Updated page header title to use theme strings.
 // P3: Refactored into Mission Inbox with sections: "Do this now", "Waiting for approval", "Recently completed"
+// Wave B: Accept flow is live, populated boards survive refreshes, duplicate stats removed.
 
 import { useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -18,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, CheckCircle2, Clock, Clock3, ScrollText, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Clock3, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
@@ -29,7 +30,6 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { useUI } from '../context/UIContext';
-import { StatsRow } from '../components/layout/StatsRow';
 import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
@@ -163,7 +163,7 @@ export default function Dashboard() {
       
       if (status === 'completed') {
         toast.success('🎉 Task completed successfully!', { id: toastId, duration: 4000 });
-        feedback.success('acceptContract');
+        feedback.success();
       } else if (status === 'review') {
         toast.success('Task submitted for review!', { id: toastId });
       } else {
@@ -201,7 +201,7 @@ export default function Dashboard() {
   };
 
   // P3: Filter and sort contracts into Mission Inbox sections
-  const { doNowMissions, waitingApprovalMissions, completedMissions } = useMemo(() => {
+  const { doNowMissions, waitingApprovalMissions, completedMissions, completedMissionCount } = useMemo(() => {
     const activeStatuses: (TaskStatus | null)[] = ['pending', 'in_progress', 'rejected', null];
     const doNow = assignedContracts
       .filter((task) => {
@@ -232,20 +232,21 @@ export default function Dashboard() {
       (task) => task.status === 'review'
     );
 
-    const completed = assignedContracts
+    const allCompleted = assignedContracts
       .filter((task) => task.status === 'completed')
       .sort((a, b) => {
         // Sort by completion date (most recent first)
         const completedA = a.completed_at ? new Date(a.completed_at).getTime() : 0;
         const completedB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
         return completedB - completedA;
-      })
-      .slice(0, 10); // Limit to last 10 completed missions
+      });
+    const completed = allCompleted.slice(0, 10); // Show only the 10 most recent cards.
 
     return {
       doNowMissions: doNow,
       waitingApprovalMissions: waitingApproval,
       completedMissions: completed,
+      completedMissionCount: allCompleted.length,
     };
   }, [assignedContracts]);
 
@@ -260,7 +261,7 @@ export default function Dashboard() {
     return { awaitingProof, pendingApproval };
   }, [issuedContracts]);
 
-  if (loading) {
+  if (loading && assignedContracts.length === 0) {
     return (
       <PageContainer>
         <PageHeader
@@ -289,11 +290,6 @@ export default function Dashboard() {
     );
   }
 
-  // P3: Update stats to match Mission Inbox sections
-  const pendingCount = doNowMissions.length;
-  const reviewCount = waitingApprovalMissions.length;
-  const completedCount = completedMissions.length;
-
   const handleRefresh = async () => {
     if (refetchAssignedContracts) {
       await refetchAssignedContracts();
@@ -311,29 +307,6 @@ export default function Dashboard() {
         <PageHeader
           title={strings.inboxTitle}
           subtitle={strings.inboxSubtitle}
-        />
-
-        <StatsRow
-          stats={[
-            {
-              icon: <ScrollText size={32} />,
-              value: pendingCount,
-              label: t('contracts.open'),
-              iconColor: 'text-[var(--mode-accent)]',
-            },
-            {
-              icon: <Clock size={32} />,
-              value: reviewCount,
-              label: t('contracts.inReview'),
-              iconColor: 'text-yellow-400',
-            },
-            {
-              icon: <CheckCircle size={32} />,
-              value: completedCount,
-              label: t('contracts.done'),
-              iconColor: 'text-green-400',
-            },
-          ]}
         />
 
         <PageBody>
@@ -435,7 +408,7 @@ export default function Dashboard() {
 
           {/* Section 3 - Recently completed */}
           <div className="space-y-4">
-            <SectionHeader title={strings.sectionCompletedTitle} count={completedMissions.length} accent="success" />
+            <SectionHeader title={strings.sectionCompletedTitle} count={completedMissionCount} accent="success" />
             {completedMissions.length === 0 ? (
               <EmptyState
                 icon={<CheckCircle2 />}

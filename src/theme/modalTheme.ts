@@ -1,6 +1,6 @@
 // src/theme/modalTheme.ts
-// R9: Modal theming configuration for MissionModalShell
-// Defines mode colors, role configurations, and state indicators
+// R9: Modal theming configuration for MissionModalShell.
+// Wave B: Rejected work has its own truthful orange "sent back" state.
 
 import { ThemeId } from './theme.types';
 import { MODE_ACCENT_HEX, MODE_ACCENT_RGB } from './modeAccents';
@@ -10,7 +10,7 @@ import { MODE_ACCENT_HEX, MODE_ACCENT_RGB } from './modeAccents';
 // ============================================================================
 
 export type ModalRole = 'assignee' | 'creator' | 'store';
-export type ModalState = 'pending' | 'review' | 'completed' | 'overdue' | 'archived';
+export type ModalState = 'pending' | 'review' | 'rejected' | 'completed' | 'overdue' | 'archived';
 
 // ============================================================================
 // Mode Colors
@@ -92,7 +92,7 @@ export const roleConfig: Record<ModalRole, RoleConfig> = roleConfigByMode.guild;
 // ============================================================================
 
 export interface StateConfig {
-  label: string;
+  labelKey: string;
   icon: 'Clock' | 'Eye' | 'Check' | 'AlertTriangle' | 'Archive';
   color: string;
   colorRgb: string;
@@ -101,35 +101,42 @@ export interface StateConfig {
 
 export const stateConfig: Record<ModalState, StateConfig> = {
   pending: {
-    label: 'Open',
+    labelKey: 'taskStatus.pending',
     icon: 'Clock',
     color: '#f59e0b',
     colorRgb: '245, 158, 11',
     hasBorderAccent: false,
   },
   review: {
-    label: 'In Review',
+    labelKey: 'taskStatus.review',
     icon: 'Eye',
     color: '#8b5cf6',
     colorRgb: '139, 92, 246',
     hasBorderAccent: true,
   },
+  rejected: {
+    labelKey: 'taskStatus.rejected',
+    icon: 'AlertTriangle',
+    color: '#f97316',
+    colorRgb: '249, 115, 22',
+    hasBorderAccent: true,
+  },
   completed: {
-    label: 'Done',
+    labelKey: 'taskStatus.completed',
     icon: 'Check',
     color: '#22c55e',
     colorRgb: '34, 197, 94',
     hasBorderAccent: true,
   },
   overdue: {
-    label: 'Overdue',
+    labelKey: 'taskStatus.overdue',
     icon: 'AlertTriangle',
     color: '#ef4444',
     colorRgb: '239, 68, 68',
     hasBorderAccent: true,
   },
   archived: {
-    label: 'Archived',
+    labelKey: 'taskStatus.archived',
     icon: 'Archive',
     color: '#64748b',
     colorRgb: '100, 116, 139',
@@ -181,7 +188,7 @@ export function mapTaskStatusToModalState(
     case 'completed':
       return 'completed';
     case 'rejected':
-      return 'overdue'; // Treat rejected as overdue for visual purposes
+      return 'rejected';
     default:
       return 'pending';
   }

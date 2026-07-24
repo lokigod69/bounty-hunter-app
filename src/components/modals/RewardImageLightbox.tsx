@@ -2,11 +2,13 @@
 // R27: Full-screen lightbox for viewing reward images at native aspect ratio
 // Opens on thumbnail click, closes on backdrop/ESC/button
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 import { lockScroll, unlockScroll } from '../../lib/scrollLock';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface RewardImageLightboxProps {
   isOpen: boolean;
@@ -21,39 +23,33 @@ export const RewardImageLightbox: React.FC<RewardImageLightboxProps> = ({
   imageUrl,
   alt = 'Reward image',
 }) => {
-  // Handle ESC key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEscapeToClose(isOpen, onClose);
+  useFocusTrap(dialogRef, isOpen);
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
       lockScroll();
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
       if (isOpen) {
         unlockScroll();
       }
     };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return createPortal(
     <div
+      ref={dialogRef}
       data-overlay="RewardImageLightbox"
       className="fixed inset-0 z-critical-overlay flex items-center justify-center p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Image viewer"
+      tabIndex={-1}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm animate-fade-in" />

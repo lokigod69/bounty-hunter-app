@@ -2,6 +2,7 @@
 // Displays available bounties and provides an interface for creating new ones.
 // P1: Updated page header title to use theme strings.
 // P4: Added credits summary, theme-aware labels, and aspirational design.
+// Wave B: Refreshes preserve populated grids; reward claims use debit-appropriate feedback.
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -112,7 +113,7 @@ const RewardsStorePage: React.FC = () => {
     const result = await purchaseBounty(rewardId);
 
     if (result?.success) {
-      feedback.payday();
+      feedback.success();
       // R29: Refetch all affected data after successful claim
       fetchRewards();        // Remove from available list
       refetchCredits();      // Update balance display
@@ -161,7 +162,7 @@ const RewardsStorePage: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (isLoadingRewards) {
+    if (activeTab !== 'collected' && isLoadingRewards && rewards.length === 0) {
       return <PageState state="loading" message={t('rewards.loading')} />;
     }
 
@@ -171,7 +172,7 @@ const RewardsStorePage: React.FC = () => {
 
     // Handle collected tab separately (uses different data source)
     if (activeTab === 'collected') {
-      if (isLoadingCollected) {
+      if (isLoadingCollected && collectedRewards.length === 0) {
         return <PageState state="loading" message={`Loading collected ${strings.rewardPlural}...`} />;
       }
 

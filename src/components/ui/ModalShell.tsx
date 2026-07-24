@@ -5,7 +5,7 @@
 //   - one backdrop recipe (bg-black/70 + blur) + z-index layering
 //   - .modal-enter entry animation + glass-card surface
 //   - text-selection-safe backdrop click, stopPropagation on the surface
-//   - Escape-to-close, UIContext modal-layer registration (scroll lock/stacking)
+//   - LIFO Escape, focus move/restore + Tab trap, UIContext modal registration
 //   - a standard 44px close button (X)
 //   - role="dialog" / aria-modal / aria-labelledby|aria-label
 //
@@ -13,12 +13,13 @@
 // theming). Use this for plain form modals: Create/EditBounty, TaskForm,
 // ProofModal, ProfileEditModal.
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUI } from '../../context/UIContext';
 import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useModalBackdropClick } from '../../hooks/useModalBackdropClick';
 import { getOverlayRoot } from '../../lib/overlayRoot';
 
@@ -65,6 +66,7 @@ export function ModalShell({
 }: ModalShellProps) {
   const { t } = useTranslation();
   const { openModal, clearLayer } = useUI();
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const { handleBackdropClick, handleBackdropMouseDown, handleContentMouseDown } =
     useModalBackdropClick({ onClose });
 
@@ -78,6 +80,7 @@ export function ModalShell({
   }, [isOpen, openModal, clearLayer]);
 
   useEscapeToClose(isOpen, onClose);
+  useFocusTrap(surfaceRef, isOpen);
 
   if (!isOpen) return null;
 
@@ -113,6 +116,7 @@ export function ModalShell({
       onClick={closeOnBackdrop ? handleBackdropClick : undefined}
     >
       <div
+        ref={surfaceRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}

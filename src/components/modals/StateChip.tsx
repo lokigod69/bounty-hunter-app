@@ -1,9 +1,9 @@
 // src/components/modals/StateChip.tsx
-// R9: State indicator chip for MissionModalShell
-// Displays task state with icon and label in a subtle pill
+// R9: Localized state indicator chip for MissionModalShell.
 
 import React from 'react';
 import { Clock, Eye, Check, AlertTriangle, Archive } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ModalState, stateConfig } from '../../theme/modalTheme';
 
 interface StateChipProps {
@@ -20,6 +20,7 @@ const iconMap = {
 };
 
 export const StateChip: React.FC<StateChipProps> = ({ state, className = '' }) => {
+  const { t } = useTranslation();
   const config = stateConfig[state];
   const Icon = iconMap[config.icon];
 
@@ -32,7 +33,7 @@ export const StateChip: React.FC<StateChipProps> = ({ state, className = '' }) =
       }}
     >
       <Icon size={12} />
-      <span>{config.label}</span>
+      <span>{t(config.labelKey)}</span>
     </div>
   );
 };

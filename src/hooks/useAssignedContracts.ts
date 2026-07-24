@@ -1,8 +1,8 @@
 // src/hooks/useAssignedContracts.ts
 // Custom hook to fetch contracts assigned to the current user.
 // Now joins with 'profiles' table to fetch creator and assignee display_name and avatars.
-// Added a refetch function (wrapped in useCallback) to allow manual refreshing of contract data and satisfy useEffect dependencies.
-import { useEffect, useState, useCallback } from 'react';
+// Wave B: stale-while-revalidate keeps populated boards mounted during refetches.
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 import { useTasksRealtime } from './useTasksRealtime';
@@ -27,15 +27,28 @@ export function useAssignedContracts() {
   const { user } = useAuth();
   const [contracts, setContracts] = useState<AssignedContract[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const fetchAssignedContracts = useCallback(async () => {
     if (!user?.id) {
       setContracts([]);
       setLoading(false);
+      setIsRefreshing(false);
+      hasLoadedRef.current = false;
+      loadedUserIdRef.current = null;
       return;
     }
-    setLoading(true);
+
+    const isInitialLoad =
+      !hasLoadedRef.current || loadedUserIdRef.current !== user.id;
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
     try {
       const { data, error: dbError } = await supabase
@@ -50,7 +63,7 @@ export function useAssignedContracts() {
 
       if (dbError) {
         setError(dbError.message);
-        setContracts([]);
+        if (isInitialLoad) setContracts([]);
       } else {
         // FIXED: Remove double URL generation - proof_url is already a public URL from upload
         const processedContracts = data?.map(task => {
@@ -72,6 +85,8 @@ export function useAssignedContracts() {
         }) || [];
         
         setContracts(processedContracts);
+        hasLoadedRef.current = true;
+        loadedUserIdRef.current = user.id;
       }
     } catch (e: unknown) {
       let message = 'An unexpected error occurred.';
@@ -79,9 +94,10 @@ export function useAssignedContracts() {
         message = e.message;
       }
       setError(message);
-      setContracts([]);
+      if (isInitialLoad) setContracts([]);
     } finally {
-      setLoading(false);
+      if (isInitialLoad) setLoading(false);
+      setIsRefreshing(false);
     }
   }, [user?.id]); // Add user.id as a dependency for useCallback
 
@@ -92,5 +108,5 @@ export function useAssignedContracts() {
   // Keep the list live: any change on `tasks` (RLS-scoped) triggers a refetch.
   useTasksRealtime(user?.id, 'useAssignedContracts', fetchAssignedContracts);
 
-  return { contracts, loading, error, refetch: fetchAssignedContracts };
+  return { contracts, loading, isRefreshing, error, refetch: fetchAssignedContracts };
 }

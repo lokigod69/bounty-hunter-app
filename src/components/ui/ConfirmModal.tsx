@@ -1,12 +1,14 @@
 // src/components/ui/ConfirmModal.tsx
 // Unified confirmation modal (replaces ConfirmDeleteModal + ConfirmDialog).
-// Glass shell, portalled to the overlay root, sits above other modals via the critical layer.
+// Modal material, LIFO Escape, and trapped focus sit above other dialogs.
 
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
 import { getOverlayRoot } from '../../lib/overlayRoot';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { AppButton } from './AppButton';
 
 interface ConfirmModalProps {
@@ -49,18 +51,10 @@ export function ConfirmModal({
     };
   }, [isOpen, openCriticalOverlay, clearLayer]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    cardRef.current?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loadingRef.current) {
-        e.stopPropagation();
-        onCloseRef.current();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen]);
+  useEscapeToClose(isOpen, () => {
+    if (!loadingRef.current) onCloseRef.current();
+  });
+  useFocusTrap(cardRef, isOpen);
 
   if (!isOpen) return null;
 
@@ -77,7 +71,14 @@ export function ConfirmModal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="glass-card w-full max-w-md p-6 rounded-2xl shadow-xl z-critical-content outline-none"
+        className="modal-enter w-full max-w-md p-6 rounded-2xl z-critical-content outline-none"
+        style={{
+          background: 'var(--modal-bg)',
+          border: '1px solid var(--modal-border)',
+          boxShadow: 'var(--modal-shadow)',
+          backdropFilter: 'blur(var(--modal-blur-desktop))',
+          WebkitBackdropFilter: 'blur(var(--modal-blur-desktop))',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-start mb-3">
