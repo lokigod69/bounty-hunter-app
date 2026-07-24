@@ -4,14 +4,16 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import enTranslation from './locales/en/translation.json';
 import deTranslation from './locales/de/translation.json';
+import enQuotes from './locales/en/quotes.json';
+import deQuotes from './locales/de/quotes.json';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: enTranslation },
-      de: { translation: deTranslation }
+      en: { translation: enTranslation, quotes: enQuotes },
+      de: { translation: deTranslation, quotes: deQuotes }
     },
     fallbackLng: 'en',
     debug: false,

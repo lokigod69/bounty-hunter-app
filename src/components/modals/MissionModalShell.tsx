@@ -60,7 +60,7 @@ interface RewardInfo {
 
 interface ActionButton {
   label: string;
-  onClick: () => void;
+  onClick: (anchor: HTMLButtonElement) => void;
   loading?: boolean;
   disabled?: boolean;
   variant?: 'accent' | 'success' | 'danger';
@@ -557,7 +557,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  primaryAction.onClick();
+                  primaryAction.onClick(e.currentTarget);
                 }}
                 loading={primaryAction.loading}
                 disabled={primaryAction.disabled}
@@ -573,7 +573,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  secondaryAction.onClick();
+                  secondaryAction.onClick(e.currentTarget);
                 }}
                 loading={secondaryAction.loading}
                 disabled={secondaryAction.disabled}

@@ -1,15 +1,26 @@
 // src/hooks/useDailyQuote.ts
-// Custom hook to manage and cycle through daily quotes.
-// The hook now pulls quotes directly from the allQuotes array.
+// Custom hook to cycle only the seven localized, in-world creed lines.
 
-import { useState, useEffect } from 'react';
-import { allQuotes, Quote } from '../lib/quotes';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// Keep daily quotes short enough to read at a glance on mobile.
-// Long, multi-clause passages wrap to many lines on an iPhone and break the tone.
-const SHORT_QUOTES: Quote[] = allQuotes.filter((q) => q.text.length <= 140);
+export interface Quote {
+  text: string;
+  author: string;
+}
 
-const fisherYatesShuffle = <T>(array: T[]): T[] => {
+const QUOTE_IDS = [
+  'quote1',
+  'quote2',
+  'quote3',
+  'quote4',
+  'quote5',
+  'quote6',
+  'quote7',
+] as const;
+type QuoteId = (typeof QUOTE_IDS)[number];
+
+const fisherYatesShuffle = <T>(array: readonly T[]): T[] => {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -24,28 +35,41 @@ const getTodayDateString = (): string => {
 };
 
 const STORAGE_KEYS = {
-  SHUFFLED_QUOTES: 'dailyQuote_shuffledQuotes_v3',
-  CURRENT_INDEX: 'dailyQuote_currentIndex_v3',
-  LAST_DATE: 'dailyQuote_lastDate_v3',
+  SHUFFLED_QUOTES: 'dailyQuote_shuffledCreedIds_v4',
+  CURRENT_INDEX: 'dailyQuote_currentCreedIndex_v4',
+  LAST_DATE: 'dailyQuote_lastCreedDate_v4',
 };
 
 export const useDailyQuote = (): Quote | null => {
-  const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
+  const { t } = useTranslation('quotes');
+  const [currentQuoteId, setCurrentQuoteId] = useState<QuoteId | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || SHORT_QUOTES.length === 0) return;
+    if (typeof window === 'undefined') return;
 
     const todayStr = getTodayDateString();
-    
-    let shuffledQuotes: Quote[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTES) || 'null') || [];
-    let currentIndex: number = parseInt(localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX) || '-1', 10);
+    let shuffledQuoteIds: QuoteId[] = [];
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHUFFLED_QUOTES) || '[]');
+      if (
+        Array.isArray(stored) &&
+        stored.length === QUOTE_IDS.length &&
+        stored.every((id): id is QuoteId => QUOTE_IDS.includes(id))
+      ) {
+        shuffledQuoteIds = stored;
+      }
+    } catch {
+      shuffledQuoteIds = [];
+    }
+
+    let currentIndex = parseInt(localStorage.getItem(STORAGE_KEYS.CURRENT_INDEX) || '-1', 10);
     const lastQuoteDate: string | null = localStorage.getItem(STORAGE_KEYS.LAST_DATE);
 
-    if (todayStr !== lastQuoteDate || shuffledQuotes.length === 0) {
-      if (currentIndex >= shuffledQuotes.length - 1 || shuffledQuotes.length === 0) {
-        shuffledQuotes = fisherYatesShuffle(SHORT_QUOTES);
+    if (todayStr !== lastQuoteDate || shuffledQuoteIds.length === 0) {
+      if (currentIndex >= shuffledQuoteIds.length - 1 || shuffledQuoteIds.length === 0) {
+        shuffledQuoteIds = fisherYatesShuffle(QUOTE_IDS);
         currentIndex = 0;
-        localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
+        localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuoteIds));
       } else {
         currentIndex++;
       }
@@ -54,17 +78,20 @@ export const useDailyQuote = (): Quote | null => {
       localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
     }
 
-    if (currentIndex < 0 || currentIndex >= shuffledQuotes.length) {
-      shuffledQuotes = fisherYatesShuffle(SHORT_QUOTES);
+    if (currentIndex < 0 || currentIndex >= shuffledQuoteIds.length) {
+      shuffledQuoteIds = fisherYatesShuffle(QUOTE_IDS);
       currentIndex = 0;
-      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuotes));
+      localStorage.setItem(STORAGE_KEYS.SHUFFLED_QUOTES, JSON.stringify(shuffledQuoteIds));
       localStorage.setItem(STORAGE_KEYS.CURRENT_INDEX, String(currentIndex));
       localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
     }
-    
-    setCurrentQuote(shuffledQuotes[currentIndex]);
 
+    setCurrentQuoteId(shuffledQuoteIds[currentIndex]);
   }, []);
 
-  return currentQuote;
+  if (!currentQuoteId) return null;
+  return {
+    text: t(`${currentQuoteId}.text`),
+    author: t(`${currentQuoteId}.author`),
+  };
 };

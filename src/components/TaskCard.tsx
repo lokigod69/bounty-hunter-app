@@ -22,7 +22,7 @@ import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for d
 import { useThemeStrings } from '../hooks/useThemeStrings'; // R35: dailyLabel string
 import { getTypeAccentVariant } from '../theme/accentVariants'; // R35: Type-based card accents
 import { mapTaskStatusToModalState } from '../theme/modalTheme';
-import { feedback } from '../utils/feedback';
+import { fireSeal } from './visual/sealEvents';
 
 import ProofModal from './ProofModal';
 import MissionModalShell from './modals/MissionModalShell';
@@ -32,11 +32,16 @@ interface TaskCardProps {
   refetchTasks?: () => void;
   task: AssignedContract;
   isCreatorView: boolean;
-  onStatusUpdate: (taskId: string, status: TaskStatus, currentCredits?: number, rewardAmount?: number) => void | Promise<void>;
+  onStatusUpdate: (
+    taskId: string,
+    status: TaskStatus,
+    currentCredits?: number,
+    rewardAmount?: number
+  ) => void | boolean | Promise<void | boolean>;
   onProofUpload: (file: File | null, taskId: string, textDescription?: string) => Promise<string | null>;
   onDirectComplete?: (taskId: string) => Promise<boolean>; // R31: For completing tasks without proof
   onDeleteTaskRequest: (taskId: string) => void;
-  onApprove?: (taskId: string) => void;
+  onApprove?: (taskId: string, anchor?: Element | null) => void;
   onReject?: (taskId: string) => void;
   onArchive?: (taskId: string) => Promise<void>; // Archive action for completed tasks
   uploadProgress: number;
@@ -180,11 +185,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
           !isCreatorView && safeStatus === 'pending' && !isArchived
             ? {
                 label: t('contracts.accept'),
-                onClick: async () => {
-                  feedback.press('acceptContract');
+                onClick: async (anchor) => {
                   setInternalActionLoading(true);
                   try {
-                    await onStatusUpdate(id, 'in_progress');
+                    const updated = await onStatusUpdate(id, 'in_progress');
+                    if (updated !== false) fireSeal('accept', anchor);
                   } finally {
                     setInternalActionLoading(false);
                   }
@@ -200,7 +205,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   : safeStatus === 'rejected'
                   ? t('contracts.reject.resubmit')
                   : 'Complete Task',
-                onClick: async () => {
+                onClick: async (anchor) => {
                   const proofRequired = task.proof_required === true;
                   if (proofRequired) {
                     // Proof required - open modal
@@ -212,6 +217,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                       try {
                         const success = await onDirectComplete(id);
                         if (success) {
+                          fireSeal('transmit', anchor);
                           handleClose();
                         }
                       } finally {
@@ -229,7 +235,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             : isCreatorView && safeStatus === 'review'
             ? {
                 label: actionLoading ? 'Processing...' : 'Approve',
-                onClick: () => onApprove && onApprove(id),
+                onClick: (anchor) => onApprove && onApprove(id, anchor),
                 loading: actionLoading,
                 variant: 'success',
               }
@@ -424,12 +430,17 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {showProofModal && (
         <ProofModal
           onClose={() => setShowProofModal(false)}
-          onSubmit={async (file: File | null, textDescription?: string) => {
+          onSubmit={async (
+            file: File | null,
+            textDescription?: string,
+            anchor?: Element | null
+          ) => {
             setInternalActionLoading(true);
 
             try {
               const uploadedUrl = await onProofUpload(file, id, textDescription);
               if (uploadedUrl) {
+                fireSeal('transmit', anchor);
                 if (refetchTasks) refetchTasks();
                 setShowProofModal(false);
               }

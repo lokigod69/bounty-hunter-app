@@ -9,7 +9,11 @@ import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES, 
 
 interface ProofModalProps {
   onClose: () => void;
-  onSubmit: (file: File | null, textDescription?: string) => Promise<void>;
+  onSubmit: (
+    file: File | null,
+    textDescription?: string,
+    anchor?: Element | null
+  ) => Promise<void>;
   uploadProgress: number;
 }
 
@@ -50,6 +54,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const submitter = (e.nativeEvent as SubmitEvent).submitter;
     
     // Clear previous errors
     setError(null);
@@ -68,7 +73,7 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
 
     setIsSubmitting(true);
     try {
-      await onSubmit(file, textDescription.trim() || undefined);
+      await onSubmit(file, textDescription.trim() || undefined, submitter);
       // Success - modal will close via parent component
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit proof. Please try again.';

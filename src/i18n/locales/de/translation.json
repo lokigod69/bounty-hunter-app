@@ -261,6 +261,7 @@
   },
   "rewards": {
     "title": "Belohnungen",
+    "lifetimeEarned": "Insgesamt verdient",
     "tabs": {
       "label": "Belohnungskategorien",
       "available": "Verfügbar",

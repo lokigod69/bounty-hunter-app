@@ -34,7 +34,7 @@ import emptyStore from '../assets/generated/empty-store.webp';
 type Tab = 'available' | 'created' | 'collected';
 
 const RewardsStorePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const { strings } = useThemeStrings();
   const { isMobileMenuOpen } = useUI();
@@ -42,7 +42,12 @@ const RewardsStorePage: React.FC = () => {
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
   const { deleteBounty, isLoading: isDeleting } = useDeleteBounty();
-  const { credits: userCredits, loading: creditsLoading, refetch: refetchCredits } = useUserCredits();
+  const {
+    credits: userCredits,
+    totalEarned,
+    loading: creditsLoading,
+    refetch: refetchCredits,
+  } = useUserCredits();
   const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards, markRedeemed } = useCollectedRewards();
 
   // State for modals
@@ -302,6 +307,11 @@ const RewardsStorePage: React.FC = () => {
                   <span className="text-display leading-none credit-gold-text">
                     {userCredits ?? 0}
                   </span>
+                  {typeof totalEarned === 'number' && (
+                    <span className="mt-2 text-xs text-white/45 tabular-nums">
+                      {t('rewards.lifetimeEarned')} · {totalEarned.toLocaleString(i18n.language)}
+                    </span>
+                  )}
                   {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
                   {(userCredits ?? 0) === 0 ? (
                     <span className="text-sm text-white/70 mt-1">

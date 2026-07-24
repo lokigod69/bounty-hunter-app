@@ -7,21 +7,21 @@ Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking d
 ## Key components
 | Area | Where | Notes |
 |---|---|---|
-| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v6; Layout owns nav + mobile menu |
+| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v6; Layout owns nav/mobile menu plus persistent seal and payout-ceremony layers |
 | Pages | `src/pages/` | Dashboard (assigned), IssuedPage (created), Friends, ArchivePage, RewardsStorePage, Login, profile edit |
 | UI primitives | `src/components/ui/`, `src/components/modals/` | AppButton, ConfirmModal, ModalShell, MissionModalShell, EvidencePanel; shared LIFO Escape and focus-trap hooks own dialog mechanics |
 | Domain logic | `src/core/` (contracts, credits, proofs, rewards), `src/domain/` | Pure, vitest-tested; keep Supabase I/O out of here |
-| Data hooks | `src/hooks/` | useFriends and assigned/issued/archived contract hooks use stale-while-revalidate (`loading` first load, `isRefreshing` later); `useSignedProofUrl` exchanges private proof paths at render |
+| Data hooks | `src/hooks/` | Contract hooks use stale-while-revalidate; `useSignedProofUrl` exchanges private proof paths; `usePayoutWatcher` baselines then diffs hunter-side review→completed credit transitions |
 | Security tests | `src/security/` | Regression tests for email functions, storage policies, launch quick-fixes |
 | Theming | `src/theme/` | Multiple named themes, `useThemeStrings` for theme-flavored copy |
-| i18n | `src/i18n/locales/{en,de}/translation.json` | Every user-facing string goes through i18next, both locales |
+| i18n | `src/i18n/locales/{en,de}/{translation,quotes}.json` | Every user-facing string goes through i18next; the daily creed is a dedicated bilingual namespace |
 | Supabase client | `src/lib/supabase.ts` | Needs `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local` |
 | DB schema | `supabase/migrations/` | Through 2026-06-11 (storage buckets/policies); generated types in `src/types/database.ts` |
 | Prod SQL process | `db/proposals/`, `docs/runbooks/` | Numbered proposals with up/down SQL + per-proposal prod runbooks |
 | Edge Functions | `supabase/functions/` | notify-reward-creator and legacy Gmail notifiers (need hardening/removal) |
 
 ## Data flow
-Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; only creator task-content edits remain direct table updates pending Phase B. Assignee acceptance uses the existing `set_task_status` caller (`pending → in_progress`). Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions revalidate contract/friend lists without replacing populated UI. Proof files upload to the private `bounty-proofs` bucket before `submit_proof`; `EvidencePanel` renders text plus a one-hour signed image/video/PDF URL for either participant. On delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS). Proposal 011 is live (2026-07-10) and `database.ts` includes all 5 RPCs natively — no client-side type overlay.
+Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; only creator task-content edits remain direct table updates pending Phase B. Assignee acceptance uses the existing `set_task_status` caller (`pending → in_progress`). Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions revalidate contract/friend lists without replacing populated UI. The persistent payout watcher performs its own narrow assigned-task fetch, treats the first result as baseline, and emits `bh:payout` plus `bh:credits-changed` only for later credit transitions from review to completed; header/mobile balance readers refetch from that event. Proof files upload to the private `bounty-proofs` bucket before `submit_proof`; `EvidencePanel` renders text plus a one-hour signed image/video/PDF URL for either participant. On delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS). Proposal 011 is live (2026-07-10) and `database.ts` includes all 5 RPCs natively — no client-side type overlay.
 
 ## External services & dependencies that matter
 - Supabase Cloud project (Postgres, Auth, Storage, Edge Functions) — the entire backend; env vars in `.env.local` from `.env.example`.

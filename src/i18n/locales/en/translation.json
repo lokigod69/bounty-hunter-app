@@ -247,6 +247,7 @@
   },
   "rewards": {
     "title": "Rewards",
+    "lifetimeEarned": "Lifetime earned",
     "tabs": {
       "label": "Reward categories",
       "available": "Available",

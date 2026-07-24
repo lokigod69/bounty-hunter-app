@@ -2,6 +2,13 @@
 Newest first. Append-only — entries are never rewritten.
 When this file exceeds ~300 lines, move the oldest half to `archive/log-2026.md`.
 
+## 2026-07-24 — Design V2 Wave C implemented (uncommitted)
+- **Commitment language:** new route-persistent `SealLayer` + event bus gives accept, proof transmit, approval, and sent-back actions one anchored 44px mark. Strike seals use `--ease-press`, a delayed same-colour ring, landing haptic, reduced-motion fade, 3-seal cap, and auto-removal; rejection uses the orange lift inversion with no shock/haptic. The requested blur was represented by a transform/opacity ghost ring to honor the wave's hard transform/opacity-only constraint.
+- **Correct payday address:** `usePayoutWatcher` is mounted once in Layout, baselines on first fetch/login, diffs only hunter-side `review → completed` credit rows, stays quiet while hidden, then emits payday + a one-coin header drop on the hunter device. `bh:credits-changed` refreshes all header/mobile credit widgets and the shared credits hook. Four pure diff tests added.
+- **Standing/login/creed:** both credit readers now select `total_earned`; Rewards Store renders a quiet localized lifetime-earned line only for numeric data. Login uses fixed vignetted guild key art and a dark Google surface with the official four-colour mark. Daily quotes now serve only the seven bilingual in-world creed lines through i18n; German creed resource added and the 113 generic quote module deleted.
+- **Constraints:** no SQL/dependencies; protected `useTasks.ts`, `types/custom.ts`, `domain/missions.ts`, and Issued create/update block untouched. All new motion is transform/opacity with explicit reduced-motion paths and no idle loops.
+- **Verification:** `npx tsc -p tsconfig.app.json --noEmit` 0 errors; Vitest 17 files / 93 tests; lint 0 errors / 3 pre-existing fast-refresh warnings; production build passed. Browser/device smoke and intentional Wave C commit remain for Michael.
+
 ## 2026-07-24 — Design V2 Wave B implemented (uncommitted)
 - **Lifecycle truth:** `rejected` now maps to its own orange `ModalState` and localized "Sent back" label; Issued gained a non-empty-only sent-back section. Pending assignee cards now expose **Accept contract** → existing `set_task_status` client path, with `feedback.press('acceptContract')`; proof submission remains gated behind `in_progress`, and rejected keeps resubmit.
 - **Evidence:** new `EvidencePanel` renders `proof_description` plus signed private image/video/PDF evidence for creator and assignee across review/completed/rejected. The old TaskCard-only signed-link logic moved to `useSignedProofUrl`; stored URL format is unchanged and failed inline media falls back to an external signed link.

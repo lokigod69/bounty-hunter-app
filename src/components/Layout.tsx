@@ -55,12 +55,16 @@ import ProfileEditModal from './ProfileEditModal';
 import { feedback } from '../utils/feedback';
 import type { SoundKey } from '../utils/soundManager';
 import { avatarFallback } from '../lib/avatar';
+import { usePayoutWatcher } from '../hooks/usePayoutWatcher';
+import { SealLayer } from './visual/Seal';
+import { PayoutCeremony } from './visual/PayoutCeremony';
 
 export default function Layout() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { strings } = useThemeStrings();
   const { user, profile } = useAuth();
+  usePayoutWatcher(user?.id);
   const { pendingRequests } = useFriends(user?.id);
   const { reviewCount, rejectedCount } = useActionCounts();
   // Phase 2.5: redeem an invite token stashed before login, once per session.
@@ -176,6 +180,8 @@ export default function Layout() {
     // signed-in screen for months.
     <div className="h-screen flex flex-col">
 
+      <SealLayer />
+      <PayoutCeremony />
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
       <header className={`sticky top-0 z-header safe-top transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
@@ -233,6 +239,7 @@ export default function Layout() {
               {/* Desktop credit balance - clickable to Loot Vault */}
               <Link
                 to="/rewards-store"
+                data-credit-anchor="desktop"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
                 aria-label={`${strings.storeTitle} - Your balance`}
               >
@@ -281,6 +288,7 @@ export default function Layout() {
             <div className="md:hidden ml-4 flex items-center gap-2">
               <Link
                 to="/rewards-store"
+                data-credit-anchor="mobile"
                 className="flex items-center rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors px-2.5 min-h-[44px]"
                 aria-label={`${strings.storeTitle} - Your balance`}
               >

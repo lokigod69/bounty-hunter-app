@@ -100,7 +100,6 @@ export default function Dashboard() {
       });
 
       toast.success('Task submitted for review!', { id: toastId });
-      feedback.success();
       if (refetchAssignedContracts) refetchAssignedContracts();
       return true;
     } catch (error: unknown) {
@@ -144,10 +143,10 @@ export default function Dashboard() {
   const handleStatusUpdate = async (
     taskId: string,
     status: string,
-  ) => {
+  ): Promise<boolean> => {
     if (!user) {
       toast.error('You must be logged in to update status.');
-      return;
+      return false;
     }
     
     // Add loading state for mobile feedback
@@ -178,6 +177,7 @@ export default function Dashboard() {
           // Don't show error to user as the main operation succeeded
         }
       }
+      return true;
 
     } catch (error: unknown) {
       let message = 'Failed to update task status.';
@@ -197,6 +197,7 @@ export default function Dashboard() {
         id: toastId, 
         duration: isAndroid ? 6000 : 4000 // Longer duration on Android for better UX
       });
+      return false;
     }
   };
 

@@ -35,6 +35,7 @@ import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { feedback } from '../utils/feedback';
+import { fireSeal } from '../components/visual/sealEvents';
 import { useUI } from '../context/UIContext';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -177,7 +178,7 @@ export default function IssuedPage() {
     return null;
   };
 
-  const handleApprove = async (taskId: string) => {
+  const handleApprove = async (taskId: string, anchor?: Element | null) => {
     if (!user) {
       toast.error(t('contracts.mustBeLoggedIn'));
       return;
@@ -205,9 +206,7 @@ export default function IssuedPage() {
         issuerId: user.id,
       });
 
-      // Fire feedback only once (after successful approval): success haptic,
-      // approve sound + coin payout. The old triple-play stacked success.mp3 twice.
-      feedback.payday('approveProof');
+      fireSeal('approve', anchor);
 
       toast.success(t('contracts.approveSuccess'), { id: toastId });
       await refetchIssuedContracts();
@@ -236,7 +235,7 @@ export default function IssuedPage() {
     setRejectReason('');
   };
 
-  const handleConfirmReject = async () => {
+  const handleConfirmReject = async (anchor?: Element | null) => {
     const taskId = rejectTargetId;
     if (!taskId) return;
 
@@ -268,7 +267,7 @@ export default function IssuedPage() {
         reason: rejectReason,
       });
 
-      feedback.warning();
+      fireSeal('sent-back', anchor);
       toast.success(t('contracts.rejectSuccess'), { id: toastId });
       setRejectTargetId(null);
       setRejectReason('');
@@ -568,7 +567,7 @@ export default function IssuedPage() {
                           task={task}
                           isCreatorView={true}
                           onStatusUpdate={() => {}}
-                          onApprove={() => handleApprove(task.id)}
+                          onApprove={handleApprove}
                           onReject={() => handleReject(task.id)}
                           onProofUpload={handleProofUpload}
                           uploadProgress={0}
@@ -598,7 +597,7 @@ export default function IssuedPage() {
                           task={task}
                           isCreatorView={true}
                           onStatusUpdate={() => {}}
-                          onApprove={() => handleApprove(task.id)}
+                          onApprove={handleApprove}
                           onReject={() => handleReject(task.id)}
                           onProofUpload={handleProofUpload}
                           uploadProgress={0}
@@ -626,7 +625,7 @@ export default function IssuedPage() {
                           task={task}
                           isCreatorView={true}
                           onStatusUpdate={() => {}}
-                          onApprove={() => handleApprove(task.id)}
+                          onApprove={handleApprove}
                           onReject={() => handleReject(task.id)}
                           onProofUpload={handleProofUpload}
                           uploadProgress={0}
@@ -656,7 +655,7 @@ export default function IssuedPage() {
                           task={task}
                           isCreatorView={true}
                           onStatusUpdate={() => {}}
-                          onApprove={() => handleApprove(task.id)}
+                          onApprove={handleApprove}
                           onReject={() => handleReject(task.id)}
                           onProofUpload={handleProofUpload}
                           uploadProgress={0}
@@ -739,7 +738,7 @@ export default function IssuedPage() {
                 <AppButton
                   type="button"
                   variant="danger"
-                  onClick={handleConfirmReject}
+                  onClick={(event) => handleConfirmReject(event.currentTarget)}
                   loading={!!rejectTargetId && rejectingTaskId === rejectTargetId}
                   className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]"
                 >

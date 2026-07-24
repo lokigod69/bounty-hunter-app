@@ -12,6 +12,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { useTranslation } from 'react-i18next';
 import { Coin } from './visual/Coin';
+import { CREDITS_CHANGED_EVENT } from '../hooks/usePayoutWatcher';
 
 // Several UserCredits instances can be mounted at once (desktop header, mobile
 // pill, mobile menu). Supabase channels are deduped by topic and throw on a
@@ -22,6 +23,7 @@ const useUserCredits = () => {
   const supabase = useSupabaseClient();
   const user = useUser();
   const [credits, setCredits] = useState<number | null>(null);
+  const [totalEarned, setTotalEarned] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ const useUserCredits = () => {
         setLoading(false);
         // setError('User not authenticated.'); // Optional: set error if no user
         setCredits(0); // Show 0 if no user
+        setTotalEarned(null);
         return;
       }
 
@@ -40,7 +43,7 @@ const useUserCredits = () => {
       try {
         const { data, error: dbError } = await supabase
           .from('user_credits') // As per user feedback
-          .select('balance')    // As per user feedback
+          .select('balance, total_earned')
           .eq('user_id', user.id)
           .single();
 
@@ -57,18 +60,22 @@ const useUserCredits = () => {
               if (upsertError) {
                 setError('Failed to initialize credits.');
                 setCredits(0);
+                setTotalEarned(null);
               } else {
                 setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
+                setTotalEarned(0);
               }
             } catch (initError: unknown) {
               let initMessage = 'An unexpected error occurred during credit initialization.';
               if (initError instanceof Error) initMessage = initError.message;
               setError(initMessage);
               setCredits(0);
+              setTotalEarned(null);
             }
           } else {
             setError('Failed to load credits.');
             setCredits(0); // Show 0 on other errors
+            setTotalEarned(null);
           }
         } else if (data === null) {
             // This case handles when .single() returns null (no record) without an explicit PGRST116 error
@@ -81,17 +88,21 @@ const useUserCredits = () => {
               if (upsertError) {
                 setError('Failed to initialize credits.');
                 setCredits(0);
+                setTotalEarned(null);
               } else {
                 setCredits(0); // Set to 0 as it's either new or we are re-fetching after this anyway
+                setTotalEarned(0);
               }
             } catch (initError: unknown) {
               let initMessage = 'An unexpected error occurred during credit initialization.';
               if (initError instanceof Error) initMessage = initError.message;
               setError(initMessage);
               setCredits(0);
+              setTotalEarned(null);
             }
         } else {
-          setCredits(data?.balance || 0);
+          setCredits(data?.balance ?? 0);
+          setTotalEarned(typeof data?.total_earned === 'number' ? data.total_earned : null);
         }
       } catch (e: unknown) { // Changed from any to unknown for better type safety
         let message = 'An unexpected error occurred.';
@@ -100,6 +111,7 @@ const useUserCredits = () => {
         }
         setError(message);
         setCredits(0); // Show 0 on exception
+        setTotalEarned(null);
       }
       setLoading(false);
     };
@@ -109,8 +121,13 @@ const useUserCredits = () => {
     // Set up real-time subscription for credit changes (disabled on mobile to prevent connection issues)
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
     
-    if (user && !isMobile) {
-      const channel = supabase
+    const handleCreditsChanged = () => {
+      void fetchCredits();
+    };
+    window.addEventListener(CREDITS_CHANGED_EVENT, handleCreditsChanged);
+
+    const channel = user && !isMobile
+      ? supabase
         .channel(`user_credits_changes_${user.id}_${++channelSeq}`)
         .on(
           'postgres_changes',
@@ -124,20 +141,21 @@ const useUserCredits = () => {
             fetchCredits(); // Re-fetch credits when a change is detected
           }
         )
-        .subscribe();
+        .subscribe()
+      : null;
 
-      // Cleanup subscription on component unmount with error handling
-      return () => {
-        try {
-          supabase.removeChannel(channel);
-        } catch {
-          // Silently handle cleanup errors to prevent console spam
-        }
-      };
-    }
+    return () => {
+      window.removeEventListener(CREDITS_CHANGED_EVENT, handleCreditsChanged);
+      if (!channel) return;
+      try {
+        supabase.removeChannel(channel);
+      } catch {
+        // Silently handle cleanup errors to prevent console spam
+      }
+    };
   }, [user, supabase]); // Removed unnecessary dependencies to reduce re-renders
 
-  return { credits, loading, error };
+  return { credits, totalEarned, loading, error };
 };
 
 // Smoothly animates the displayed balance when it changes (the "living credit HUD").

@@ -4,6 +4,11 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-24 — Commitment seals are local; payday belongs only to the hunter
+**Status:** active (Design V2 Wave C implemented, uncommitted)
+**Decision:** Accept, transmit, and approval use one anchored strike seal; sent-back uses the same instrument inverted as an orange lift with no shock or warning haptic. Seals are silent except for `feedback.press()` at a true landing. The payout sound/haptic and coin drop fire only from a persistent hunter-side watcher when a previously baselined credit task moves `review → completed`; issuer approval never calls payday. First fetch/login is baseline-only, hidden tabs do not emit, and credit readers revalidate through `bh:credits-changed`. All ceremony motion is transform/opacity-only with explicit reduced-motion paths; the requested rejection blur is approximated by a fading/scaling ghost ring rather than animating `filter`.
+**Why:** A commitment should feel consistent without turning rejection into punishment, while reward feedback must reach the person who earned it. Baseline diffing prevents old completed work replaying at login. The ghost-ring substitution preserves the lift's visual softening without violating Wave C's hard motion-performance rule.
+
 ## 2026-07-24 — Returned work is "Sent back"; evidence and populated lists remain visible
 **Status:** active (Design V2 Wave B implemented, uncommitted)
 **Decision:** `rejected` is a distinct orange state (`#f97316`), never an overdue/red failure; issuers retain a dedicated sent-back section. Assignees must accept pending contracts before submitting proof. Evidence means either `proof_description` or `proof_url` and is visible to both parties through review/completed/rejected; private files are signed at render without changing persisted URLs. Populated contract/friend lists use stale-while-revalidate and must never unmount for a refresh spinner. Archive is shared history: rows created by or assigned to the user, ordered by approval.

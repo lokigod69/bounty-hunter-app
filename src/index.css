@@ -725,6 +725,7 @@ body::after {
  *   --z-modal-backdrop: 10000    - Modal backdrop (covers everything below)
  *   --z-modal-content: 10100      - Modal content (above backdrop)
  *   --z-modal-controls: 10200     - Modal controls (close buttons, etc.)
+ *   --z-seal-layer: 10250         - Commitment seals above open dossiers
  * 
  * Critical Overlays (99000+):
  *   --z-critical-overlay: 99000   - Critical system overlays
@@ -759,6 +760,7 @@ body::after {
   --z-modal-backdrop: 10000;
   --z-modal-content: 10100;
   --z-modal-controls: 10200;
+  --z-seal-layer: 10250;
   
   /* Critical Overlays: 99000+ */
   --z-critical-overlay: 99000;
@@ -775,9 +777,170 @@ body::after {
 .z-modal-backdrop { z-index: var(--z-modal-backdrop); }
 .z-modal-content { z-index: var(--z-modal-content); }
 .z-modal-controls { z-index: var(--z-modal-controls); }
+.z-seal-layer { z-index: var(--z-seal-layer); }
 .z-critical-overlay { z-index: var(--z-critical-overlay); }
 .z-critical-content { z-index: var(--z-critical-content); }
 .z-critical-controls { z-index: var(--z-critical-controls); }
+
+/* === THE SEAL === */
+.seal-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-seal-layer);
+}
+
+.seal-effect {
+  --seal-color: var(--mode-accent);
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  color: var(--seal-color);
+  transform: translate(-50%, -50%);
+}
+
+.seal-mark,
+.seal-lift-ghost,
+.seal-shock {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.seal-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  background: rgba(8, 12, 22, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.seal-effect--strike .seal-mark {
+  animation:
+    seal-land 180ms var(--ease-press) both,
+    seal-dismiss 160ms ease-in 700ms forwards;
+}
+
+.seal-shock {
+  border: 1px solid currentColor;
+  opacity: 0;
+  animation: seal-shock 420ms ease-out 140ms forwards;
+}
+
+.seal-lift-ghost {
+  display: none;
+}
+
+.seal-effect--lift .seal-mark {
+  opacity: 0.3;
+  animation: seal-lift 320ms var(--ease-exit) forwards;
+}
+
+/* Transform/opacity-only softening proxy for the requested lift blur. */
+.seal-effect--lift .seal-lift-ghost {
+  display: block;
+  border: 3px solid currentColor;
+  opacity: 0.14;
+  animation: seal-lift-ghost 320ms var(--ease-exit) forwards;
+}
+
+@keyframes seal-land {
+  from {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes seal-shock {
+  from {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes seal-dismiss {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes seal-lift {
+  from {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes seal-lift-ghost {
+  from {
+    opacity: 0.14;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.34);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-effect--strike .seal-mark {
+    animation: seal-reduced 420ms ease-out forwards;
+    transform: scale(1);
+  }
+
+  .seal-shock,
+  .seal-lift-ghost {
+    display: none;
+  }
+
+  .seal-effect--lift .seal-mark {
+    animation: seal-reduced-lift 320ms ease-out forwards;
+    transform: scale(1);
+  }
+}
+
+@keyframes seal-reduced {
+  0% { opacity: 0; }
+  29%, 72% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes seal-reduced-lift {
+  from { opacity: 0.3; }
+  to { opacity: 0; }
+}
+
+/* === THE DROP === */
+.payout-ceremony-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-seal-layer);
+}
+
+.payout-flight,
+.payout-badge-ring {
+  position: fixed;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.payout-badge-ring {
+  border: 1px solid rgba(245, 215, 110, 0.8);
+  border-radius: 14px;
+}
 
 /* === CREDIT GOLD (static) === */
 /* Replaces the old perpetual shimmer system. The shimmer's a11y overrides set
@@ -823,6 +986,7 @@ body::after {
      spatial path, so the exit easing is the mirror of the enter easing. */
   --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-exit: cubic-bezier(1, 0, 0.68, 0.28);
+  --ease-press: cubic-bezier(0.2, 0, 0, 1);
 
   /* Semantic Colors for States */
   --color-success: #22c55e;
