@@ -39,16 +39,25 @@ export function useFriends(userId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
+  // Request epoch: only the newest in-flight request may commit state (see
+  // useAssignedContracts for the cross-user-leak rationale).
+  const requestSeqRef = useRef(0);
 
   // R8 FIX: Track channel ref to properly cleanup only this channel
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   // Memoize fetchFriendships so it can be called from subscription callback
   const fetchFriendships = useCallback(async (uid: string) => {
+    requestSeqRef.current += 1;
+    const seq = requestSeqRef.current;
     const isInitialLoad =
       !hasLoadedRef.current || loadedUserIdRef.current !== uid;
     try {
       if (isInitialLoad) {
+        // Identity changed — never show the previous user's roster.
+        setFriends([]);
+        setPendingRequests([]);
+        setSentRequests([]);
         setLoading(true);
       } else {
         setIsRefreshing(true);
@@ -99,12 +108,15 @@ export function useFriends(userId: string | undefined) {
         }
       }
 
+      if (seq !== requestSeqRef.current) return; // superseded by a newer request
+
       setFriends(acceptedFriends);
       setPendingRequests(received);
       setSentRequests(sent);
       hasLoadedRef.current = true;
       loadedUserIdRef.current = uid;
     } catch (e) {
+      if (seq !== requestSeqRef.current) return;
       let errorMessage: string | null = null;
       if (e instanceof Error) {
         errorMessage = e.message;
@@ -113,10 +125,17 @@ export function useFriends(userId: string | undefined) {
       } else {
         errorMessage = 'An unexpected error occurred while fetching friendships.';
       }
-      setError(errorMessage);
+      // Background refresh failures keep the populated roster (initial only).
+      if (isInitialLoad) {
+        setError(errorMessage);
+      } else if (import.meta.env.DEV) {
+        console.warn('useFriends background refresh failed:', errorMessage);
+      }
     } finally {
-      if (isInitialLoad) setLoading(false);
-      setIsRefreshing(false);
+      if (seq === requestSeqRef.current) {
+        if (isInitialLoad) setLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, []);
 

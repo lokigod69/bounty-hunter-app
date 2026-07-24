@@ -13,6 +13,9 @@ const escapeStack: EscapeEntry[] = [];
 
 function handleEscape(event: KeyboardEvent) {
   if (event.key !== 'Escape') return;
+  // A held key auto-repeats; without this guard the repeats cascade through
+  // the stack, closing the parent the instant the child closes.
+  if (event.repeat) return;
   const top = escapeStack[escapeStack.length - 1];
   if (!top) return;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { Check, CircleDashed, Send, Stamp, type LucideIcon } from 'lucide-react';
 import { feedback } from '../../utils/feedback';
 import {
@@ -69,9 +69,11 @@ export function SealLayer() {
     return () => window.removeEventListener(SEAL_EVENT, handleSeal);
   }, []);
 
-  const removeSeal = (id: number) => {
+  // Stable identity: a new seal arriving must not re-run every existing
+  // seal's effect (which would duplicate haptics and restart removal timers).
+  const removeSeal = useCallback((id: number) => {
     setSeals((current) => current.filter((seal) => seal.id !== id));
-  };
+  }, []);
 
   return (
     <div className="seal-layer" aria-hidden="true">

@@ -248,9 +248,10 @@ body {
 /* THE REGISTER Wave 0: the starfield. The radial-gradient ground above was the
    whole visual identity, and an opaque wrapper in Layout painted over it on
    every signed-in screen — these fixed star layers plus that wrapper's removal
-   put the sky back everywhere. Pure CSS, ~0.4 kb, two layers drifting at
-   different rates. background-position loops over 4420px (a multiple of both
-   tile sizes) so the drift never shows a seam. */
+   put the sky back everywhere. Pure CSS, ~0.4 kb, two static density layers.
+   Deliberately does NOT drift: the motion law says nothing moves unless a
+   person made it move, and an always-on background-position animation forces
+   continuous paint work in WKWebView (adversarial review finding #9). */
 body::before,
 body::after {
   content: '';
@@ -267,7 +268,6 @@ body::before {
     radial-gradient(1.5px 1.5px at 90px 200px, rgba(190, 225, 255, 0.42) 50%, transparent 51%),
     radial-gradient(1px 1px at 220px 60px, rgba(255, 255, 255, 0.3) 50%, transparent 51%);
   background-size: 260px 260px;
-  animation: starfield-drift 400s linear infinite;
 }
 
 body::after {
@@ -276,20 +276,6 @@ body::after {
     radial-gradient(1px 1px at 210px 170px, rgba(200, 230, 255, 0.18) 50%, transparent 51%),
     radial-gradient(1.5px 1.5px at 130px 280px, rgba(255, 255, 255, 0.14) 50%, transparent 51%);
   background-size: 340px 340px;
-  animation: starfield-drift 640s linear infinite reverse;
-}
-
-@keyframes starfield-drift {
-  to {
-    background-position: 0 4420px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::before,
-  body::after {
-    animation: none;
-  }
 }
 
 @layer components {

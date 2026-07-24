@@ -108,6 +108,28 @@ class SoundManager {
         this.warmed = true;
         if (!this.enabled) return; // muted installs never fetch audio
         SOUND_KEYS.forEach((key) => this.ensureAudio(key));
+        // Safari unlock: constructing elements is not enough — playback must
+        // directly result from a user gesture at least once, or the first
+        // asynchronous sound (e.g. a payday arriving via realtime) may be
+        // rejected. Play one muted sample inside the gesture handler.
+        const unlock = this.sounds.click1a;
+        if (unlock) {
+          unlock.muted = true;
+          const attempt = unlock.play();
+          if (attempt !== undefined) {
+            attempt
+              .then(() => {
+                unlock.pause();
+                unlock.currentTime = 0;
+                unlock.muted = false;
+              })
+              .catch(() => {
+                unlock.muted = false;
+              });
+          } else {
+            unlock.muted = false;
+          }
+        }
       },
       { once: true, passive: true }
     );

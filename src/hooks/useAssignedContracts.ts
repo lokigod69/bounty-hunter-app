@@ -31,8 +31,16 @@ export function useAssignedContracts() {
   const [error, setError] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
+  // Request epoch: only the newest in-flight request may commit state. A late
+  // response from a previous user's session must never overwrite the current
+  // user's board (cross-user leak), and out-of-order refetches must not
+  // resurrect stale data.
+  const requestSeqRef = useRef(0);
 
   const fetchAssignedContracts = useCallback(async () => {
+    requestSeqRef.current += 1;
+    const seq = requestSeqRef.current;
+
     if (!user?.id) {
       setContracts([]);
       setLoading(false);
@@ -45,6 +53,9 @@ export function useAssignedContracts() {
     const isInitialLoad =
       !hasLoadedRef.current || loadedUserIdRef.current !== user.id;
     if (isInitialLoad) {
+      // Identity changed (or first load): withhold any previously cached
+      // list immediately — user B must never see user A's contracts.
+      setContracts([]);
       setLoading(true);
     } else {
       setIsRefreshing(true);
@@ -61,9 +72,17 @@ export function useAssignedContracts() {
         .eq('assigned_to', user.id)
         .eq('is_archived', false);
 
+      if (seq !== requestSeqRef.current) return; // superseded by a newer request
+
       if (dbError) {
-        setError(dbError.message);
-        if (isInitialLoad) setContracts([]);
+        // A failed BACKGROUND refresh must not replace a valid populated
+        // board with a full-page error; only the initial load surfaces it.
+        if (isInitialLoad) {
+          setError(dbError.message);
+          setContracts([]);
+        } else if (import.meta.env.DEV) {
+          console.warn('useAssignedContracts background refresh failed:', dbError.message);
+        }
       } else {
         // FIXED: Remove double URL generation - proof_url is already a public URL from upload
         const processedContracts = data?.map(task => {
@@ -89,15 +108,22 @@ export function useAssignedContracts() {
         loadedUserIdRef.current = user.id;
       }
     } catch (e: unknown) {
+      if (seq !== requestSeqRef.current) return;
       let message = 'An unexpected error occurred.';
       if (e instanceof Error) {
         message = e.message;
       }
-      setError(message);
-      if (isInitialLoad) setContracts([]);
+      if (isInitialLoad) {
+        setError(message);
+        setContracts([]);
+      } else if (import.meta.env.DEV) {
+        console.warn('useAssignedContracts background refresh failed:', message);
+      }
     } finally {
-      if (isInitialLoad) setLoading(false);
-      setIsRefreshing(false);
+      if (seq === requestSeqRef.current) {
+        if (isInitialLoad) setLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [user?.id]); // Add user.id as a dependency for useCallback
 

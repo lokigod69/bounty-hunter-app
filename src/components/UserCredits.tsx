@@ -26,9 +26,15 @@ const useUserCredits = () => {
   const [totalEarned, setTotalEarned] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Only the newest request commits — a payout-triggered refetch must not be
+  // overwritten by a slower, older balance query finishing after it.
+  const requestSeqRef = useRef(0);
 
   useEffect(() => {
     const fetchCredits = async () => {
+      requestSeqRef.current += 1;
+      const seq = requestSeqRef.current;
+
       if (!user) {
         setLoading(false);
         // setError('User not authenticated.'); // Optional: set error if no user
@@ -46,6 +52,8 @@ const useUserCredits = () => {
           .select('balance, total_earned')
           .eq('user_id', user.id)
           .single();
+
+        if (seq !== requestSeqRef.current) return; // superseded by a newer request
 
         if (dbError) {
           // Check if the error is because the user_credits record doesn't exist (e.g., Supabase code PGRST116)
@@ -105,6 +113,7 @@ const useUserCredits = () => {
           setTotalEarned(typeof data?.total_earned === 'number' ? data.total_earned : null);
         }
       } catch (e: unknown) { // Changed from any to unknown for better type safety
+        if (seq !== requestSeqRef.current) return;
         let message = 'An unexpected error occurred.';
         if (e instanceof Error) {
           message = e.message;
@@ -113,7 +122,7 @@ const useUserCredits = () => {
         setCredits(0); // Show 0 on exception
         setTotalEarned(null);
       }
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     };
 
     fetchCredits();

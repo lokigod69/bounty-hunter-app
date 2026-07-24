@@ -15,8 +15,14 @@ export const useArchivedContracts = () => {
   const [error, setError] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
+  // Request epoch: only the newest in-flight request may commit state (see
+  // useAssignedContracts for the cross-user-leak rationale).
+  const requestSeqRef = useRef(0);
 
   const fetchArchivedTasks = useCallback(async () => {
+    requestSeqRef.current += 1;
+    const seq = requestSeqRef.current;
+
     if (!user?.id) {
       setArchivedTasks([]);
       setLoading(false);
@@ -29,6 +35,7 @@ export const useArchivedContracts = () => {
     const isInitialLoad =
       !hasLoadedRef.current || loadedUserIdRef.current !== user.id;
     if (isInitialLoad) {
+      setArchivedTasks([]); // identity changed — never show the previous user's history
       setLoading(true);
     } else {
       setIsRefreshing(true);
@@ -48,14 +55,25 @@ export const useArchivedContracts = () => {
         throw new Error(error.message);
       }
 
+      if (seq !== requestSeqRef.current) return; // superseded by a newer request
+
       setArchivedTasks(data || []);
       hasLoadedRef.current = true;
       loadedUserIdRef.current = user.id;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      if (seq !== requestSeqRef.current) return;
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      // Background refresh failures keep the populated list (initial only).
+      if (isInitialLoad) {
+        setError(message);
+      } else if (import.meta.env.DEV) {
+        console.warn('useArchivedContracts background refresh failed:', message);
+      }
     } finally {
-      if (isInitialLoad) setLoading(false);
-      setIsRefreshing(false);
+      if (seq === requestSeqRef.current) {
+        if (isInitialLoad) setLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [user?.id]);
 

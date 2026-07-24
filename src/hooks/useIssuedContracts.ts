@@ -31,8 +31,14 @@ export function useIssuedContracts() {
   const [error, setError] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
+  // Request epoch: only the newest in-flight request may commit state (see
+  // useAssignedContracts for the cross-user-leak rationale).
+  const requestSeqRef = useRef(0);
 
   const fetchContracts = useCallback(async () => {
+    requestSeqRef.current += 1;
+    const seq = requestSeqRef.current;
+
     if (!user?.id) {
       setContracts([]); // Clear contracts if no user
       setLoading(false);
@@ -45,6 +51,7 @@ export function useIssuedContracts() {
     const isInitialLoad =
       !hasLoadedRef.current || loadedUserIdRef.current !== user.id;
     if (isInitialLoad) {
+      setContracts([]); // identity changed — never show the previous user's list
       setLoading(true);
     } else {
       setIsRefreshing(true);
@@ -61,24 +68,35 @@ export function useIssuedContracts() {
         .eq('created_by', user.id)
         .eq('is_archived', false);
 
+      if (seq !== requestSeqRef.current) return; // superseded by a newer request
+
       if (fetchError) {
-        setError(fetchError.message);
-        if (isInitialLoad) setContracts([]);
+        // Background refresh failures keep the populated board (initial only).
+        if (isInitialLoad) {
+          setError(fetchError.message);
+          setContracts([]);
+        } else if (import.meta.env.DEV) {
+          console.warn('useIssuedContracts background refresh failed:', fetchError.message);
+        }
       } else {
         setContracts(data || []);
         hasLoadedRef.current = true;
         loadedUserIdRef.current = user.id;
       }
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError('An unexpected error occurred.');
+      if (seq !== requestSeqRef.current) return;
+      const message = e instanceof Error ? e.message : 'An unexpected error occurred.';
+      if (isInitialLoad) {
+        setError(message);
+        setContracts([]);
+      } else if (import.meta.env.DEV) {
+        console.warn('useIssuedContracts background refresh failed:', message);
       }
-      if (isInitialLoad) setContracts([]);
     } finally {
-      if (isInitialLoad) setLoading(false);
-      setIsRefreshing(false);
+      if (seq === requestSeqRef.current) {
+        if (isInitialLoad) setLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [user?.id]);
 
