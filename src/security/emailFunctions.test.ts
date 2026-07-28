@@ -28,6 +28,7 @@ describe('email edge function security', () => {
     const legacyAlertFunctions = [
       'supabase/functions/send-new-bounty-alert/index.ts',
       'supabase/functions/send-proof-submitted-alert/index.ts',
+      'supabase/functions/create-daily-tasks/index.ts',
     ];
 
     for (const functionPath of legacyAlertFunctions) {
@@ -36,5 +37,28 @@ describe('email edge function security', () => {
       expect(source, functionPath).toContain('Missing or invalid Authorization header.');
       expect(source, functionPath).toContain('status: 401');
     }
+  });
+
+  it('keeps disabled legacy functions fail-closed (410, no live send/write path)', () => {
+    const disabledFunctions = [
+      'supabase/functions/send-new-bounty-alert/index.ts',
+      'supabase/functions/send-proof-submitted-alert/index.ts',
+      'supabase/functions/create-daily-tasks/index.ts',
+    ];
+
+    for (const functionPath of disabledFunctions) {
+      const source = readRepoFile(functionPath);
+
+      expect(source, functionPath).toContain('status: 410');
+    }
+  });
+
+  it('escapes user-controlled strings before interpolating them into email HTML', () => {
+    const source = readRepoFile('supabase/functions/notify-reward-creator/index.ts');
+
+    expect(source).toContain('function escapeHtml');
+    expect(source).toMatch(/escapeHtml\(collectorProfileData\.display_name/);
+    expect(source).toMatch(/escapeHtml\(creatorUserData\.display_name/);
+    expect(source).toMatch(/escapeHtml\(rewardData\.name\)/);
   });
 });

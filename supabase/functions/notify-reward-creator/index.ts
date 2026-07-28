@@ -27,6 +27,15 @@ function getBearerToken(authorizationHeader: string | null): string | null {
   return token;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function sendEmail(to: string, subject: string, html: string) {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   const resendFromEmail = Deno.env.get('RESEND_FROM_EMAIL');
@@ -171,13 +180,14 @@ serve(async (req: Request) => {
       throw new Error(`Collector profile not found: ${collectorProfileError?.message}`);
     }
 
-    const collectorName = collectorProfileData.display_name || 'A collector';
-    const creatorName = creatorUserData.display_name || 'Reward Creator';
+    const collectorName = escapeHtml(collectorProfileData.display_name || 'A collector');
+    const creatorName = escapeHtml(creatorUserData.display_name || 'Reward Creator');
+    const rewardName = escapeHtml(rewardData.name);
 
     const emailSubject = `🎉 Your Reward "${rewardData.name}" has been purchased!`;
     const emailBody = `
       <p>Hi ${creatorName},</p>
-      <p>Great news! Your reward, <strong>${rewardData.name}</strong>, was just purchased by <strong>${collectorName}</strong>.</p>
+      <p>Great news! Your reward, <strong>${rewardName}</strong>, was just purchased by <strong>${collectorName}</strong>.</p>
       <p>Keep offering amazing rewards!</p>
       <p>Best,</p>
       <p>The Rewards Store Team</p>
