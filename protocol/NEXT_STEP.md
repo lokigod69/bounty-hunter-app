@@ -1,4 +1,4 @@
-# NEXT STEP — Bounty Hunter/main — updated 2026-07-28 (Phase B merged, edge hardening, Wave 2 Standing shipped; 012 SQL is YOUR gate)
+# NEXT STEP — Bounty Hunter/main — updated 2026-07-28 later (session review closed 8/8; 012 SQL is YOUR gate)
 
 ## FOR YOU
 1. **Run the 012 SQL rollout — prod create/edit is broken until you do** (knowingly accepted; no users). In PowerShell at the repo root:
@@ -9,7 +9,6 @@
 ## PASTE THIS
 Resume Bounty Hunter, workstream main, under protocol-os.
 Read protocol/PROTOCOL.md, protocol/NEXT_STEP.md, memory/INDEX.md, memory/STATE.md.
-Verify state: main at `80a7d77` (or later) pushed; working tree may carry session bookkeeping. Run `git diff --check`, `npx tsc -p tsconfig.app.json --noEmit`, `npm test`, `npm run lint`, `npm run build` (expect: 0 errors, 110 tests/18 files, 0 lint errors/3 warnings, build pass).
-DONE 2026-07-28: phase-b-client-rpcs rebased+merged (7b7414e — prod create/edit broken until 012 SQL, accepted); edge functions hardened (4803957 — zero deployed on live, escapeHtml, dead cron stub); Design V2 Wave 2 Standing shipped (208687a, 80a7d77 — sigil/rank/ceremony/creed-by-band/THE NAMED own-name, bilingual, 110 tests).
-IN FLIGHT at handoff: Codex adversarial review of eb98b2c..HEAD (task-ms5amb42-hz99r3) — fetch result (`node C:/Users/micha/.claude/plugins/cache/openai-codex/codex/1.0.5/scripts/codex-companion.mjs result task-ms5amb42-hz99r3`), arbitrate findings, fix batch, re-run gates, push.
-NEXT after that: Michael's 012 rollout is the gate for prod create/edit; then deferred waves 3/4/5 or a 013 proposal closing the self-assign standing hole. Mode 2 rules and the Status Block apply.
+Verify state: main at `8e58cf4` (or later) pushed, tree clean. Run `git diff --check`, `npx tsc -p tsconfig.app.json --noEmit`, `npm test`, `npm run lint`, `npm run build` (expect: 0 errors, 110 tests/18 files, 0 lint errors/3 warnings, build pass).
+DONE 2026-07-28: phase-b-client-rpcs rebased+merged (7b7414e — prod create/edit broken until 012 SQL, accepted); edge functions hardened (4803957); Design V2 Wave 2 Standing shipped (208687a, 80a7d77 — sigil/rank/ceremony/creed-by-band/THE NAMED own-name, bilingual); Codex adversarial session review CLOSED, 8/8 findings fixed incl. 2 MAJOR (8e58cf4).
+NEXT: Michael's 012 rollout is the gate for prod create/edit; then deferred waves 3/4/5 (economy anchor, thumb-rail chassis, THE ROSTER, presence), a 013 proposal closing the self-assign standing hole, or provider-level credits dedupe. Mode 2 rules and the Status Block apply.
