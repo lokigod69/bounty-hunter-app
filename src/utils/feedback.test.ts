@@ -79,6 +79,25 @@ describe('feedback', () => {
     expect(play).toHaveBeenCalledWith('payday');
   });
 
+  it('rankUp is the only three-note event: heavy strike, payday at +140ms, success at +320ms', async () => {
+    vi.useFakeTimers();
+    try {
+      feedback.rankUp();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(impact).toHaveBeenCalledWith({ style: 'HEAVY' });
+      expect(play).not.toHaveBeenCalled(); // the strike is haptic-only (no seal.mp3 yet)
+
+      await vi.advanceTimersByTimeAsync(140);
+      expect(notification).toHaveBeenCalledWith({ type: 'SUCCESS' });
+      expect(play).toHaveBeenCalledWith('payday');
+
+      await vi.advanceTimersByTimeAsync(180);
+      expect(play).toHaveBeenCalledWith('success');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('warning and error fire the matching notification haptics', async () => {
     feedback.warning('delete');
     await flush();

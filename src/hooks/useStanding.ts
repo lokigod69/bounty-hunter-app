@@ -3,7 +3,7 @@
 // useStanding wraps the credits fetch; useRankUpWatcher turns a band increase
 // into a single RANK_UP_EVENT for the ceremony layer.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { getStanding, type Standing, type StandingBand } from '../core/credits/standing.domain';
 import { useUserCredits } from './useUserCredits';
 
@@ -24,9 +24,14 @@ export interface UseStandingResult {
 
 export function useStanding(): UseStandingResult {
   const { totalEarned, loading, error } = useUserCredits();
+  // Settle-once: after the first successful answer, standing stays known
+  // through later refetches (loading flips true on every CREDITS_CHANGED) —
+  // the Wave 0 law: populated chrome never unmounts to show nothing.
+  const hasSettled = useRef(false);
+  if (!loading && !error) hasSettled.current = true;
   return {
     standing: getStanding(totalEarned),
-    known: !loading && !error,
+    known: hasSettled.current,
     loading,
     error,
   };

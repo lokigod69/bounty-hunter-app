@@ -90,11 +90,11 @@ export const feedback = {
    */
   rankUp(): void {
     impact('Heavy');
-    window.setTimeout(() => {
+    setTimeout(() => {
       notify('Success');
       soundManager.play('payday');
     }, 140);
-    window.setTimeout(() => {
+    setTimeout(() => {
       soundManager.play('success');
     }, 320);
   },

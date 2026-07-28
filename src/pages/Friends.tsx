@@ -673,8 +673,8 @@ export default function Friends() {
                 title={strings.friendsTitle}
                 body={
                   theme.id === 'family'
-                    ? 'Invite family members to share chores and rewards.'
-                    : 'Invite crew members to share missions and rewards.'
+                    ? t('invite.emptyBodyFamily')
+                    : t('invite.emptyBodyCrew')
                 }
               >
                 <AppButton
@@ -683,11 +683,11 @@ export default function Friends() {
                   loading={isSharingInvite}
                   onClick={handleShareInvite}
                 >
-                  Invite someone
+                  {t('invite.inviteSomeone')}
                 </AppButton>
                 {pendingRequests.length > 0 && (
                   <AppButton variant="secondary" onClick={() => setActiveTab('requests')}>
-                    View requests ({pendingRequests.length})
+                    {t('invite.viewRequests', { count: pendingRequests.length })}
                   </AppButton>
                 )}
               </EmptyState>

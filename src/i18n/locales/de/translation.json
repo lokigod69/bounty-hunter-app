@@ -163,6 +163,10 @@
   },
   "invite": {
     "shareLink": "Einladungslink teilen",
+    "inviteSomeone": "Lade jemanden ein",
+    "emptyBodyFamily": "Lade deine Familie ein, um Aufgaben und Belohnungen zu teilen.",
+    "emptyBodyCrew": "Lade deine Crew ein, um Missionen und Belohnungen zu teilen.",
+    "viewRequests": "Anfragen ansehen ({{count}})",
     "linkCopied": "Link kopiert",
     "shareText": "Mach mit bei Bounty Hunter",
     "generating": "Dein Link wird erstellt…",

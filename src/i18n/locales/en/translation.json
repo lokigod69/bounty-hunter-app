@@ -149,6 +149,10 @@
   },
   "invite": {
     "shareLink": "Share invite link",
+    "inviteSomeone": "Invite someone",
+    "emptyBodyFamily": "Invite family members to share chores and rewards.",
+    "emptyBodyCrew": "Invite crew members to share missions and rewards.",
+    "viewRequests": "View requests ({{count}})",
     "linkCopied": "Link copied",
     "shareText": "Join me on Bounty Hunter",
     "generating": "Creating your link…",
