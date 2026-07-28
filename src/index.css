@@ -928,6 +928,236 @@ body::after {
   border-radius: 14px;
 }
 
+/* === STANDING (Wave 2, THE REGISTER §3.1) ===
+   The second number: sigil + rank word + a 2px bar toward the next band.
+   Standing metals appear here and nowhere else: iron, brass, then the mode
+   accent itself at the top band. */
+
+.standing-sigil {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Band 0 — UNSWORN: hollow outline, no metal yet. */
+.standing-sigil[data-band="0"] {
+  background: rgba(185, 194, 207, 0.4);
+}
+.standing-sigil[data-band="0"]::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: #0B1120;
+}
+
+/* Bands 1–2 — iron. */
+.standing-sigil[data-band="1"],
+.standing-sigil[data-band="2"] {
+  background: linear-gradient(160deg, #B9C2CF 0%, #7E8899 55%, #6B7484 100%);
+}
+
+/* Band 2 — three chevrons cut into the iron. */
+.standing-sigil-chevrons {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 22%,
+    rgba(11, 17, 32, 0.55) 22%,
+    rgba(11, 17, 32, 0.55) 30%
+  );
+  clip-path: polygon(28% 26%, 72% 26%, 72% 78%, 28% 78%);
+}
+
+/* Band 3 — brass. */
+.standing-sigil[data-band="3"] {
+  background: linear-gradient(160deg, #F0DFA0 0%, #C9A227 55%, #8C6F1A 100%);
+}
+
+/* Band 4 — THE NAMED: the mark takes the guild's own colour. */
+.standing-sigil[data-band="4"] {
+  background: linear-gradient(
+    160deg,
+    var(--mode-accent) 0%,
+    var(--mode-accent) 45%,
+    var(--mode-accent-muted) 100%
+  );
+}
+
+.standing-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.standing-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.standing-rank {
+  font-family: 'MandaloreTitle', 'Mandalore', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+}
+
+.standing-bar {
+  display: block;
+  width: 64px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.standing-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--mode-accent);
+  transition: width 420ms var(--ease-metal);
+}
+
+/* THE NAMED (§4.1): the guild speaks your name. Applied wherever a band-4
+   hunter's own name renders; cross-user application waits on a migration. */
+.the-named {
+  font-family: 'MandaloreTitle', 'Mandalore', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* === RANK-UP CEREMONY (§3.1) — the only ceremony over one second. === */
+.rankup-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10300; /* above seals (10250), below critical overlays (99000) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.rankup-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  animation: rankup-dim-in 220ms ease-out forwards;
+}
+
+@keyframes rankup-dim-in {
+  to { opacity: 0.65; }
+}
+
+.rankup-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+}
+
+.rankup-sigil-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rankup-sigil-wrap .standing-sigil {
+  animation: rankup-sigil-strike 420ms var(--ease-metal) both;
+}
+
+@keyframes rankup-sigil-strike {
+  0% { transform: rotate(0deg) scale(0.92); opacity: 0.4; }
+  50% { transform: rotate(-6deg) scale(1.02); opacity: 1; }
+  100% { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+.rankup-ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--mode-accent);
+  border-radius: 9999px;
+  opacity: 0.8;
+  animation: rankup-ring-out 520ms var(--ease-enter) 260ms forwards;
+  pointer-events: none;
+}
+
+@keyframes rankup-ring-out {
+  to { transform: scale(3.2); opacity: 0; }
+}
+
+.rankup-word {
+  font-family: 'MandaloreTitle', 'Mandalore', sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  clip-path: inset(0 100% 0 0);
+  animation: rankup-word-wipe 300ms ease-out 420ms forwards;
+}
+
+@keyframes rankup-word-wipe {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.rankup-subline {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.65);
+  opacity: 0;
+  animation: rankup-subline-fade 240ms ease-out 720ms forwards;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes rankup-subline-fade {
+  to { opacity: 1; }
+}
+
+/* Reduced motion (§3.1): ceremony loses the dim animation, rotation, ring and
+   wipe; the sigil simply cross-fades and the hold extends (handled in JS). */
+@media (prefers-reduced-motion: reduce) {
+  .rankup-dim {
+    animation: none;
+    opacity: 0.65;
+  }
+  .rankup-ring {
+    display: none;
+  }
+  .rankup-sigil-wrap .standing-sigil {
+    animation: rankup-sigil-fade 300ms ease-out both;
+  }
+  .rankup-word {
+    clip-path: none;
+    animation: none;
+  }
+  .rankup-subline {
+    animation: none;
+    opacity: 1;
+  }
+  .standing-bar-fill {
+    transition: none;
+  }
+}
+
+@keyframes rankup-sigil-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* === CREDIT GOLD (static) === */
 /* Replaces the old perpetual shimmer system. The shimmer's a11y overrides set
    `color: transparent` with no restoring rule, so the store balance rendered
@@ -973,6 +1203,9 @@ body::after {
   --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-exit: cubic-bezier(1, 0, 0.68, 0.28);
   --ease-press: cubic-bezier(0.2, 0, 0, 1);
+  /* Wave 2: the metal cross-fade of the rank-up ceremony — slow arrival,
+     no overshoot; metal does not bounce. */
+  --ease-metal: cubic-bezier(0.34, 0.9, 0.28, 1);
 
   /* Semantic Colors for States */
   --color-success: #22c55e;

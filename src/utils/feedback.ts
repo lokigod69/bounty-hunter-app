@@ -83,6 +83,22 @@ export const feedback = {
     soundManager.play('payday');
   },
 
+  /**
+   * Rank-up — the only three-note event in the product (THE REGISTER §3.1).
+   * Heavy strike, then payday at +140ms, then success at +320ms. The strike
+   * itself is haptic-only until a real seal.mp3 is commissioned.
+   */
+  rankUp(): void {
+    impact('Heavy');
+    window.setTimeout(() => {
+      notify('Success');
+      soundManager.play('payday');
+    }, 140);
+    window.setTimeout(() => {
+      soundManager.play('success');
+    }, 320);
+  },
+
   /** Destructive or cautionary action: reject, delete. Sound optional (e.g. 'delete'). */
   warning(soundKey?: SoundKey): void {
     notify('Warning');

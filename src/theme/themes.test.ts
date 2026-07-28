@@ -53,6 +53,11 @@ const requiredThemeStringKeys = [
   'archiveSubtitle',
   'archiveEmptyTitle',
   'archiveEmptyBody',
+  'rankBand0',
+  'rankBand1',
+  'rankBand2',
+  'rankBand3',
+  'rankBand4',
 ] as const;
 
 describe('theme string contract', () => {

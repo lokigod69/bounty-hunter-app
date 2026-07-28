@@ -25,6 +25,7 @@ import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { PageQuote } from '../components/layout/PageQuote';
 import { useDailyQuote } from '../hooks/useDailyQuote';
+import { useStanding } from '../hooks/useStanding';
 import { feedback } from '../utils/feedback';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -47,7 +48,10 @@ export default function Dashboard() {
   const { strings } = useThemeStrings();
   const navigate = useNavigate();
 
-  const dailyQuote = useDailyQuote();
+  // Wave 2: the creed follows your rank — undefined while standing loads keeps
+  // the foot of the board silent instead of drawing from the wrong pool.
+  const { standing, known: standingKnown } = useStanding();
+  const dailyQuote = useDailyQuote(standingKnown ? standing.unlockedCreedLines : undefined);
 
   const handleDeleteTaskRequest = () => {
     // Assignees should not be able to delete tasks created by others

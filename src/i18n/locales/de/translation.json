@@ -259,6 +259,12 @@
     },
     "submissionError": "Übermittlung fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
+  "standing": {
+    "label": "Ansehen",
+    "earnedSuffix": "VERDIENT",
+    "unsworn": "Ansehen verleihen dir die anderen. Hol jemanden dazu.",
+    "progressToNext": "{{earned}} von {{next}} bis zum nächsten Rang"
+  },
   "rewards": {
     "title": "Belohnungen",
     "lifetimeEarned": "Insgesamt verdient",
@@ -364,7 +370,12 @@
       "archiveTitle": "Abgeschlossene Aufträge",
       "archiveSubtitle": "Dein Verzeichnis erfüllter Aufträge.",
       "archiveEmptyTitle": "Noch keine Aufträge abgeschlossen",
-      "archiveEmptyBody": "Schließe eine Mission ab und sie wird hier dauerhaft festgehalten."
+      "archiveEmptyBody": "Schließe eine Mission ab und sie wird hier dauerhaft festgehalten.",
+      "rankBand0": "UNGESCHWOREN",
+      "rankBand1": "STREUNER",
+      "rankBand2": "FÄHRTENLESER",
+      "rankBand3": "EISENMAL",
+      "rankBand4": "GENANNT"
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -402,7 +413,12 @@
       "archiveTitle": "Abgeschlossene Aufgaben",
       "archiveSubtitle": "Eine Übersicht über alles, was deine Familie erledigt hat.",
       "archiveEmptyTitle": "Noch nichts abgeschlossen",
-      "archiveEmptyBody": "Erledige eine Aufgabe und sie wird hier gespeichert."
+      "archiveEmptyBody": "Erledige eine Aufgabe und sie wird hier gespeichert.",
+      "rankBand0": "NEULING",
+      "rankBand1": "HELFENDE HAND",
+      "rankBand2": "VERLÄSSLICH",
+      "rankBand3": "GRUNDPFEILER",
+      "rankBand4": "DAS HERZ"
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -440,7 +456,12 @@
       "archiveTitle": "Abgeschlossene Wünsche",
       "archiveSubtitle": "Eine Chronik von allem, was ihr gemeinsam getan habt.",
       "archiveEmptyTitle": "Noch nichts abgeschlossen",
-      "archiveEmptyBody": "Erfülle einen Wunsch und er lebt hier weiter."
+      "archiveEmptyBody": "Erfülle einen Wunsch und er lebt hier weiter.",
+      "rankBand0": "NEUE FLAMME",
+      "rankBand1": "VERLIEBT",
+      "rankBand2": "HINGEGEBEN",
+      "rankBand3": "TREUES HERZ",
+      "rankBand4": "FÜRS LEBEN"
     }
   }
 }

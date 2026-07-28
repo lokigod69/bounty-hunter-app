@@ -56,8 +56,11 @@ import { feedback } from '../utils/feedback';
 import type { SoundKey } from '../utils/soundManager';
 import { avatarFallback } from '../lib/avatar';
 import { usePayoutWatcher } from '../hooks/usePayoutWatcher';
+import { useStanding, useRankUpWatcher } from '../hooks/useStanding';
 import { SealLayer } from './visual/Seal';
 import { PayoutCeremony } from './visual/PayoutCeremony';
+import { RankUpCeremony } from './visual/RankUpCeremony';
+import { StandingBlock } from './StandingBlock';
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -65,6 +68,10 @@ export default function Layout() {
   const { strings } = useThemeStrings();
   const { user, profile } = useAuth();
   usePayoutWatcher(user?.id);
+  // Wave 2: one standing fetch for the whole chassis; both header instances
+  // and the rank-up watcher share it so nothing races.
+  const { standing, known: standingKnown } = useStanding();
+  useRankUpWatcher(user?.id, standing, standingKnown);
   const { pendingRequests } = useFriends(user?.id);
   const { reviewCount, rejectedCount } = useActionCounts();
   // Phase 2.5: redeem an invite token stashed before login, once per session.
@@ -182,6 +189,7 @@ export default function Layout() {
 
       <SealLayer />
       <PayoutCeremony />
+      <RankUpCeremony />
       {isCursorTrailEnabled && <CursorTrail />} {/* Conditionally render the cursor trail */}
       {/* Header */}
       <header className={`sticky top-0 z-header safe-top transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
@@ -236,6 +244,8 @@ export default function Layout() {
           {/* Right side: User Profile & Actions */}
           <div className="flex-shrink-0 flex items-center">
             <div className="hidden md:flex items-center space-x-4">
+              {/* Wave 2: standing — the second number (what you are) */}
+              <StandingBlock standing={standing} known={standingKnown} />
               {/* Desktop credit balance - clickable to Loot Vault */}
               <Link
                 to="/rewards-store"
@@ -270,7 +280,7 @@ export default function Layout() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="text-sm font-medium">
+                  <span className={`text-sm font-medium${standingKnown && standing.band === 4 ? ' the-named' : ''}`}>
                     {displayName}
                   </span>
                 </div>
@@ -286,6 +296,7 @@ export default function Layout() {
 
             {/* Mobile: always-visible credit pill + menu button */}
             <div className="md:hidden ml-4 flex items-center gap-2">
+              <StandingBlock standing={standing} known={standingKnown} compact />
               <Link
                 to="/rewards-store"
                 data-credit-anchor="mobile"
@@ -377,7 +388,7 @@ export default function Layout() {
                 />
               </div>
               <div>
-                <p className="font-medium text-lg">
+                <p className={`font-medium text-lg${standingKnown && standing.band === 4 ? ' the-named' : ''}`}>
                   {displayName}
                 </p>
                 <p className="text-white/70 text-sm">{user.email}</p>

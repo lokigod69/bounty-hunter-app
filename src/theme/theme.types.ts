@@ -44,6 +44,13 @@ export interface ThemeStrings {
   archiveSubtitle: string;
   archiveEmptyTitle: string;
   archiveEmptyBody: string;
+  // Design V2 Wave 2: standing rank words (THE REGISTER §3.1).
+  // System-authored, uppercase, ≤24 chars — rendered in MandaloreTitle.
+  rankBand0: string; // e.g. "UNSWORN"
+  rankBand1: string; // e.g. "DRIFTER"
+  rankBand2: string; // e.g. "TRACKER"
+  rankBand3: string; // e.g. "IRONMARK"
+  rankBand4: string; // e.g. "THE NAMED"
 }
 
 export interface ThemeDefinition {

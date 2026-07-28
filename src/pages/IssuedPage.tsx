@@ -32,6 +32,7 @@ import type { IssuedContract } from '../hooks/useIssuedContracts';
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
 import { Clock, AlertTriangle, CheckCircle, Plus, Clock3, Send } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
 import { useDailyQuote } from '../hooks/useDailyQuote';
+import { useStanding } from '../hooks/useStanding';
 import { PageQuote } from '../components/layout/PageQuote';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { feedback } from '../utils/feedback';
@@ -82,7 +83,9 @@ export default function IssuedPage() {
   // Phase 2.3: reject-with-reason modal state
   const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  const dailyQuote = useDailyQuote();
+  // Wave 2: the creed follows your rank (see Dashboard).
+  const { standing, known: standingKnown } = useStanding();
+  const dailyQuote = useDailyQuote(standingKnown ? standing.unlockedCreedLines : undefined);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
   const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
 

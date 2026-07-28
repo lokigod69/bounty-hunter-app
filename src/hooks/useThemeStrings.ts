@@ -58,6 +58,11 @@ export function useThemeStrings(): { strings: ThemeStrings; themeId: string } {
     archiveSubtitle: t(`theme.${themeId}.archiveSubtitle`),
     archiveEmptyTitle: t(`theme.${themeId}.archiveEmptyTitle`),
     archiveEmptyBody: t(`theme.${themeId}.archiveEmptyBody`),
+    rankBand0: t(`theme.${themeId}.rankBand0`),
+    rankBand1: t(`theme.${themeId}.rankBand1`),
+    rankBand2: t(`theme.${themeId}.rankBand2`),
+    rankBand3: t(`theme.${themeId}.rankBand3`),
+    rankBand4: t(`theme.${themeId}.rankBand4`),
   };
 
   return { strings, themeId };

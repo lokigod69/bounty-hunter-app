@@ -44,6 +44,11 @@ export const guildTheme: ThemeDefinition = {
     archiveSubtitle: 'Your ledger of fulfilled contracts.',
     archiveEmptyTitle: 'No contracts completed yet',
     archiveEmptyBody: 'Finish a mission and it lands here for good.',
+    rankBand0: 'UNSWORN',
+    rankBand1: 'DRIFTER',
+    rankBand2: 'TRACKER',
+    rankBand3: 'IRONMARK',
+    rankBand4: 'THE NAMED',
   },
 };
 
@@ -88,6 +93,11 @@ export const familyTheme: ThemeDefinition = {
     archiveSubtitle: 'A record of everything your family has finished.',
     archiveEmptyTitle: 'Nothing completed yet',
     archiveEmptyBody: 'Finish a chore and it will be saved here.',
+    rankBand0: 'NEWCOMER',
+    rankBand1: 'HELPER',
+    rankBand2: 'STEADY HAND',
+    rankBand3: 'KEYSTONE',
+    rankBand4: 'THE HEART',
   },
 };
 
@@ -132,6 +142,11 @@ export const coupleTheme: ThemeDefinition = {
     archiveSubtitle: 'A timeline of everything you have done together.',
     archiveEmptyTitle: 'Nothing completed yet',
     archiveEmptyBody: 'Complete a request and it will live here.',
+    rankBand0: 'NEW FLAME',
+    rankBand1: 'ADMIRER',
+    rankBand2: 'DEVOTED',
+    rankBand3: 'TRUE HEART',
+    rankBand4: 'THE ONE',
   },
 };
 
