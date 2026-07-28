@@ -1,5 +1,9 @@
 # Bounty Hunter App - Overview
 
+> **⚠️ HISTORICAL (2025-10).** This document predates proposals 001–012, the RPC-authoritative
+> task lifecycle, and Design V2. For current deep context see `docs/codex-refactor-pass/` and
+> `memory/STATE.md`. Kept for archaeology only — do not plan work from it.
+
 ## Product Summary
 
 **Bounty Hunter App** is a gamified task management system where users create contracts (tasks) for their friends/guild members, award credits upon completion, and enable users to redeem credits for rewards. Think of it as a social productivity app with RPG-style bounty mechanics.

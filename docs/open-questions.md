@@ -1,5 +1,9 @@
 # Bounty Hunter App - Open Questions & Blockers
 
+> **⚠️ HISTORICAL (2025-10).** Most issues below were resolved by proposals 001–012 and later
+> sessions. Current open questions live in `memory/STATE.md` and `docs/design-v2/THE_REGISTER.md`
+> §10. Kept for archaeology only — do not plan work from it.
+
 ## Critical Blockers
 
 ### 1. Migration Files Have Placeholder Timestamps
