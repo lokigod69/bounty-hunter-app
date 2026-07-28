@@ -16,9 +16,10 @@ import { feedback } from '../../utils/feedback';
 import { StandingSigil } from './StandingSigil';
 
 const HOLD_MS = 3500;
-// Reduced motion loses the dim, rotation, ring and wipe — the hold extends
-// because there is less to read the moment by.
-const HOLD_REDUCED_MS = 2500;
+// Reduced motion loses the dim animation, rotation, ring and wipe — so the
+// hold is LONGER than the full ceremony, never shorter: fewer cues must never
+// mean less reading time (Codex session review, finding 3).
+const HOLD_REDUCED_MS = 4500;
 
 export function RankUpCeremony() {
   const { t } = useTranslation();

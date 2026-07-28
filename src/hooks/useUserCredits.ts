@@ -11,6 +11,10 @@ export const useUserCredits = () => {
   const user = useUser();
   const [credits, setCredits] = useState<number | null>(null);
   const [totalEarned, setTotalEarned] = useState<number | null>(null);
+  // Which user the committed credits/totalEarned actually belong to. Guards
+  // consumers (standing, rank-up) against reading account A's settled state
+  // during the render window right after a session swap to account B.
+  const [dataUserId, setDataUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Only the newest request commits: a payout-triggered refetch must not be
@@ -25,6 +29,7 @@ export const useUserCredits = () => {
       setLoading(false);
       setCredits(0);
       setTotalEarned(null);
+      setDataUserId(null);
       return;
     }
 
@@ -42,19 +47,24 @@ export const useUserCredits = () => {
 
       if (dbError) {
         if (dbError.code === 'PGRST116' || (dbError.message.includes('JSON object requested, multiple (or no) rows returned') && !data)) {
+          // No row yet — a genuinely-known zero for this user.
           setCredits(0);
           setTotalEarned(null);
+          setDataUserId(user.id);
         } else {
           setError('Failed to load credits.');
           setCredits(0);
           setTotalEarned(null);
+          setDataUserId(null);
         }
       } else if (data === null) {
         setCredits(0);
         setTotalEarned(null);
+        setDataUserId(user.id);
       } else {
         setCredits(data?.balance ?? 0);
         setTotalEarned(typeof data.total_earned === 'number' ? data.total_earned : null);
+        setDataUserId(user.id);
       }
     } catch (e: unknown) {
       if (seq !== requestSeqRef.current) return;
@@ -65,6 +75,7 @@ export const useUserCredits = () => {
       setError(message);
       setCredits(0);
       setTotalEarned(null);
+      setDataUserId(null);
     }
     if (seq === requestSeqRef.current) setLoading(false);
   }, [user, supabase]);
@@ -81,5 +92,5 @@ export const useUserCredits = () => {
     return () => window.removeEventListener(CREDITS_CHANGED_EVENT, handleCreditsChanged);
   }, [fetchCredits]);
 
-  return { credits, totalEarned, loading, error, refetch: fetchCredits };
+  return { credits, totalEarned, dataUserId, loading, error, refetch: fetchCredits };
 };

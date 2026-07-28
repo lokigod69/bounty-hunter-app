@@ -69,9 +69,10 @@ export default function Layout() {
   const { user, profile } = useAuth();
   usePayoutWatcher(user?.id);
   // Wave 2: one standing fetch for the whole chassis; both header instances
-  // and the rank-up watcher share it so nothing races.
-  const { standing, known: standingKnown } = useStanding();
-  useRankUpWatcher(user?.id, standing, standingKnown);
+  // and the rank-up watcher share it so nothing races. The watcher keys off
+  // the user the DATA belongs to, not the session user — airtight on swaps.
+  const { standing, known: standingKnown, forUserId: standingUserId } = useStanding();
+  useRankUpWatcher(standingUserId, standing, standingKnown);
   const { pendingRequests } = useFriends(user?.id);
   const { reviewCount, rejectedCount } = useActionCounts();
   // Phase 2.5: redeem an invite token stashed before login, once per session.

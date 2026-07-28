@@ -14,7 +14,6 @@ import { useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
 import { useIssuedContracts } from '../hooks/useIssuedContracts';
-import { useUserCredits } from '../hooks/useUserCredits';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -42,7 +41,6 @@ export default function Dashboard() {
   const { activeLayer } = useUI();
   const { contracts: assignedContracts, loading, error, refetch: refetchAssignedContracts } = useAssignedContracts();
   const { contracts: issuedContracts } = useIssuedContracts();
-  const { credits: userCredits } = useUserCredits();
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { strings } = useThemeStrings();
@@ -50,8 +48,12 @@ export default function Dashboard() {
 
   // Wave 2: the creed follows your rank — undefined while standing loads keeps
   // the foot of the board silent instead of drawing from the wrong pool.
-  const { standing, known: standingKnown } = useStanding();
-  const dailyQuote = useDailyQuote(standingKnown ? standing.unlockedCreedLines : undefined);
+  // useStanding carries the balance too, so this page fetches credits once.
+  const { standing, known: standingKnown, credits: userCredits } = useStanding();
+  const dailyQuote = useDailyQuote(
+    standingKnown ? standing.unlockedCreedLines : undefined,
+    user?.id
+  );
 
   const handleDeleteTaskRequest = () => {
     // Assignees should not be able to delete tasks created by others

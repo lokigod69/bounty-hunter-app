@@ -85,7 +85,10 @@ export default function IssuedPage() {
   const [rejectReason, setRejectReason] = useState('');
   // Wave 2: the creed follows your rank (see Dashboard).
   const { standing, known: standingKnown } = useStanding();
-  const dailyQuote = useDailyQuote(standingKnown ? standing.unlockedCreedLines : undefined);
+  const dailyQuote = useDailyQuote(
+    standingKnown ? standing.unlockedCreedLines : undefined,
+    user?.id
+  );
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
   const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
 
