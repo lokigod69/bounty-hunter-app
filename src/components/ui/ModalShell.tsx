@@ -2,7 +2,7 @@
 // One lightweight, generic modal shell that owns the cross-cutting modal
 // mechanics so form modals only carry their own content:
 //   - portal into the overlay root
-//   - one backdrop recipe (bg-black/70 + blur) + z-index layering
+//   - one backdrop recipe (--modal-scrim + blur) + z-index layering
 //   - .modal-enter entry animation + glass-card surface
 //   - text-selection-safe backdrop click, stopPropagation on the surface
 //   - LIFO Escape, focus move/restore + Tab trap, UIContext modal registration
@@ -111,7 +111,8 @@ export function ModalShell({
   return createPortal(
     <div
       data-overlay={name}
-      className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-modal-backdrop flex justify-center ${alignClass}`}
+      className={`fixed inset-0 backdrop-blur-sm z-modal-backdrop flex justify-center ${alignClass}`}
+      style={{ backgroundColor: 'var(--modal-scrim)' }}
       onMouseDown={closeOnBackdrop ? handleBackdropMouseDown : undefined}
       onClick={closeOnBackdrop ? handleBackdropClick : undefined}
     >

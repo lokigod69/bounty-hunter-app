@@ -324,9 +324,14 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <LanguageSwitcher />
               </div>
 
-              {/* R10/R20/R21: Mode Switcher with helper text */}
+              {/* R10/R20/R21: Mode Switcher with helper text.
+                  Hidden entirely when there is only one mode to pick — a
+                  segmented control with a single, already-selected option is a
+                  question with one answer. Reappears automatically the moment
+                  PUBLIC_THEME_IDS grows (or in dev, where all three show). */}
+              {VISIBLE_PROFILE_MODE_OPTIONS.length > 1 && (
               <div className="p-4 bg-gray-800/50 rounded-lg">
-                <label className="text-sm font-medium block mb-3">Mode</label>
+                <label className="text-sm font-medium block mb-3">{t('profile.mode')}</label>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
                   {VISIBLE_PROFILE_MODE_OPTIONS.map((option) => {
                     const Icon = option.icon;
@@ -364,9 +369,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 </div>
                 {/* R20: Show hint for currently selected mode */}
                 <p className="text-xs text-white/50 mt-2 text-center">
-                  {modeOptions.find(o => o.id === themeId)?.hint || 'Guild Mode is the public V1 launch mode.'}
+                  {modeOptions.find(o => o.id === themeId)?.hint || t('profile.modeHintFallback')}
                 </p>
               </div>
+              )}
 
               {/* Restart Onboarding (folded in from the removed /profile/edit page) */}
               <button

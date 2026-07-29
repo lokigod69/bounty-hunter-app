@@ -1009,6 +1009,13 @@ body::after {
   line-height: 1;
   color: rgba(255, 255, 255, 0.85);
   white-space: nowrap;
+  /* Backstop for locales we have not added yet: a rank word longer than any
+     current translation degrades to an ellipsis instead of shoving the nav.
+     14ch clears every shipped word (longest today: UNGESCHWOREN, 12), so this
+     never fires in practice — it just guarantees the header cannot break. */
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .standing-bar {
@@ -1197,6 +1204,17 @@ body::after {
   --modal-radius: 16px;
   --modal-blur-desktop: 24px;
   --modal-blur-mobile: 16px;
+
+  /* The DIM layer behind a modal (distinct from --modal-bg, the modal's own
+     surface). Was hard-coded five different ways — black/70 in ModalShell,
+     MissionModalShell and ConfirmModal, black/90 in the lightbox, black/60 in
+     the mobile menu — so the same gesture dimmed the page by a different
+     amount depending on which modal opened. One token, one answer.
+     0.82 rather than 0.70: at 0.70 the starfield and the board behind it stayed
+     legible enough to compete with the modal for attention. */
+  --modal-scrim: rgba(0, 0, 0, 0.82);
+  /* Lightbox sits on top of everything and wants the room fully dark. */
+  --modal-scrim-heavy: rgba(0, 0, 0, 0.94);
 
   /* Fluid motion curves (Apple-design audit): enter and exit travel the same
      spatial path, so the exit easing is the mirror of the enter easing. */
@@ -1424,6 +1442,10 @@ body::after {
     --modal-bg: rgb(13, 18, 38);
     --modal-blur-desktop: 0px;
     --modal-blur-mobile: 0px;
+    /* Blur is gone here, so the scrim is the only thing separating the modal
+       from the page — it has to carry the whole job alone. */
+    --modal-scrim: rgb(0, 0, 0);
+    --modal-scrim-heavy: rgb(0, 0, 0);
   }
 
   .glass-card {

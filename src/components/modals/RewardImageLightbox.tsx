@@ -52,7 +52,10 @@ export const RewardImageLightbox: React.FC<RewardImageLightboxProps> = ({
       tabIndex={-1}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm animate-fade-in" />
+      <div
+        className="absolute inset-0 backdrop-blur-sm animate-fade-in"
+        style={{ backgroundColor: 'var(--modal-scrim-heavy)' }}
+      />
 
       {/* Close button */}
       <button

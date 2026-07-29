@@ -196,8 +196,12 @@ export default function Layout() {
       <header className={`sticky top-0 z-header safe-top transition-all duration-300 ${scrolled && !isMobileMenuOpen ? 'bg-indigo-950/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
 
         <div className="container mx-auto px-4 py-3 flex items-center">
-          {/* Left side: Logo and Nav */}
-          <div className="flex-grow flex items-center space-x-8">
+          {/* Left side: Logo and Nav.
+              min-w-0 matters: without it neither header group can shrink (nav
+              items and the rank word are both white-space:nowrap), so instead
+              of laying out tighter they overlapped — the German rank word
+              UNGESCHWOREN landed on top of the Verlauf nav item. */}
+          <div className="flex-grow min-w-0 flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <img 
                 src={logo} 
@@ -244,9 +248,22 @@ export default function Layout() {
 
           {/* Right side: User Profile & Actions */}
           <div className="flex-shrink-0 flex items-center">
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Wave 2: standing — the second number (what you are) */}
-              <StandingBlock standing={standing} known={standingKnown} />
+            <div className="hidden md:flex items-center space-x-4 min-w-0">
+              {/* Wave 2: standing — the second number (what you are).
+                  The rank word is a translated noun, and its length is not ours
+                  to control: English UNSWORN is 7 characters, German
+                  UNGESCHWOREN is 12, and the Romance locales run longer again.
+                  So the word is only shown where the header has room for it
+                  (xl and up) and the sigil carries standing alone below that —
+                  the sigil IS the identity, the word is only its label. This
+                  keeps the header safe for every locale we add rather than for
+                  the one that happened to break. */}
+              <div className="hidden xl:flex min-w-0">
+                <StandingBlock standing={standing} known={standingKnown} />
+              </div>
+              <div className="flex xl:hidden">
+                <StandingBlock standing={standing} known={standingKnown} compact />
+              </div>
               {/* Desktop credit balance - clickable to Loot Vault */}
               <Link
                 to="/rewards-store"
@@ -337,7 +354,8 @@ export default function Layout() {
         >
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0"
+            style={{ backgroundColor: 'var(--modal-scrim)' }}
             onClick={() => {
               closeMenu();
             }}

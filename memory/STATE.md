@@ -1,8 +1,10 @@
 # Current State
-Last updated: 2026-07-28
+Last updated: 2026-07-29
 
 ## ⚠️ ACTION REQUIRED (Michael)
-**Rotate the Supabase DB password.** It was shared in chat on 2026-07-28 to unblock the 012 rollout, so it now lives in a session transcript. Supabase dashboard → Project Settings → Database → Reset password. Nothing in the repo stores it (the scripts read `$env:PGPASSWORD` or prompt), so a rotation breaks nothing.
+*(nothing outstanding — see Next actions)*
+
+~~**Rotate the Supabase DB password.**~~ **CLOSED 2026-07-29 by Michael's explicit decision: not rotating, the password stays.** It was shared in chat on 2026-07-28 to unblock the 012 rollout and so lives in a session transcript; Michael judged that acceptable for this private project. Risk accepted, not forgotten: if the project ever takes real users or the transcript leaves his control, rotate then (dashboard → Project Settings → Database → Reset password; nothing in the repo stores it, so rotating breaks nothing).
 
 ~~Deployed create/edit-mission is BROKEN until the 012 SQL runs~~ **RESOLVED 2026-07-28: 012 is APPLIED and the client is deployed** (see In progress).
 

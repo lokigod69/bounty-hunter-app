@@ -2,6 +2,7 @@
 // P2: Onboarding Step 1 - Theme/Mode Selection
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { themesById, PUBLIC_THEME_IDS, toPublicThemeId } from '../../theme/themes';
 import { ThemeId } from '../../theme/theme.types';
@@ -15,6 +16,14 @@ import heroCouple from '../../assets/generated/hero-couple.webp';
 
 // Shared V1 public gating list — see src/theme/themes.ts.
 const PUBLIC_ONBOARDING_THEME_IDS: ThemeId[] = PUBLIC_THEME_IDS;
+
+// V1 ships one public mode, so this step has nothing to ask. When that is the
+// case the card becomes an INTRODUCTION to the mode rather than a choice
+// between modes: no tap affordance, no selected-state checkmark, no "Popular"
+// badge (popular among what?). The step itself stays — it carries the hero art
+// and the flow's step numbering — it just stops pretending to be a question.
+// Flips back to a real chooser automatically when PUBLIC_THEME_IDS grows.
+const IS_SINGLE_MODE = PUBLIC_ONBOARDING_THEME_IDS.length === 1;
 
 // VISUAL: Per-mode icon used to preview each mode's identity. Accent hex comes
 // from theme/modeAccents.ts (single source of truth).
@@ -44,6 +53,7 @@ export default function OnboardingStep1Mode({
   currentThemeId,
   onComplete,
 }: OnboardingStep1ModeProps) {
+  const { t } = useTranslation();
   const { themeId: currentTheme, setThemeId } = useTheme();
   const [selectedThemeId, setSelectedThemeId] = useState<ThemeId | null>(
     getPublicThemeId(currentThemeId || currentTheme)
@@ -72,7 +82,7 @@ export default function OnboardingStep1Mode({
     <div className="space-y-4">
       <BaseCard>
         <p className="text-body text-white/70 mb-6">
-          Choose how Bounty Hunter looks and feels. You can change this anytime in your profile settings.
+          {IS_SINGLE_MODE ? t('onboarding.mode.introSingle') : t('onboarding.mode.introChoose')}
         </p>
 
         <div className="space-y-3">
@@ -83,9 +93,13 @@ export default function OnboardingStep1Mode({
             const ModeIcon = MODE_ICON[theme.id];
             const isSelected = selectedThemeId === theme.id;
             return (
-              <button
+              <div
                 key={theme.id}
-                onClick={() => handleSelect(theme.id)}
+                // Single-mode: a plain div, so there is no tap target and no
+                // hover state on something that cannot be chosen differently.
+                {...(IS_SINGLE_MODE
+                  ? {}
+                  : { role: 'button' as const, tabIndex: 0, onClick: () => handleSelect(theme.id) })}
                 style={
                   isSelected
                     ? {
@@ -99,7 +113,7 @@ export default function OnboardingStep1Mode({
                   isSelected
                     ? ''
                     : 'border-gray-700/50 bg-gray-800/30 hover:border-gray-600'
-                }`}
+                } ${IS_SINGLE_MODE ? '' : 'cursor-pointer'}`}
               >
                 {/* Hero art is 1024x683 (3:2); scale banner height with viewport so
                     desktop shows a real slice of the art, not a thin strip. */}
@@ -124,19 +138,19 @@ export default function OnboardingStep1Mode({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-subtitle text-white font-semibold">{theme.label}</h3>
-                      {theme.id === 'guild' && (
+                      {!IS_SINGLE_MODE && theme.id === 'guild' && (
                         <span className="text-[10px] uppercase tracking-wide rounded-full px-2 py-0.5 bg-[var(--mode-accent-soft)] text-[var(--mode-accent)]">
-                          Popular
+                          {t('onboarding.mode.popularBadge')}
                         </span>
                       )}
-                      {isSelected && (
+                      {!IS_SINGLE_MODE && isSelected && (
                         <Check size={20} className="ml-auto flex-shrink-0" style={{ color: accent }} />
                       )}
                     </div>
                     <p className="text-body text-white/70 text-sm">{theme.description}</p>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -148,7 +162,7 @@ export default function OnboardingStep1Mode({
             disabled={!selectedThemeId}
             icon={<ArrowRight size={20} />}
           >
-            Next
+            {t('common.next')}
           </AppButton>
         </div>
       </BaseCard>

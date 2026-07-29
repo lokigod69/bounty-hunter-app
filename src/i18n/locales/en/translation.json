@@ -47,7 +47,15 @@
     "sentBack": "Sent back",
     "complete": "Complete",
     "approve": "Approve",
-    "reject": "Reject",
+    "reject": {
+      "title": "Reject {{noun}}?",
+      "subtitle": "Add an optional note so they know what to fix.",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "What needs to change before you approve it?",
+      "confirm": "Reject",
+      "resubmit": "Resubmit",
+      "rejectedLabel": "Sent back"
+    },
     "credits": "Credits",
     "assignedTo": "Assigned to",
     "done": "Done",
@@ -101,15 +109,6 @@
     "createFailedMessage": "Failed: {{message}}",
     "createSuccess": "{{noun}} created.",
     "createFailedUnknown": "Failed to create due to an unknown error.",
-    "reject": {
-      "title": "Reject {{noun}}?",
-      "subtitle": "Add an optional note so they know what to fix.",
-      "reasonLabel": "Reason (optional)",
-      "reasonPlaceholder": "What needs to change before you approve it?",
-      "confirm": "Reject",
-      "resubmit": "Resubmit",
-      "rejectedLabel": "Sent back"
-    },
     "evidence": {
       "title": "Evidence",
       "hunterReport": "Hunter's report",
@@ -121,7 +120,9 @@
       "openProof": "Open submitted proof",
       "pdfProof": "Submitted PDF",
       "openPdf": "Open submitted PDF"
-    }
+    },
+    "rewardLabel": "Reward",
+    "deleteMission": "Delete mission"
   },
   "friends": {
     "title": "GUILD ROSTER",
@@ -190,7 +191,9 @@
     "restartOnboarding": "Restart Onboarding",
     "restartOnboardingConfirmTitle": "Restart onboarding?",
     "restartOnboardingConfirmMessage": "You'll see the first-time setup flow again. Your data won't be affected.",
-    "restartOnboardingConfirmButton": "Restart"
+    "restartOnboardingConfirmButton": "Restart",
+    "mode": "Mode",
+    "modeHintFallback": "Guild Mode is the public V1 launch mode."
   },
   "common": {
     "loading": "Loading...",
@@ -206,7 +209,8 @@
     "deleting": "Deleting...",
     "somethingWentWrong": "Something went wrong",
     "loadingCredits": "Loading credits...",
-    "loadingContracts": "Loading missions…"
+    "loadingContracts": "Loading missions…",
+    "next": "Next"
   },
   "taskForm": {
     "editTitle": "Edit {{noun}}",
@@ -465,6 +469,13 @@
       "rankBand2": "DEVOTED",
       "rankBand3": "TRUE HEART",
       "rankBand4": "THE ONE"
+    }
+  },
+  "onboarding": {
+    "mode": {
+      "introSingle": "Bounty Hunter runs in Guild Mode: contracts, standing, and a shared board. Here is what that looks like.",
+      "introChoose": "Choose how Bounty Hunter looks and feels. You can change this anytime in your profile settings.",
+      "popularBadge": "Popular"
     }
   }
 }

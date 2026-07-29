@@ -241,7 +241,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               }
             : isCreatorView && (safeStatus === 'pending' || safeStatus === 'rejected') && !isArchived && onEditTaskRequest
             ? {
-                label: 'Edit',
+                label: t('common.edit'),
                 onClick: () => {
                   handleClose();
                   onEditTaskRequest(task);

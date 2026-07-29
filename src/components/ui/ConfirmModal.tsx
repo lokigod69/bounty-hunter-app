@@ -60,7 +60,8 @@ export function ConfirmModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-critical-overlay flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-critical-overlay flex items-center justify-center backdrop-blur-sm p-4"
+      style={{ backgroundColor: 'var(--modal-scrim)' }}
       onClick={() => {
         if (!loading) onClose();
       }}

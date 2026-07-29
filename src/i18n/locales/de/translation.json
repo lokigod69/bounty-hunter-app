@@ -47,7 +47,15 @@
     "sentBack": "Zurückgesendet",
     "complete": "Abschließen",
     "approve": "Genehmigen",
-    "reject": "Ablehnen",
+    "reject": {
+      "title": "{{noun}} ablehnen?",
+      "subtitle": "Fügen Sie optional eine Notiz hinzu, damit klar ist, was zu ändern ist.",
+      "reasonLabel": "Grund (optional)",
+      "reasonPlaceholder": "Was muss geändert werden, bevor Sie es genehmigen?",
+      "confirm": "Ablehnen",
+      "resubmit": "Erneut einreichen",
+      "rejectedLabel": "Zurückgesendet"
+    },
     "credits": "Credits",
     "assignedTo": "Zugewiesen an",
     "done": "Erledigt",
@@ -101,15 +109,6 @@
     "createFailedMessage": "Fehlgeschlagen: {{message}}",
     "createSuccess": "{{noun}} erstellt.",
     "createFailedUnknown": "Erstellen aufgrund eines unbekannten Fehlers fehlgeschlagen.",
-    "reject": {
-      "title": "{{noun}} ablehnen?",
-      "subtitle": "Fügen Sie optional eine Notiz hinzu, damit klar ist, was zu ändern ist.",
-      "reasonLabel": "Grund (optional)",
-      "reasonPlaceholder": "Was muss geändert werden, bevor Sie es genehmigen?",
-      "confirm": "Ablehnen",
-      "resubmit": "Erneut einreichen",
-      "rejectedLabel": "Zurückgesendet"
-    },
     "evidence": {
       "title": "Beweise",
       "hunterReport": "Bericht des Jägers",
@@ -121,7 +120,9 @@
       "openProof": "Eingereichten Beweis öffnen",
       "pdfProof": "Eingereichte PDF-Datei",
       "openPdf": "Eingereichte PDF-Datei öffnen"
-    }
+    },
+    "rewardLabel": "Belohnung",
+    "deleteMission": "Mission löschen"
   },
   "history": {
     "description": "Überprüfen Sie Ihren Verlauf abgeschlossener und abgelaufener Verträge.",
@@ -204,7 +205,9 @@
     "restartOnboarding": "Einführung neu starten",
     "restartOnboardingConfirmTitle": "Einführung neu starten?",
     "restartOnboardingConfirmMessage": "Sie sehen den Einrichtungsablauf für Erstnutzer erneut. Ihre Daten sind davon nicht betroffen.",
-    "restartOnboardingConfirmButton": "Neu starten"
+    "restartOnboardingConfirmButton": "Neu starten",
+    "mode": "Modus",
+    "modeHintFallback": "Der Gilden-Modus ist der öffentliche V1-Startmodus."
   },
   "common": {
     "loading": "Laden...",
@@ -220,7 +223,8 @@
     "deleting": "Wird gelöscht...",
     "somethingWentWrong": "Da ist etwas schiefgelaufen",
     "loadingCredits": "Credits werden geladen...",
-    "loadingContracts": "Missionen werden geladen…"
+    "loadingContracts": "Missionen werden geladen…",
+    "next": "Weiter"
   },
   "taskForm": {
     "editTitle": "{{noun}} bearbeiten",
@@ -466,6 +470,13 @@
       "rankBand2": "HINGEGEBEN",
       "rankBand3": "TREUES HERZ",
       "rankBand4": "FÜRS LEBEN"
+    }
+  },
+  "onboarding": {
+    "mode": {
+      "introSingle": "Bounty Hunter läuft im Gilden-Modus: Verträge, Ansehen und ein gemeinsames Brett. So sieht das aus.",
+      "introChoose": "Wählen Sie, wie Bounty Hunter aussieht und sich anfühlt. Sie können das jederzeit in Ihren Profileinstellungen ändern.",
+      "popularBadge": "Beliebt"
     }
   }
 }

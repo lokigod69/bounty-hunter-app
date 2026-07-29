@@ -166,6 +166,13 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   // R27: Lightbox state for reward images
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // Does the body actually have anything to show on the left? `children` is a
+  // JSX expression list, so it arrives as an array that is truthy even when
+  // every branch inside it rendered nothing — toArray strips the falsy entries
+  // and gives the honest count. Drives the one-vs-two column decision below.
+  const hasChildren = React.Children.toArray(children).length > 0;
+  const hasBodyContent = Boolean(description) || hasChildren;
+
   // Check if mobile
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 639px)');
@@ -271,11 +278,13 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
       style={getModeStyleVars(mode)}
       onClick={handleClose}
     >
-      {/* Backdrop */}
+      {/* Backdrop — dim level comes from --modal-scrim so every modal in the
+          app dims the page by the same amount (see index.css). */}
       <div
-        className={`absolute inset-0 bg-black/70 ${
+        className={`absolute inset-0 ${
           isMobile ? 'backdrop-blur-md' : 'backdrop-blur-lg'
         } ${isAnimatingOut ? 'animate-fade-out' : 'animate-fade-in'}`}
+        style={{ backgroundColor: 'var(--modal-scrim)' }}
       />
 
       {/* Modal Content - R30: Use max-height instead of fixed height */}
@@ -413,12 +422,24 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         >
           {/* R30: CSS Grid layout - content-sized, description scrolls when needed.
               With no description/children the reward is the only content: use a
-              single centered column instead of a lopsided empty left column. */}
+              single centered column instead of a lopsided empty left column.
+
+              `children` here is a JSX expression list, so React hands us an
+              ARRAY (e.g. [false, false] when every branch is falsy) — and an
+              array is always truthy. Testing `children` directly therefore
+              always reported "there is content", which is why a contract with
+              no description still rendered an empty left column and shoved the
+              reward to the far right. React.Children.toArray drops
+              null/undefined/booleans, so this asks the real question.
+
+              Columns deliberately STRETCH (no self-start): the description and
+              reward panels are always the same height, because two boxes of
+              different heights side by side read as a layout mistake. */}
           <div
-            className="grid gap-4"
+            className="grid gap-4 items-stretch"
             style={{
               gridTemplateColumns:
-                isMobile || !(description || children)
+                isMobile || !hasBodyContent
                   ? '1fr'
                   : reward
                   ? 'minmax(0, 2fr) minmax(180px, auto)'
@@ -426,46 +447,50 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
             }}
           >
             {/* Description Column - max height with scroll when needed */}
-            {(description || children) && (
+            {hasBodyContent && (
             <div className="flex flex-col gap-4">
               {description && (
                 <div
-                  className="p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
+                  className="flex flex-1 flex-col p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
                   style={{ maxHeight: isMobile ? '40vh' : '50vh' }}
                 >
-                  <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                  {/* my-auto, not items-center: when the text is short it sits
+                      in the middle of the taller box, and when it overflows the
+                      auto margins collapse to 0 instead of clipping the first
+                      line (which align-items:center does in a scroll box). */}
+                  <p className="my-auto text-white/80 text-sm leading-relaxed whitespace-pre-wrap break-words">
                     {description}
                   </p>
                 </div>
               )}
 
               {/* Custom children content */}
-              {children && (
+              {hasChildren && (
                 <div className="flex-shrink-0">{children}</div>
               )}
             </div>
             )}
 
-            {/* R30: Reward Column - compact, vertically centered */}
+            {/* R30: Reward Column - matches the description panel's height */}
             {reward && (
               <div
                 className={
                   isMobile
                     ? 'flex-shrink-0'
-                    : description || children
-                    ? 'self-start'
-                    : 'self-start mx-auto w-full max-w-[240px]'
+                    : hasBodyContent
+                    ? 'flex'
+                    : 'mx-auto flex w-full max-w-[240px]'
                 }
               >
                 <div
-                  className="w-full p-4 rounded-xl text-center flex flex-col items-center gap-2"
+                  className="w-full p-4 rounded-xl text-center flex flex-col items-center justify-center gap-2"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,
                   }}
                 >
                   <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">
-                    Reward
+                    {t('contracts.rewardLabel')}
                   </p>
 
                   <div className="flex flex-col items-center justify-center w-full py-2">
@@ -592,7 +617,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 disabled={deleteAction.loading}
                 className="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
               >
-                {deleteAction.loading ? 'Deleting...' : 'Delete mission'}
+                {deleteAction.loading ? t('common.deleting') : t('contracts.deleteMission')}
               </button>
             </div>
           )}
