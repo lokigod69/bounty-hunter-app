@@ -363,9 +363,10 @@ export default function IssuedPage() {
 
       await createTaskViaRpc({
         p_title: taskData.title,
-        p_description: taskData.description,
-        p_assigned_to: taskData.assigned_to,
-        p_deadline: taskData.deadline,
+        // null → undefined: both marshal to SQL NULL (see useTasks.ts).
+        p_description: taskData.description ?? undefined,
+        p_assigned_to: taskData.assigned_to ?? undefined,
+        p_deadline: taskData.deadline || undefined,
         p_reward_type: taskData.reward_type,
         p_reward_text: taskData.reward_text,
         // R31d: Ensure proof_required is explicitly boolean, never undefined

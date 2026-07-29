@@ -8,7 +8,6 @@ import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import type { Database } from '../types/database';
 import type {
-  DatabaseWithTaskMutationRpcs,
   TaskLifecycleRpcErrorCode,
   TaskLifecycleRpcResult,
   TaskStatus,
@@ -16,11 +15,11 @@ import type {
 
 export type MissionId = string;
 type TaskLifecycleClient = SupabaseClient<Database>;
-type TaskMutationClient = SupabaseClient<DatabaseWithTaskMutationRpcs>;
+type TaskMutationClient = SupabaseClient<Database>;
 type TaskLifecycleOperation = 'archive' | 'create' | 'delete' | 'reject' | 'status' | 'submit' | 'update';
 
 export type CreateTaskRpcArgs =
-  DatabaseWithTaskMutationRpcs['public']['Functions']['create_task']['Args'];
+  Database['public']['Functions']['create_task']['Args'];
 
 export type TaskUpdatePatch = Partial<Pick<
   Database['public']['Tables']['tasks']['Update'],

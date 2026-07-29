@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
-import type { DatabaseWithTaskMutationRpcs } from '../types/custom';
 import {
   archiveMission,
   createTaskViaRpc,
@@ -15,7 +14,7 @@ import {
 } from './missions';
 
 type LifecycleClient = SupabaseClient<Database>;
-type MutationClient = SupabaseClient<DatabaseWithTaskMutationRpcs>;
+type MutationClient = SupabaseClient<Database>;
 
 function makeClient(task: Record<string, unknown> | null = null) {
   const query = {

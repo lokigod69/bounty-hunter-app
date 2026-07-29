@@ -23,7 +23,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../types/database';
 import type {
-  DatabaseWithTaskMutationRpcs,
   NewTaskData,
   ProofType,
   Task,
@@ -79,7 +78,7 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
 
   const currentUserId = user?.id;
   const lifecycleClient = client as unknown as SupabaseClient<Database>;
-  const taskMutationClient = client as unknown as SupabaseClient<DatabaseWithTaskMutationRpcs>;
+  const taskMutationClient = client as unknown as SupabaseClient<Database>;
 
   const fetchTasks = useCallback(async () => {
     if (!user) {
@@ -312,10 +311,14 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       const createdTaskId = await createTaskViaRpc({
         p_title: newTaskData.title,
         p_description: newTaskData.description || '',
-        p_reward_type: newTaskData.reward_type,
-        p_reward_text: newTaskData.reward_text,
-        p_assigned_to: newTaskData.assigned_to,
-        p_deadline: newTaskData.deadline || null,
+        // The generated RPC types model "argument omitted" as undefined; null
+        // and undefined both marshal to SQL NULL, so these are type fixes, not
+        // behavior changes. p_deadline keeps `||` because it must also collapse
+        // an empty string (Postgres cannot cast '' to date).
+        p_reward_type: newTaskData.reward_type ?? undefined,
+        p_reward_text: newTaskData.reward_text ?? undefined,
+        p_assigned_to: newTaskData.assigned_to ?? undefined,
+        p_deadline: newTaskData.deadline || undefined,
         p_proof_required: newTaskData.proof_required ?? false,
         p_is_daily: newTaskData.is_daily ?? false,
       }, taskMutationClient);

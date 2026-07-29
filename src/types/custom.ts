@@ -4,39 +4,11 @@
 
 import type { Database } from './database';
 
-// Proposal 011: submit_proof/reject_task/set_task_status/archive_task/delete_task
-// are live in src/types/database.ts (regenerated 2026-07-10 after the SQL apply) —
-// no client-side overlay needed; SupabaseClient<Database> covers them natively.
-
-type Json = Database['public']['Functions']['approve_task']['Returns'];
-
-type TaskMutationFunctions = {
-  create_task: {
-    Args: {
-      p_assigned_to?: string | null;
-      p_deadline?: string | null;
-      p_description?: string | null;
-      p_is_daily?: boolean;
-      p_proof_required?: boolean;
-      p_reward_text?: string | null;
-      p_reward_type?: string | null;
-      p_title: string;
-    };
-    Returns: Json;
-  };
-  update_task: {
-    Args: { p_patch: Json; p_task_id: string };
-    Returns: Json;
-  };
-};
-
-// TEMPORARY proposal-012 overlay until the SQL is applied and database.ts is
-// regenerated from Supabase. Mirrors the proposal-011 Functions intersection.
-export type DatabaseWithTaskMutationRpcs = Omit<Database, 'public'> & {
-  public: Omit<Database['public'], 'Functions'> & {
-    Functions: Database['public']['Functions'] & TaskMutationFunctions;
-  };
-};
+// Proposals 011 + 012: submit_proof/reject_task/set_task_status/archive_task/
+// delete_task (011) and create_task/update_task (012) are all live in
+// src/types/database.ts — regenerated from the project after each SQL apply
+// (012 applied 2026-07-28). No client-side overlay is needed for any of them;
+// SupabaseClient<Database> covers them natively.
 
 export type TaskLifecycleRpcErrorCode =
   | 'not_authenticated'

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       collected_rewards: {
@@ -444,6 +469,19 @@ export type Database = {
         }
         Returns: Json
       }
+      create_task: {
+        Args: {
+          p_assigned_to?: string
+          p_deadline?: string
+          p_description?: string
+          p_is_daily?: boolean
+          p_proof_required?: boolean
+          p_reward_text?: string
+          p_reward_type?: string
+          p_title: string
+        }
+        Returns: Json
+      }
       delete_reward_store_item: { Args: { p_reward_id: string }; Returns: Json }
       delete_task: { Args: { p_task_id: string }; Returns: Json }
       get_or_create_invite: { Args: never; Returns: Json }
@@ -487,6 +525,7 @@ export type Database = {
         }
         Returns: Json
       }
+      update_task: { Args: { p_patch: Json; p_task_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -615,6 +654,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
