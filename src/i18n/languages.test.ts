@@ -135,6 +135,27 @@ describe('locale files that exist are complete', () => {
       expect(mismatched).toEqual([]);
     });
 
+    it(`${code}: rank words fit the header slot`, () => {
+      // The rank word renders in a fixed slot in the header next to the sigil.
+      // German UNGESCHWOREN (12) already forced the word to be hidden below the
+      // xl breakpoint; .standing-rank ellipsises past 14ch, so anything longer
+      // would silently truncate in the one place standing is displayed.
+      const t = readLocale(code, 'translation') as {
+        theme?: Record<string, Record<string, string>>;
+      };
+      const tooLong: Array<{ mode: string; key: string; word: string; len: number }> = [];
+      for (const [mode, strings] of Object.entries(t.theme ?? {})) {
+        for (let band = 0; band <= 4; band++) {
+          const key = `rankBand${band}`;
+          const word = strings?.[key];
+          if (typeof word === 'string' && word.length > 14) {
+            tooLong.push({ mode, key, word, len: word.length });
+          }
+        }
+      }
+      expect(tooLong).toEqual([]);
+    });
+
     it(`${code}: no leaf value is an empty string`, () => {
       const other = readLocale(code, 'translation');
       const empties: string[] = [];
