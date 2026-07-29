@@ -139,7 +139,6 @@
   },
   "friends": {
     "title": "GILDENLISTE",
-    "description": "Verwalte deine Gildenmitglieder, sende Einladungen und überprüfe ausstehende Anfragen.",
     "searchPlaceholder": "Benutzer nach Benutzernamen suchen...",
     "mustBeLoggedIn": "Sie müssen angemeldet sein, um Freundschaftsanfragen zu senden.",
     "requestSent": "Freundschaftsanfrage an {{name}} gesendet!",
