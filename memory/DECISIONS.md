@@ -4,6 +4,29 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-29 — Twelve languages, endonym picker, informal register for the new ten
+**Status:** active (9620413)
+**Decision:** Ship en + de plus ten more: the full Romance core (es, pt, it, fr, ro) — Michael's stated priority — then the next-largest European app markets (nl, pl, sv, da, cs). The picker names each language by its **endonym** (Deutsch, Polski, Español), never translated. The ten new locales use the **informal** second person; the existing German keeps formal "Sie" for now.
+**Why:** Michael asked for "at least 10", Romance first, and delegated the rest of the choice. Endonyms because you scan a language picker for the word you recognise, and that word must not change depending on which language the app currently displays — it also means adding a locale needs no new translation keys. Informal address because the product is used between partners and family members; German's "Sie" is a shipped inconsistency, flagged for Michael rather than silently changed (changing it touches ~410 existing strings).
+**Consequence:** `src/i18n/languages.ts` is the single registry. `SUPPORTED_LANGUAGES` is the *intent*; `AVAILABLE_LANGUAGE_CODES` is derived from the filesystem glob and is what the picker offers, so a declared-but-unwritten language can never appear and silently render English.
+
+## 2026-07-29 — Locales are lazy chunks; we resolve the startup language ourselves
+**Status:** active (9620413)
+**Decision:** Only English is bundled eagerly. Every other locale is a lazy chunk via `import.meta.glob`. `i18next-browser-languagedetector` is **removed**; `src/i18n/index.ts` reads the same `i18nextLng` localStorage key the detector used, clamps it to a shipped locale, and awaits that chunk before `init`. `main.tsx` awaits `i18nReady` before mounting, and mounts anyway on failure.
+**Why:** Twelve static locales would add ~300 kB of translations nobody reads to the main bundle (German alone moving out dropped it 407.8 → 390.5 kB). The detector had to go because it hands i18next a language whose chunk has not been fetched, which produces a visible English-then-swap first paint. A locale chunk that 404s (the stale-Vercel-deploy case) must leave the user in English, never on a blank page or raw key paths — hence the swallowed error and the `catch(mount)`.
+**Relation:** This is the narrow exception to [[#2026-07-14 — Route-level lazy loading rejected]]-style caution about stale chunks on Vercel: the payoff is ~300 kB rather than ~40 kB, and the failure mode degrades to English instead of a 404 white screen.
+
+## 2026-07-29 — One scrim token for every modal backdrop, at 0.82
+**Status:** active (7831ff9)
+**Decision:** `--modal-scrim` (0.82 black) and `--modal-scrim-heavy` (0.94, lightbox only) replace five independently hard-coded backdrop values (`black/70` ×3, `/90`, `/60`). Fully opaque under `prefers-reduced-transparency`.
+**Why:** Michael reported he could still see the board through modal backdrops. He was right twice over: 0.70 left the starfield competing with the modal for attention, and the same gesture dimmed the page by a different amount depending on which modal opened. Under reduced transparency the blur is gone, so the scrim is the only separation and has to carry the job alone.
+
+## 2026-07-29 — Standing self-assign hole: close it in approve_task, not only at creation
+**Status:** proposed (24a7613, DRAFT — unapplied, Michael-gated)
+**Decision:** Proposal 013 closes the hole in **three** places but treats only one as the guarantee: `create_task`/`update_task` refuse a credit reward on a self-assigned contract (product layer, so the app never makes a promise it will not keep), while `approve_task` V4 refuses to *credit* when `assigned_to = created_by` (security layer). Self-assigned contracts still **complete**; they just pay nothing. Non-credit self-assigned contracts are untouched.
+**Why:** `approve_task` is the only function that can reach `increment_user_credits`, so it is the only place a rule cannot be walked around — including by rows that already exist and by future code paths nobody remembered to guard. Completing rather than refusing because stranding a contract in `review` with no way to clear it is worse than a silent non-payment. `update_task` checks the *effective post-patch* values, otherwise "create for a friend, then re-point the assignee to self" walks straight through.
+**Explicitly NOT fixed:** two accounts controlled by one person can still issue each other contracts and inflate both standings; no server-side rule distinguishes that from a real household. Named in the proposal as open point D so it is not mistaken for closed.
+
 ## 2026-07-24 (later) — Sound and haptics are independent channels; fresh installs are silent-but-haptic
 **Status:** active (46454d3) — supersedes the haptics-behind-sound-toggle clause of [[#2026-07-08 — Feedback layer: one semantic API, haptics behind the sound toggle, Capacitor plugins lazy-imported]] (its other two clauses — one semantic API, lazy-imported Capacitor plugins — stay active)
 **Decision:** `feedback` haptics gate on their own `hapticsEnabled` pref (default ON, own profile toggle); sound keeps `soundEnabled` (default now OFF for fresh installs; existing devices keep their stored value). The sound registry is typed (`SoundKey`) so unregistered keys are compile errors, and audio elements are created lazily on the first user gesture with a muted in-gesture play to satisfy Safari's unlock policy.
