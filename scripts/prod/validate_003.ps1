@@ -32,5 +32,7 @@ from pg_constraint
 where conrelid='public.collected_rewards'::regclass
 and conname='collected_rewards_unique_claim';
 "@ | & psql "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName"
+$exit = $LASTEXITCODE
 
 $env:PGPASSWORD = $null
+if ($exit -ne 0) { throw "VALIDATION FAILED (psql exit $exit). Results above are incomplete - do not act on them." }

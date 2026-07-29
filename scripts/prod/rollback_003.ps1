@@ -17,7 +17,9 @@ function Read-Plain([string]$prompt) {
 
 if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password" }
 
-& psql "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -f $Sql
+& psql "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -v ON_ERROR_STOP=1 -f $Sql
+$exit = $LASTEXITCODE
 
 $env:PGPASSWORD = $null
+if ($exit -ne 0) { throw "ROLLBACK FAILED (psql exit $exit). Production is UNCHANGED." }
 Write-Host "Rolled back: $Sql" -ForegroundColor Yellow

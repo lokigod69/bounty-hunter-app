@@ -19,6 +19,10 @@ if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password
 
 $psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
 & $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -v ON_ERROR_STOP=1 -f $Sql
+$exit = $LASTEXITCODE
 
 $env:PGPASSWORD = $null
+# The most dangerous false success in the repo: believing a rollback landed
+# while prod is still broken. See the note in apply_012_up.ps1.
+if ($exit -ne 0) { throw "ROLLBACK FAILED (psql exit $exit). Production is UNCHANGED and may still be broken." }
 Write-Host "Rollback applied successfully" -ForegroundColor Green

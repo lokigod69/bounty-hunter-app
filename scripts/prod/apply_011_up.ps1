@@ -19,6 +19,8 @@ if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password
 
 $psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
 & $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -v ON_ERROR_STOP=1 -f $Sql
+$exit = $LASTEXITCODE
 
 $env:PGPASSWORD = $null
+if ($exit -ne 0) { throw "APPLY FAILED (psql exit $exit). Nothing was applied - do NOT deploy the client." }
 Write-Host "Migration applied successfully" -ForegroundColor Green

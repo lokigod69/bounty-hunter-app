@@ -19,6 +19,9 @@ if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password
 
 $psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
 & $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -f $Sql
+$exit = $LASTEXITCODE
 
 $env:PGPASSWORD = $null
+# A failed validation that prints "complete" is how a bad apply gets green-lit.
+if ($exit -ne 0) { throw "VALIDATION FAILED (psql exit $exit). Results above are incomplete - do not act on them." }
 Write-Host "Validation complete (read-only; run before AND after apply)" -ForegroundColor Green
