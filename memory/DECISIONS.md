@@ -4,6 +4,48 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-29 (later) — German switches to informal "du"
+**Status:** active (d1d243b) — ⚠️ supersedes the last clause of [[#2026-07-29 — Twelve languages, endonym picker, informal register for the new ten]]
+**Decision:** German now addresses the user informally, matching the other eleven locales. Pinned by a register guard in `languages.test.ts`.
+**Why:** Michael's call. Mixed register inside one language is worse than either choice applied consistently, and the mixture is exactly what nobody notices in review.
+**Consequence:** The estimate of "~410 strings" was wrong — the file was already ~93% informal and only **29** strings were formal. Converted by exact-match replacement, never a regex over "Sie": lowercase "sie" is she/they and a sweep would have produced nonsense ("Erledige eine Aufgabe und sie wird hier gespeichert"). The guard's detector was probed against 21 cases before being trusted.
+
+## 2026-07-29 (later) — The rank ladder is calibrated to the rate the app actually offers
+**Status:** active (d223535)
+**Decision:** `STANDING_THRESHOLDS` 0/120/600/2000/8000 → **0/30/150/600/2000**. Closes THE REGISTER's open question #1.
+**Why:** The old table said in its own comment that it assumed ~20 credits per contract, but `TaskForm` offers 1/2/3/5/10 and calls 2 a "small chore". At a realistic ~3 credits the old band 3 needed ~667 contracts and band 4 ~2,667 — exactly the "THE NAMED is unreachable" failure the question warned about. New bands land near 10/50/200/667.
+**Consequence:** Standing is monotonic, so this **promotes** existing ranks and demotes nobody — which is why it was Michael's call rather than a silent fix. A test asserts the top band stays reachable (≤700 contracts at ~3 credits) so the table cannot drift back.
+
+## 2026-07-29 (later) — Breakpoints that decide "phone or desktop" must ask about height too
+**Status:** active (eed7cc0)
+**Decision:** A custom `nav` screen — `(min-width: 768px) and (min-height: 500px)` — decides desktop header vs hamburger. Touch-target and font-size floors are guarded on `(pointer: coarse)`, not on a width breakpoint. A new `xs: 420px` screen exists for the small-phone/large-phone split that `sm: 640px` cannot express.
+**Why:** Tailwind's breakpoints are width-only, and a landscape phone is wide — 844×390, 932×430. Every width-only "this is a desktop" test was therefore wrong on landscape phones, and it was making four separate bugs at once (desktop header with no hamburger, 14px inputs causing iOS focus zoom, sub-44px targets, and a reward grid that clipped its actions). `body{overflow-x:hidden}` hid the evidence.
+**Consequence:** Width alone never again decides desktop-vs-mobile in this codebase. `mobileLayout.test.ts` enforces it, including that the height threshold stays above every phone-landscape height (~430px) and below iPad landscape (768px).
+
+## 2026-07-29 (later) — Viewport height is three declarations, not one
+**Status:** active (eed7cc0)
+**Decision:** Every modal/app height is `vh` → `dvh` → `min(dvh, calc(var(--visual-vh) * n))`, in that order, as named classes in `index.css` rather than Tailwind arbitrary values. `useVisualViewport()` publishes `--visual-vh`.
+**Why:** Each line fixes a different thing and none is redundant. Plain `vh` is the floor because the build targets iOS 15.0 and `dvh` only landed in Safari 15.4. `dvh` handles the collapsing URL bar. **Neither handles the software keyboard** — iOS leaves the layout viewport unchanged when it opens, so a `90dvh` modal keeps full height and the keys cover the submit button, which was the actual reported bug. Only `window.visualViewport.height` reflects it.
+**Consequence:** Do not "simplify" these to a single `dvh` value. `mobileLayout.test.ts` asserts the first declaration in each rule is plain `vh`.
+
+## 2026-07-29 (later) — RPC errors carry a code; the UI localizes, the domain layer does not
+**Status:** active (d223535)
+**Decision:** `TaskLifecycleRpcError` extends `Error` with `.code` and `.operation`. The English message stays as the fallback, so anything reading only `.message` is unchanged. Callers that have a translator localize from `.code`.
+**Why:** Proposal 013's refusal needed to be a real sentence in twelve languages, but `src/domain/missions.ts` is pure and should not import i18next. Passing the code up lets the UI decide. `IssuedPage` had to stop rebuilding the error into a new `Error`, which discarded the code before `TaskForm` could see it.
+**Consequence:** The rest of `getTaskLifecycleRpcErrorMessage` is still English-only — this is the mechanism for moving it, not the move itself.
+
+## 2026-07-29 (later) — A missing `credited` key means PAID, not skipped
+**Status:** active (d223535)
+**Decision:** `approveMission` treats `credited === undefined` as a successful payout.
+**Why:** 013's `approve_task` V4 adds `credited`, but the client ships before the SQL does. A pre-013 server always paid, so defaulting absence to "skipped" would tell every user their credits had vanished for the entire window between deploy and apply. The safe default is the one that matches the old server's actual behaviour, not the one that looks more cautious.
+**Consequence:** Pinned by a test named for the pre-013 case. It also means the client is correct whether or not the SQL is ever applied.
+
+## 2026-07-29 (later) — "Wipe everything" ships as two scopes, defaulting to the recoverable one
+**Status:** active (2412cb0) — written, NOT run
+**Decision:** Scope A (default) clears app data and keeps accounts and profiles. Scope B additionally deletes profiles and `auth.users`. Three gates: `PROD_CONFIRM`, `WIPE_CONFIRM` set to the project ref, and a data backup from today over 1 KB.
+**Why:** The instruction had two readings and only one is recoverable. Scope B forces everyone to re-register, and re-registration depends on Supabase dashboard auth config that is not in this repo and was wrong on this project as recently as 2026-07-11 (Site URL still `localhost:3000`). A public-schema data restore does not bring auth accounts back. Scope A produces the same clean board with none of that exposure, so it is the default and B is opt-in.
+**Consequence:** A `backup_data.ps1` had to be written: `backup_schema.ps1` is `--schema-only`, and before a data wipe that is worse than no backup because it succeeds, looks like a backup, and authorises the run while containing none of the rows at risk.
+
 ## 2026-07-29 — Twelve languages, endonym picker, informal register for the new ten
 **Status:** active (9620413)
 **Decision:** Ship en + de plus ten more: the full Romance core (es, pt, it, fr, ro) — Michael's stated priority — then the next-largest European app markets (nl, pl, sv, da, cs). The picker names each language by its **endonym** (Deutsch, Polski, Español), never translated. The ten new locales use the **informal** second person; the existing German keeps formal "Sie" for now.
