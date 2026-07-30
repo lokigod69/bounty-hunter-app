@@ -176,6 +176,51 @@ describe('locale files that exist are complete', () => {
   }
 });
 
+describe('German uses informal address', () => {
+  // Michael's decision 2026-07-29: this is a family/couples app, so German
+  // matches the other eleven locales and addresses the user as "du". The file
+  // was already ~93% informal; the remaining 29 strings were converted. Mixed
+  // register inside one language is worse than either choice consistently, and
+  // the mixture is exactly what nobody notices in review — hence this test.
+  const FORMAL_MARKERS: Array<[RegExp, string]> = [
+    // Formal address is the only reason to capitalise these mid-sentence.
+    [/(?<=[a-zäöüß,] )Sie\b/, 'formal "Sie"'],
+    [/(?<=[a-zäöüß,] )Ihr(e|en|em|er|es)?\b/, 'formal "Ihr/Ihre/Ihren"'],
+    // Sentence-initial too: "Ihr öffentlicher Anzeigename" is a label with no
+    // preceding word, and was one of the strings this rule had to catch.
+    [/(^|[.!?"] )Ihr(e|en|em|er|es)?\b/, 'formal "Ihr" opening a sentence'],
+    [/\bIhnen\b/, 'formal "Ihnen"'],
+    // Sentence-initial forms the converted strings used to open with.
+    [/(^|[.!?"] )Sind Sie\b/, 'formal "Sind Sie"'],
+    [/(^|[.!?"] )(Wählen|Fügen|Schauen|Versuchen|Überprüfen|Wenden|Klicken|Geben) Sie\b/, 'formal imperative'],
+  ];
+
+  it('has no formal-register strings left in de/translation.json', () => {
+    const walk = (obj: unknown, prefix = ''): Array<{ key: string; value: string; marker: string }> => {
+      if (typeof obj === 'string') {
+        const hit = FORMAL_MARKERS.find(([re]) => re.test(obj));
+        return hit ? [{ key: prefix, value: obj, marker: hit[1] }] : [];
+      }
+      if (obj && typeof obj === 'object') {
+        return Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) =>
+          walk(v, prefix ? `${prefix}.${k}` : k)
+        );
+      }
+      return [];
+    };
+
+    expect(walk(readLocale('de', 'translation'))).toEqual([]);
+    expect(walk(readLocale('de', 'quotes'))).toEqual([]);
+  });
+
+  it('actually addresses the user informally somewhere', () => {
+    // Guards the test above from passing on an empty or gutted file.
+    const raw = readFileSync(localeFile('de', 'translation'), 'utf-8');
+    expect(raw).toMatch(/\b[Dd]u\b/);
+    expect(raw).toMatch(/\b[Dd]ein/);
+  });
+});
+
 describe('locale files are structurally sound', () => {
   const present = SUPPORTED_LANGUAGE_CODES.filter((code) =>
     existsSync(localeFile(code, 'translation'))
