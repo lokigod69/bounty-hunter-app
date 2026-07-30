@@ -52,6 +52,7 @@ import {
   createTaskViaRpc,
   rejectMission,
   requireTaskLifecycleRpcSuccess,
+  TaskLifecycleRpcError,
   updateTaskViaRpc,
 } from '../domain/missions';
 import type { TaskLifecycleRpcResult } from '../types/custom';
@@ -209,14 +210,22 @@ export default function IssuedPage() {
     toast.loading(t('contracts.approvingProof'), { id: toastId });
 
     try {
-      await approveMission({
+      const outcome = await approveMission({
         missionId: taskId,
         issuerId: user.id,
       });
 
       fireSeal('approve', anchor);
 
-      toast.success(t('contracts.approveSuccess'), { id: toastId });
+      // 013: a self-assigned contract completes but pays nothing. Say so —
+      // a silent non-payment that reads as a successful payout is the one way
+      // this rule becomes a support ticket instead of a rule.
+      toast.success(
+        outcome.credited
+          ? t('contracts.approveSuccess')
+          : t('contracts.approveSuccessNoCredit'),
+        { id: toastId },
+      );
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
@@ -377,6 +386,12 @@ export default function IssuedPage() {
       await refetchIssuedContracts();
       toast.success(t('contracts.createSuccess', { noun }));
     } catch (error: unknown) {
+      // A lifecycle RPC error already carries a machine-readable code; wrapping
+      // it in a new Error would throw that code away, and TaskForm needs it to
+      // localize the 013 message. Re-throw those untouched.
+      if (error instanceof TaskLifecycleRpcError) {
+        throw error;
+      }
       // Type guard to check if it's a Supabase-like error object (PostgrestError)
       if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };

@@ -7,7 +7,7 @@ describe('getStanding', () => {
       band: 0,
       earned: 0,
       currentThreshold: 0,
-      nextThreshold: 120,
+      nextThreshold: 30,
       progress: 0,
       unlockedCreedLines: 1,
     });
@@ -22,20 +22,20 @@ describe('getStanding', () => {
   });
 
   it('promotes exactly at each threshold, not one credit before', () => {
-    expect(getStanding(119).band).toBe(0);
-    expect(getStanding(120).band).toBe(1);
-    expect(getStanding(599).band).toBe(1);
-    expect(getStanding(600).band).toBe(2);
-    expect(getStanding(1999).band).toBe(2);
-    expect(getStanding(2000).band).toBe(3);
-    expect(getStanding(7999).band).toBe(3);
-    expect(getStanding(8000).band).toBe(4);
+    expect(getStanding(29).band).toBe(0);
+    expect(getStanding(30).band).toBe(1);
+    expect(getStanding(149).band).toBe(1);
+    expect(getStanding(150).band).toBe(2);
+    expect(getStanding(599).band).toBe(2);
+    expect(getStanding(600).band).toBe(3);
+    expect(getStanding(1999).band).toBe(3);
+    expect(getStanding(2000).band).toBe(4);
   });
 
   it('measures progress within the current band', () => {
-    // DRIFTER at 360: (360 - 120) / (600 - 120) = 0.5
-    expect(getStanding(360).progress).toBe(0.5);
-    expect(getStanding(120).progress).toBe(0);
+    // DRIFTER at 90: (90 - 30) / (150 - 30) = 0.5
+    expect(getStanding(90).progress).toBe(0.5);
+    expect(getStanding(30).progress).toBe(0);
   });
 
   it('caps the top band at full progress with no next threshold', () => {
@@ -46,16 +46,25 @@ describe('getStanding', () => {
   });
 
   it('floors fractional earnings before banding', () => {
-    expect(getStanding(119.9).band).toBe(0);
-    expect(getStanding(119.9).earned).toBe(119);
+    expect(getStanding(29.9).band).toBe(0);
+    expect(getStanding(29.9).earned).toBe(29);
   });
 
   it('unlocks the creed progressively: 1, 2, 4, 6, then all 7 lines', () => {
     expect(getStanding(0).unlockedCreedLines).toBe(1);
-    expect(getStanding(120).unlockedCreedLines).toBe(2);
-    expect(getStanding(600).unlockedCreedLines).toBe(4);
-    expect(getStanding(2000).unlockedCreedLines).toBe(6);
-    expect(getStanding(8000).unlockedCreedLines).toBe(7);
+    expect(getStanding(30).unlockedCreedLines).toBe(2);
+    expect(getStanding(150).unlockedCreedLines).toBe(4);
+    expect(getStanding(600).unlockedCreedLines).toBe(6);
+    expect(getStanding(2000).unlockedCreedLines).toBe(7);
+  });
+
+  it('keeps every band reachable at the rate the app actually offers', () => {
+    // TaskForm offers 1/2/3/5/10 credits and calls 2 a "small chore", so the
+    // realistic average contract is ~3 credits. The old table (max 8000)
+    // needed ~2,667 contracts for the top band; guard against drifting back.
+    const AVERAGE_CONTRACT_CREDITS = 3;
+    const topBandContracts = STANDING_THRESHOLDS[4] / AVERAGE_CONTRACT_CREDITS;
+    expect(topBandContracts).toBeLessThanOrEqual(700);
   });
 });
 

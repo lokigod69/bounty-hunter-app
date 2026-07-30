@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} crédits attribués à l'exécutant !",
     "approvingProof": "Approbation de la preuve...",
     "approveSuccess": "Approuvé et accompli !",
+    "approveSuccessNoCredit": "Approuvé et accompli : un contrat que tu t'assignes ne rapporte aucun crédit.",
     "approvalFailed": "Échec de l'approbation : {{message}}",
     "approvalFailedUnknown": "L'approbation a échoué en raison d'une erreur inconnue.",
     "rejectingProof": "Rejet de la preuve...",
@@ -249,7 +250,8 @@
       "titleRequired": "Le titre est obligatoire",
       "assigneeRequired": "Sélectionne un ami",
       "rewardRequired": "La description de la récompense est obligatoire.",
-      "creditRequired": "Sélectionne un montant en crédits."
+      "creditRequired": "Sélectionne un montant en crédits.",
+      "selfAssignedCredit": "Tu ne peux pas te payer des crédits : le Renom vient du jugement d'un autre. Assigne ceci à quelqu'un ou choisis une récompense personnalisée."
     },
     "submissionError": "Échec de l'envoi. Réessaie."
   },

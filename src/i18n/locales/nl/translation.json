@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} credits toegekend aan de uitvoerder!",
     "approvingProof": "Bewijs goedkeuren...",
     "approveSuccess": "Goedgekeurd en voltooid!",
+    "approveSuccessNoCredit": "Goedgekeurd en voltooid — een aan jezelf toegewezen contract levert geen credits op.",
     "approvalFailed": "Goedkeuren mislukt: {{message}}",
     "approvalFailedUnknown": "Goedkeuren mislukt door een onbekende fout.",
     "rejectingProof": "Bewijs afwijzen...",
@@ -249,7 +250,8 @@
       "titleRequired": "Titel is verplicht",
       "assigneeRequired": "Selecteer een vriend",
       "rewardRequired": "Een beschrijving van de beloning is verplicht.",
-      "creditRequired": "Selecteer een aantal credits."
+      "creditRequired": "Selecteer een aantal credits.",
+      "selfAssignedCredit": "Je kunt jezelf geen credits uitbetalen — Aanzien komt voort uit het oordeel van een ander. Wijs dit aan iemand toe of kies een eigen beloning."
     },
     "submissionError": "Indienen mislukt. Probeer het opnieuw."
   },

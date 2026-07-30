@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} crediti assegnati all'incaricato!",
     "approvingProof": "Approvazione della prova...",
     "approveSuccess": "Approvato e completato!",
+    "approveSuccessNoCredit": "Approvato e completato: un contratto assegnato a te stesso non paga crediti.",
     "approvalFailed": "Approvazione non riuscita: {{message}}",
     "approvalFailedUnknown": "Approvazione non riuscita a causa di un errore sconosciuto.",
     "rejectingProof": "Rifiuto della prova...",
@@ -249,7 +250,8 @@
       "titleRequired": "Il titolo è obbligatorio",
       "assigneeRequired": "Seleziona un amico",
       "rewardRequired": "La descrizione della ricompensa è obbligatoria.",
-      "creditRequired": "Seleziona un importo in crediti."
+      "creditRequired": "Seleziona un importo in crediti.",
+      "selfAssignedCredit": "Non puoi pagarti crediti da solo: il Renome nasce dal giudizio di un altro. Assegna questo a qualcuno o scegli una ricompensa personalizzata."
     },
     "submissionError": "Invio non riuscito. Riprova."
   },

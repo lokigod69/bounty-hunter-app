@@ -137,10 +137,17 @@ couple paying 200. Five bands, with the metal ramp carrying the progression:
 | Band | Name | Standing | Metal |
 |---|---|---|---|
 | 0 | UNSWORN | 0 | none — hollow outline |
-| 1 | DRIFTER | 120 | iron `#B9C2CF → #7E8899 → #6B7484` |
-| 2 | TRACKER | 600 | iron, three chevrons |
-| 3 | IRONMARK | 2,000 | brass `#F0DFA0 → #C9A227 → #8C6F1A` |
-| 4 | THE NAMED | 8,000 | the mode accent itself |
+| 1 | DRIFTER | 30 | iron `#B9C2CF → #7E8899 → #6B7484` |
+| 2 | TRACKER | 150 | iron, three chevrons |
+| 3 | IRONMARK | 600 | brass `#F0DFA0 → #C9A227 → #8C6F1A` |
+| 4 | THE NAMED | 2,000 | the mode accent itself |
+
+**Recalibrated 2026-07-29** (Michael's decision, closing open question #1 below). The original
+table — 120 / 600 / 2,000 / 8,000 — assumed a guild rate near 20 credits a contract. The create
+form actually offers 1/2/3/5/10 and calls 2 a "small chore", so at a realistic ~3 credits the old
+band 3 was ~667 contracts and band 4 ~2,667: unreachable, exactly the failure the question warned
+about. Dividing by ~4 puts the bands at roughly 10 / 50 / 200 / 667 contracts. Because standing is
+monotonic, the change retroactively promotes existing ranks rather than demoting anyone.
 
 Reaching the top means your mark finally takes the guild's own colour.
 
@@ -709,9 +716,9 @@ review per `CLAUDE.md`. Standing falls back to raw `total_earned` without it.
 
 ## 10. Open questions for Michael
 
-1. **Standing thresholds.** Five bands at 120 / 600 / 2,000 / 8,000 assumes a guild rate around 20.
-   What do you actually pay for a typical contract? That number sets the whole ladder, and getting it
-   wrong makes THE NAMED either unreachable or trivial.
+1. ~~**Standing thresholds.**~~ **ANSWERED 2026-07-29.** The rate was already in the code: the create
+   form offers 1/2/3/5/10 and calls 2 a "small chore", so ~3 credits a contract, not 20. The ladder
+   was recalibrated to 0 / 30 / 150 / 600 / 2,000 (§ the band table above).
 2. **The one migration.** Do you want the `credit_transactions` insert in `approve_task` now, or
    should Wave 2 ship on raw `total_earned` and defer the ledger until there is a reason to read it?
 3. **Family and couple modes.** `PUBLIC_THEME_IDS = ['guild']` gates them out of V1. Is that

@@ -94,6 +94,7 @@
     "awardSuccess": "Přidělené kredity: {{amount}}!",
     "approvingProof": "Schvalování důkazu...",
     "approveSuccess": "Schváleno a dokončeno!",
+    "approveSuccessNoCredit": "Schváleno a dokončeno — kontrakt přidělený sobě samému nevyplácí kredity.",
     "approvalFailed": "Schválení se nezdařilo: {{message}}",
     "approvalFailedUnknown": "Schválení se nezdařilo kvůli neznámé chybě.",
     "rejectingProof": "Odmítání důkazu...",
@@ -249,7 +250,8 @@
       "titleRequired": "Název je povinný",
       "assigneeRequired": "Vyber přítele",
       "rewardRequired": "Popis odměny je povinný.",
-      "creditRequired": "Vyber počet kreditů."
+      "creditRequired": "Vyber počet kreditů.",
+      "selfAssignedCredit": "Nemůžeš si vyplatit kredity sám sobě — Věhlas ti přiznává úsudek někoho jiného. Přiděl to někomu, nebo zvol vlastní odměnu."
     },
     "submissionError": "Odeslání se nezdařilo. Zkus to znovu."
   },

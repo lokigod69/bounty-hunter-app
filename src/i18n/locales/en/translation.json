@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} credits awarded to assignee!",
     "approvingProof": "Approving proof...",
     "approveSuccess": "Approved and completed!",
+    "approveSuccessNoCredit": "Approved and completed — no credits paid on a self-assigned contract.",
     "approvalFailed": "Approval failed: {{message}}",
     "approvalFailedUnknown": "Approval failed due to an unknown error.",
     "rejectingProof": "Rejecting proof...",
@@ -249,7 +250,8 @@
       "titleRequired": "Title is required",
       "assigneeRequired": "Please select a friend",
       "rewardRequired": "A reward description is required.",
-      "creditRequired": "Please select a credit amount."
+      "creditRequired": "Please select a credit amount.",
+      "selfAssignedCredit": "You can't pay yourself credits — standing is earned from someone else's judgement. Assign this to someone, or pick a custom reward."
     },
     "submissionError": "Failed to submit. Please try again."
   },

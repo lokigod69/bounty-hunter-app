@@ -1,6 +1,9 @@
 # Proposal 013: close the standing self-assign hole
 
-**Status**: 🟡 DRAFT — awaiting Michael's review + go (production SQL rule applies: backup first, explicit go)
+**Status**: 🟢 **APPROVED 2026-07-29 by Michael ("yes 013 go") — NOT YET APPLIED.** Open points A–E
+decided below. The client half has shipped; the SQL still needs the backup-then-apply run in
+`docs/runbooks/PROD_RUNBOOK_013.md`, which is a Michael action because this session had no
+production DB credentials.
 **Priority**: P2 (no data at risk today; blocks any cross-household standing ladder)
 **Estimated Time**: SQL apply ~1 min; client work ~30 min (one error string + one guard); test pass after
 **Risk Level**: 🟢 Low (three function-body swaps, no signatures, no policies, no schema changes)
@@ -61,7 +64,42 @@ say so out loud (see Client work).
 **Self-assigned contracts keep working** for non-credit rewards and no-reward contracts — the
 personal-todo use case is untouched. Only the credit path is closed.
 
-## Open points (recommendations inline — decide or delegate, as with 011 B–D / 012 A–C)
+## Open points — DECIDED 2026-07-29
+
+Michael's answer was "yes 013 go, everything else as well", i.e. every recommendation below is
+accepted as written. Recorded per point so the reasoning is not lost:
+
+| # | Decision |
+|---|---|
+| A | **Accepted as drafted** — all three functions. Layer 3 is the guarantee, layers 1–2 stop the app promising credits it will not pay. |
+| B | **Accepted** — friendship check on `assigned_to` stays out of scope; it is a separate proposal. |
+| C | **Accepted** — no clawback. Standing stays monotonic. Moot in practice: the test data is being wiped (see `docs/runbooks/PROD_RUNBOOK_WIPE_TEST_DATA.md`). |
+| D | **Accepted** — colluding accounts remain out of reach, named not fixed. |
+| E | **Answered from the code — see below.** No client path in the current tree can create one, so nothing needs finding before the apply. |
+
+### E, answered
+
+The question was which path created the live self-assigned contract (`tesatmynutes`), because
+layers 1–2 will start rejecting whatever it was. Every candidate was checked and none of them can
+do it **today**:
+
+- `TaskForm.tsx` populates the assignee dropdown from `useFriends` only, and `validateForm`
+  requires a selection — you cannot pick yourself.
+- A self-friendship row would put you in your own dropdown (`useFriends.ts:82` picks "the other
+  side" of the pair, which for a self-pair is you). But both writers refuse to create one:
+  `sendFriendRequest` rejects `userData.id === userId`, and `redeem_invite` returns `SELF_INVITE`
+  when `v_inviter = v_me`.
+- `create_task` does **not** default a null `p_assigned_to` to `auth.uid()` — it inserts the NULL.
+- Onboarding step 4 is a pure explainer since R35; it creates nothing. `CreateBountyModal` writes
+  rewards, not tasks. `db/seeds/seed_minimal.sql` seeds Alice→Bob, not a self-pair.
+
+**Conclusion:** the row predates the current write path. Task creation only became
+RPC-authoritative when 012 was applied on 2026-07-28; before that the client inserted into `tasks`
+directly, under a policy that constrained `created_by` and said nothing about `assigned_to`. A
+hand-made row from testing (the title `tesatmynutes` reads that way) fits every fact. **Nothing
+blocks the apply** — and after the test-data wipe the row is gone regardless.
+
+### Original recommendations (kept for the record)
 
 - **A. Where the rule lives — recommended: all three functions, as drafted.** Layer 3 alone is
   sufficient for security and is the smaller diff. Layers 1–2 are recommended anyway because
@@ -121,25 +159,38 @@ Simpler than 011/012 — no ordering constraint.
 
 No `supabase gen types` regen — no signature changed.
 
-## Client work (ships alongside, not gated on the apply)
+## Client work — ✅ SHIPPED 2026-07-29 (not gated on the apply)
 
-- Map `self_assigned_credit_reward` to a real sentence in `en` + `de` (and the new locales) rather
-  than letting the raw code reach a toast. Suggested English: *"You can't pay yourself credits —
-  standing is earned from someone else's judgement. Assign this to someone, or pick a custom
-  reward."*
-- Optional guard in `TaskForm.tsx`: if the assignee resolves to the current user, disable the
-  credit reward-type option. Cheap, and makes the server error unreachable in normal use.
-- Domain test in `src/core/` asserting the envelope shape, matching the existing
-  task-lifecycle RPC envelope tests.
+- `self_assigned_credit_reward` is mapped to a real sentence **in all twelve locales**
+  (`taskForm.validation.selfAssignedCredit`), not just en + de. English:
+  *"You can't pay yourself credits — standing is earned from someone else's judgement. Assign this
+  to someone, or pick a custom reward."*
+- New `TaskLifecycleRpcError` (`src/domain/missions.ts`) carries the machine-readable `code`
+  alongside the English fallback message, so the UI can localize one rule without the domain layer
+  taking an i18n dependency. `IssuedPage` re-throws it unwrapped — previously it rebuilt the error
+  and threw the code away.
+- `TaskForm.tsx` guard: when the assignee resolves to the current user the credit option is not
+  rendered at all (not merely `disabled`, which screen readers still announce), an explanation
+  replaces it, a selector already sitting on `credit` falls back to a custom reward, and
+  `validateForm` refuses the combination last so it wins over "pick an amount".
+- `approveMission` now returns `{ credited, creditSkippedReason }` and `IssuedPage` shows
+  `contracts.approveSuccessNoCredit` when a contract completed without paying. **A pre-013 database
+  omits the `credited` key, and absence is read as *paid*** — the old server always paid, so the
+  opposite default would tell every user their credits had vanished before the SQL is applied.
+- Six tests in `src/domain/missions.test.ts` under "013: self-assigned credit rewards", including
+  the pre-013-server case above.
 
 ## Approval Checklist
 
-- [ ] Michael reviewed; open points A–E decided (or delegated)
-- [ ] Pre-flight validation run (#1 confirms 012 live; #7 answers open point E; #5–#6 sized the
-      existing exposure; #8–#10 minting surface still sole-path)
+- [x] Michael reviewed; open points A–E decided (2026-07-29 — all recommendations accepted, E answered above)
+- [x] Client work shipped (see above); gates green: tsc 0, 205 tests/19 files, lint 0 errors, build pass
+- [ ] Pre-flight validation run (#1 confirms 012 live; #5–#6 size the existing exposure;
+      #8–#10 minting surface still sole-path). #7 is now informational — E is answered.
 - [ ] Fresh backup taken (`scripts/prod/backup_schema.ps1`)
-- [ ] Go given → apply → post-validate (#3–#4) → browser test (normal approve + refused self-assign)
+- [ ] Apply → post-validate (#3–#4) → browser test (normal approve + refused self-assign)
+
+**Runbook**: `docs/runbooks/PROD_RUNBOOK_013.md` — one command, Michael runs it.
 
 **Created**: 2026-07-29
 **Author**: Claude (Opus 5), closing the hole recorded in `memory/STATE.md` Known problems
-**Review Status**: 🟡 draft, unapplied
+**Review Status**: 🟢 approved 2026-07-29, client shipped, SQL unapplied

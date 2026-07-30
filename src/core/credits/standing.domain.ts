@@ -3,11 +3,15 @@
 // spend; standing is what you are. Standing derives from lifetime earned
 // credits (user_credits.total_earned) and can never be spent down.
 //
-// Pure domain: no I/O, no React. The threshold table assumes a guild rate of
-// roughly 20 credits per contract (open question #1 in THE REGISTER); if the
-// real rate differs, this table is the single place to recalibrate.
+// Pure domain: no I/O, no React. The threshold table is calibrated to the
+// guild rate the app actually offers: TaskForm's credit presets are 1/2/3/5/10
+// and it calls 2 a "small chore", so a realistic average contract is ~3 credits
+// (recalibrated 2026-07-29 by Michael's decision, from a table that assumed ~20
+// and therefore put band 3 at ~667 contracts and band 4 at ~2,667 — unreachable).
+// At ~3 credits a contract the bands land at roughly 10 / 50 / 200 / 667
+// contracts. This table is the single place to recalibrate.
 
-export const STANDING_THRESHOLDS = [0, 120, 600, 2000, 8000] as const;
+export const STANDING_THRESHOLDS = [0, 30, 150, 600, 2000] as const;
 
 export type StandingBand = 0 | 1 | 2 | 3 | 4;
 

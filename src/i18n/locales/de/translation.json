@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} Credits an den Beauftragten vergeben!",
     "approvingProof": "Beweis wird genehmigt...",
     "approveSuccess": "Genehmigt und abgeschlossen!",
+    "approveSuccessNoCredit": "Genehmigt und abgeschlossen — für einen selbst zugewiesenen Auftrag gibt es keine Credits.",
     "approvalFailed": "Genehmigung fehlgeschlagen: {{message}}",
     "approvalFailedUnknown": "Genehmigung aufgrund eines unbekannten Fehlers fehlgeschlagen.",
     "rejectingProof": "Beweis wird abgelehnt...",
@@ -262,7 +263,8 @@
       "titleRequired": "Titel ist erforderlich",
       "assigneeRequired": "Bitte wählen Sie einen Freund",
       "rewardRequired": "Eine Belohnungsbeschreibung ist erforderlich.",
-      "creditRequired": "Bitte wählen Sie einen Credit-Betrag."
+      "creditRequired": "Bitte wählen Sie einen Credit-Betrag.",
+      "selfAssignedCredit": "Du kannst dir keine Credits selbst auszahlen — Ansehen entsteht durch das Urteil anderer. Weise das jemandem zu oder wähle eine eigene Belohnung."
     },
     "submissionError": "Übermittlung fehlgeschlagen. Bitte versuchen Sie es erneut."
   },

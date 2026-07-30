@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} kreditter tildelt udføreren!",
     "approvingProof": "Godkender bevis...",
     "approveSuccess": "Godkendt og fuldført!",
+    "approveSuccessNoCredit": "Godkendt og fuldført — en kontrakt, du har tildelt dig selv, giver ingen kreditter.",
     "approvalFailed": "Godkendelse mislykkedes: {{message}}",
     "approvalFailedUnknown": "Godkendelse mislykkedes på grund af en ukendt fejl.",
     "rejectingProof": "Afviser bevis...",
@@ -249,7 +250,8 @@
       "titleRequired": "Titel er påkrævet",
       "assigneeRequired": "Vælg en ven",
       "rewardRequired": "En beskrivelse af belønningen er påkrævet.",
-      "creditRequired": "Vælg et kreditbeløb."
+      "creditRequired": "Vælg et kreditbeløb.",
+      "selfAssignedCredit": "Du kan ikke betale kreditter til dig selv — Anseelse kommer fra en andens dom. Tildel den her til nogen, eller vælg en egen belønning."
     },
     "submissionError": "Indsendelse mislykkedes. Prøv igen."
   },

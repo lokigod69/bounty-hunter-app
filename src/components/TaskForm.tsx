@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
+import { isSelfAssignedCreditError } from '../domain/missions';
 import { feedback } from '../utils/feedback';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -77,12 +78,26 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Proposal 013: a credit reward whose assignee is its creator is refused
+  // server-side, because standing has to come from someone else's judgement.
+  const isSelfAssigned = !!assignedTo && assignedTo === userId;
+
   useEffect(() => {
     // Set default assignee if there's only one friend
     if (friends.length === 1 && !assignedTo && !editingTask) { // Only set default if not editing and only one friend
       setAssignedTo(friends[0].friend.id);
     }
   }, [friends, assignedTo, editingTask]);
+
+  // 013: switching the assignee to yourself removes the credit option from the
+  // selector, so a selector left on 'credit' would be showing a value it no
+  // longer offers. Fall back to a custom reward, which is always legal.
+  useEffect(() => {
+    if (isSelfAssigned && contractType === 'credit') {
+      setContractType('bounty');
+      setRewardText('');
+    }
+  }, [isSelfAssigned, contractType]);
 
   useEffect(() => {
     if (editingTask) {
@@ -145,6 +160,17 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       newErrors.rewardText = t('taskForm.validation.creditRequired');
     }
 
+    // Proposal 013: standing is earned from someone else's judgement, so a
+    // credit reward can never pay its own creator. The assignee dropdown lists
+    // friends only, which makes this unreachable in normal use — it is here for
+    // the paths that are not the dropdown (a stale self-friendship row, a
+    // pre-filled edit of an older self-assigned contract) so the user sees a
+    // sentence instead of the server's raw error code. Checked last so it wins
+    // over the generic "pick an amount" message above.
+    if (contractType === 'credit' && assignedTo && assignedTo === userId) {
+      newErrors.rewardText = t('taskForm.validation.selfAssignedCredit');
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -180,7 +206,12 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       onClose();
     } catch (error: unknown) {
       let errorMessage = t('taskForm.submissionError');
-      if (error instanceof Error) {
+      // 013: the RPC error carries a machine-readable code, so this one rule
+      // can be stated in the user's language instead of the domain layer's
+      // English fallback. Other codes keep the existing behaviour.
+      if (isSelfAssignedCreditError(error)) {
+        errorMessage = t('taskForm.validation.selfAssignedCredit');
+      } else if (error instanceof Error) {
         errorMessage = error.message || errorMessage;
       }
       toast.error(errorMessage);
@@ -325,8 +356,19 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               className="input-field w-full"
             >
               <option value="bounty">{t('taskForm.rewardTypeDirect')}</option>
-              <option value="credit">{t('taskForm.rewardTypeCredit')}</option>
+              {/* 013: a credit reward cannot pay its own creator, so do not
+                  offer it when the assignee is you. Rendered conditionally
+                  rather than `disabled` because a disabled <option> is still
+                  announced by screen readers as a choice that exists. */}
+              {!isSelfAssigned && (
+                <option value="credit">{t('taskForm.rewardTypeCredit')}</option>
+              )}
             </select>
+            {isSelfAssigned && (
+              <p className="text-[var(--text-secondary)] text-xs mt-1">
+                {t('taskForm.validation.selfAssignedCredit')}
+              </p>
+            )}
           </div>
 
           {/* Conditional Reward Inputs based on Contract Type - R27: Added character counter */}

@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} krediter tilldelades utföraren!",
     "approvingProof": "Godkänner bevis...",
     "approveSuccess": "Godkänt och slutfört!",
+    "approveSuccessNoCredit": "Godkänt och slutfört — ett kontrakt du tilldelat dig själv ger inga krediter.",
     "approvalFailed": "Godkännandet misslyckades: {{message}}",
     "approvalFailedUnknown": "Godkännandet misslyckades på grund av ett okänt fel.",
     "rejectingProof": "Avvisar bevis...",
@@ -249,7 +250,8 @@
       "titleRequired": "Titel krävs",
       "assigneeRequired": "Välj en vän",
       "rewardRequired": "En beskrivning av belöningen krävs.",
-      "creditRequired": "Välj ett kreditbelopp."
+      "creditRequired": "Välj ett kreditbelopp.",
+      "selfAssignedCredit": "Du kan inte betala krediter till dig själv — Anseende kommer från någon annans omdöme. Tilldela det här till någon, eller välj en egen belöning."
     },
     "submissionError": "Det gick inte att skicka in. Försök igen."
   },

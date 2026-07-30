@@ -94,6 +94,7 @@
     "awardSuccess": "¡Se han entregado {{amount}} créditos al encargado!",
     "approvingProof": "Aprobando la prueba...",
     "approveSuccess": "¡Aprobada y completada!",
+    "approveSuccessNoCredit": "Aprobada y completada: un contrato asignado a ti mismo no paga créditos.",
     "approvalFailed": "La aprobación ha fallado: {{message}}",
     "approvalFailedUnknown": "La aprobación ha fallado debido a un error desconocido.",
     "rejectingProof": "Rechazando la prueba...",
@@ -249,7 +250,8 @@
       "titleRequired": "El título es obligatorio",
       "assigneeRequired": "Selecciona a un amigo",
       "rewardRequired": "La descripción de la recompensa es obligatoria.",
-      "creditRequired": "Selecciona una cantidad de créditos."
+      "creditRequired": "Selecciona una cantidad de créditos.",
+      "selfAssignedCredit": "No puedes pagarte créditos a ti mismo: el Renombre lo concede el juicio de otra persona. Asigna esto a alguien o elige una recompensa personalizada."
     },
     "submissionError": "No se ha podido enviar. Inténtalo de nuevo."
   },

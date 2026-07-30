@@ -94,6 +94,7 @@
     "awardSuccess": "Przyznane kredyty: {{amount}}!",
     "approvingProof": "Zatwierdzanie dowodu...",
     "approveSuccess": "Zatwierdzono i ukończono!",
+    "approveSuccessNoCredit": "Zatwierdzono i ukończono — kontrakt przypisany samemu sobie nie daje kredytów.",
     "approvalFailed": "Zatwierdzanie nie powiodło się: {{message}}",
     "approvalFailedUnknown": "Zatwierdzanie nie powiodło się z powodu nieznanego błędu.",
     "rejectingProof": "Odrzucanie dowodu...",
@@ -249,7 +250,8 @@
       "titleRequired": "Tytuł jest wymagany",
       "assigneeRequired": "Wybierz znajomą osobę",
       "rewardRequired": "Opis nagrody jest wymagany.",
-      "creditRequired": "Wybierz liczbę kredytów."
+      "creditRequired": "Wybierz liczbę kredytów.",
+      "selfAssignedCredit": "Nie możesz wypłacić kredytów samemu sobie — Renomę przyznaje osąd kogoś innego. Przypisz to komuś lub wybierz własną nagrodę."
     },
     "submissionError": "Wysyłanie nie powiodło się. Spróbuj ponownie."
   },

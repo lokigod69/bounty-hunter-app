@@ -8,6 +8,7 @@ import { evaluateStatusChange } from '../core/contracts/contracts.domain';
 import type { StatusChangeContext } from '../core/contracts/contracts.types';
 import type { Database } from '../types/database';
 import type {
+  ApproveTaskResult,
   TaskLifecycleRpcErrorCode,
   TaskLifecycleRpcResult,
   TaskStatus,
@@ -74,9 +75,40 @@ export function getTaskLifecycleRpcErrorMessage(
       return 'Task title is required.';
     case 'invalid_field':
       return 'Task update contains fields that cannot be changed.';
+    case 'self_assigned_credit_reward':
+      // Proposal 013. Deliberately says WHY, not just "not allowed" — the rule
+      // is a product statement about what standing means, not a validation nit.
+      return "You can't pay yourself credits — standing is earned from someone else's judgement. Assign this to someone, or pick a custom reward.";
     default:
       return operationFallbacks[operation];
   }
+}
+
+/**
+ * Carries the machine-readable RPC error code alongside the English fallback
+ * message. UI that has a translator can localize from `.code`; everything that
+ * only reads `.message` behaves exactly as it did before this class existed.
+ */
+export class TaskLifecycleRpcError extends Error {
+  readonly code: TaskLifecycleRpcErrorCode | string | undefined;
+  readonly operation: TaskLifecycleOperation;
+
+  constructor(
+    code: TaskLifecycleRpcErrorCode | string | undefined,
+    operation: TaskLifecycleOperation,
+  ) {
+    super(getTaskLifecycleRpcErrorMessage(code, operation));
+    this.name = 'TaskLifecycleRpcError';
+    this.code = code;
+    this.operation = operation;
+  }
+}
+
+/** True for the one 013 error code the UI localizes rather than passing through. */
+export function isSelfAssignedCreditError(error: unknown): boolean {
+  return (
+    error instanceof TaskLifecycleRpcError && error.code === 'self_assigned_credit_reward'
+  );
 }
 
 export function requireTaskLifecycleRpcSuccess(
@@ -86,11 +118,11 @@ export function requireTaskLifecycleRpcSuccess(
   const result = data as TaskLifecycleRpcResult | null;
 
   if (result?.success === false) {
-    throw new Error(getTaskLifecycleRpcErrorMessage(result.error, operation));
+    throw new TaskLifecycleRpcError(result.error, operation);
   }
 
   if (result?.success !== true) {
-    throw new Error(operationFallbacks[operation]);
+    throw new TaskLifecycleRpcError(undefined, operation);
   }
 
   return result;
@@ -173,18 +205,31 @@ export interface SubmitForReviewParams {
 }
 
 /**
+ * What the approval actually did. Proposal 013 made "approved" and "paid" two
+ * different facts: a self-assigned contract completes but mints nothing.
+ * `credited` is undefined against a pre-013 database, which callers must read
+ * as "paid" — the old server always paid.
+ */
+export interface ApproveMissionOutcome {
+  credited: boolean;
+  creditSkippedReason: string | null;
+}
+
+/**
  * Approves a mission that is in 'review' status.
  *
  * Uses the approve_task RPC which handles everything server-side:
  * - Task status update (review -> completed)
- * - Credit awarding
+ * - Credit awarding (proposal 013: skipped when assignee === creator)
  *
  * This avoids RLS issues where creator tries to write to assignee's records.
  */
-export async function approveMission(params: ApproveMissionParams): Promise<void> {
+export async function approveMission(
+  params: ApproveMissionParams,
+): Promise<ApproveMissionOutcome> {
   const { missionId, supabaseClient = supabase } = params;
 
-  const { error } = await supabaseClient.rpc('approve_task', {
+  const { data, error } = await supabaseClient.rpc('approve_task', {
     p_task_id: missionId,
   });
 
@@ -205,6 +250,15 @@ export async function approveMission(params: ApproveMissionParams): Promise<void
 
     throw new Error(error.message || 'Failed to approve task.');
   }
+
+  const result = (data ?? null) as ApproveTaskResult | null;
+  return {
+    // A pre-013 server omits the key entirely; it always paid, so absence
+    // must read as credited, never as "skipped".
+    credited: result?.credited !== false,
+    creditSkippedReason:
+      typeof result?.credit_skipped_reason === 'string' ? result.credit_skipped_reason : null,
+  };
 }
 
 /**

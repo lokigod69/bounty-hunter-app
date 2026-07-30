@@ -21,7 +21,11 @@ export type TaskLifecycleRpcErrorCode =
   | 'invalid_proof_type'
   | 'status_not_allowed'
   | 'title_required'
-  | 'invalid_field';
+  | 'invalid_field'
+  // Proposal 013: create_task/update_task refuse a credit reward whose
+  // assignee is the caller. approve_task does not use this code — it completes
+  // the contract and reports credited=false instead (see ApproveTaskResult).
+  | 'self_assigned_credit_reward';
 
 export type TaskLifecycleRpcResult = {
   success?: boolean;
@@ -34,6 +38,22 @@ export type TaskLifecycleRpcResult = {
   already_archived?: boolean;
   already_deleted?: boolean;
   unchanged?: boolean;
+};
+
+/**
+ * Proposal 013: `approve_task` V4 completes a self-assigned contract but never
+ * mints credits for it. `credited` says whether `increment_user_credits` ran;
+ * `credit_skipped_reason` says why it did not. Both keys are additive — a
+ * pre-013 database omits them, which is why `credited` is optional and callers
+ * must treat `undefined` as "credited, old server".
+ */
+export type ApproveTaskCreditSkipReason = 'self_assigned';
+
+export type ApproveTaskResult = {
+  success?: boolean;
+  error?: string;
+  credited?: boolean;
+  credit_skipped_reason?: ApproveTaskCreditSkipReason | string | null;
 };
 
 // Base table types

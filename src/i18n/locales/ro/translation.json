@@ -94,6 +94,7 @@
     "awardSuccess": "{{amount}} credite acordate celui care a îndeplinit sarcina!",
     "approvingProof": "Se aprobă dovada...",
     "approveSuccess": "Aprobată și îndeplinită!",
+    "approveSuccessNoCredit": "Aprobată și îndeplinită: un contract atribuit ție însuți nu plătește credite.",
     "approvalFailed": "Aprobarea a eșuat: {{message}}",
     "approvalFailedUnknown": "Aprobarea a eșuat din cauza unei erori necunoscute.",
     "rejectingProof": "Se respinge dovada...",
@@ -249,7 +250,8 @@
       "titleRequired": "Titlul este obligatoriu",
       "assigneeRequired": "Alege un prieten",
       "rewardRequired": "Descrierea recompensei este obligatorie.",
-      "creditRequired": "Alege o valoare în credite."
+      "creditRequired": "Alege o valoare în credite.",
+      "selfAssignedCredit": "Nu îți poți plăti singur credite: Renumele vine din judecata altcuiva. Atribuie asta cuiva sau alege o recompensă personalizată."
     },
     "submissionError": "Trimiterea a eșuat. Încearcă din nou."
   },
