@@ -201,7 +201,7 @@ const RewardsStorePage: React.FC = () => {
 
       // R33: Use same grid layout as Available/My Bounties for consistency
       return (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
           {collectedRewards.map((reward) => (
             <RewardCard
               key={reward.collection_id}
@@ -250,9 +250,12 @@ const RewardsStorePage: React.FC = () => {
       );
     }
 
-    // My Bounties and Available: Grid layout with RewardCards
+    // My Bounties and Available: Grid layout with RewardCards.
+    // One column below 420px: two 140px-wide cards side by side on a 360px
+    // phone clipped the claim/edit actions, and the card needs ~170px to lay
+    // its action row out. Every phone from 420px up still gets two.
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 spacing-grid">
         {filteredRewards.map(reward => (
           <RewardCard
             key={reward.id}
@@ -303,13 +306,13 @@ const RewardsStorePage: React.FC = () => {
                   </span>
                   {/* V1: Static gold balance number is the currency identity.
                       (The old shimmer rendered blank for reduced-motion and
-                      high-contrast users — its overrides never restored a color.) */}
+                      high-contrast users â€” its overrides never restored a color.) */}
                   <span className="text-display leading-none credit-gold-text">
                     {userCredits ?? 0}
                   </span>
                   {typeof totalEarned === 'number' && (
                     <span className="mt-2 text-xs text-white/45 tabular-nums">
-                      {t('rewards.lifetimeEarned')} · {totalEarned.toLocaleString(i18n.language)}
+                      {t('rewards.lifetimeEarned')} Â· {totalEarned.toLocaleString(i18n.language)}
                     </span>
                   )}
                   {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}

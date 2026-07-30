@@ -661,7 +661,7 @@ body::after {
 /* Enhanced input field responsiveness */
 .input-field {
   @apply min-h-[44px] sm:min-h-[40px]; /* Larger touch targets on mobile */
-  @apply text-base sm:text-sm; /* Prevent zoom on iOS */
+  @apply text-base sm:text-sm; /* Prevent zoom on iOS — but see the coarse-pointer block below */
   @apply px-3 sm:px-4 py-3 sm:py-2;
 }
 
@@ -670,6 +670,36 @@ body::after {
   @apply min-h-[48px] sm:min-h-[40px];
   @apply text-base sm:text-sm;
   @apply py-3 sm:py-2;
+}
+
+/* The `sm:` rules above are the correct intent expressed with the wrong signal.
+   `sm:` is min-width:640px, and a phone in landscape is 844px or 932px wide, so
+   it took the desktop branch: 14px text and a 40px target on the one device
+   where that hurts most. iOS zooms the page when a focused field is under 16px
+   and does not zoom back out, and 40px is under the 44px touch minimum.
+
+   Pointer coarseness is the honest question — "is this a finger?" — and it is
+   independent of how wide the window happens to be. Placed after the rules it
+   corrects so it wins on source order at equal specificity. */
+@media (pointer: coarse) {
+  .input-field {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* Same trap, same reason: iOS zooms for any focusable field under 16px, and
+     these are not all .input-field. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 /* Improved mobile scrolling */
@@ -1373,13 +1403,101 @@ body::after {
 }
 
 /* iOS safe-area helpers (viewport-fit=cover): header/menus under the notch,
-   sheet footers above the home indicator. */
+   sheet footers above the home indicator.
+
+   .safe-top is ADDITIVE by construction. It sets padding-top, and because it
+   lives outside @layer it beats Tailwind's `pt-*` utilities in the cascade —
+   so `pt-16 safe-top` did not mean "4rem plus the notch", it meant "the notch
+   only", which on a notchless Android is zero. The mobile menu panel was
+   relying on that pt-16 to clear the header and was silently getting nothing.
+   Elements that need fixed clearance now set --safe-top-extra instead. */
 .safe-top {
-  padding-top: env(safe-area-inset-top);
+  padding-top: calc(var(--safe-top-extra, 0px) + env(safe-area-inset-top));
+}
+
+/* Clearance for a full-screen overlay that starts below the sticky header.
+   4rem matches the header's own height (py-3 + a 2.5rem logo). */
+.safe-top-under-header {
+  --safe-top-extra: 4rem;
 }
 
 .safe-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ---------------------------------------------------------------------------
+   Viewport heights that survive mobile browser chrome AND the software keyboard.
+
+   Three-line pattern, and each line earns its place:
+     1. `vh`   — the floor. The project's iOS build target is 15.0, but `dvh`
+                 only landed in Safari 15.4, so 15.0-15.3 needs a real value.
+     2. `dvh`  — tracks the URL bar collapsing on scroll. This is the fix for
+                 "100vh is taller than what I can see".
+     3. min(dvh, --visual-vh * n) — tracks the keyboard. iOS does NOT shrink the
+                 layout viewport when the keyboard opens, so `dvh` alone still
+                 leaves a modal at full height with its submit button underneath
+                 the keys. --visual-vh is published by useVisualViewport().
+
+   The default below keeps line 3 valid before the hook runs.
+   --------------------------------------------------------------------------- */
+:root {
+  --visual-vh: 100vh;
+}
+
+.h-app {
+  height: 100vh;
+  height: 100dvh;
+  height: min(100dvh, var(--visual-vh));
+}
+
+/* Standard modal: nearly full height on a phone, roomier on a desktop. */
+.modal-h-standard {
+  max-height: 95vh;
+  max-height: 95dvh;
+  max-height: min(95dvh, calc(var(--visual-vh) * 0.95));
+}
+
+@media (min-width: 640px) {
+  .modal-h-standard {
+    max-height: 85vh;
+    max-height: 85dvh;
+    max-height: min(85dvh, calc(var(--visual-vh) * 0.85));
+  }
+}
+
+/* Tall modal: a fixed-height sheet on a phone, content-sized on a desktop. */
+.modal-h-tall {
+  height: 95vh;
+  height: 95dvh;
+  height: min(95dvh, calc(var(--visual-vh) * 0.95));
+}
+
+@media (min-width: 768px) {
+  .modal-h-tall {
+    height: auto;
+    max-height: 85vh;
+    max-height: 85dvh;
+    max-height: min(85dvh, calc(var(--visual-vh) * 0.85));
+  }
+}
+
+/* Mission modal picks its own class per breakpoint in TSX, so these are flat. */
+.modal-h-sheet {
+  max-height: 90vh;
+  max-height: 90dvh;
+  max-height: min(90dvh, calc(var(--visual-vh) * 0.9));
+}
+
+.modal-h-panel {
+  max-height: 85vh;
+  max-height: 85dvh;
+  max-height: min(85dvh, calc(var(--visual-vh) * 0.85));
+}
+
+.lightbox-media {
+  max-height: 75vh;
+  max-height: 75dvh;
+  max-height: min(75dvh, calc(var(--visual-vh) * 0.75));
 }
 
 /* Reduced motion support for modal animations.

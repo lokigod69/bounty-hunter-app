@@ -94,9 +94,11 @@ export function ModalShell({
     ? 'rounded-t-2xl sm:rounded-2xl'
     : 'rounded-2xl mx-2 sm:mx-4';
 
-  const heightClass = tall
-    ? 'h-[95vh] md:h-auto md:max-h-[85vh]'
-    : 'max-h-[95vh] sm:max-h-[85vh]';
+  // Height comes from index.css, not Tailwind's vh utilities: those classes
+  // carry the dvh upgrade AND the --visual-vh keyboard clamp with a plain-vh
+  // fallback for iOS 15.0-15.3. A bare `max-h-[95vh]` left the submit button
+  // under the iOS keyboard.
+  const heightClass = tall ? 'modal-h-tall' : 'modal-h-standard';
 
   const surfaceClass = [
     'relative w-full glass-card z-modal-content modal-enter flex flex-col overflow-hidden',

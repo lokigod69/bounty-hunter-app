@@ -186,7 +186,7 @@ export default function Layout() {
     // No background on this wrapper: the body's starfield gradient (index.css)
     // is the app's sky. An opaque bg-indigo-950 here painted over it on every
     // signed-in screen for months.
-    <div className="h-screen flex flex-col">
+    <div className="h-app flex flex-col">
 
       <SealLayer />
       <PayoutCeremony />
@@ -211,8 +211,9 @@ export default function Layout() {
               <span className="app-title text-2xl text-white">{strings.appName}</span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-4">
+            {/* Desktop Navigation. `nav:` not `md:` — see tailwind.config.js:
+                a landscape phone is wider than 768px and was getting this. */}
+            <nav className="hidden nav:flex items-center space-x-4">
               {navItemsDesktop.map((item) => (
                 <Link
                   key={item.path}
@@ -248,7 +249,7 @@ export default function Layout() {
 
           {/* Right side: User Profile & Actions */}
           <div className="flex-shrink-0 flex items-center">
-            <div className="hidden md:flex items-center space-x-4 min-w-0">
+            <div className="hidden nav:flex items-center space-x-4 min-w-0">
               {/* Wave 2: standing — the second number (what you are).
                   The rank word is a translated noun, and its length is not ours
                   to control: English UNSWORN is 7 characters, German
@@ -313,7 +314,7 @@ export default function Layout() {
             </div>
 
             {/* Mobile: always-visible credit pill + menu button */}
-            <div className="md:hidden ml-4 flex items-center gap-2">
+            <div className="nav:hidden ml-4 flex items-center gap-2">
               <StandingBlock standing={standing} known={standingKnown} compact />
               <Link
                 to="/rewards-store"
@@ -350,7 +351,7 @@ export default function Layout() {
        */}
       {isMobileMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 z-[var(--z-mobile-menu)]"
+          className="nav:hidden fixed inset-0 z-[var(--z-mobile-menu)]"
         >
           {/* Backdrop */}
           <div
@@ -360,9 +361,13 @@ export default function Layout() {
               closeMenu();
             }}
           />
-          {/* Menu Content */}
+          {/* Menu Content.
+              `pt-16 safe-top` did not add up: .safe-top is unlayered CSS and
+              beat the pt-16 utility outright, so this panel cleared the notch
+              but not the header. safe-top-under-header feeds the 4rem through
+              --safe-top-extra, which .safe-top adds to the inset. */}
           <div
-            className="glass-card fixed inset-0 pt-16 safe-top bg-indigo-950/95 backdrop-blur-lg"
+            className="glass-card fixed inset-0 safe-top safe-top-under-header bg-indigo-950/95 backdrop-blur-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -489,8 +494,16 @@ export default function Layout() {
         </div>
       )}
 
-      {/* Main Content */}
-      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-6 main-content no-bounce">
+      {/* Main Content.
+          No gutter or max-width here on purpose. PageContainer already applies
+          `mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8`, and every
+          page rendered into this outlet uses it — so `container mx-auto px-4
+          py-6` here was a SECOND set of gutters stacked on the first. At 360px
+          that left 296px of usable width, which is what pushed the reward grid
+          and the stats row into clipping. Verified before removing: Dashboard,
+          Friends, ArchivePage, RewardsStorePage and IssuedPage all root in
+          PageContainer, including their loading and error branches. */}
+      <main ref={mainContentRef} className="flex-1 main-content no-bounce">
         <Outlet />
       </main>
 

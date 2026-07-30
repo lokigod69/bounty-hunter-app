@@ -25,6 +25,7 @@ import { useAuth, AuthProvider } from './context/AuthContext'; // R6: Use shared
 import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { useVisualViewport } from './hooks/useVisualViewport';
 
 // Protected route component - handles authentication only
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -56,6 +57,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  // Publishes --visual-vh for the modal height classes in index.css. Mounted at
+  // the root because modals open on public routes (login, invite) too, not only
+  // inside Layout.
+  useVisualViewport();
+
   return (
     <SessionContextProvider supabaseClient={supabase}>
       <AuthProvider>

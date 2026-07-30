@@ -67,17 +67,33 @@ export function TabBar({
   };
 
   return (
+    // `justify-center` used to live here, and it made the first tab
+    // unreachable whenever the tabs were wider than the bar: centering
+    // distributes the overflow to BOTH sides, and content overflowing past the
+    // start edge of a scroll container cannot be scrolled to — scrollLeft
+    // bottoms out at 0. German was the trigger ("Gildenmitglieder" +
+    // "Anfragen"), but any long enough label pair does it.
+    //
+    // `mx-auto` on the tablist gets the same centering when there IS room,
+    // because auto margins resolve to 0 once free space goes negative. Then the
+    // tablist starts at the left edge and every tab is scrollable to.
     <div
       className={cn(
         'flex border-b border-white/10 overflow-x-auto',
-        !fullWidth && 'justify-center px-2',
+        !fullWidth && 'px-2',
         className
       )}
     >
       <div
         role="tablist"
         aria-label={ariaLabel}
-        className={cn('flex', fullWidth ? 'gap-1 sm:gap-0 w-full' : 'gap-0 sm:gap-2')}
+        className={cn(
+          'flex',
+          // shrink-0 so the tablist keeps its intrinsic width and the parent
+          // scrolls, rather than the tablist compressing and the nowrap labels
+          // spilling out of a container that never learns it overflowed.
+          fullWidth ? 'gap-1 sm:gap-0 w-full' : 'gap-0 sm:gap-2 mx-auto shrink-0'
+        )}
       >
         {tabs.map((tab, index) => {
           const isActive = tab.id === activeId;

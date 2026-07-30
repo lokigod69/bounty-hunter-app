@@ -74,7 +74,7 @@ export const RewardImageLightbox: React.FC<RewardImageLightboxProps> = ({
         <img
           src={imageUrl}
           alt={alt}
-          className="max-h-[75vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+          className="lightbox-media max-w-[90vw] object-contain rounded-lg shadow-2xl"
           style={{
             // Ensure image doesn't get distorted
             width: 'auto',

@@ -296,7 +296,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         tabIndex={-1}
         className={`
           relative z-modal-content
-          w-full ${isMobile ? 'max-h-[90vh]' : 'max-w-2xl max-h-[85vh]'}
+          w-full ${isMobile ? 'modal-h-sheet' : 'max-w-2xl modal-h-panel'}
           ${isMobile ? 'rounded-t-2xl' : 'rounded-2xl'}
           flex flex-col
           overflow-hidden
