@@ -211,7 +211,8 @@
     "somethingWentWrong": "Ceva nu a mers",
     "loadingCredits": "Se încarcă creditele...",
     "loadingContracts": "Se încarcă misiunile…",
-    "next": "Înainte"
+    "next": "Înainte",
+    "back": "Înapoi"
   },
   "taskForm": {
     "editTitle": "Editează {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter funcționează în modul Breaslă: contracte, renume și un panou comun. Așa arată.",
       "introChoose": "Alege cum arată și ce atmosferă are Bounty Hunter. Poți schimba oricând acest lucru din setările profilului.",
       "popularBadge": "Popular"
+    },
+    "loadingSession": "Se verifică sesiunea ta...",
+    "skipAll": "Sari peste configurare, explorez singur",
+    "steps": {
+      "chooseWorld": {
+        "title": "Alege-ți lumea",
+        "description": "Alege o temă potrivită cu felul în care vei folosi Bounty Hunter."
+      },
+      "invite": {
+        "title": "Invită pe cineva (opțional)",
+        "description": "Invită un prieten, un membru al familiei sau partenerul tău ca să împărțiți misiuni."
+      },
+      "howItWorks": {
+        "title": "Cum funcționează misiunile",
+        "description": "Uite cum vei crea și atribui misiuni."
+      }
+    },
+    "invite": {
+      "intro": "Invită pe cineva ca să împărțiți misiuni și recompense. Poți sări peste asta și invita pe cineva mai târziu.",
+      "linkPrompt": "Încă nu e pe Bounty Hunter? Trimite-i un link ca să se alăture și să se conecteze cu tine.",
+      "orFindExisting": "sau caută un cont existent",
+      "emailLabel": "Adresă de e-mail",
+      "emailPlaceholder": "prieten@exemplu.com",
+      "emailHint": "Este deja pe Bounty Hunter? Caută-l după e-mail.",
+      "errorTitle": "Invitația nu a putut fi trimisă",
+      "userNotFound": "Utilizator negăsit. Asigură-te că s-a înregistrat pe Bounty Hunter.",
+      "cannotInviteSelf": "Nu te poți invita pe tine însuți.",
+      "alreadyConnected": "Ai deja o legătură sau o cerere în așteptare cu acest utilizator.",
+      "sendFailed": "Invitația nu a putut fi trimisă. Încearcă din nou.",
+      "sentTo": "Invitație trimisă către {{name}}!",
+      "searching": "Se caută...",
+      "sending": "Se trimite invitația...",
+      "skipForNow": "Sari deocamdată",
+      "sendInvite": "Trimite invitația"
+    },
+    "explainer": {
+      "heroTitle": "Să creezi {{missionPlural}} e simplu",
+      "heroBody": "Fiecare {{mission}} trece prin patru etape. Treci cu cursorul peste o etapă sau atinge-o ca să vezi ce vei completa.",
+      "tablistLabel": "Etapele unei misiuni",
+      "enterDashboard": "Intră în panou",
+      "step1Title": "Creezi o {{mission}}",
+      "step2Title": "Cel desemnat o duce la capăt",
+      "step3Title": "Aprobi munca",
+      "step4Title": "Câștigă {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Titlul {{missionTitle}}",
+        "titleExample": "\"Curăță bucătăria\" sau \"Termină temele\"",
+        "titleExplanation": "Dă-i {{mission}} tale un nume clar și descriptiv, ca cel desemnat să știe exact ce are de făcut.",
+        "descriptionLabel": "Descriere",
+        "descriptionExample": "\"Spală vasele, șterge blaturile, scoate gunoiul\"",
+        "descriptionExplanation": "Adaugă detalii, pași sau cerințe. Opțional, dar util pentru sarcini complexe.",
+        "assignToLabel": "Atribuie lui",
+        "assignToExample": "Alege un prieten sau un membru al familiei",
+        "assignToExplanation": "Alege cine trebuie să ducă la capăt această {{mission}}. O poți atribui doar oamenilor din {{crew}} ta.",
+        "deadlineLabel": "Termen limită",
+        "deadlineExample": "Mâine la 17:00",
+        "deadlineExplanation": "Stabilește până când trebuie terminată {{mission}}. Opțional, dar ajută la prioritizare.",
+        "proofLabel": "Dovadă necesară",
+        "proofExample": "Fotografie cu sarcina terminată",
+        "proofExplanation": "Dacă e activat, cel desemnat trebuie să trimită o fotografie sau o notă ca dovadă înainte ca {{mission}} să poată fi aprobată.",
+        "rewardLabel": "Recompensă în {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Câte {{tokenPlural}} câștigă cel care duce la capăt această {{mission}}. Le cheltuie în {{store}}."
+      }
     }
   }
 }

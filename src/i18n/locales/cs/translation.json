@@ -211,7 +211,8 @@
     "somethingWentWrong": "Něco se pokazilo",
     "loadingCredits": "Načítání kreditů...",
     "loadingContracts": "Načítání misí…",
-    "next": "Další"
+    "next": "Další",
+    "back": "Zpět"
   },
   "taskForm": {
     "editTitle": "Upravit: {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter běží v režimu gildy: kontrakty, věhlas a společná tabule. Takhle to vypadá.",
       "introChoose": "Vyber vzhled a atmosféru Bounty Hunter. Kdykoli to můžeš změnit v nastavení profilu.",
       "popularBadge": "Oblíbené"
+    },
+    "loadingSession": "Kontroluje se tvoje relace...",
+    "skipAll": "Přeskočit nastavení, rozhlédnu se sám",
+    "steps": {
+      "chooseWorld": {
+        "title": "Vyber si svůj svět",
+        "description": "Vyber motiv, který odpovídá tomu, jak budeš Bounty Hunter používat."
+      },
+      "invite": {
+        "title": "Pozvi někoho (nepovinné)",
+        "description": "Pozvi kamaráda, člena rodiny nebo partnera, ať si můžete rozdělit mise."
+      },
+      "howItWorks": {
+        "title": "Jak mise fungují",
+        "description": "Takhle budeš mise vytvářet a přidělovat."
+      }
+    },
+    "invite": {
+      "intro": "Pozvi někoho, ať si můžete rozdělit mise a odměny. Můžeš to přeskočit a pozvat lidi později.",
+      "linkPrompt": "Ještě není na Bounty Hunter? Pošli mu odkaz, ať se přidá a propojí se s tebou.",
+      "orFindExisting": "nebo najdi existující účet",
+      "emailLabel": "E-mailová adresa",
+      "emailPlaceholder": "kamarad@priklad.cz",
+      "emailHint": "Už je na Bounty Hunter? Vyhledej ho podle e-mailu.",
+      "errorTitle": "Pozvánku se nepodařilo odeslat",
+      "userNotFound": "Uživatel nenalezen. Ujisti se, že se zaregistroval na Bounty Hunter.",
+      "cannotInviteSelf": "Nemůžeš pozvat sám sebe.",
+      "alreadyConnected": "S tímto uživatelem už máš spojení nebo čekající žádost.",
+      "sendFailed": "Pozvánku se nepodařilo odeslat. Zkus to znovu.",
+      "sentTo": "Pozvánka odeslána uživateli {{name}}!",
+      "searching": "Hledá se...",
+      "sending": "Odesílá se pozvánka...",
+      "skipForNow": "Zatím přeskočit",
+      "sendInvite": "Odeslat pozvánku"
+    },
+    "explainer": {
+      "heroTitle": "Vytvářet {{missionPlural}} je snadné",
+      "heroBody": "Každá {{mission}} projde čtyřmi kroky. Najeď na krok nebo na něj klepni a uvidíš, co budeš vyplňovat.",
+      "tablistLabel": "Kroky mise",
+      "enterDashboard": "Přejít na nástěnku",
+      "step1Title": "Vytvoříš {{mission}}",
+      "step2Title": "Pověřený ji splní",
+      "step3Title": "Schválíš odvedenou práci",
+      "step4Title": "Získá {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Název {{missionTitle}}",
+        "titleExample": "\"Ukliď kuchyň\" nebo \"Dodělej úkoly\"",
+        "titleExplanation": "Dej své {{mission}} jasný, výstižný název, ať pověřený přesně ví, co má udělat.",
+        "descriptionLabel": "Popis",
+        "descriptionExample": "\"Umýt nádobí, utřít linku, vynést koš\"",
+        "descriptionExplanation": "Přidej podrobnosti, kroky nebo požadavky. Nepovinné, ale u složitějších úkolů se hodí.",
+        "assignToLabel": "Přidělit komu",
+        "assignToExample": "Vyber kamaráda nebo člena rodiny",
+        "assignToExplanation": "Vyber, kdo má tuto {{mission}} splnit. Přidělit ji můžeš jen lidem ze své {{crew}}.",
+        "deadlineLabel": "Termín",
+        "deadlineExample": "Zítra v 17:00",
+        "deadlineExplanation": "Urči, do kdy má být {{mission}} hotová. Nepovinné, ale pomáhá to s prioritami.",
+        "proofLabel": "Vyžadovat důkaz",
+        "proofExample": "Fotka hotového úkolu",
+        "proofExplanation": "Když je to zapnuté, musí pověřený poslat fotku nebo poznámku jako důkaz, než půjde {{mission}} schválit.",
+        "rewardLabel": "Odměna v {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Kolik {{tokenPlural}} získá ten, kdo tuto {{mission}} splní. Utratí je v {{store}}."
+      }
     }
   }
 }

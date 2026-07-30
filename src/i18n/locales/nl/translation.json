@@ -211,7 +211,8 @@
     "somethingWentWrong": "Er ging iets mis",
     "loadingCredits": "Credits laden...",
     "loadingContracts": "Missies laden…",
-    "next": "Volgende"
+    "next": "Volgende",
+    "back": "Terug"
   },
   "taskForm": {
     "editTitle": "{{noun}} bewerken",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter draait in gildemodus: contracten, aanzien en een gedeeld bord. Zo ziet dat eruit.",
       "introChoose": "Kies hoe Bounty Hunter eruitziet en aanvoelt. Je kunt dit altijd wijzigen in je profielinstellingen.",
       "popularBadge": "Populair"
+    },
+    "loadingSession": "Je sessie wordt gecontroleerd...",
+    "skipAll": "Sla de installatie over, ik kijk zelf rond",
+    "steps": {
+      "chooseWorld": {
+        "title": "Kies je wereld",
+        "description": "Kies een thema dat past bij hoe je Bounty Hunter gaat gebruiken."
+      },
+      "invite": {
+        "title": "Nodig iemand uit (optioneel)",
+        "description": "Nodig een vriend, familielid of je partner uit om missies te delen."
+      },
+      "howItWorks": {
+        "title": "Hoe missies werken",
+        "description": "Zo ga je missies maken en toewijzen."
+      }
+    },
+    "invite": {
+      "intro": "Nodig iemand uit om missies en beloningen te delen. Je kunt dit overslaan en later mensen uitnodigen.",
+      "linkPrompt": "Nog niet op Bounty Hunter? Stuur een link om mee te doen en met jou te verbinden.",
+      "orFindExisting": "of zoek een bestaand account",
+      "emailLabel": "E-mailadres",
+      "emailPlaceholder": "vriend@voorbeeld.nl",
+      "emailHint": "Al op Bounty Hunter? Zoek op e-mailadres.",
+      "errorTitle": "Uitnodiging niet verzonden",
+      "userNotFound": "Gebruiker niet gevonden. Controleer of diegene zich bij Bounty Hunter heeft aangemeld.",
+      "cannotInviteSelf": "Je kunt jezelf niet uitnodigen.",
+      "alreadyConnected": "Je hebt al een band of een openstaand verzoek met deze gebruiker.",
+      "sendFailed": "Uitnodiging kon niet worden verzonden. Probeer het opnieuw.",
+      "sentTo": "Uitnodiging verstuurd naar {{name}}!",
+      "searching": "Zoeken...",
+      "sending": "Uitnodiging versturen...",
+      "skipForNow": "Voorlopig overslaan",
+      "sendInvite": "Uitnodiging sturen"
+    },
+    "explainer": {
+      "heroTitle": "{{missionPlural}} maken is makkelijk",
+      "heroBody": "Elke {{mission}} doorloopt vier stappen. Beweeg over een stap of tik erop om te zien wat je invult.",
+      "tablistLabel": "Stappen van een missie",
+      "enterDashboard": "Naar het dashboard",
+      "step1Title": "Jij maakt een {{mission}}",
+      "step2Title": "De toegewezen persoon voert hem uit",
+      "step3Title": "Jij keurt het werk goed",
+      "step4Title": "Diegene verdient {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Titel van de {{missionTitle}}",
+        "titleExample": "\"Keuken schoonmaken\" of \"Huiswerk afmaken\"",
+        "titleExplanation": "Geef je {{mission}} een duidelijke, beschrijvende naam zodat de ander precies weet wat er moet gebeuren.",
+        "descriptionLabel": "Omschrijving",
+        "descriptionExample": "\"Afwassen, aanrecht schoonmaken, vuilnis buitenzetten\"",
+        "descriptionExplanation": "Voeg extra details, stappen of eisen toe. Optioneel, maar handig bij complexe taken.",
+        "assignToLabel": "Toewijzen aan",
+        "assignToExample": "Kies een vriend of familielid",
+        "assignToExplanation": "Kies wie deze {{mission}} moet uitvoeren. Je kunt hem alleen toewijzen aan mensen in je {{crew}}.",
+        "deadlineLabel": "Deadline",
+        "deadlineExample": "Morgen om 17:00 uur",
+        "deadlineExplanation": "Bepaal wanneer de {{mission}} af moet zijn. Optioneel, maar helpt bij het stellen van prioriteiten.",
+        "proofLabel": "Bewijs verplicht",
+        "proofExample": "Foto van de afgeronde taak",
+        "proofExplanation": "Als dit aanstaat, moet de ander een foto of notitie als bewijs insturen voordat de {{mission}} kan worden goedgekeurd.",
+        "rewardLabel": "Beloning in {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Hoeveel {{tokenPlural}} de ander verdient bij het afronden van deze {{mission}}. Die geeft diegene uit in de {{store}}."
+      }
     }
   }
 }

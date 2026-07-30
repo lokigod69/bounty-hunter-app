@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { BaseCard } from '../ui/BaseCard';
 import { AppButton } from '../ui';
@@ -50,6 +51,7 @@ export default function OnboardingStep4Mission({
   onComplete,
   onBack,
 }: OnboardingStep4MissionProps) {
+  const { t } = useTranslation();
   const { strings } = useThemeStrings();
   const [activeStep, setActiveStep] = useState(0);
 
@@ -58,66 +60,80 @@ export default function OnboardingStep4Mission({
   const tokenTitle =
     strings.tokenSingular.charAt(0).toUpperCase() + strings.tokenSingular.slice(1);
 
+  // Every string in this step used to be an English template literal. The mode
+  // nouns still come from ThemeStrings — they are per-mode, not per-language —
+  // so they are passed in as interpolation values rather than concatenated.
+  const vars = {
+    mission: strings.missionSingular,
+    missionPlural: strings.missionPlural,
+    missionTitle,
+    tokenTitle,
+    tokenPlural: strings.tokenPlural,
+    crew: strings.friendsTitle,
+    store: strings.storeTitle,
+  };
+  const f = (key: string) => t(`onboarding.explainer.fields.${key}`, vars);
+
   // The lifecycle is the primary structure; each step owns the form fields that
   // matter at that moment, so nothing is shown out of context.
   const workflowSteps: WorkflowStep[] = [
     {
       icon: PenLine,
-      title: `You create a ${strings.missionSingular}`,
+      title: t('onboarding.explainer.step1Title', vars),
       fields: [
         {
           icon: <FileText size={20} className="text-[var(--mode-accent)]" />,
-          label: `${missionTitle} Title`,
-          example: '"Clean the kitchen" or "Finish homework"',
-          explanation: `Give your ${strings.missionSingular} a clear, descriptive name so the assignee knows exactly what to do.`,
+          label: f('titleLabel'),
+          example: f('titleExample'),
+          explanation: f('titleExplanation'),
         },
         {
           icon: <Info size={20} className="text-blue-400" />,
-          label: 'Description',
-          example: '"Wash dishes, wipe counters, take out trash"',
-          explanation: 'Add extra details, steps, or requirements. Optional, but helpful for complex tasks.',
+          label: f('descriptionLabel'),
+          example: f('descriptionExample'),
+          explanation: f('descriptionExplanation'),
         },
       ],
     },
     {
       icon: Users,
-      title: 'Assignee completes it',
+      title: t('onboarding.explainer.step2Title', vars),
       fields: [
         {
           icon: <Users size={20} className="text-purple-400" />,
-          label: 'Assign To',
-          example: 'Select a friend or family member',
-          explanation: `Choose who should complete this ${strings.missionSingular}. You can only assign to people in your ${strings.friendsTitle}.`,
+          label: f('assignToLabel'),
+          example: f('assignToExample'),
+          explanation: f('assignToExplanation'),
         },
         {
           icon: <Clock size={20} className="text-orange-400" />,
-          label: 'Deadline',
-          example: 'Tomorrow at 5:00 PM',
-          explanation: `Set when the ${strings.missionSingular} should be completed. Optional, but helps with priority.`,
+          label: f('deadlineLabel'),
+          example: f('deadlineExample'),
+          explanation: f('deadlineExplanation'),
         },
       ],
     },
     {
       icon: CheckCheck,
-      title: 'You approve the work',
+      title: t('onboarding.explainer.step3Title', vars),
       fields: [
         {
           icon: <Camera size={20} className="text-pink-400" />,
-          label: 'Proof Required',
-          example: 'Photo of completed task',
-          explanation: `When enabled, the assignee must submit a photo or note as proof before the ${strings.missionSingular} can be approved.`,
+          label: f('proofLabel'),
+          example: f('proofExample'),
+          explanation: f('proofExplanation'),
         },
       ],
     },
     {
       icon: Trophy,
-      title: `They earn ${strings.tokenPlural}!`,
+      title: t('onboarding.explainer.step4Title', vars),
       fields: [
         {
           icon: <Coins size={20} className="text-yellow-400" />,
-          label: `${tokenTitle} Reward`,
-          example: `10 ${strings.tokenPlural}`,
-          explanation: `How many ${strings.tokenPlural} the assignee earns when they complete this ${strings.missionSingular}. They spend them in the ${strings.storeTitle}.`,
+          label: f('rewardLabel'),
+          example: f('rewardExample'),
+          explanation: f('rewardExplanation'),
         },
       ],
     },
@@ -131,16 +147,19 @@ export default function OnboardingStep4Mission({
       <BaseCard className="text-center">
         <Target size={40} className="mx-auto mb-3 text-[var(--mode-accent)]" />
         <h3 className="text-subtitle text-white font-semibold mb-2">
-          Creating {strings.missionPlural} is easy
+          {t('onboarding.explainer.heroTitle', vars)}
         </h3>
         <p className="text-body text-white/70">
-          Every {strings.missionSingular} moves through four steps. Hover or tap a step to see
-          what you'll fill in.
+          {t('onboarding.explainer.heroBody', vars)}
         </p>
       </BaseCard>
 
       {/* Workflow: the four lifecycle steps, interactive */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="tablist" aria-label="Mission workflow steps">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+        role="tablist"
+        aria-label={t('onboarding.explainer.tablistLabel')}
+      >
         {workflowSteps.map((step, index) => {
           const StepIcon = step.icon;
           const isActive = index === activeStep;
@@ -212,7 +231,7 @@ export default function OnboardingStep4Mission({
           className="flex-1"
           onClick={onBack}
         >
-          Back
+          {t('common.back')}
         </AppButton>
         <AppButton
           variant="cta"
@@ -221,7 +240,7 @@ export default function OnboardingStep4Mission({
           className="flex-1"
           onClick={onComplete}
         >
-          Enter Dashboard
+          {t('onboarding.explainer.enterDashboard')}
         </AppButton>
       </div>
     </div>

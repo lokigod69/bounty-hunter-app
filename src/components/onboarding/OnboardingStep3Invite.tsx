@@ -53,7 +53,7 @@ export default function OnboardingStep3Invite({
         .single();
 
       if (error || !profileData) {
-        const errorMsg = 'User not found. Make sure they\'ve signed up for Bounty Hunter.';
+        const errorMsg = t('onboarding.invite.userNotFound');
         setInviteError(errorMsg);
         toast.error(errorMsg);
         setIsSearching(false);
@@ -61,7 +61,7 @@ export default function OnboardingStep3Invite({
       }
 
       if (profileData.id === user.id) {
-        const errorMsg = 'You cannot invite yourself.';
+        const errorMsg = t('onboarding.invite.cannotInviteSelf');
         setInviteError(errorMsg);
         toast.error(errorMsg);
         setIsSearching(false);
@@ -76,7 +76,7 @@ export default function OnboardingStep3Invite({
         .maybeSingle();
 
       if (existingFriendship) {
-        const errorMsg = 'You already have a friendship or pending request with this user.';
+        const errorMsg = t('onboarding.invite.alreadyConnected');
         setInviteError(errorMsg);
         toast.error(errorMsg);
         setIsSearching(false);
@@ -99,11 +99,11 @@ export default function OnboardingStep3Invite({
         throw inviteError;
       }
 
-      toast.success(`Invitation sent to ${profileData.display_name || email}!`);
+      toast.success(t('onboarding.invite.sentTo', { name: profileData.display_name || email }));
       setInviteError(null);
       onComplete(profileData.id);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to send invitation. Please try again.';
+      const errorMsg = error instanceof Error ? error.message : t('onboarding.invite.sendFailed');
       setInviteError(errorMsg);
       toast.error(errorMsg);
       setIsSending(false);
@@ -123,14 +123,14 @@ export default function OnboardingStep3Invite({
         <div className="text-center">
           <UserPlus size={48} className="mx-auto mb-4 text-teal-400" />
           <p className="text-body text-white/70">
-            Invite someone to share missions and rewards with. You can skip this and invite people later.
+            {t('onboarding.invite.intro')}
           </p>
         </div>
 
         {/* Phase 2.5: share an invite link - works even if they don't have an account yet */}
         <div className="rounded-lg border border-white/10 p-4 text-center">
           <p className="text-meta text-white/50 mb-3">
-            Not on Bounty Hunter yet? Send them a link to join and connect with you.
+            {t('onboarding.invite.linkPrompt')}
           </p>
           <AppButton
             variant="secondary"
@@ -150,26 +150,26 @@ export default function OnboardingStep3Invite({
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-white/50 bg-transparent">or find an existing account</span>
+            <span className="px-2 text-white/50 bg-transparent">{t('onboarding.invite.orFindExisting')}</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="invite-email" className="block text-sm font-medium text-white/70 mb-2">
-              Email Address
+              {t('onboarding.invite.emailLabel')}
             </label>
             <input
               id="invite-email"
               type="email"
-              placeholder="friend@example.com"
+              placeholder={t('onboarding.invite.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="input-field w-full text-white"
               disabled={isSending || isSearching}
             />
             <p className="text-meta text-white/50 mt-1">
-              Already on Bounty Hunter? Search by their email.
+              {t('onboarding.invite.emailHint')}
             </p>
           </div>
 
@@ -178,7 +178,7 @@ export default function OnboardingStep3Invite({
               <div className="flex items-start gap-3">
                 <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-body text-red-400 font-semibold mb-1">Failed to send invitation</p>
+                  <p className="text-body text-red-400 font-semibold mb-1">{t('onboarding.invite.errorTitle')}</p>
                   <p className="text-meta text-red-400/70">{inviteError}</p>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export default function OnboardingStep3Invite({
 
           {(isSearching || isSending) && (
             <div className="text-center text-white/70">
-              {isSearching ? 'Searching...' : 'Sending invitation...'}
+              {isSearching ? t('onboarding.invite.searching') : t('onboarding.invite.sending')}
             </div>
           )}
 
@@ -200,7 +200,7 @@ export default function OnboardingStep3Invite({
               onClick={onBack}
               disabled={isSending || isSearching}
             >
-              Back
+              {t('common.back')}
             </AppButton>
             <AppButton
               variant="ghost"
@@ -209,7 +209,7 @@ export default function OnboardingStep3Invite({
               onClick={onSkip}
               disabled={isSending || isSearching}
             >
-              Skip for Now
+              {t('onboarding.invite.skipForNow')}
             </AppButton>
             <AppButton
               variant="cta"
@@ -217,7 +217,7 @@ export default function OnboardingStep3Invite({
               className="flex-1"
               disabled={!email.trim() || isSending || isSearching}
             >
-              Send Invite
+              {t('onboarding.invite.sendInvite')}
               <ArrowRight size={20} />
             </AppButton>
           </div>

@@ -4,6 +4,7 @@
 // Removed "Create First Reward" step (requires friends) and "Create First Mission" (self-assign is confusing)
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
@@ -29,6 +30,7 @@ interface OnboardingState {
 
 export default function Onboarding() {
   // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
+  const { t } = useTranslation();
   const {
     user,
     profile,
@@ -50,7 +52,7 @@ export default function Onboarding() {
     return (
       <PageContainer>
         <PageBody>
-          <PageState state="loading" message="Checking your session..." />
+          <PageState state="loading" message={t('onboarding.loadingSession')} />
         </PageBody>
       </PageContainer>
     );
@@ -95,18 +97,11 @@ export default function Onboarding() {
     }
   };
 
-  // Step titles and descriptions - R35: Updated for 3-step flow
-  const stepTitles = [
-    'Choose Your World',
-    'Invite Someone (Optional)',
-    'How Missions Work',
-  ];
-
-  const stepDescriptions = [
-    'Select a theme that matches how you\'ll use Bounty Hunter.',
-    'Invite a friend, family member, or partner to share missions with.',
-    'Here\'s how you\'ll create and assign missions.',
-  ];
+  // Step titles and descriptions - R35: 3-step flow, i18n'd 2026-07-29.
+  // Keyed by name rather than index so a reordered flow cannot silently pair
+  // step 2's title with step 3's description.
+  const STEP_KEYS = ['chooseWorld', 'invite', 'howItWorks'] as const;
+  const stepKey = STEP_KEYS[currentStep - 1];
 
   // Render onboarding wizard
   // Phase 2.6: profile.theme is now a real persisted field (typed on custom Profile).
@@ -115,8 +110,8 @@ export default function Onboarding() {
   return (
     <PageContainer>
       <PageHeader
-        title={stepTitles[currentStep - 1]}
-        subtitle={stepDescriptions[currentStep - 1]}
+        title={t(`onboarding.steps.${stepKey}.title`)}
+        subtitle={t(`onboarding.steps.${stepKey}.description`)}
       />
 
       {/* Progress indicator - R35: Now only 3 steps */}
@@ -157,7 +152,7 @@ export default function Onboarding() {
             onClick={handleSkipAll}
             className="text-meta text-white/50 hover:text-white/70 underline"
           >
-            Skip setup, I'll explore on my own
+            {t('onboarding.skipAll')}
           </button>
         </div>
 

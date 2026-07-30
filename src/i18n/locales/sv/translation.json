@@ -211,7 +211,8 @@
     "somethingWentWrong": "Något gick fel",
     "loadingCredits": "Laddar krediter...",
     "loadingContracts": "Laddar uppdrag…",
-    "next": "Nästa"
+    "next": "Nästa",
+    "back": "Tillbaka"
   },
   "taskForm": {
     "editTitle": "Redigera {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter körs i gillesläge: kontrakt, anseende och en gemensam tavla. Så här ser det ut.",
       "introChoose": "Välj hur Bounty Hunter ska se ut och kännas. Du kan ändra detta när som helst i profilinställningarna.",
       "popularBadge": "Populärt"
+    },
+    "loadingSession": "Kontrollerar din session...",
+    "skipAll": "Hoppa över uppstarten, jag utforskar själv",
+    "steps": {
+      "chooseWorld": {
+        "title": "Välj din värld",
+        "description": "Välj ett tema som passar hur du tänker använda Bounty Hunter."
+      },
+      "invite": {
+        "title": "Bjud in någon (valfritt)",
+        "description": "Bjud in en vän, en familjemedlem eller din partner för att dela uppdrag."
+      },
+      "howItWorks": {
+        "title": "Så fungerar uppdrag",
+        "description": "Så här skapar och tilldelar du uppdrag."
+      }
+    },
+    "invite": {
+      "intro": "Bjud in någon att dela uppdrag och belöningar med. Du kan hoppa över det här och bjuda in folk senare.",
+      "linkPrompt": "Inte på Bounty Hunter än? Skicka en länk så kan de gå med och koppla ihop sig med dig.",
+      "orFindExisting": "eller sök efter ett befintligt konto",
+      "emailLabel": "E-postadress",
+      "emailPlaceholder": "van@exempel.se",
+      "emailHint": "Redan på Bounty Hunter? Sök på e-postadressen.",
+      "errorTitle": "Inbjudan kunde inte skickas",
+      "userNotFound": "Användaren hittades inte. Kontrollera att personen har registrerat sig på Bounty Hunter.",
+      "cannotInviteSelf": "Du kan inte bjuda in dig själv.",
+      "alreadyConnected": "Du har redan en koppling eller en väntande förfrågan med den här användaren.",
+      "sendFailed": "Inbjudan kunde inte skickas. Försök igen.",
+      "sentTo": "Inbjudan skickad till {{name}}!",
+      "searching": "Söker...",
+      "sending": "Skickar inbjudan...",
+      "skipForNow": "Hoppa över tills vidare",
+      "sendInvite": "Skicka inbjudan"
+    },
+    "explainer": {
+      "heroTitle": "Att skapa {{missionPlural}} är enkelt",
+      "heroBody": "Varje {{mission}} går igenom fyra steg. Hovra över ett steg eller tryck på det för att se vad du fyller i.",
+      "tablistLabel": "Stegen i ett uppdrag",
+      "enterDashboard": "Gå till panelen",
+      "step1Title": "Du skapar ett {{mission}}",
+      "step2Title": "Mottagaren utför det",
+      "step3Title": "Du godkänner arbetet",
+      "step4Title": "Hen tjänar {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Titel på {{missionTitle}}",
+        "titleExample": "\"Städa köket\" eller \"Gör klart läxan\"",
+        "titleExplanation": "Ge ditt {{mission}} ett tydligt, beskrivande namn så att mottagaren vet exakt vad som ska göras.",
+        "descriptionLabel": "Beskrivning",
+        "descriptionExample": "\"Diska, torka av bänkarna, ta ut soporna\"",
+        "descriptionExplanation": "Lägg till detaljer, steg eller krav. Valfritt, men hjälper vid mer komplicerade uppgifter.",
+        "assignToLabel": "Tilldela till",
+        "assignToExample": "Välj en vän eller familjemedlem",
+        "assignToExplanation": "Välj vem som ska utföra det här {{mission}}. Du kan bara tilldela det till personer i din {{crew}}.",
+        "deadlineLabel": "Deadline",
+        "deadlineExample": "I morgon klockan 17:00",
+        "deadlineExplanation": "Bestäm när {{mission}} ska vara klart. Valfritt, men hjälper med prioriteringen.",
+        "proofLabel": "Bevis krävs",
+        "proofExample": "Foto på den färdiga uppgiften",
+        "proofExplanation": "När det är påslaget måste mottagaren skicka ett foto eller en anteckning som bevis innan {{mission}} kan godkännas.",
+        "rewardLabel": "Belöning i {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Hur många {{tokenPlural}} mottagaren tjänar på att slutföra det här {{mission}}. De spenderas i {{store}}."
+      }
     }
   }
 }

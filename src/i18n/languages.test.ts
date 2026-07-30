@@ -176,6 +176,57 @@ describe('locale files that exist are complete', () => {
   }
 });
 
+describe('onboarding placeholders match what the components pass', () => {
+  // The cross-locale test above only proves the locales agree with English. If
+  // English itself names a variable the component never supplies — or a
+  // translator invents {{name}} where the code passes {{mission}} — every
+  // locale agrees and the user sees a literal "{{mission}}" on screen.
+  //
+  // These are the keys OnboardingStep4Mission builds its `vars` object from.
+  const EXPLAINER_VARS = new Set([
+    'mission', 'missionPlural', 'missionTitle', 'tokenTitle', 'tokenPlural', 'crew', 'store',
+  ]);
+
+  const present = SUPPORTED_LANGUAGE_CODES.filter((code) =>
+    existsSync(localeFile(code, 'translation'))
+  );
+
+  for (const code of present) {
+    it(`${code}: every onboarding.explainer placeholder is one the component supplies`, () => {
+      const t = readLocale(code, 'translation') as {
+        onboarding?: { explainer?: Record<string, unknown> };
+      };
+      const explainer = t.onboarding?.explainer ?? {};
+      const unknown: Array<{ key: string; variable: string }> = [];
+
+      const walk = (obj: unknown, prefix: string) => {
+        if (typeof obj === 'string') {
+          for (const m of obj.match(/\{\{\s*([\w.]+)\s*\}\}/g) ?? []) {
+            const name = m.replace(/[{}\s]/g, '');
+            if (!EXPLAINER_VARS.has(name)) unknown.push({ key: prefix, variable: name });
+          }
+          return;
+        }
+        if (obj && typeof obj === 'object') {
+          for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+            walk(v, prefix ? `${prefix}.${k}` : k);
+          }
+        }
+      };
+      walk(explainer, 'explainer');
+
+      expect(unknown).toEqual([]);
+    });
+
+    it(`${code}: onboarding.invite.sentTo keeps its {{name}}`, () => {
+      const t = readLocale(code, 'translation') as {
+        onboarding?: { invite?: Record<string, string> };
+      };
+      expect(t.onboarding?.invite?.sentTo).toContain('{{name}}');
+    });
+  }
+});
+
 describe('German uses informal address', () => {
   // Michael's decision 2026-07-29: this is a family/couples app, so German
   // matches the other eleven locales and addresses the user as "du". The file

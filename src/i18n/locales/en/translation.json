@@ -211,7 +211,8 @@
     "somethingWentWrong": "Something went wrong",
     "loadingCredits": "Loading credits...",
     "loadingContracts": "Loading missions…",
-    "next": "Next"
+    "next": "Next",
+    "back": "Back"
   },
   "taskForm": {
     "editTitle": "Edit {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter runs in Guild Mode: contracts, standing, and a shared board. Here is what that looks like.",
       "introChoose": "Choose how Bounty Hunter looks and feels. You can change this anytime in your profile settings.",
       "popularBadge": "Popular"
+    },
+    "loadingSession": "Checking your session...",
+    "skipAll": "Skip setup, I'll explore on my own",
+    "steps": {
+      "chooseWorld": {
+        "title": "Choose Your World",
+        "description": "Select a theme that matches how you'll use Bounty Hunter."
+      },
+      "invite": {
+        "title": "Invite Someone (Optional)",
+        "description": "Invite a friend, family member, or partner to share missions with."
+      },
+      "howItWorks": {
+        "title": "How Missions Work",
+        "description": "Here's how you'll create and assign missions."
+      }
+    },
+    "invite": {
+      "intro": "Invite someone to share missions and rewards with. You can skip this and invite people later.",
+      "linkPrompt": "Not on Bounty Hunter yet? Send them a link to join and connect with you.",
+      "orFindExisting": "or find an existing account",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "friend@example.com",
+      "emailHint": "Already on Bounty Hunter? Search by their email.",
+      "errorTitle": "Failed to send invitation",
+      "userNotFound": "User not found. Make sure they've signed up for Bounty Hunter.",
+      "cannotInviteSelf": "You cannot invite yourself.",
+      "alreadyConnected": "You already have a friendship or pending request with this user.",
+      "sendFailed": "Failed to send invitation. Please try again.",
+      "sentTo": "Invitation sent to {{name}}!",
+      "searching": "Searching...",
+      "sending": "Sending invitation...",
+      "skipForNow": "Skip for Now",
+      "sendInvite": "Send Invite"
+    },
+    "explainer": {
+      "heroTitle": "Creating {{missionPlural}} is easy",
+      "heroBody": "Every {{mission}} moves through four steps. Hover or tap a step to see what you'll fill in.",
+      "tablistLabel": "Mission workflow steps",
+      "enterDashboard": "Enter Dashboard",
+      "step1Title": "You create a {{mission}}",
+      "step2Title": "Assignee completes it",
+      "step3Title": "You approve the work",
+      "step4Title": "They earn {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "{{missionTitle}} Title",
+        "titleExample": "\"Clean the kitchen\" or \"Finish homework\"",
+        "titleExplanation": "Give your {{mission}} a clear, descriptive name so the assignee knows exactly what to do.",
+        "descriptionLabel": "Description",
+        "descriptionExample": "\"Wash dishes, wipe counters, take out trash\"",
+        "descriptionExplanation": "Add extra details, steps, or requirements. Optional, but helpful for complex tasks.",
+        "assignToLabel": "Assign To",
+        "assignToExample": "Select a friend or family member",
+        "assignToExplanation": "Choose who should complete this {{mission}}. You can only assign to people in your {{crew}}.",
+        "deadlineLabel": "Deadline",
+        "deadlineExample": "Tomorrow at 5:00 PM",
+        "deadlineExplanation": "Set when the {{mission}} should be completed. Optional, but helps with priority.",
+        "proofLabel": "Proof Required",
+        "proofExample": "Photo of completed task",
+        "proofExplanation": "When enabled, the assignee must submit a photo or note as proof before the {{mission}} can be approved.",
+        "rewardLabel": "{{tokenTitle}} Reward",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "How many {{tokenPlural}} the assignee earns when they complete this {{mission}}. They spend them in the {{store}}."
+      }
     }
   }
 }

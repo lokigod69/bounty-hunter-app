@@ -211,7 +211,8 @@
     "somethingWentWrong": "Algo ha salido mal",
     "loadingCredits": "Cargando créditos...",
     "loadingContracts": "Cargando misiones…",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "back": "Atrás"
   },
   "taskForm": {
     "editTitle": "Editar {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter funciona en modo Gremio: contratos, renombre y un tablón compartido. Así es como se ve.",
       "introChoose": "Elige el aspecto y el ambiente de Bounty Hunter. Puedes cambiarlo cuando quieras en los ajustes de tu perfil.",
       "popularBadge": "Popular"
+    },
+    "loadingSession": "Comprobando tu sesión...",
+    "skipAll": "Saltar la configuración, exploraré por mi cuenta",
+    "steps": {
+      "chooseWorld": {
+        "title": "Elige tu mundo",
+        "description": "Elige un tema que encaje con la forma en que vas a usar Bounty Hunter."
+      },
+      "invite": {
+        "title": "Invita a alguien (opcional)",
+        "description": "Invita a un amigo, un familiar o tu pareja para compartir misiones."
+      },
+      "howItWorks": {
+        "title": "Cómo funcionan las misiones",
+        "description": "Así vas a crear y asignar misiones."
+      }
+    },
+    "invite": {
+      "intro": "Invita a alguien para compartir misiones y recompensas. Puedes saltarte esto e invitar a gente más tarde.",
+      "linkPrompt": "¿Todavía no está en Bounty Hunter? Envíale un enlace para unirse y conectar contigo.",
+      "orFindExisting": "o busca una cuenta existente",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "amigo@ejemplo.com",
+      "emailHint": "¿Ya está en Bounty Hunter? Búscalo por su correo.",
+      "errorTitle": "No se pudo enviar la invitación",
+      "userNotFound": "Usuario no encontrado. Asegúrate de que se haya registrado en Bounty Hunter.",
+      "cannotInviteSelf": "No puedes invitarte a ti mismo.",
+      "alreadyConnected": "Ya tienes una amistad o una solicitud pendiente con este usuario.",
+      "sendFailed": "No se pudo enviar la invitación. Inténtalo de nuevo.",
+      "sentTo": "¡Invitación enviada a {{name}}!",
+      "searching": "Buscando...",
+      "sending": "Enviando invitación...",
+      "skipForNow": "Saltar por ahora",
+      "sendInvite": "Enviar invitación"
+    },
+    "explainer": {
+      "heroTitle": "Crear {{missionPlural}} es fácil",
+      "heroBody": "Cada {{mission}} pasa por cuatro etapas. Pasa el cursor o toca una etapa para ver qué vas a rellenar.",
+      "tablistLabel": "Etapas de una misión",
+      "enterDashboard": "Entrar al panel",
+      "step1Title": "Creas una {{mission}}",
+      "step2Title": "El destinatario la completa",
+      "step3Title": "Apruebas el trabajo",
+      "step4Title": "¡Gana {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Título de la {{missionTitle}}",
+        "titleExample": "\"Limpiar la cocina\" o \"Terminar los deberes\"",
+        "titleExplanation": "Dale a tu {{mission}} un nombre claro y descriptivo para que quien la reciba sepa exactamente qué hacer.",
+        "descriptionLabel": "Descripción",
+        "descriptionExample": "\"Fregar los platos, limpiar las encimeras, sacar la basura\"",
+        "descriptionExplanation": "Añade detalles, pasos o requisitos. Es opcional, pero ayuda en tareas complejas.",
+        "assignToLabel": "Asignar a",
+        "assignToExample": "Elige a un amigo o familiar",
+        "assignToExplanation": "Elige quién debe completar esta {{mission}}. Solo puedes asignarla a gente de tu {{crew}}.",
+        "deadlineLabel": "Fecha límite",
+        "deadlineExample": "Mañana a las 17:00",
+        "deadlineExplanation": "Define para cuándo debe estar completada la {{mission}}. Es opcional, pero ayuda con la prioridad.",
+        "proofLabel": "Prueba obligatoria",
+        "proofExample": "Foto de la tarea terminada",
+        "proofExplanation": "Si lo activas, quien la reciba deberá enviar una foto o una nota como prueba antes de que la {{mission}} pueda aprobarse.",
+        "rewardLabel": "Recompensa en {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Cuántos {{tokenPlural}} gana quien complete esta {{mission}}. Los gasta en la {{store}}."
+      }
     }
   }
 }

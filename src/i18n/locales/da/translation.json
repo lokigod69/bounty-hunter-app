@@ -211,7 +211,8 @@
     "somethingWentWrong": "Noget gik galt",
     "loadingCredits": "Indlæser kreditter...",
     "loadingContracts": "Indlæser missioner…",
-    "next": "Næste"
+    "next": "Næste",
+    "back": "Tilbage"
   },
   "taskForm": {
     "editTitle": "Rediger {{noun}}",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter kører i gildetilstand: kontrakter, anseelse og en fælles tavle. Sådan ser det ud.",
       "introChoose": "Vælg, hvordan Bounty Hunter skal se ud og føles. Du kan ændre det når som helst i dine profilindstillinger.",
       "popularBadge": "Populær"
+    },
+    "loadingSession": "Kontrollerer din session...",
+    "skipAll": "Spring opsætningen over, jeg kigger mig omkring selv",
+    "steps": {
+      "chooseWorld": {
+        "title": "Vælg din verden",
+        "description": "Vælg et tema, der passer til den måde, du vil bruge Bounty Hunter på."
+      },
+      "invite": {
+        "title": "Inviter nogen (valgfrit)",
+        "description": "Inviter en ven, et familiemedlem eller din partner til at dele opgaver."
+      },
+      "howItWorks": {
+        "title": "Sådan fungerer opgaver",
+        "description": "Sådan opretter og tildeler du opgaver."
+      }
+    },
+    "invite": {
+      "intro": "Inviter nogen til at dele opgaver og belønninger med. Du kan springe det over og invitere folk senere.",
+      "linkPrompt": "Ikke på Bounty Hunter endnu? Send et link, så de kan være med og forbinde sig med dig.",
+      "orFindExisting": "eller find en eksisterende konto",
+      "emailLabel": "E-mailadresse",
+      "emailPlaceholder": "ven@eksempel.dk",
+      "emailHint": "Allerede på Bounty Hunter? Søg på e-mailadressen.",
+      "errorTitle": "Invitationen kunne ikke sendes",
+      "userNotFound": "Brugeren blev ikke fundet. Tjek, at personen har oprettet sig på Bounty Hunter.",
+      "cannotInviteSelf": "Du kan ikke invitere dig selv.",
+      "alreadyConnected": "Du har allerede en forbindelse eller en ventende anmodning med denne bruger.",
+      "sendFailed": "Invitationen kunne ikke sendes. Prøv igen.",
+      "sentTo": "Invitation sendt til {{name}}!",
+      "searching": "Søger...",
+      "sending": "Sender invitation...",
+      "skipForNow": "Spring over for nu",
+      "sendInvite": "Send invitation"
+    },
+    "explainer": {
+      "heroTitle": "Det er nemt at oprette {{missionPlural}}",
+      "heroBody": "Hver {{mission}} går gennem fire trin. Hold musen over et trin eller tryk på det for at se, hvad du udfylder.",
+      "tablistLabel": "Trinnene i en opgave",
+      "enterDashboard": "Gå til panelet",
+      "step1Title": "Du opretter en {{mission}}",
+      "step2Title": "Modtageren udfører den",
+      "step3Title": "Du godkender arbejdet",
+      "step4Title": "Vedkommende tjener {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Titel på {{missionTitle}}",
+        "titleExample": "\"Gør køkkenet rent\" eller \"Bliv færdig med lektierne\"",
+        "titleExplanation": "Giv din {{mission}} et klart, beskrivende navn, så modtageren ved præcis, hvad der skal gøres.",
+        "descriptionLabel": "Beskrivelse",
+        "descriptionExample": "\"Vask op, tør bordpladerne af, tag skraldet ud\"",
+        "descriptionExplanation": "Tilføj detaljer, trin eller krav. Valgfrit, men nyttigt ved komplekse opgaver.",
+        "assignToLabel": "Tildel til",
+        "assignToExample": "Vælg en ven eller et familiemedlem",
+        "assignToExplanation": "Vælg, hvem der skal udføre denne {{mission}}. Du kan kun tildele den til folk i din {{crew}}.",
+        "deadlineLabel": "Frist",
+        "deadlineExample": "I morgen klokken 17:00",
+        "deadlineExplanation": "Bestem, hvornår {{mission}} skal være færdig. Valgfrit, men hjælper med prioriteringen.",
+        "proofLabel": "Bevis påkrævet",
+        "proofExample": "Foto af den færdige opgave",
+        "proofExplanation": "Når det er slået til, skal modtageren sende et foto eller en note som bevis, før {{mission}} kan godkendes.",
+        "rewardLabel": "Belønning i {{tokenTitle}}",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Hvor mange {{tokenPlural}} modtageren tjener ved at fuldføre denne {{mission}}. De bruges i {{store}}."
+      }
     }
   }
 }

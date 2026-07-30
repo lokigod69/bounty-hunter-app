@@ -224,7 +224,8 @@
     "somethingWentWrong": "Da ist etwas schiefgelaufen",
     "loadingCredits": "Credits werden geladen...",
     "loadingContracts": "Missionen werden geladen…",
-    "next": "Weiter"
+    "next": "Weiter",
+    "back": "Zurück"
   },
   "taskForm": {
     "editTitle": "{{noun}} bearbeiten",
@@ -478,6 +479,70 @@
       "introSingle": "Bounty Hunter läuft im Gilden-Modus: Verträge, Ansehen und ein gemeinsames Brett. So sieht das aus.",
       "introChoose": "Wähle, wie Bounty Hunter aussieht und sich anfühlt. Du kannst das jederzeit in deinen Profileinstellungen ändern.",
       "popularBadge": "Beliebt"
+    },
+    "loadingSession": "Deine Sitzung wird geprüft...",
+    "skipAll": "Einrichtung überspringen, ich schaue mich selbst um",
+    "steps": {
+      "chooseWorld": {
+        "title": "Wähle deine Welt",
+        "description": "Wähle ein Design, das dazu passt, wie du Bounty Hunter nutzen willst."
+      },
+      "invite": {
+        "title": "Jemanden einladen (optional)",
+        "description": "Lade eine Freundin, ein Familienmitglied oder deinen Partner ein, um Missionen zu teilen."
+      },
+      "howItWorks": {
+        "title": "So funktionieren Missionen",
+        "description": "So erstellst und vergibst du Missionen."
+      }
+    },
+    "invite": {
+      "intro": "Lade jemanden ein, um Missionen und Belohnungen zu teilen. Du kannst das überspringen und später jemanden einladen.",
+      "linkPrompt": "Noch nicht bei Bounty Hunter? Schick einen Link zum Mitmachen und Verbinden.",
+      "orFindExisting": "oder ein bestehendes Konto finden",
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "freund@beispiel.de",
+      "emailHint": "Schon bei Bounty Hunter? Suche nach der E-Mail-Adresse.",
+      "errorTitle": "Einladung konnte nicht gesendet werden",
+      "userNotFound": "Nutzer nicht gefunden. Stell sicher, dass er sich bei Bounty Hunter registriert hat.",
+      "cannotInviteSelf": "Du kannst dich nicht selbst einladen.",
+      "alreadyConnected": "Mit diesem Nutzer besteht bereits eine Freundschaft oder eine offene Anfrage.",
+      "sendFailed": "Einladung konnte nicht gesendet werden. Bitte versuche es erneut.",
+      "sentTo": "Einladung an {{name}} gesendet!",
+      "searching": "Wird gesucht...",
+      "sending": "Einladung wird gesendet...",
+      "skipForNow": "Vorerst überspringen",
+      "sendInvite": "Einladung senden"
+    },
+    "explainer": {
+      "heroTitle": "{{missionPlural}} zu erstellen ist einfach",
+      "heroBody": "Jede {{mission}} durchläuft vier Schritte. Fahre über einen Schritt oder tippe ihn an, um zu sehen, was du ausfüllst.",
+      "tablistLabel": "Ablauf einer Mission",
+      "enterDashboard": "Zum Dashboard",
+      "step1Title": "Du erstellst eine {{mission}}",
+      "step2Title": "Der Beauftragte erledigt sie",
+      "step3Title": "Du gibst die Arbeit frei",
+      "step4Title": "Er verdient {{tokenPlural}}!",
+      "fields": {
+        "titleLabel": "Titel der {{missionTitle}}",
+        "titleExample": "\"Küche putzen\" oder \"Hausaufgaben fertig machen\"",
+        "titleExplanation": "Gib deiner {{mission}} einen klaren, beschreibenden Namen, damit der Beauftragte genau weiß, was zu tun ist.",
+        "descriptionLabel": "Beschreibung",
+        "descriptionExample": "\"Geschirr spülen, Arbeitsflächen abwischen, Müll rausbringen\"",
+        "descriptionExplanation": "Füge weitere Details, Schritte oder Anforderungen hinzu. Optional, aber hilfreich bei komplexen Aufgaben.",
+        "assignToLabel": "Zuweisen an",
+        "assignToExample": "Wähle eine Freundin oder ein Familienmitglied",
+        "assignToExplanation": "Wähle, wer diese {{mission}} erledigen soll. Du kannst nur Leuten aus deiner {{crew}} etwas zuweisen.",
+        "deadlineLabel": "Frist",
+        "deadlineExample": "Morgen um 17:00 Uhr",
+        "deadlineExplanation": "Lege fest, bis wann die {{mission}} erledigt sein soll. Optional, hilft aber bei der Priorität.",
+        "proofLabel": "Beweis erforderlich",
+        "proofExample": "Foto der erledigten Aufgabe",
+        "proofExplanation": "Wenn aktiviert, muss der Beauftragte ein Foto oder eine Notiz als Beweis einreichen, bevor die {{mission}} freigegeben werden kann.",
+        "rewardLabel": "{{tokenTitle}}-Belohnung",
+        "rewardExample": "10 {{tokenPlural}}",
+        "rewardExplanation": "Wie viele {{tokenPlural}} der Beauftragte verdient, wenn er diese {{mission}} erledigt. Er gibt sie in der {{store}} aus."
+      }
     }
   }
 }
