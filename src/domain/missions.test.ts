@@ -5,7 +5,6 @@ import {
   approveMission,
   archiveMission,
   createTaskViaRpc,
-  getTaskLifecycleRpcErrorMessage,
   isSelfAssignedCreditError,
   rejectMission,
   requireTaskLifecycleRpcSuccess,
@@ -47,19 +46,32 @@ function makeMutationClient(result: Record<string, unknown>) {
 }
 
 describe('task lifecycle RPC result handling', () => {
+  // The per-code SENTENCES moved to the i18n layer (see
+  // src/i18n/taskLifecycleErrors.test.ts). What the domain still owes callers
+  // is the machine-readable code, the operation, and a generic English
+  // fallback message that is never a raw code.
   it.each([
-    ['not_authenticated', 'You must be logged in to submit this task.'],
-    ['task_not_found', 'Task not found or has been deleted.'],
-    ['not_assignee', 'You are not assigned to this task.'],
-    ['not_creator', 'Only the task creator can reject this task.'],
-    ['not_participant', 'Only the creator or assignee can archive this task.'],
-    ['wrong_status', 'This task is not in the correct status for that action.'],
-    ['proof_required', 'This task requires proof. Please upload proof to complete.'],
-    ['invalid_proof_type', 'Invalid proof type. Use an image, video, PDF, or text proof.'],
-    ['status_not_allowed', 'This status change is not allowed.'],
-  ])('maps %s to a user-facing message', (code, expected) => {
-    const operation = code === 'not_creator' ? 'reject' : code === 'not_participant' ? 'archive' : 'submit';
-    expect(getTaskLifecycleRpcErrorMessage(code, operation)).toBe(expected);
+    ['not_authenticated', 'submit', 'Failed to submit task for review.'],
+    ['task_not_found', 'archive', 'Failed to archive task.'],
+    ['not_creator', 'reject', 'Failed to reject task.'],
+    ['wrong_status', 'status', 'Failed to update task status.'],
+    ['invalid_field', 'update', 'Failed to update task.'],
+    ['title_required', 'create', 'Failed to create task.'],
+    ['not_creator', 'delete', 'Failed to delete task.'],
+  ] as const)('carries %s/%s with a generic, code-free fallback message', (code, operation, fallback) => {
+    const error = new TaskLifecycleRpcError(code, operation);
+
+    expect(error.code).toBe(code);
+    expect(error.operation).toBe(operation);
+    expect(error.message).toBe(fallback);
+    expect(error.message).not.toContain(code);
+  });
+
+  it('does not carry an English message table any more', async () => {
+    // Regression guard for the extraction: a per-code sentence reintroduced
+    // here would silently be English for eleven of the twelve locales.
+    const domain = await import('./missions');
+    expect('getTaskLifecycleRpcErrorMessage' in domain).toBe(false);
   });
 
   it.each([
@@ -72,24 +84,22 @@ describe('task lifecycle RPC result handling', () => {
     expect(requireTaskLifecycleRpcSuccess(result, 'submit')).toBe(result);
   });
 
-  it('throws mapped logical RPC errors', () => {
-    expect(() => requireTaskLifecycleRpcSuccess(
-      { success: false, error: 'proof_required' },
-      'submit',
-    )).toThrow('This task requires proof. Please upload proof to complete.');
+  it('throws logical RPC errors as a coded lifecycle error', () => {
+    let thrown: unknown;
+    try {
+      requireTaskLifecycleRpcSuccess({ success: false, error: 'proof_required' }, 'submit');
+    } catch (e) {
+      thrown = e;
+    }
+
+    expect(thrown).toBeInstanceOf(TaskLifecycleRpcError);
+    expect((thrown as TaskLifecycleRpcError).code).toBe('proof_required');
+    expect((thrown as TaskLifecycleRpcError).operation).toBe('submit');
   });
 });
 
 // Proposal 013 — the self-assign standing hole.
 describe('013: self-assigned credit rewards', () => {
-  it('maps the create/update refusal to a sentence that says why', () => {
-    expect(getTaskLifecycleRpcErrorMessage('self_assigned_credit_reward', 'create'))
-      .toBe(
-        "You can't pay yourself credits — standing is earned from someone else's " +
-        "judgement. Assign this to someone, or pick a custom reward.",
-      );
-  });
-
   it('carries the error code so the UI can localize it', () => {
     let thrown: unknown;
     try {
@@ -267,7 +277,7 @@ describe('task create/update RPC routing', () => {
     const { client } = makeMutationClient({ success: false, error: 'title_required' });
 
     await expect(createTaskViaRpc({ p_title: '' }, client))
-      .rejects.toThrow('Task title is required.');
+      .rejects.toMatchObject({ code: 'title_required', operation: 'create' });
   });
 
   it('passes the exact update_task patch through unchanged', async () => {
@@ -292,12 +302,12 @@ describe('task create/update RPC routing', () => {
   });
 
   it.each([
-    ['invalid_field', 'Task update contains fields that cannot be changed.'],
-    ['not_creator', 'You can only edit tasks that you created.'],
-  ])('maps update_task %s errors', async (error, expected) => {
+    ['invalid_field'],
+    ['not_creator'],
+  ])('surfaces update_task %s as a coded lifecycle error', async (error) => {
     const { client } = makeMutationClient({ success: false, error });
 
     await expect(updateTaskViaRpc('task-update', { title: 'Nope' }, client))
-      .rejects.toThrow(expected);
+      .rejects.toMatchObject({ code: error, operation: 'update' });
   });
 });

@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://exempel.se/bild.jpg",
       "cancelButton": "Avbryt",
       "submitButton": "Skapa belöning",
-      "submittingButton": "Skapar..."
+      "submittingButton": "Skapar...",
+      "recipientRequired": "Välj vem den här belöningen är till.",
+      "creditCostInvalid": "Ange en giltig kostnad i krediter.",
+      "createFailed": "Belöningen kunde inte skapas. Försök igen."
     },
     "editModal": {
       "title": "Redigera belöning",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Kostnad i krediter",
       "cancelButton": "Avbryt",
       "submitButton": "Spara ändringar",
-      "submittingButton": "Sparar..."
+      "submittingButton": "Sparar...",
+      "updateFailed": "Belöningen kunde inte uppdateras. Försök igen."
     },
     "confirmDialog": {
       "deleteTitle": "Ta bort belöning",
@@ -323,6 +327,19 @@
       "cancelButton": "Avbryt",
       "confirmButton": "Bekräfta",
       "deletingButton": "Tar bort..."
+    },
+    "imageField": {
+      "label": "Belöningens bild",
+      "labelOptional": "Belöningens bild (valfritt)",
+      "useUpload": "Ladda upp",
+      "uploading": "Laddar upp...",
+      "clickToUpload": "Klicka för att ladda upp en bild",
+      "fileHint": "{{formats}} – max {{size}} MB",
+      "previewAlt": "Förhandsvisning",
+      "removeImage": "Ta bort bilden",
+      "currentUpload": "Nuvarande uppladdade bild",
+      "invalidFile": "Ogiltig fil",
+      "uploadFailed": "Uppladdningen misslyckades"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "VANDRARE",
       "rankBand2": "SPÅRARE",
       "rankBand3": "JÄRNMÄRKT",
-      "rankBand4": "OMTALAD"
+      "rankBand4": "OMTALAD",
+      "label": "Gilleläge",
+      "description": "Lekfullt med sci-fi-känsla. Perfekt för vänner, gäng och spelgillen."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "HJÄLPARE",
       "rankBand2": "TRYGG HAND",
       "rankBand3": "GRUNDPELARE",
-      "rankBand4": "HJÄRTAT"
+      "rankBand4": "HJÄRTAT",
+      "label": "Familjeläge",
+      "description": "Varmt och enkelt. Perfekt för familjer som delar på sysslorna."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "BEUNDRARE",
       "rankBand2": "HÄNGIVEN",
       "rankBand3": "TROGET HJÄRTA",
-      "rankBand4": "DEN ENDA"
+      "rankBand4": "DEN ENDA",
+      "label": "Parläge",
+      "description": "Intimt och lätt. Perfekt för par som gör omtanke och gemensamma mål till ett spel."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Hur många {{tokenPlural}} mottagaren tjänar på att slutföra det här {{mission}}. De spenderas i {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Present",
+    "travel": "Resa",
+    "food": "Mat",
+    "gaming": "Spel",
+    "spa": "Spa",
+    "learning": "Lärande",
+    "achievement": "Prestation",
+    "money": "Pengar",
+    "art": "Konst",
+    "home": "Hem",
+    "entertainment": "Underhållning",
+    "vacation": "Semester",
+    "shopping": "Shopping",
+    "books": "Böcker",
+    "music": "Musik",
+    "sports": "Sport",
+    "drinks": "Dryck",
+    "jewelry": "Smycken",
+    "car": "Bil",
+    "love": "Kärlek"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Ange som partner",
+    "friendBadge": "Vän",
+    "removeFriend": "Ta bort vän",
+    "accept": "Acceptera",
+    "decline": "Avböj",
+    "pending": "Väntar",
+    "cancelRequest": "Dra tillbaka skickad förfrågan"
+  },
+  "friendSelector": {
+    "loading": "Laddar vänner...",
+    "error": "Det gick inte att ladda vännerna.",
+    "selectPartnerFirst": "Välj först en partner på sidan Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "användarens avatar",
+    "placeholder": "Välj vem belöningen ska gå till",
+    "listLabel": "Vänner",
+    "empty": "Du har inga vänner att välja."
+  },
+  "layout": {
+    "logoAlt": "Bounty Hunter-logotyp",
+    "balanceAria": "{{store}} — ditt saldo",
+    "openMenu": "Öppna menyn",
+    "closeMenu": "Stäng menyn",
+    "unknownUser": "Okänd användare"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Du måste vara inloggad för att {{action}}.",
+    "actions": {
+      "archive": "arkivera den här uppgiften",
+      "create": "skapa den här uppgiften",
+      "delete": "ta bort den här uppgiften",
+      "reject": "avvisa den här uppgiften",
+      "status": "uppdatera den här uppgiften",
+      "submit": "skicka in den här uppgiften",
+      "update": "ändra den här uppgiften"
+    },
+    "taskNotFound": "Uppgiften hittades inte eller har tagits bort.",
+    "notAssignee": "Den här uppgiften är inte tilldelad dig.",
+    "notCreatorReject": "Bara den som skapade uppgiften kan avvisa den.",
+    "notCreatorUpdate": "Du kan bara ändra uppgifter som du själv har skapat.",
+    "notCreatorDelete": "Du kan bara ta bort uppgifter som du själv har skapat.",
+    "notParticipant": "Bara den som skapade uppgiften eller den som har den tilldelad kan arkivera den.",
+    "wrongStatus": "Uppgiften har inte rätt status för den åtgärden.",
+    "proofRequired": "Den här uppgiften kräver bevis. Ladda upp bevis för att slutföra den.",
+    "invalidProofType": "Ogiltig bevistyp. Använd en bild, en video, en PDF eller en text.",
+    "statusNotAllowed": "Den här statusändringen är inte tillåten.",
+    "titleRequired": "Uppgiften måste ha en titel.",
+    "invalidField": "Ändringen innehåller fält som inte går att ändra.",
+    "fallback": {
+      "archive": "Det gick inte att arkivera uppgiften.",
+      "create": "Det gick inte att skapa uppgiften.",
+      "delete": "Det gick inte att ta bort uppgiften.",
+      "reject": "Det gick inte att avvisa uppgiften.",
+      "status": "Det gick inte att uppdatera uppgiftens status.",
+      "submit": "Det gick inte att skicka uppgiften för granskning.",
+      "update": "Det gick inte att uppdatera uppgiften."
     }
   }
 }

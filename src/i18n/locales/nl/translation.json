@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://voorbeeld.nl/afbeelding.jpg",
       "cancelButton": "Annuleren",
       "submitButton": "Beloning maken",
-      "submittingButton": "Aanmaken..."
+      "submittingButton": "Aanmaken...",
+      "recipientRequired": "Kies voor wie deze beloning bedoeld is.",
+      "creditCostInvalid": "Vul een geldige prijs in credits in.",
+      "createFailed": "De beloning kon niet worden aangemaakt. Probeer het opnieuw."
     },
     "editModal": {
       "title": "Beloning bewerken",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Kosten in credits",
       "cancelButton": "Annuleren",
       "submitButton": "Wijzigingen opslaan",
-      "submittingButton": "Opslaan..."
+      "submittingButton": "Opslaan...",
+      "updateFailed": "De beloning kon niet worden bijgewerkt. Probeer het opnieuw."
     },
     "confirmDialog": {
       "deleteTitle": "Beloning verwijderen",
@@ -323,6 +327,19 @@
       "cancelButton": "Annuleren",
       "confirmButton": "Bevestigen",
       "deletingButton": "Verwijderen..."
+    },
+    "imageField": {
+      "label": "Afbeelding van de beloning",
+      "labelOptional": "Afbeelding van de beloning (optioneel)",
+      "useUpload": "Uploaden",
+      "uploading": "Bezig met uploaden...",
+      "clickToUpload": "Klik om een afbeelding te uploaden",
+      "fileHint": "{{formats}} – max. {{size}} MB",
+      "previewAlt": "Voorbeeld",
+      "removeImage": "Afbeelding verwijderen",
+      "currentUpload": "Huidige geüploade afbeelding",
+      "invalidFile": "Ongeldig bestand",
+      "uploadFailed": "Uploaden mislukt"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "ZWERVER",
       "rankBand2": "SPOORZOEKER",
       "rankBand3": "IJZERTEKEN",
-      "rankBand4": "VERMAARD"
+      "rankBand4": "VERMAARD",
+      "label": "Gildemodus",
+      "description": "Speels, met een sciencefictionrandje. Perfect voor vrienden, crews en gamegildes."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "HELPENDE HAND",
       "rankBand2": "VASTE KRACHT",
       "rankBand3": "STEUNPILAAR",
-      "rankBand4": "HET HART"
+      "rankBand4": "HET HART",
+      "label": "Familiemodus",
+      "description": "Warm en eenvoudig. Perfect voor gezinnen die klusjes delen."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "BEWONDERAAR",
       "rankBand2": "TOEGEWIJD",
       "rankBand3": "TROUW HART",
-      "rankBand4": "DE ENIGE"
+      "rankBand4": "DE ENIGE",
+      "label": "Koppelmodus",
+      "description": "Intiem en licht. Perfect voor stellen die zorg en gedeelde doelen tot spel maken."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Hoeveel {{tokenPlural}} de ander verdient bij het afronden van deze {{mission}}. Die geeft diegene uit in de {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Cadeau",
+    "travel": "Reizen",
+    "food": "Eten",
+    "gaming": "Gamen",
+    "spa": "Wellness",
+    "learning": "Leren",
+    "achievement": "Prestatie",
+    "money": "Geld",
+    "art": "Kunst",
+    "home": "Thuis",
+    "entertainment": "Entertainment",
+    "vacation": "Vakantie",
+    "shopping": "Winkelen",
+    "books": "Boeken",
+    "music": "Muziek",
+    "sports": "Sport",
+    "drinks": "Drankjes",
+    "jewelry": "Sieraden",
+    "car": "Auto",
+    "love": "Liefde"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Instellen als partner",
+    "friendBadge": "Vriend",
+    "removeFriend": "Vriend verwijderen",
+    "accept": "Accepteren",
+    "decline": "Weigeren",
+    "pending": "In afwachting",
+    "cancelRequest": "Verzonden verzoek intrekken"
+  },
+  "friendSelector": {
+    "loading": "Vrienden laden...",
+    "error": "Fout bij het laden van vrienden.",
+    "selectPartnerFirst": "Kies eerst een partner op de pagina Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "avatar van gebruiker",
+    "placeholder": "Kies aan wie je de beloning toewijst",
+    "listLabel": "Vrienden",
+    "empty": "Je hebt geen vrienden om te kiezen."
+  },
+  "layout": {
+    "logoAlt": "Logo van Bounty Hunter",
+    "balanceAria": "{{store}} — je saldo",
+    "openMenu": "Menu openen",
+    "closeMenu": "Menu sluiten",
+    "unknownUser": "Onbekende gebruiker"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Je moet ingelogd zijn om {{action}}.",
+    "actions": {
+      "archive": "deze taak te archiveren",
+      "create": "deze taak aan te maken",
+      "delete": "deze taak te verwijderen",
+      "reject": "deze taak af te wijzen",
+      "status": "deze taak bij te werken",
+      "submit": "deze taak in te dienen",
+      "update": "deze taak te bewerken"
+    },
+    "taskNotFound": "Taak niet gevonden of al verwijderd.",
+    "notAssignee": "Deze taak is niet aan jou toegewezen.",
+    "notCreatorReject": "Alleen wie de taak heeft aangemaakt, kan die afwijzen.",
+    "notCreatorUpdate": "Je kunt alleen taken bewerken die je zelf hebt aangemaakt.",
+    "notCreatorDelete": "Je kunt alleen taken verwijderen die je zelf hebt aangemaakt.",
+    "notParticipant": "Alleen de maker of de toegewezen persoon kan deze taak archiveren.",
+    "wrongStatus": "Deze taak heeft niet de juiste status voor die actie.",
+    "proofRequired": "Deze taak vraagt om bewijs. Upload bewijs om hem af te ronden.",
+    "invalidProofType": "Ongeldig bewijstype. Gebruik een afbeelding, video, pdf of tekst.",
+    "statusNotAllowed": "Deze statuswijziging is niet toegestaan.",
+    "titleRequired": "Een titel voor de taak is verplicht.",
+    "invalidField": "De wijziging bevat velden die niet gewijzigd kunnen worden.",
+    "fallback": {
+      "archive": "Taak archiveren is mislukt.",
+      "create": "Taak aanmaken is mislukt.",
+      "delete": "Taak verwijderen is mislukt.",
+      "reject": "Taak afwijzen is mislukt.",
+      "status": "Status van de taak bijwerken is mislukt.",
+      "submit": "Taak indienen voor beoordeling is mislukt.",
+      "update": "Taak bijwerken is mislukt."
     }
   }
 }

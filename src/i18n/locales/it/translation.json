@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://esempio.com/immagine.jpg",
       "cancelButton": "Annulla",
       "submitButton": "Crea ricompensa",
-      "submittingButton": "Creazione..."
+      "submittingButton": "Creazione...",
+      "recipientRequired": "Scegli a chi è destinata questa ricompensa.",
+      "creditCostInvalid": "Inserisci un costo in crediti valido.",
+      "createFailed": "Non è stato possibile creare la ricompensa. Riprova."
     },
     "editModal": {
       "title": "Modifica ricompensa",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Costo in crediti",
       "cancelButton": "Annulla",
       "submitButton": "Salva modifiche",
-      "submittingButton": "Salvataggio..."
+      "submittingButton": "Salvataggio...",
+      "updateFailed": "Non è stato possibile aggiornare la ricompensa. Riprova."
     },
     "confirmDialog": {
       "deleteTitle": "Elimina ricompensa",
@@ -323,6 +327,19 @@
       "cancelButton": "Annulla",
       "confirmButton": "Conferma",
       "deletingButton": "Eliminazione..."
+    },
+    "imageField": {
+      "label": "Immagine della ricompensa",
+      "labelOptional": "Immagine della ricompensa (facoltativa)",
+      "useUpload": "Carica",
+      "uploading": "Caricamento...",
+      "clickToUpload": "Clicca per caricare un'immagine",
+      "fileHint": "{{formats}} – max {{size}} MB",
+      "previewAlt": "Anteprima",
+      "removeImage": "Rimuovi l'immagine",
+      "currentUpload": "Immagine caricata attualmente",
+      "invalidFile": "File non valido",
+      "uploadFailed": "Caricamento non riuscito"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "ERRANTE",
       "rankBand2": "TRACCIATORE",
       "rankBand3": "TEMPRATO",
-      "rankBand4": "RINOMATO"
+      "rankBand4": "RINOMATO",
+      "label": "Modalità Gilda",
+      "description": "Giocosa, con un tocco sci-fi. Perfetta per amici, squadre e gilde di gioco."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "AIUTANTE",
       "rankBand2": "AFFIDABILE",
       "rankBand3": "PILASTRO",
-      "rankBand4": "CUORE"
+      "rankBand4": "CUORE",
+      "label": "Modalità Famiglia",
+      "description": "Calda e semplice. Perfetta per famiglie che si dividono le faccende."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "AMMIRATORE",
       "rankBand2": "DEVOTO",
       "rankBand3": "CUORE FEDELE",
-      "rankBand4": "L'UNICO"
+      "rankBand4": "L'UNICO",
+      "label": "Modalità Coppia",
+      "description": "Intima e leggera. Perfetta per coppie che rendono un gioco le attenzioni e gli obiettivi comuni."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Quanti {{tokenPlural}} guadagna chi completa questa {{mission}}. Li spende nella {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Regalo",
+    "travel": "Viaggi",
+    "food": "Cibo",
+    "gaming": "Videogiochi",
+    "spa": "Benessere",
+    "learning": "Studio",
+    "achievement": "Traguardo",
+    "money": "Denaro",
+    "art": "Arte",
+    "home": "Casa",
+    "entertainment": "Intrattenimento",
+    "vacation": "Vacanze",
+    "shopping": "Shopping",
+    "books": "Libri",
+    "music": "Musica",
+    "sports": "Sport",
+    "drinks": "Bevande",
+    "jewelry": "Gioielli",
+    "car": "Auto",
+    "love": "Amore"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Imposta come partner",
+    "friendBadge": "Amico",
+    "removeFriend": "Rimuovi amico",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "pending": "In attesa",
+    "cancelRequest": "Annulla richiesta inviata"
+  },
+  "friendSelector": {
+    "loading": "Caricamento amici...",
+    "error": "Errore nel caricamento degli amici.",
+    "selectPartnerFirst": "Scegli prima un partner nella pagina Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "avatar utente",
+    "placeholder": "Scegli a chi assegnare la ricompensa",
+    "listLabel": "Amici",
+    "empty": "Non hai amici da selezionare."
+  },
+  "layout": {
+    "logoAlt": "Logo di Bounty Hunter",
+    "balanceAria": "{{store}} — il tuo saldo",
+    "openMenu": "Apri il menu",
+    "closeMenu": "Chiudi il menu",
+    "unknownUser": "Utente sconosciuto"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Devi aver effettuato l'accesso per {{action}}.",
+    "actions": {
+      "archive": "archiviare questa attività",
+      "create": "creare questa attività",
+      "delete": "eliminare questa attività",
+      "reject": "rifiutare questa attività",
+      "status": "aggiornare questa attività",
+      "submit": "inviare questa attività",
+      "update": "modificare questa attività"
+    },
+    "taskNotFound": "Attività non trovata o già eliminata.",
+    "notAssignee": "Questa attività non è assegnata a te.",
+    "notCreatorReject": "Solo chi ha creato l'attività può rifiutarla.",
+    "notCreatorUpdate": "Puoi modificare solo le attività che hai creato tu.",
+    "notCreatorDelete": "Puoi eliminare solo le attività che hai creato tu.",
+    "notParticipant": "Solo chi l'ha creata o chi la ha in carico può archiviare questa attività.",
+    "wrongStatus": "Questa attività non è nello stato giusto per questa azione.",
+    "proofRequired": "Questa attività richiede una prova. Carica una prova per completarla.",
+    "invalidProofType": "Tipo di prova non valido. Usa un'immagine, un video, un PDF o un testo.",
+    "statusNotAllowed": "Questo cambio di stato non è consentito.",
+    "titleRequired": "Il titolo dell'attività è obbligatorio.",
+    "invalidField": "La modifica contiene campi che non possono essere cambiati.",
+    "fallback": {
+      "archive": "Impossibile archiviare l'attività.",
+      "create": "Impossibile creare l'attività.",
+      "delete": "Impossibile eliminare l'attività.",
+      "reject": "Impossibile rifiutare l'attività.",
+      "status": "Impossibile aggiornare lo stato dell'attività.",
+      "submit": "Impossibile inviare l'attività per la revisione.",
+      "update": "Impossibile aggiornare l'attività."
     }
   }
 }

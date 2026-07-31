@@ -86,7 +86,7 @@ export default function Layout() {
     profile?.display_name ??
     (user?.user_metadata as Record<string, unknown> | undefined)?.full_name as string | undefined ??
     user?.email?.split('@')[0] ??
-    'Unknown user';
+    t('layout.unknownUser');
 
   // avatarUrlBase: The actual DB value (null if user hasn't set one)
   // avatarUrl: For rendering - uses placeholder when avatarUrlBase is null
@@ -205,7 +205,7 @@ export default function Layout() {
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <img 
                 src={logo} 
-                alt="Bounty Hunter Logo" 
+                alt={t('layout.logoAlt')}
                 className="h-10 w-10"
               />
               <span className="app-title text-2xl text-white">{strings.appName}</span>
@@ -270,7 +270,7 @@ export default function Layout() {
                 to="/rewards-store"
                 data-credit-anchor="desktop"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
-                aria-label={`${strings.storeTitle} - Your balance`}
+                aria-label={t('layout.balanceAria', { store: strings.storeTitle })}
               >
                 <UserCredits />
               </Link>
@@ -278,7 +278,7 @@ export default function Layout() {
                 <button
                   onClick={() => setIsCursorTrailEnabled(!isCursorTrailEnabled)}
                   className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
-                  aria-label="Toggle cursor trail"
+                  aria-label={t('profile.toggleCursorTrail')}
                 >
                   <Sparkles
                     size={20}
@@ -306,7 +306,7 @@ export default function Layout() {
                 <button
                   onClick={handleSignOut}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-gray-800/50 hover:bg-red-500/50 transition-colors"
-                  aria-label="Log out"
+                  aria-label={t('auth.signOut')}
                 >
                   <LogOut size={20} className="text-gray-400 hover:text-white" />
                 </button>
@@ -320,7 +320,7 @@ export default function Layout() {
                 to="/rewards-store"
                 data-credit-anchor="mobile"
                 className="flex items-center rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors px-2.5 min-h-[44px]"
-                aria-label={`${strings.storeTitle} - Your balance`}
+                aria-label={t('layout.balanceAria', { store: strings.storeTitle })}
               >
                 <UserCredits />
               </Link>
@@ -330,7 +330,7 @@ export default function Layout() {
                   toggleMenu();
                 }}
                 className="text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={isMobileMenuOpen ? t('layout.closeMenu') : t('layout.openMenu')}
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -376,7 +376,7 @@ export default function Layout() {
                 closeMenu();
               }}
               className="absolute top-3 right-4 text-white min-w-[44px] min-h-[44px] flex items-center justify-center z-mobile-menu-close"
-              aria-label="Close menu"
+              aria-label={t('layout.closeMenu')}
             >
               <X size={24} />
             </button>
@@ -387,7 +387,7 @@ export default function Layout() {
                     to="/rewards-store"
                     onClick={() => closeMenu()}
                     className="glass-card flex items-center justify-between gap-4 rounded-xl px-5 py-4 mb-6 hover:bg-white/10 transition-colors"
-                    aria-label={`${strings.storeTitle} - Your balance`}
+                    aria-label={t('layout.balanceAria', { store: strings.storeTitle })}
                   >
                     <span className="text-sm uppercase tracking-wide text-white/60">{strings.storeCreditsLabel}</span>
                     <UserCredits />

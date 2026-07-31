@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Award, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
-import { isSelfAssignedCreditError } from '../domain/missions';
+import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
 import { feedback } from '../utils/feedback';
 import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -206,11 +206,12 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       onClose();
     } catch (error: unknown) {
       let errorMessage = t('taskForm.submissionError');
-      // 013: the RPC error carries a machine-readable code, so this one rule
-      // can be stated in the user's language instead of the domain layer's
-      // English fallback. Other codes keep the existing behaviour.
-      if (isSelfAssignedCreditError(error)) {
-        errorMessage = t('taskForm.validation.selfAssignedCredit');
+      // The RPC error carries a machine-readable code, so every lifecycle
+      // refusal — including the 013 self-assigned-credit rule — is stated in
+      // the user's language instead of the domain layer's generic fallback.
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        errorMessage = localized;
       } else if (error instanceof Error) {
         errorMessage = error.message || errorMessage;
       }

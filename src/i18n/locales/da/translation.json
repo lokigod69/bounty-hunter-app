@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://eksempel.dk/billede.jpg",
       "cancelButton": "Annuller",
       "submitButton": "Opret belønning",
-      "submittingButton": "Opretter..."
+      "submittingButton": "Opretter...",
+      "recipientRequired": "Vælg hvem denne belønning er til.",
+      "creditCostInvalid": "Angiv en gyldig pris i kreditter.",
+      "createFailed": "Belønningen kunne ikke oprettes. Prøv igen."
     },
     "editModal": {
       "title": "Rediger belønning",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Pris i kreditter",
       "cancelButton": "Annuller",
       "submitButton": "Gem ændringer",
-      "submittingButton": "Gemmer..."
+      "submittingButton": "Gemmer...",
+      "updateFailed": "Belønningen kunne ikke opdateres. Prøv igen."
     },
     "confirmDialog": {
       "deleteTitle": "Slet belønning",
@@ -323,6 +327,19 @@
       "cancelButton": "Annuller",
       "confirmButton": "Bekræft",
       "deletingButton": "Sletter..."
+    },
+    "imageField": {
+      "label": "Belønningens billede",
+      "labelOptional": "Belønningens billede (valgfrit)",
+      "useUpload": "Upload",
+      "uploading": "Uploader...",
+      "clickToUpload": "Klik for at uploade et billede",
+      "fileHint": "{{formats}} – maks. {{size}} MB",
+      "previewAlt": "Forhåndsvisning",
+      "removeImage": "Fjern billedet",
+      "currentUpload": "Nuværende uploadede billede",
+      "invalidFile": "Ugyldig fil",
+      "uploadFailed": "Upload mislykkedes"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "VANDRER",
       "rankBand2": "SPORER",
       "rankBand3": "JERNMÆRKE",
-      "rankBand4": "NAVNKUNDIG"
+      "rankBand4": "NAVNKUNDIG",
+      "label": "Gildetilstand",
+      "description": "Legende med et sci-fi-præg. Perfekt til venner, hold og spilgilder."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "HJÆLPER",
       "rankBand2": "FAST HÅND",
       "rankBand3": "GRUNDSTEN",
-      "rankBand4": "HJERTET"
+      "rankBand4": "HJERTET",
+      "label": "Familietilstand",
+      "description": "Varm og enkel. Perfekt til familier, der deles om pligterne."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "BEUNDRER",
       "rankBand2": "HENGIVEN",
       "rankBand3": "TROFAST HJERTE",
-      "rankBand4": "DEN ENESTE"
+      "rankBand4": "DEN ENESTE",
+      "label": "Partilstand",
+      "description": "Intim og let. Perfekt til par, der gør omsorg og fælles mål til et spil."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Hvor mange {{tokenPlural}} modtageren tjener ved at fuldføre denne {{mission}}. De bruges i {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Gave",
+    "travel": "Rejse",
+    "food": "Mad",
+    "gaming": "Spil",
+    "spa": "Wellness",
+    "learning": "Læring",
+    "achievement": "Præstation",
+    "money": "Penge",
+    "art": "Kunst",
+    "home": "Hjem",
+    "entertainment": "Underholdning",
+    "vacation": "Ferie",
+    "shopping": "Shopping",
+    "books": "Bøger",
+    "music": "Musik",
+    "sports": "Sport",
+    "drinks": "Drikkevarer",
+    "jewelry": "Smykker",
+    "car": "Bil",
+    "love": "Kærlighed"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Vælg som partner",
+    "friendBadge": "Ven",
+    "removeFriend": "Fjern ven",
+    "accept": "Accepter",
+    "decline": "Afvis",
+    "pending": "Afventer",
+    "cancelRequest": "Træk sendt anmodning tilbage"
+  },
+  "friendSelector": {
+    "loading": "Indlæser venner...",
+    "error": "Kunne ikke indlæse vennerne.",
+    "selectPartnerFirst": "Vælg først en partner på siden Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "brugerens avatar",
+    "placeholder": "Vælg hvem belønningen skal gå til",
+    "listLabel": "Venner",
+    "empty": "Du har ingen venner at vælge."
+  },
+  "layout": {
+    "logoAlt": "Bounty Hunter-logo",
+    "balanceAria": "{{store}} — din saldo",
+    "openMenu": "Åbn menuen",
+    "closeMenu": "Luk menuen",
+    "unknownUser": "Ukendt bruger"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Du skal være logget ind for at {{action}}.",
+    "actions": {
+      "archive": "arkivere denne opgave",
+      "create": "oprette denne opgave",
+      "delete": "slette denne opgave",
+      "reject": "afvise denne opgave",
+      "status": "opdatere denne opgave",
+      "submit": "indsende denne opgave",
+      "update": "redigere denne opgave"
+    },
+    "taskNotFound": "Opgaven blev ikke fundet eller er slettet.",
+    "notAssignee": "Denne opgave er ikke tildelt dig.",
+    "notCreatorReject": "Kun den, der oprettede opgaven, kan afvise den.",
+    "notCreatorUpdate": "Du kan kun redigere opgaver, du selv har oprettet.",
+    "notCreatorDelete": "Du kan kun slette opgaver, du selv har oprettet.",
+    "notParticipant": "Kun den, der oprettede opgaven, eller den, den er tildelt, kan arkivere den.",
+    "wrongStatus": "Opgaven har ikke den rigtige status til den handling.",
+    "proofRequired": "Denne opgave kræver bevis. Upload et bevis for at fuldføre den.",
+    "invalidProofType": "Ugyldig bevistype. Brug et billede, en video, en PDF eller en tekst.",
+    "statusNotAllowed": "Denne statusændring er ikke tilladt.",
+    "titleRequired": "Opgaven skal have en titel.",
+    "invalidField": "Ændringen indeholder felter, der ikke kan ændres.",
+    "fallback": {
+      "archive": "Opgaven kunne ikke arkiveres.",
+      "create": "Opgaven kunne ikke oprettes.",
+      "delete": "Opgaven kunne ikke slettes.",
+      "reject": "Opgaven kunne ikke afvises.",
+      "status": "Opgavens status kunne ikke opdateres.",
+      "submit": "Opgaven kunne ikke sendes til gennemsyn.",
+      "update": "Opgaven kunne ikke opdateres."
     }
   }
 }

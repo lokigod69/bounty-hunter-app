@@ -60,6 +60,12 @@ const requiredThemeStringKeys = [
   'rankBand4',
 ] as const;
 
+// The mode's own name and one-line pitch are not ThemeStrings — they are copy
+// for the selector, and they live only in i18n (ThemeDefinition deliberately
+// has no label/description field any more). The locale bundle therefore carries
+// exactly the theme strings PLUS these two.
+const extraLocaleThemeKeys = ['label', 'description'] as const;
+
 describe('theme string contract', () => {
   it('keeps every mode on the same required static string contract', () => {
     for (const themeId of themeIds) {
@@ -73,8 +79,21 @@ describe('theme string contract', () => {
     for (const locale of [en, de]) {
       for (const themeId of themeIds) {
         expect(Object.keys(locale.theme[themeId]).sort()).toEqual(
-          [...requiredThemeStringKeys].sort()
+          [...requiredThemeStringKeys, ...extraLocaleThemeKeys].sort()
         );
+      }
+    }
+  });
+
+  it('keeps the mode label and description out of the code and in i18n', () => {
+    for (const themeId of themeIds) {
+      // Re-adding them to the definition would put user-visible English back
+      // in a TypeScript file where no locale can override it.
+      expect(themesById[themeId]).not.toHaveProperty('label');
+      expect(themesById[themeId]).not.toHaveProperty('description');
+      for (const locale of [en, de]) {
+        expect(locale.theme[themeId].label.trim()).not.toBe('');
+        expect(locale.theme[themeId].description.trim()).not.toBe('');
       }
     }
   });

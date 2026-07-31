@@ -42,13 +42,13 @@ const MODE_ICON: Record<ThemeId, typeof Shield> = {
   couple: Heart,
 };
 
-// R10/R20: Mode switcher configuration, with label/hint sourced from theme definitions.
-const modeOptions: { id: ThemeId; label: string; icon: typeof Shield; hint: string }[] =
+// R10/R20: Mode switcher configuration. Only the icon is static — the label and
+// the hint are user-visible copy, so they are read from i18n at render time via
+// `theme.<id>.label` / `theme.<id>.description` and follow the language switch.
+const modeOptions: { id: ThemeId; icon: typeof Shield }[] =
   Object.values(themesById).map((theme) => ({
     id: theme.id,
-    label: theme.label,
     icon: MODE_ICON[theme.id],
-    hint: theme.description,
   }));
 
 // Temporary V1 public gating: Family/Couple remain available in dev for internal
@@ -362,14 +362,16 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                         }`}
                       >
                         <Icon size={16} style={isActive ? { color: accent } : undefined} />
-                        <span className="hidden sm:inline">{option.label}</span>
+                        <span className="hidden sm:inline">{t(`theme.${option.id}.label`)}</span>
                       </button>
                     );
                   })}
                 </div>
                 {/* R20: Show hint for currently selected mode */}
                 <p className="text-xs text-white/50 mt-2 text-center">
-                  {modeOptions.find(o => o.id === themeId)?.hint || t('profile.modeHintFallback')}
+                  {modeOptions.some(o => o.id === themeId)
+                    ? t(`theme.${themeId}.description`)
+                    : t('profile.modeHintFallback')}
                 </p>
               </div>
               )}

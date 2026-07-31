@@ -3,6 +3,7 @@
 // R25: Added partner badge and "Set as Partner" action.
 // Card component for displaying friend information.
 
+import { useTranslation } from 'react-i18next';
 import { Profile } from '../types/custom';  // R25: Use custom Profile type
 import { CheckCircle, X, UserX, Trash2, Check, Heart } from 'lucide-react';
 import { BaseCard } from './ui/BaseCard';
@@ -33,6 +34,8 @@ export default function FriendCard({
   onCancelSentRequest,
   onSetPartner,  // R25
 }: FriendCardProps) {
+  const { t } = useTranslation();
+
   // Get initials from display name or email
   const getInitials = () => {
     if (profile.display_name) {
@@ -80,29 +83,29 @@ export default function FriendCard({
             {isPartner ? (
               <span className="text-teal-400 flex items-center mr-2 text-sm bg-teal-500/10 px-2 py-1 rounded-full">
                 <Heart size={14} className="mr-1" />
-                Partner
+                {t('friendCard.partnerBadge')}
               </span>
             ) : onSetPartner ? (
               <button
                 onClick={() => onSetPartner(profile.id)}
                 className="text-white/50 hover:text-teal-400 flex items-center mr-2 text-sm transition-colors"
-                title="Set as partner"
+                title={t('friendCard.setAsPartner')}
               >
                 <Heart size={14} className="mr-1" />
-                Set as Partner
+                {t('friendCard.setAsPartner')}
               </button>
             ) : (
               <span className="text-green-400 flex items-center mr-2 text-sm">
                 <CheckCircle size={16} className="mr-1" />
-                Friend
+                {t('friendCard.friendBadge')}
               </span>
             )}
             {onRemove && friendshipId && (
               <button
                 onClick={() => onRemove(friendshipId)}
                 className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-red-400 transition-colors"
-                aria-label="Remove friend"
-                title="Remove friend"
+                aria-label={t('friendCard.removeFriend')}
+                title={t('friendCard.removeFriend')}
               >
                 <UserX size={18} />
               </button>
@@ -118,7 +121,7 @@ export default function FriendCard({
               icon={<Check className="w-5 h-5" />}
               className="flex-1"
             >
-              Accept
+              {t('friendCard.accept')}
             </AppButton>
             <AppButton
               variant="danger"
@@ -126,20 +129,20 @@ export default function FriendCard({
               icon={<X className="w-5 h-5" />}
               className="flex-1"
             >
-              Decline
+              {t('friendCard.decline')}
             </AppButton>
           </div>
         )}
 
         {status === 'pending' && !isIncoming && (
           <>
-            <span className="text-amber-400 text-sm mr-2">Pending</span>
+            <span className="text-amber-400 text-sm mr-2">{t('friendCard.pending')}</span>
             {onCancelSentRequest && friendshipId && (
               <button
                 onClick={() => onCancelSentRequest(friendshipId)}
                 className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-colors"
-                aria-label="Cancel sent request"
-                title="Cancel sent request"
+                aria-label={t('friendCard.cancelRequest')}
+                title={t('friendCard.cancelRequest')}
               >
                 <Trash2 size={18} />
               </button>

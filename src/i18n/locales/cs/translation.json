@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://priklad.cz/obrazek.jpg",
       "cancelButton": "Zrušit",
       "submitButton": "Vytvořit odměnu",
-      "submittingButton": "Vytváření..."
+      "submittingButton": "Vytváření...",
+      "recipientRequired": "Vyber, komu je tato odměna určená.",
+      "creditCostInvalid": "Zadej platnou cenu v kreditech.",
+      "createFailed": "Odměnu se nepodařilo vytvořit. Zkus to znovu."
     },
     "editModal": {
       "title": "Upravit odměnu",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Cena v kreditech",
       "cancelButton": "Zrušit",
       "submitButton": "Uložit změny",
-      "submittingButton": "Ukládání..."
+      "submittingButton": "Ukládání...",
+      "updateFailed": "Odměnu se nepodařilo aktualizovat. Zkus to znovu."
     },
     "confirmDialog": {
       "deleteTitle": "Odstranit odměnu",
@@ -323,6 +327,19 @@
       "cancelButton": "Zrušit",
       "confirmButton": "Potvrdit",
       "deletingButton": "Odstraňování..."
+    },
+    "imageField": {
+      "label": "Obrázek odměny",
+      "labelOptional": "Obrázek odměny (nepovinné)",
+      "useUpload": "Nahrát",
+      "uploading": "Nahrávání...",
+      "clickToUpload": "Klikni a nahraj obrázek",
+      "fileHint": "{{formats}} – max. {{size}} MB",
+      "previewAlt": "Náhled",
+      "removeImage": "Odebrat obrázek",
+      "currentUpload": "Aktuálně nahraný obrázek",
+      "invalidFile": "Neplatný soubor",
+      "uploadFailed": "Nahrávání se nezdařilo"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "TULÁK",
       "rankBand2": "STOPAŘ",
       "rankBand3": "ŽELEZNÝ ZNAK",
-      "rankBand4": "PROSLULÝ"
+      "rankBand4": "PROSLULÝ",
+      "label": "Režim gildy",
+      "description": "Hravý, s nádechem sci-fi. Ideální pro přátele, party a herní gildy."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "POMOCNÍK",
       "rankBand2": "PEVNÁ RUKA",
       "rankBand3": "OPORA",
-      "rankBand4": "SRDCE"
+      "rankBand4": "SRDCE",
+      "label": "Rodinný režim",
+      "description": "Vřelý a jednoduchý. Ideální pro rodiny, které si dělí domácí práce."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "OBDIVOVATEL",
       "rankBand2": "ODDANÝ",
       "rankBand3": "VĚRNÉ SRDCE",
-      "rankBand4": "NAVŽDY"
+      "rankBand4": "NAVŽDY",
+      "label": "Párový režim",
+      "description": "Intimní a lehký. Ideální pro páry, které z péče a společných cílů dělají hru."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Kolik {{tokenPlural}} získá ten, kdo tuto {{mission}} splní. Utratí je v {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Dárek",
+    "travel": "Cestování",
+    "food": "Jídlo",
+    "gaming": "Hraní",
+    "spa": "Lázně",
+    "learning": "Učení",
+    "achievement": "Úspěch",
+    "money": "Peníze",
+    "art": "Umění",
+    "home": "Domov",
+    "entertainment": "Zábava",
+    "vacation": "Dovolená",
+    "shopping": "Nákupy",
+    "books": "Knihy",
+    "music": "Hudba",
+    "sports": "Sport",
+    "drinks": "Nápoje",
+    "jewelry": "Šperky",
+    "car": "Auto",
+    "love": "Láska"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Nastavit jako partnera",
+    "friendBadge": "Přítel",
+    "removeFriend": "Odebrat přítele",
+    "accept": "Přijmout",
+    "decline": "Odmítnout",
+    "pending": "Čeká",
+    "cancelRequest": "Zrušit odeslanou žádost"
+  },
+  "friendSelector": {
+    "loading": "Načítání přátel...",
+    "error": "Přátele se nepodařilo načíst.",
+    "selectPartnerFirst": "Nejdřív vyber partnera na stránce Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "avatar uživatele",
+    "placeholder": "Vyber, komu odměnu přiřadíš",
+    "listLabel": "Přátelé",
+    "empty": "Nemáš žádné přátele k výběru."
+  },
+  "layout": {
+    "logoAlt": "Logo Bounty Hunter",
+    "balanceAria": "{{store}} — tvůj zůstatek",
+    "openMenu": "Otevřít menu",
+    "closeMenu": "Zavřít menu",
+    "unknownUser": "Neznámý uživatel"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Bez přihlášení nelze {{action}}.",
+    "actions": {
+      "archive": "archivovat tento úkol",
+      "create": "vytvořit tento úkol",
+      "delete": "smazat tento úkol",
+      "reject": "odmítnout tento úkol",
+      "status": "aktualizovat tento úkol",
+      "submit": "odeslat tento úkol",
+      "update": "upravit tento úkol"
+    },
+    "taskNotFound": "Úkol nebyl nalezen nebo byl smazán.",
+    "notAssignee": "Tento úkol ti není přidělen.",
+    "notCreatorReject": "Odmítnout úkol může jen ten, kdo ho vytvořil.",
+    "notCreatorUpdate": "Upravovat můžeš jen vlastní úkoly.",
+    "notCreatorDelete": "Mazat můžeš jen vlastní úkoly.",
+    "notParticipant": "Archivovat úkol může jen jeho autor nebo osoba, které je přidělen.",
+    "wrongStatus": "Úkol není ve stavu, který tuto akci umožňuje.",
+    "proofRequired": "Tento úkol vyžaduje důkaz. Bez nahraného důkazu ho nelze dokončit.",
+    "invalidProofType": "Neplatný typ důkazu. Použij obrázek, video, PDF nebo text.",
+    "statusNotAllowed": "Tato změna stavu není povolena.",
+    "titleRequired": "Název úkolu je povinný.",
+    "invalidField": "Změna obsahuje pole, která nelze měnit.",
+    "fallback": {
+      "archive": "Úkol se nepodařilo archivovat.",
+      "create": "Úkol se nepodařilo vytvořit.",
+      "delete": "Úkol se nepodařilo smazat.",
+      "reject": "Úkol se nepodařilo odmítnout.",
+      "status": "Stav úkolu se nepodařilo aktualizovat.",
+      "submit": "Úkol se nepodařilo odeslat ke kontrole.",
+      "update": "Úkol se nepodařilo aktualizovat."
     }
   }
 }

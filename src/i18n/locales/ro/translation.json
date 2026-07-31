@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://exemplu.ro/imagine.jpg",
       "cancelButton": "Anulează",
       "submitButton": "Creează recompensa",
-      "submittingButton": "Se creează..."
+      "submittingButton": "Se creează...",
+      "recipientRequired": "Alege cui îi este destinată această recompensă.",
+      "creditCostInvalid": "Introdu un cost valid în credite.",
+      "createFailed": "Recompensa nu a putut fi creată. Încearcă din nou."
     },
     "editModal": {
       "title": "Editează recompensa",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Cost în credite",
       "cancelButton": "Anulează",
       "submitButton": "Salvează modificările",
-      "submittingButton": "Se salvează..."
+      "submittingButton": "Se salvează...",
+      "updateFailed": "Recompensa nu a putut fi actualizată. Încearcă din nou."
     },
     "confirmDialog": {
       "deleteTitle": "Șterge recompensa",
@@ -323,6 +327,19 @@
       "cancelButton": "Anulează",
       "confirmButton": "Confirmă",
       "deletingButton": "Se șterge..."
+    },
+    "imageField": {
+      "label": "Imaginea recompensei",
+      "labelOptional": "Imaginea recompensei (opțional)",
+      "useUpload": "Încarcă",
+      "uploading": "Se încarcă...",
+      "clickToUpload": "Apasă ca să încarci o imagine",
+      "fileHint": "{{formats}} – max. {{size}} MB",
+      "previewAlt": "Previzualizare",
+      "removeImage": "Elimină imaginea",
+      "currentUpload": "Imaginea încărcată acum",
+      "invalidFile": "Fișier nevalid",
+      "uploadFailed": "Încărcarea a eșuat"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "HOINAR",
       "rankBand2": "CERCETAȘ",
       "rankBand3": "CĂLIT",
-      "rankBand4": "VESTIT"
+      "rankBand4": "VESTIT",
+      "label": "Modul Breaslă",
+      "description": "Jucăuș, cu tentă science-fiction. Perfect pentru prieteni, echipe și bresle de jucători."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "AJUTOR",
       "rankBand2": "DESTOINIC",
       "rankBand3": "STÂLP",
-      "rankBand4": "INIMĂ"
+      "rankBand4": "INIMĂ",
+      "label": "Modul Familie",
+      "description": "Cald și simplu. Perfect pentru familiile care își împart treburile casei."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "ADMIRATOR",
       "rankBand2": "DEVOTAT",
       "rankBand3": "INIMĂ FIDELĂ",
-      "rankBand4": "ALESUL"
+      "rankBand4": "ALESUL",
+      "label": "Modul Cuplu",
+      "description": "Intim și lejer. Perfect pentru cuplurile care transformă grija și scopurile comune într-un joc."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Câte {{tokenPlural}} câștigă cel care duce la capăt această {{mission}}. Le cheltuie în {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Cadou",
+    "travel": "Călătorii",
+    "food": "Mâncare",
+    "gaming": "Jocuri",
+    "spa": "Spa",
+    "learning": "Învățare",
+    "achievement": "Realizare",
+    "money": "Bani",
+    "art": "Artă",
+    "home": "Acasă",
+    "entertainment": "Divertisment",
+    "vacation": "Vacanță",
+    "shopping": "Cumpărături",
+    "books": "Cărți",
+    "music": "Muzică",
+    "sports": "Sport",
+    "drinks": "Băuturi",
+    "jewelry": "Bijuterii",
+    "car": "Mașină",
+    "love": "Iubire"
+  },
+  "friendCard": {
+    "partnerBadge": "Partener",
+    "setAsPartner": "Setează ca partener",
+    "friendBadge": "Prieten",
+    "removeFriend": "Elimină prietenul",
+    "accept": "Acceptă",
+    "decline": "Refuză",
+    "pending": "În așteptare",
+    "cancelRequest": "Anulează cererea trimisă"
+  },
+  "friendSelector": {
+    "loading": "Se încarcă prietenii...",
+    "error": "Eroare la încărcarea prietenilor.",
+    "selectPartnerFirst": "Alege mai întâi un partener în pagina Partener.",
+    "partnerAlt": "partener",
+    "avatarAlt": "avatarul utilizatorului",
+    "placeholder": "Alege cui îi atribui recompensa",
+    "listLabel": "Prieteni",
+    "empty": "Nu ai prieteni de ales."
+  },
+  "layout": {
+    "logoAlt": "Sigla Bounty Hunter",
+    "balanceAria": "{{store}} — soldul tău",
+    "openMenu": "Deschide meniul",
+    "closeMenu": "Închide meniul",
+    "unknownUser": "Utilizator necunoscut"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Trebuie să fii autentificat ca să {{action}}.",
+    "actions": {
+      "archive": "arhivezi această sarcină",
+      "create": "creezi această sarcină",
+      "delete": "ștergi această sarcină",
+      "reject": "respingi această sarcină",
+      "status": "actualizezi această sarcină",
+      "submit": "trimiți această sarcină",
+      "update": "modifici această sarcină"
+    },
+    "taskNotFound": "Sarcina nu a fost găsită sau a fost ștearsă.",
+    "notAssignee": "Această sarcină nu îți este atribuită.",
+    "notCreatorReject": "Doar cine a creat sarcina o poate respinge.",
+    "notCreatorUpdate": "Poți modifica doar sarcinile pe care le-ai creat tu.",
+    "notCreatorDelete": "Poți șterge doar sarcinile pe care le-ai creat tu.",
+    "notParticipant": "Doar cine a creat sarcina sau cine o are atribuită o poate arhiva.",
+    "wrongStatus": "Sarcina nu este în starea potrivită pentru această acțiune.",
+    "proofRequired": "Această sarcină cere o dovadă. Încarcă o dovadă ca să o închei.",
+    "invalidProofType": "Tip de dovadă nevalid. Folosește o imagine, un videoclip, un PDF sau un text.",
+    "statusNotAllowed": "Această schimbare de stare nu este permisă.",
+    "titleRequired": "Titlul sarcinii este obligatoriu.",
+    "invalidField": "Modificarea conține câmpuri care nu pot fi schimbate.",
+    "fallback": {
+      "archive": "Sarcina nu a putut fi arhivată.",
+      "create": "Sarcina nu a putut fi creată.",
+      "delete": "Sarcina nu a putut fi ștearsă.",
+      "reject": "Sarcina nu a putut fi respinsă.",
+      "status": "Starea sarcinii nu a putut fi actualizată.",
+      "submit": "Sarcina nu a putut fi trimisă spre verificare.",
+      "update": "Sarcina nu a putut fi actualizată."
     }
   }
 }

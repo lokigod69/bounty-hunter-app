@@ -319,7 +319,10 @@
       "imageUrlPlaceholder": "https://beispiel.de/bild.jpg",
       "cancelButton": "Abbrechen",
       "submitButton": "Belohnung erstellen",
-      "submittingButton": "Wird erstellt..."
+      "submittingButton": "Wird erstellt...",
+      "recipientRequired": "Wähle aus, wer diese Belohnung bekommen soll.",
+      "creditCostInvalid": "Gib einen gültigen Credit-Preis ein.",
+      "createFailed": "Die Belohnung konnte nicht erstellt werden. Versuch es noch einmal."
     },
     "editModal": {
       "title": "Belohnung bearbeiten",
@@ -328,7 +331,8 @@
       "creditCostPlaceholder": "Credit-Kosten",
       "cancelButton": "Abbrechen",
       "submitButton": "Änderungen speichern",
-      "submittingButton": "Speichern..."
+      "submittingButton": "Speichern...",
+      "updateFailed": "Die Belohnung konnte nicht aktualisiert werden. Versuch es noch einmal."
     },
     "confirmDialog": {
       "deleteTitle": "Belohnung löschen",
@@ -336,6 +340,19 @@
       "cancelButton": "Abbrechen",
       "confirmButton": "Bestätigen",
       "deletingButton": "Wird gelöscht..."
+    },
+    "imageField": {
+      "label": "Belohnungsbild",
+      "labelOptional": "Belohnungsbild (optional)",
+      "useUpload": "Hochladen",
+      "uploading": "Wird hochgeladen...",
+      "clickToUpload": "Zum Hochladen klicken",
+      "fileHint": "{{formats}} – max. {{size}} MB",
+      "previewAlt": "Vorschau",
+      "removeImage": "Bild entfernen",
+      "currentUpload": "Aktuell hochgeladenes Bild",
+      "invalidFile": "Ungültige Datei",
+      "uploadFailed": "Hochladen fehlgeschlagen"
     }
   },
   "languageSwitcher": {
@@ -385,7 +402,9 @@
       "rankBand1": "STREUNER",
       "rankBand2": "FÄHRTENLESER",
       "rankBand3": "EISENMAL",
-      "rankBand4": "GENANNT"
+      "rankBand4": "GENANNT",
+      "label": "Gildenmodus",
+      "description": "Verspielt und Sci-Fi-angehaucht. Perfekt für Freunde, Crews und Gaming-Gilden."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "HELFENDE HAND",
       "rankBand2": "VERLÄSSLICH",
       "rankBand3": "GRUNDPFEILER",
-      "rankBand4": "DAS HERZ"
+      "rankBand4": "DAS HERZ",
+      "label": "Familienmodus",
+      "description": "Warm und einfach. Perfekt für Familien, die sich Aufgaben teilen."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "VERLIEBT",
       "rankBand2": "HINGEGEBEN",
       "rankBand3": "TREUES HERZ",
-      "rankBand4": "FÜRS LEBEN"
+      "rankBand4": "FÜRS LEBEN",
+      "label": "Paarmodus",
+      "description": "Intim und leicht. Perfekt für Paare, die Fürsorge und gemeinsame Ziele zum Spiel machen."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Wie viele {{tokenPlural}} der Beauftragte verdient, wenn er diese {{mission}} erledigt. Er gibt sie in der {{store}} aus."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Geschenk",
+    "travel": "Reisen",
+    "food": "Essen",
+    "gaming": "Zocken",
+    "spa": "Wellness",
+    "learning": "Lernen",
+    "achievement": "Erfolg",
+    "money": "Geld",
+    "art": "Kunst",
+    "home": "Zuhause",
+    "entertainment": "Unterhaltung",
+    "vacation": "Urlaub",
+    "shopping": "Einkaufen",
+    "books": "Bücher",
+    "music": "Musik",
+    "sports": "Sport",
+    "drinks": "Getränke",
+    "jewelry": "Schmuck",
+    "car": "Auto",
+    "love": "Liebe"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Als Partner festlegen",
+    "friendBadge": "Freund",
+    "removeFriend": "Freund entfernen",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "pending": "Ausstehend",
+    "cancelRequest": "Gesendete Anfrage zurückziehen"
+  },
+  "friendSelector": {
+    "loading": "Freunde werden geladen...",
+    "error": "Fehler beim Laden der Freunde.",
+    "selectPartnerFirst": "Lege zuerst auf der Partnerseite einen Partner fest.",
+    "partnerAlt": "Partner",
+    "avatarAlt": "Profilbild",
+    "placeholder": "Wähle einen Freund für diese Belohnung",
+    "listLabel": "Freunde",
+    "empty": "Du hast noch keine Freunde zur Auswahl."
+  },
+  "layout": {
+    "logoAlt": "Bounty-Hunter-Logo",
+    "balanceAria": "{{store}} — dein Guthaben",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "unknownUser": "Unbekannte Person"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Du musst angemeldet sein, um {{action}}.",
+    "actions": {
+      "archive": "diese Aufgabe zu archivieren",
+      "create": "diese Aufgabe zu erstellen",
+      "delete": "diese Aufgabe zu löschen",
+      "reject": "diese Aufgabe abzulehnen",
+      "status": "diese Aufgabe zu aktualisieren",
+      "submit": "diese Aufgabe einzureichen",
+      "update": "diese Aufgabe zu bearbeiten"
+    },
+    "taskNotFound": "Aufgabe nicht gefunden oder bereits gelöscht.",
+    "notAssignee": "Diese Aufgabe ist dir nicht zugewiesen.",
+    "notCreatorReject": "Nur wer die Aufgabe erstellt hat, kann sie ablehnen.",
+    "notCreatorUpdate": "Du kannst nur Aufgaben bearbeiten, die du selbst erstellt hast.",
+    "notCreatorDelete": "Du kannst nur Aufgaben löschen, die du selbst erstellt hast.",
+    "notParticipant": "Nur die erstellende oder die zugewiesene Person kann diese Aufgabe archivieren.",
+    "wrongStatus": "Diese Aufgabe hat nicht den passenden Status für diese Aktion.",
+    "proofRequired": "Diese Aufgabe braucht einen Nachweis. Lade einen Nachweis hoch, um sie abzuschließen.",
+    "invalidProofType": "Ungültige Nachweisart. Nutze ein Bild, ein Video, ein PDF oder einen Text.",
+    "statusNotAllowed": "Diese Statusänderung ist nicht erlaubt.",
+    "titleRequired": "Ein Titel für die Aufgabe ist erforderlich.",
+    "invalidField": "Die Änderung enthält Felder, die nicht geändert werden können.",
+    "fallback": {
+      "archive": "Aufgabe konnte nicht archiviert werden.",
+      "create": "Aufgabe konnte nicht erstellt werden.",
+      "delete": "Aufgabe konnte nicht gelöscht werden.",
+      "reject": "Aufgabe konnte nicht abgelehnt werden.",
+      "status": "Status der Aufgabe konnte nicht aktualisiert werden.",
+      "submit": "Aufgabe konnte nicht zur Prüfung eingereicht werden.",
+      "update": "Aufgabe konnte nicht aktualisiert werden."
     }
   }
 }

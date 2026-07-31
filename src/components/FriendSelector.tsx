@@ -3,6 +3,7 @@
 // R25: Updated to auto-select partner in couple mode and lock selection.
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFriends } from '../hooks/useFriends';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
@@ -18,6 +19,7 @@ interface FriendSelectorProps {
 }
 
 const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSelectedFriend, className, placeholder }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, profile } = useAuth();
@@ -57,13 +59,13 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
     return (
       <div className="flex items-center gap-2 text-slate-400">
         <Spinner size="sm" />
-        <span>Loading friends...</span>
+        <span>{t('friendSelector.loading')}</span>
       </div>
     );
   }
 
   if (error) {
-    return <div className="text-red-500">Error loading friends.</div>;
+    return <div className="text-red-500">{t('friendSelector.error')}</div>;
   }
 
   // R25: In couple mode, show error if no partner is set
@@ -71,7 +73,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
     return (
       <div className={`p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3 ${className}`}>
         <AlertCircle size={20} className="text-amber-400 flex-shrink-0" />
-        <span className="text-amber-200 text-sm">Select a partner first on the Partner page.</span>
+        <span className="text-amber-200 text-sm">{t('friendSelector.selectPartnerFirst')}</span>
       </div>
     );
   }
@@ -84,7 +86,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
         <div className={`p-3 bg-gray-800/80 border border-[var(--mode-accent-muted)] rounded-lg flex items-center gap-3 ${className}`}>
           <img
             src={partnerProfile.avatar_url || avatarFallback(partnerProfile.email)}
-            alt={partnerProfile.display_name || 'partner'}
+            alt={partnerProfile.display_name || t('friendSelector.partnerAlt')}
             className="w-8 h-8 rounded-full border-2 border-[var(--mode-accent)]"
           />
           <span className="font-medium flex-1">{partnerProfile.display_name}</span>
@@ -107,13 +109,13 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
           <div className="flex items-center gap-3">
             <img
               src={selectedFriendProfile.avatar_url || avatarFallback(selectedFriendProfile.email)}
-              alt={selectedFriendProfile.display_name || 'user avatar'}
+              alt={selectedFriendProfile.display_name || t('friendSelector.avatarAlt')}
               className="w-8 h-8 rounded-full"
             />
             <span className="font-medium">{selectedFriendProfile.display_name}</span>
           </div>
         ) : (
-          <span className="text-gray-400">{placeholder || 'Select a friend to assign bounty'}</span>
+          <span className="text-gray-400">{placeholder || t('friendSelector.placeholder')}</span>
         )}
         <svg className={`w-5 h-5 text-gray-400 transform transition-transform ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -123,7 +125,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
       {isOpen && (
         <div className="absolute z-dropdown w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {acceptedFriends.length > 0 ? (
-            <ul tabIndex={-1} role="listbox" aria-label="Friends">
+            <ul tabIndex={-1} role="listbox" aria-label={t('friendSelector.listLabel')}>
               {acceptedFriends.map(({ friend }) => {
                 if (!friend) return null;
                 return (
@@ -139,7 +141,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
                   >
                     <img
                       src={friend.avatar_url || avatarFallback(friend.email)}
-                      alt={friend.display_name || 'user avatar'}
+                      alt={friend.display_name || t('friendSelector.avatarAlt')}
                       className="w-8 h-8 rounded-full"
                     />
                     <span className="font-medium">{friend.display_name}</span>
@@ -148,7 +150,7 @@ const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSele
               })}
             </ul>
           ) : (
-            <div className="p-3 text-center text-gray-400">You have no friends to select.</div>
+            <div className="p-3 text-center text-gray-400">{t('friendSelector.empty')}</div>
           )}
         </div>
       )}

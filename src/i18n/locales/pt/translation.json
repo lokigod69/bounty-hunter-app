@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://exemplo.com/imagem.jpg",
       "cancelButton": "Cancelar",
       "submitButton": "Criar recompensa",
-      "submittingButton": "A criar..."
+      "submittingButton": "A criar...",
+      "recipientRequired": "Escolhe a quem se destina esta recompensa.",
+      "creditCostInvalid": "Indica um custo em créditos válido.",
+      "createFailed": "Não foi possível criar a recompensa. Tenta de novo."
     },
     "editModal": {
       "title": "Editar recompensa",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Custo em créditos",
       "cancelButton": "Cancelar",
       "submitButton": "Guardar alterações",
-      "submittingButton": "A guardar..."
+      "submittingButton": "A guardar...",
+      "updateFailed": "Não foi possível atualizar a recompensa. Tenta de novo."
     },
     "confirmDialog": {
       "deleteTitle": "Eliminar recompensa",
@@ -323,6 +327,19 @@
       "cancelButton": "Cancelar",
       "confirmButton": "Confirmar",
       "deletingButton": "A eliminar..."
+    },
+    "imageField": {
+      "label": "Imagem da recompensa",
+      "labelOptional": "Imagem da recompensa (opcional)",
+      "useUpload": "Carregar",
+      "uploading": "A carregar...",
+      "clickToUpload": "Clica para carregar uma imagem",
+      "fileHint": "{{formats}} – máx. {{size}} MB",
+      "previewAlt": "Pré-visualização",
+      "removeImage": "Remover a imagem",
+      "currentUpload": "Imagem carregada atualmente",
+      "invalidFile": "Ficheiro inválido",
+      "uploadFailed": "Não foi possível carregar"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "ERRANTE",
       "rankBand2": "RASTREADOR",
       "rankBand3": "FORJADO",
-      "rankBand4": "AFAMADO"
+      "rankBand4": "AFAMADO",
+      "label": "Modo Guilda",
+      "description": "Divertido, com toques de ficção científica. Ideal para amigos, equipas e guildas de jogo."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "AJUDANTE",
       "rankBand2": "FIRME",
       "rankBand3": "PILAR",
-      "rankBand4": "CORAÇÃO"
+      "rankBand4": "CORAÇÃO",
+      "label": "Modo Família",
+      "description": "Acolhedor e simples. Ideal para famílias que partilham as tarefas de casa."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "ADMIRADOR",
       "rankBand2": "DEVOTO",
       "rankBand3": "LEAL",
-      "rankBand4": "ALMA GÉMEA"
+      "rankBand4": "ALMA GÉMEA",
+      "label": "Modo Casal",
+      "description": "Íntimo e leve. Ideal para casais que transformam o cuidado e as metas comuns num jogo."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Quantos {{tokenPlural}} ganha quem completar esta {{mission}}. Gasta-os na {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Presente",
+    "travel": "Viagem",
+    "food": "Comida",
+    "gaming": "Jogos",
+    "spa": "Spa",
+    "learning": "Aprendizagem",
+    "achievement": "Conquista",
+    "money": "Dinheiro",
+    "art": "Arte",
+    "home": "Casa",
+    "entertainment": "Entretenimento",
+    "vacation": "Férias",
+    "shopping": "Compras",
+    "books": "Livros",
+    "music": "Música",
+    "sports": "Desporto",
+    "drinks": "Bebidas",
+    "jewelry": "Joias",
+    "car": "Carro",
+    "love": "Amor"
+  },
+  "friendCard": {
+    "partnerBadge": "Parceiro",
+    "setAsPartner": "Definir como parceiro",
+    "friendBadge": "Amigo",
+    "removeFriend": "Remover amigo",
+    "accept": "Aceitar",
+    "decline": "Recusar",
+    "pending": "Pendente",
+    "cancelRequest": "Cancelar pedido enviado"
+  },
+  "friendSelector": {
+    "loading": "A carregar amigos...",
+    "error": "Erro ao carregar os amigos.",
+    "selectPartnerFirst": "Escolhe primeiro um parceiro na página Parceiro.",
+    "partnerAlt": "parceiro",
+    "avatarAlt": "avatar do utilizador",
+    "placeholder": "Escolhe a quem atribuir a recompensa",
+    "listLabel": "Amigos",
+    "empty": "Não tens amigos para escolher."
+  },
+  "layout": {
+    "logoAlt": "Logótipo do Bounty Hunter",
+    "balanceAria": "{{store}} — o teu saldo",
+    "openMenu": "Abrir o menu",
+    "closeMenu": "Fechar o menu",
+    "unknownUser": "Utilizador desconhecido"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Tens de iniciar sessão para {{action}}.",
+    "actions": {
+      "archive": "arquivar esta tarefa",
+      "create": "criar esta tarefa",
+      "delete": "eliminar esta tarefa",
+      "reject": "rejeitar esta tarefa",
+      "status": "atualizar esta tarefa",
+      "submit": "enviar esta tarefa",
+      "update": "editar esta tarefa"
+    },
+    "taskNotFound": "A tarefa não existe ou já foi eliminada.",
+    "notAssignee": "Esta tarefa não está atribuída a ti.",
+    "notCreatorReject": "Só quem criou a tarefa a pode rejeitar.",
+    "notCreatorUpdate": "Só podes editar tarefas que tenhas criado.",
+    "notCreatorDelete": "Só podes eliminar tarefas que tenhas criado.",
+    "notParticipant": "Só quem criou a tarefa ou quem a tem atribuída a pode arquivar.",
+    "wrongStatus": "Esta tarefa não está no estado certo para essa ação.",
+    "proofRequired": "Esta tarefa exige uma prova. Carrega uma prova para a concluir.",
+    "invalidProofType": "Tipo de prova inválido. Usa uma imagem, um vídeo, um PDF ou um texto.",
+    "statusNotAllowed": "Esta mudança de estado não é permitida.",
+    "titleRequired": "O título da tarefa é obrigatório.",
+    "invalidField": "A alteração inclui campos que não podem ser mudados.",
+    "fallback": {
+      "archive": "Não foi possível arquivar a tarefa.",
+      "create": "Não foi possível criar a tarefa.",
+      "delete": "Não foi possível eliminar a tarefa.",
+      "reject": "Não foi possível rejeitar a tarefa.",
+      "status": "Não foi possível atualizar o estado da tarefa.",
+      "submit": "Não foi possível enviar a tarefa para revisão.",
+      "update": "Não foi possível atualizar a tarefa."
     }
   }
 }

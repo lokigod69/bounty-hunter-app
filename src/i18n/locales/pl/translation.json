@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://przyklad.pl/obraz.jpg",
       "cancelButton": "Anuluj",
       "submitButton": "Utwórz nagrodę",
-      "submittingButton": "Tworzenie..."
+      "submittingButton": "Tworzenie...",
+      "recipientRequired": "Wybierz, dla kogo jest ta nagroda.",
+      "creditCostInvalid": "Podaj prawidłowy koszt w kredytach.",
+      "createFailed": "Nie udało się utworzyć nagrody. Spróbuj ponownie."
     },
     "editModal": {
       "title": "Edytuj nagrodę",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Koszt w kredytach",
       "cancelButton": "Anuluj",
       "submitButton": "Zapisz zmiany",
-      "submittingButton": "Zapisywanie..."
+      "submittingButton": "Zapisywanie...",
+      "updateFailed": "Nie udało się zaktualizować nagrody. Spróbuj ponownie."
     },
     "confirmDialog": {
       "deleteTitle": "Usuń nagrodę",
@@ -323,6 +327,19 @@
       "cancelButton": "Anuluj",
       "confirmButton": "Potwierdź",
       "deletingButton": "Usuwanie..."
+    },
+    "imageField": {
+      "label": "Obraz nagrody",
+      "labelOptional": "Obraz nagrody (opcjonalnie)",
+      "useUpload": "Prześlij",
+      "uploading": "Przesyłanie...",
+      "clickToUpload": "Kliknij, aby przesłać obraz",
+      "fileHint": "{{formats}} – maks. {{size}} MB",
+      "previewAlt": "Podgląd",
+      "removeImage": "Usuń obraz",
+      "currentUpload": "Obecnie przesłany obraz",
+      "invalidFile": "Nieprawidłowy plik",
+      "uploadFailed": "Przesyłanie nie powiodło się"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "WŁÓCZĘGA",
       "rankBand2": "TROPICIEL",
       "rankBand3": "ŻELAZNY ZNAK",
-      "rankBand4": "LEGENDA"
+      "rankBand4": "LEGENDA",
+      "label": "Tryb gildii",
+      "description": "Zabawny, w klimacie science fiction. Idealny dla znajomych, ekip i gildii graczy."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "POMOCNIK",
       "rankBand2": "PEWNA RĘKA",
       "rankBand3": "OPOKA",
-      "rankBand4": "SERCE"
+      "rankBand4": "SERCE",
+      "label": "Tryb rodzinny",
+      "description": "Ciepły i prosty. Idealny dla rodzin dzielących się obowiązkami."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "WIELBICIEL",
       "rankBand2": "ODDANY",
       "rankBand3": "WIERNE SERCE",
-      "rankBand4": "NA ZAWSZE"
+      "rankBand4": "NA ZAWSZE",
+      "label": "Tryb dla par",
+      "description": "Intymny i lekki. Idealny dla par, które zamieniają troskę i wspólne cele w grę."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Ile {{tokenPlural}} zdobywa osoba, która ukończy tę {{mission}}. Wydaje je w {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Prezent",
+    "travel": "Podróże",
+    "food": "Jedzenie",
+    "gaming": "Gry",
+    "spa": "Spa",
+    "learning": "Nauka",
+    "achievement": "Osiągnięcie",
+    "money": "Pieniądze",
+    "art": "Sztuka",
+    "home": "Dom",
+    "entertainment": "Rozrywka",
+    "vacation": "Wakacje",
+    "shopping": "Zakupy",
+    "books": "Książki",
+    "music": "Muzyka",
+    "sports": "Sport",
+    "drinks": "Napoje",
+    "jewelry": "Biżuteria",
+    "car": "Samochód",
+    "love": "Miłość"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Ustaw jako partnera",
+    "friendBadge": "Znajomy",
+    "removeFriend": "Usuń znajomego",
+    "accept": "Akceptuj",
+    "decline": "Odrzuć",
+    "pending": "Oczekuje",
+    "cancelRequest": "Anuluj wysłane zaproszenie"
+  },
+  "friendSelector": {
+    "loading": "Wczytywanie znajomych...",
+    "error": "Błąd podczas wczytywania znajomych.",
+    "selectPartnerFirst": "Najpierw wybierz partnera na stronie Partner.",
+    "partnerAlt": "partner",
+    "avatarAlt": "awatar użytkownika",
+    "placeholder": "Wybierz, komu przypisać nagrodę",
+    "listLabel": "Znajomi",
+    "empty": "Nie masz znajomych do wyboru."
+  },
+  "layout": {
+    "logoAlt": "Logo Bounty Hunter",
+    "balanceAria": "{{store}} — twoje saldo",
+    "openMenu": "Otwórz menu",
+    "closeMenu": "Zamknij menu",
+    "unknownUser": "Nieznany użytkownik"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Musisz się zalogować, aby {{action}}.",
+    "actions": {
+      "archive": "zarchiwizować to zadanie",
+      "create": "utworzyć to zadanie",
+      "delete": "usunąć to zadanie",
+      "reject": "odrzucić to zadanie",
+      "status": "zaktualizować to zadanie",
+      "submit": "wysłać to zadanie",
+      "update": "edytować to zadanie"
+    },
+    "taskNotFound": "Nie znaleziono zadania lub zostało usunięte.",
+    "notAssignee": "To zadanie nie jest przypisane do ciebie.",
+    "notCreatorReject": "Tylko osoba, która utworzyła zadanie, może je odrzucić.",
+    "notCreatorUpdate": "Możesz edytować tylko zadania utworzone przez ciebie.",
+    "notCreatorDelete": "Możesz usuwać tylko zadania utworzone przez ciebie.",
+    "notParticipant": "To zadanie może zarchiwizować tylko jego autor lub osoba, do której jest przypisane.",
+    "wrongStatus": "To zadanie nie ma statusu wymaganego do tej akcji.",
+    "proofRequired": "To zadanie wymaga dowodu. Prześlij dowód, aby je zakończyć.",
+    "invalidProofType": "Nieprawidłowy rodzaj dowodu. Użyj obrazu, wideo, pliku PDF lub tekstu.",
+    "statusNotAllowed": "Ta zmiana statusu jest niedozwolona.",
+    "titleRequired": "Tytuł zadania jest wymagany.",
+    "invalidField": "Zmiana zawiera pola, których nie można modyfikować.",
+    "fallback": {
+      "archive": "Nie udało się zarchiwizować zadania.",
+      "create": "Nie udało się utworzyć zadania.",
+      "delete": "Nie udało się usunąć zadania.",
+      "reject": "Nie udało się odrzucić zadania.",
+      "status": "Nie udało się zaktualizować statusu zadania.",
+      "submit": "Nie udało się wysłać zadania do sprawdzenia.",
+      "update": "Nie udało się zaktualizować zadania."
     }
   }
 }

@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://example.com/image.jpg",
       "cancelButton": "Cancel",
       "submitButton": "Create reward",
-      "submittingButton": "Creating..."
+      "submittingButton": "Creating...",
+      "recipientRequired": "Please select a recipient for this bounty.",
+      "creditCostInvalid": "Please enter a valid credit cost.",
+      "createFailed": "Failed to create bounty. Please try again."
     },
     "editModal": {
       "title": "Edit reward",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Credit Cost",
       "cancelButton": "Cancel",
       "submitButton": "Save Changes",
-      "submittingButton": "Saving..."
+      "submittingButton": "Saving...",
+      "updateFailed": "Failed to update bounty. Please try again."
     },
     "confirmDialog": {
       "deleteTitle": "Delete reward",
@@ -323,6 +327,19 @@
       "cancelButton": "Cancel",
       "confirmButton": "Confirm",
       "deletingButton": "Deleting..."
+    },
+    "imageField": {
+      "label": "Reward Image",
+      "labelOptional": "Reward Image (optional)",
+      "useUpload": "Upload",
+      "uploading": "Uploading...",
+      "clickToUpload": "Click to upload image",
+      "fileHint": "{{formats}} - Max {{size}}MB",
+      "previewAlt": "Preview",
+      "removeImage": "Remove image",
+      "currentUpload": "Current uploaded image",
+      "invalidFile": "Invalid file",
+      "uploadFailed": "Upload failed"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "DRIFTER",
       "rankBand2": "TRACKER",
       "rankBand3": "IRONMARK",
-      "rankBand4": "THE NAMED"
+      "rankBand4": "THE NAMED",
+      "label": "Guild Mode",
+      "description": "Playful, sci-fi inspired. Perfect for friends, crews, and gaming guilds."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "HELPER",
       "rankBand2": "STEADY HAND",
       "rankBand3": "KEYSTONE",
-      "rankBand4": "THE HEART"
+      "rankBand4": "THE HEART",
+      "label": "Family Mode",
+      "description": "Warm and simple. Perfect for families sharing chores and tasks."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "ADMIRER",
       "rankBand2": "DEVOTED",
       "rankBand3": "TRUE HEART",
-      "rankBand4": "THE ONE"
+      "rankBand4": "THE ONE",
+      "label": "Couple Mode",
+      "description": "Intimate and light. Perfect for couples gamifying care and shared goals."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "How many {{tokenPlural}} the assignee earns when they complete this {{mission}}. They spend them in the {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Gift",
+    "travel": "Travel",
+    "food": "Food",
+    "gaming": "Gaming",
+    "spa": "Spa",
+    "learning": "Learning",
+    "achievement": "Achievement",
+    "money": "Money",
+    "art": "Art",
+    "home": "Home",
+    "entertainment": "Entertainment",
+    "vacation": "Vacation",
+    "shopping": "Shopping",
+    "books": "Books",
+    "music": "Music",
+    "sports": "Sports",
+    "drinks": "Drinks",
+    "jewelry": "Jewelry",
+    "car": "Car",
+    "love": "Love"
+  },
+  "friendCard": {
+    "partnerBadge": "Partner",
+    "setAsPartner": "Set as Partner",
+    "friendBadge": "Friend",
+    "removeFriend": "Remove friend",
+    "accept": "Accept",
+    "decline": "Decline",
+    "pending": "Pending",
+    "cancelRequest": "Cancel sent request"
+  },
+  "friendSelector": {
+    "loading": "Loading friends...",
+    "error": "Error loading friends.",
+    "selectPartnerFirst": "Select a partner first on the Partner page.",
+    "partnerAlt": "partner",
+    "avatarAlt": "user avatar",
+    "placeholder": "Select a friend to assign bounty",
+    "listLabel": "Friends",
+    "empty": "You have no friends to select."
+  },
+  "layout": {
+    "logoAlt": "Bounty Hunter Logo",
+    "balanceAria": "{{store}} — your balance",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "unknownUser": "Unknown user"
+  },
+  "taskErrors": {
+    "notAuthenticated": "You must be logged in to {{action}}.",
+    "actions": {
+      "archive": "archive this task",
+      "create": "create this task",
+      "delete": "delete this task",
+      "reject": "reject this task",
+      "status": "update this task",
+      "submit": "submit this task",
+      "update": "update this task"
+    },
+    "taskNotFound": "Task not found or has been deleted.",
+    "notAssignee": "You are not assigned to this task.",
+    "notCreatorReject": "Only the task creator can reject this task.",
+    "notCreatorUpdate": "You can only edit tasks that you created.",
+    "notCreatorDelete": "You can only delete tasks that you created.",
+    "notParticipant": "Only the creator or assignee can archive this task.",
+    "wrongStatus": "This task is not in the correct status for that action.",
+    "proofRequired": "This task requires proof. Please upload proof to complete.",
+    "invalidProofType": "Invalid proof type. Use an image, video, PDF, or text proof.",
+    "statusNotAllowed": "This status change is not allowed.",
+    "titleRequired": "Task title is required.",
+    "invalidField": "Task update contains fields that cannot be changed.",
+    "fallback": {
+      "archive": "Failed to archive task.",
+      "create": "Failed to create task.",
+      "delete": "Failed to delete task.",
+      "reject": "Failed to reject task.",
+      "status": "Failed to update task status.",
+      "submit": "Failed to submit task for review.",
+      "update": "Failed to update task."
     }
   }
 }

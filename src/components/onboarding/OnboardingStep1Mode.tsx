@@ -137,7 +137,7 @@ export default function OnboardingStep1Mode({
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-subtitle text-white font-semibold">{theme.label}</h3>
+                      <h3 className="text-subtitle text-white font-semibold">{t(`theme.${theme.id}.label`)}</h3>
                       {!IS_SINGLE_MODE && theme.id === 'guild' && (
                         <span className="text-[10px] uppercase tracking-wide rounded-full px-2 py-0.5 bg-[var(--mode-accent-soft)] text-[var(--mode-accent)]">
                           {t('onboarding.mode.popularBadge')}
@@ -147,7 +147,7 @@ export default function OnboardingStep1Mode({
                         <Check size={20} className="ml-auto flex-shrink-0" style={{ color: accent }} />
                       )}
                     </div>
-                    <p className="text-body text-white/70 text-sm">{theme.description}</p>
+                    <p className="text-body text-white/70 text-sm">{t(`theme.${theme.id}.description`)}</p>
                   </div>
                 </div>
               </div>

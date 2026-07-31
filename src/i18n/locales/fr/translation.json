@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://exemple.com/image.jpg",
       "cancelButton": "Annuler",
       "submitButton": "Créer la récompense",
-      "submittingButton": "Création..."
+      "submittingButton": "Création...",
+      "recipientRequired": "Choisis à qui cette récompense est destinée.",
+      "creditCostInvalid": "Saisis un coût en crédits valide.",
+      "createFailed": "Impossible de créer la récompense. Réessaie."
     },
     "editModal": {
       "title": "Modifier la récompense",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Coût en crédits",
       "cancelButton": "Annuler",
       "submitButton": "Enregistrer les modifications",
-      "submittingButton": "Enregistrement..."
+      "submittingButton": "Enregistrement...",
+      "updateFailed": "Impossible de mettre à jour la récompense. Réessaie."
     },
     "confirmDialog": {
       "deleteTitle": "Supprimer la récompense",
@@ -323,6 +327,19 @@
       "cancelButton": "Annuler",
       "confirmButton": "Confirmer",
       "deletingButton": "Suppression..."
+    },
+    "imageField": {
+      "label": "Image de la récompense",
+      "labelOptional": "Image de la récompense (facultative)",
+      "useUpload": "Téléverser",
+      "uploading": "Téléversement...",
+      "clickToUpload": "Clique pour téléverser une image",
+      "fileHint": "{{formats}} – max. {{size}} Mo",
+      "previewAlt": "Aperçu",
+      "removeImage": "Retirer l'image",
+      "currentUpload": "Image actuellement téléversée",
+      "invalidFile": "Fichier invalide",
+      "uploadFailed": "Échec du téléversement"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "ERRANT",
       "rankBand2": "TRAQUEUR",
       "rankBand3": "FORGÉ",
-      "rankBand4": "RENOMMÉ"
+      "rankBand4": "RENOMMÉ",
+      "label": "Mode Guilde",
+      "description": "Ludique, aux accents de science-fiction. Parfait pour les amis, les équipes et les guildes de jeu."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "AIDE",
       "rankBand2": "FIABLE",
       "rankBand3": "PILIER",
-      "rankBand4": "CŒUR"
+      "rankBand4": "CŒUR",
+      "label": "Mode Famille",
+      "description": "Chaleureux et simple. Parfait pour les familles qui se partagent les tâches."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "ADMIRATEUR",
       "rankBand2": "DÉVOUÉ",
       "rankBand3": "CŒUR FIDÈLE",
-      "rankBand4": "L'UNIQUE"
+      "rankBand4": "L'UNIQUE",
+      "label": "Mode Couple",
+      "description": "Intime et léger. Parfait pour les couples qui transforment l'attention et les objectifs communs en jeu."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Combien de {{tokenPlural}} gagne celui qui accomplit cette {{mission}}. Il les dépense dans la {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Cadeau",
+    "travel": "Voyage",
+    "food": "Nourriture",
+    "gaming": "Jeux vidéo",
+    "spa": "Spa",
+    "learning": "Apprentissage",
+    "achievement": "Réussite",
+    "money": "Argent",
+    "art": "Art",
+    "home": "Maison",
+    "entertainment": "Divertissement",
+    "vacation": "Vacances",
+    "shopping": "Shopping",
+    "books": "Livres",
+    "music": "Musique",
+    "sports": "Sport",
+    "drinks": "Boissons",
+    "jewelry": "Bijoux",
+    "car": "Voiture",
+    "love": "Amour"
+  },
+  "friendCard": {
+    "partnerBadge": "Partenaire",
+    "setAsPartner": "Définir comme partenaire",
+    "friendBadge": "Ami",
+    "removeFriend": "Retirer cet ami",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "pending": "En attente",
+    "cancelRequest": "Annuler la demande envoyée"
+  },
+  "friendSelector": {
+    "loading": "Chargement des amis...",
+    "error": "Erreur lors du chargement des amis.",
+    "selectPartnerFirst": "Choisis d'abord un partenaire sur la page Partenaire.",
+    "partnerAlt": "partenaire",
+    "avatarAlt": "avatar de l'utilisateur",
+    "placeholder": "Choisis à qui attribuer la récompense",
+    "listLabel": "Amis",
+    "empty": "Tu n'as aucun ami à sélectionner."
+  },
+  "layout": {
+    "logoAlt": "Logo de Bounty Hunter",
+    "balanceAria": "{{store}} — ton solde",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "unknownUser": "Utilisateur inconnu"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Tu dois être connecté pour {{action}}.",
+    "actions": {
+      "archive": "archiver cette tâche",
+      "create": "créer cette tâche",
+      "delete": "supprimer cette tâche",
+      "reject": "rejeter cette tâche",
+      "status": "mettre à jour cette tâche",
+      "submit": "envoyer cette tâche",
+      "update": "modifier cette tâche"
+    },
+    "taskNotFound": "Tâche introuvable ou déjà supprimée.",
+    "notAssignee": "Cette tâche ne t'est pas assignée.",
+    "notCreatorReject": "Seule la personne qui a créé la tâche peut la rejeter.",
+    "notCreatorUpdate": "Tu ne peux modifier que les tâches que tu as créées.",
+    "notCreatorDelete": "Tu ne peux supprimer que les tâches que tu as créées.",
+    "notParticipant": "Seule la personne qui a créé la tâche ou celle qui en a la charge peut l'archiver.",
+    "wrongStatus": "Cette tâche n'est pas dans le bon état pour cette action.",
+    "proofRequired": "Cette tâche exige une preuve. Ajoute une preuve pour la terminer.",
+    "invalidProofType": "Type de preuve invalide. Utilise une image, une vidéo, un PDF ou un texte.",
+    "statusNotAllowed": "Ce changement d'état n'est pas autorisé.",
+    "titleRequired": "Le titre de la tâche est obligatoire.",
+    "invalidField": "La modification contient des champs qui ne peuvent pas être changés.",
+    "fallback": {
+      "archive": "Impossible d'archiver la tâche.",
+      "create": "Impossible de créer la tâche.",
+      "delete": "Impossible de supprimer la tâche.",
+      "reject": "Impossible de rejeter la tâche.",
+      "status": "Impossible de mettre à jour l'état de la tâche.",
+      "submit": "Impossible d'envoyer la tâche en relecture.",
+      "update": "Impossible de mettre à jour la tâche."
     }
   }
 }

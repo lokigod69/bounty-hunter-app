@@ -56,6 +56,7 @@ import {
   updateTaskViaRpc,
 } from '../domain/missions';
 import type { TaskLifecycleRpcResult } from '../types/custom';
+import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import emptyIssued from '../assets/generated/empty-issued.webp';
 
@@ -166,7 +167,12 @@ export default function IssuedPage() {
       toast.success(t('contracts.deleteSuccess', { title: selectedContract.title }));
       await refetchIssuedContracts(); // Refresh the list
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'message' in error) {
+      // A lifecycle refusal carries a code, so it can be stated in the user's
+      // language; anything else falls through to the raw message as before.
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        toast.error(localized);
+      } else if (error && typeof error === 'object' && 'message' in error) {
         const supabaseError = error as { message: string; code?: string; details?: string };
         toast.error(t('contracts.deleteFailedMessage', { message: supabaseError.message }));
       } else {

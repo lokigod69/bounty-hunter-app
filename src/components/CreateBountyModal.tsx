@@ -55,7 +55,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   const handleFileSelect = (file: File) => {
     const validation = validateRewardImage(file);
     if (!validation.valid) {
-      setUploadError(validation.error || 'Invalid file');
+      setUploadError(validation.error || t('rewards.imageField.invalidFile'));
       return;
     }
 
@@ -82,11 +82,11 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
     // R32: Add validation messages for missing fields
     if (!assignedTo) {
-      toast.error('Please select a recipient for this bounty.');
+      toast.error(t('rewards.createModal.recipientRequired'));
       return;
     }
     if (creditCost === '' || creditCost <= 0) {
-      toast.error('Please enter a valid credit cost.');
+      toast.error(t('rewards.createModal.creditCostInvalid'));
       return;
     }
     if (!user) return;
@@ -108,7 +108,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         );
 
         if (!uploadResult.success) {
-          setUploadError(uploadResult.error || 'Upload failed');
+          setUploadError(uploadResult.error || t('rewards.imageField.uploadFailed'));
           setIsUploading(false);
           return;
         }
@@ -138,7 +138,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         onClose(); // Close modal
       }
     } catch {
-      setUploadError('Failed to create bounty. Please try again.');
+      setUploadError(t('rewards.createModal.createFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -215,10 +215,10 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
 
             {/* R22/R30: Image selection - emoji or upload only */}
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">Reward Image (optional)</label>
+              <label className="block text-sm font-medium text-white/70 mb-2">{t('rewards.imageField.labelOptional')}</label>
               <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
-                <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>Upload</button>
+                <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.imageField.useUpload')}</button>
               </div>
 
               {imageType === 'emoji' && (
@@ -231,13 +231,13 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
                     <div className="relative">
                       {/* R26: Square aspect ratio preview to match RewardCard */}
                       <div className="w-full aspect-square rounded-lg overflow-hidden border border-gray-700">
-                        <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={uploadPreview} alt={t('rewards.imageField.previewAlt')} className="w-full h-full object-cover" />
                       </div>
                       <button
                         type="button"
                         onClick={handleClearUpload}
                         className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-500 rounded-full text-white transition"
-                        aria-label="Remove image"
+                        aria-label={t('rewards.imageField.removeImage')}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -250,9 +250,12 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
                     >
                       <div className="w-full p-6 border-2 border-dashed border-gray-600 rounded-lg hover:border-teal-500 transition cursor-pointer text-center">
                         <Upload size={32} className="mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-white/70">Click to upload image</p>
+                        <p className="text-sm text-white/70">{t('rewards.imageField.clickToUpload')}</p>
                         <p className="text-xs text-white/50 mt-1">
-                          {REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase()} - Max {REWARD_IMAGE_MAX_SIZE_MB}MB
+                          {t('rewards.imageField.fileHint', {
+                            formats: REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase(),
+                            size: REWARD_IMAGE_MAX_SIZE_MB,
+                          })}
                         </p>
                       </div>
                     </FileUpload>
@@ -269,7 +272,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
               {t('rewards.createModal.cancelButton')}
             </AppButton>
             <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
-              {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.createModal.submittingButton')) : t('rewards.createModal.submitButton')}
+              {isLoading || isUploading ? (isUploading ? t('rewards.imageField.uploading') : t('rewards.createModal.submittingButton')) : t('rewards.createModal.submitButton')}
             </AppButton>
         </div>
       </form>

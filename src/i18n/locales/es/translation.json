@@ -306,7 +306,10 @@
       "imageUrlPlaceholder": "https://ejemplo.com/imagen.jpg",
       "cancelButton": "Cancelar",
       "submitButton": "Crear recompensa",
-      "submittingButton": "Creando..."
+      "submittingButton": "Creando...",
+      "recipientRequired": "Elige a quién va dirigida esta recompensa.",
+      "creditCostInvalid": "Introduce un coste en créditos válido.",
+      "createFailed": "No se pudo crear la recompensa. Inténtalo de nuevo."
     },
     "editModal": {
       "title": "Editar recompensa",
@@ -315,7 +318,8 @@
       "creditCostPlaceholder": "Coste en créditos",
       "cancelButton": "Cancelar",
       "submitButton": "Guardar cambios",
-      "submittingButton": "Guardando..."
+      "submittingButton": "Guardando...",
+      "updateFailed": "No se pudo actualizar la recompensa. Inténtalo de nuevo."
     },
     "confirmDialog": {
       "deleteTitle": "Eliminar recompensa",
@@ -323,6 +327,19 @@
       "cancelButton": "Cancelar",
       "confirmButton": "Confirmar",
       "deletingButton": "Eliminando..."
+    },
+    "imageField": {
+      "label": "Imagen de la recompensa",
+      "labelOptional": "Imagen de la recompensa (opcional)",
+      "useUpload": "Subir",
+      "uploading": "Subiendo...",
+      "clickToUpload": "Haz clic para subir una imagen",
+      "fileHint": "{{formats}} – máx. {{size}} MB",
+      "previewAlt": "Vista previa",
+      "removeImage": "Quitar la imagen",
+      "currentUpload": "Imagen subida actualmente",
+      "invalidFile": "Archivo no válido",
+      "uploadFailed": "No se pudo subir"
     }
   },
   "history": {
@@ -385,7 +402,9 @@
       "rankBand1": "ERRANTE",
       "rankBand2": "RASTREADOR",
       "rankBand3": "FORJADO",
-      "rankBand4": "RENOMBRADO"
+      "rankBand4": "RENOMBRADO",
+      "label": "Modo Gremio",
+      "description": "Desenfadado, con aire de ciencia ficción. Ideal para amigos, escuadras y gremios de juego."
     },
     "family": {
       "appName": "Bounty Hunter",
@@ -428,7 +447,9 @@
       "rankBand1": "AYUDANTE",
       "rankBand2": "CUMPLIDOR",
       "rankBand3": "PILAR",
-      "rankBand4": "CORAZÓN"
+      "rankBand4": "CORAZÓN",
+      "label": "Modo Familia",
+      "description": "Cálido y sencillo. Ideal para familias que comparten las tareas de casa."
     },
     "couple": {
       "appName": "Bounty Hunter",
@@ -471,7 +492,9 @@
       "rankBand1": "ADMIRADOR",
       "rankBand2": "DEVOTO",
       "rankBand3": "FIEL",
-      "rankBand4": "ALMA GEMELA"
+      "rankBand4": "ALMA GEMELA",
+      "label": "Modo Pareja",
+      "description": "Íntimo y ligero. Ideal para parejas que convierten el cuidado y las metas comunes en un juego."
     }
   },
   "onboarding": {
@@ -543,6 +566,88 @@
         "rewardExample": "10 {{tokenPlural}}",
         "rewardExplanation": "Cuántos {{tokenPlural}} gana quien complete esta {{mission}}. Los gasta en la {{store}}."
       }
+    }
+  },
+  "emojiPicker": {
+    "gift": "Regalo",
+    "travel": "Viajes",
+    "food": "Comida",
+    "gaming": "Videojuegos",
+    "spa": "Spa",
+    "learning": "Aprendizaje",
+    "achievement": "Logro",
+    "money": "Dinero",
+    "art": "Arte",
+    "home": "Hogar",
+    "entertainment": "Entretenimiento",
+    "vacation": "Vacaciones",
+    "shopping": "Compras",
+    "books": "Libros",
+    "music": "Música",
+    "sports": "Deportes",
+    "drinks": "Bebidas",
+    "jewelry": "Joyas",
+    "car": "Coche",
+    "love": "Amor"
+  },
+  "friendCard": {
+    "partnerBadge": "Pareja",
+    "setAsPartner": "Elegir como pareja",
+    "friendBadge": "Amigo",
+    "removeFriend": "Eliminar amigo",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "pending": "Pendiente",
+    "cancelRequest": "Cancelar solicitud enviada"
+  },
+  "friendSelector": {
+    "loading": "Cargando amigos...",
+    "error": "Error al cargar los amigos.",
+    "selectPartnerFirst": "Elige primero una pareja en la página Pareja.",
+    "partnerAlt": "pareja",
+    "avatarAlt": "avatar del usuario",
+    "placeholder": "Elige a quién asignar la recompensa",
+    "listLabel": "Amigos",
+    "empty": "No tienes amigos para seleccionar."
+  },
+  "layout": {
+    "logoAlt": "Logotipo de Bounty Hunter",
+    "balanceAria": "{{store}} — tu saldo",
+    "openMenu": "Abrir el menú",
+    "closeMenu": "Cerrar el menú",
+    "unknownUser": "Usuario desconocido"
+  },
+  "taskErrors": {
+    "notAuthenticated": "Tienes que iniciar sesión para {{action}}.",
+    "actions": {
+      "archive": "archivar esta tarea",
+      "create": "crear esta tarea",
+      "delete": "eliminar esta tarea",
+      "reject": "rechazar esta tarea",
+      "status": "actualizar esta tarea",
+      "submit": "enviar esta tarea",
+      "update": "editar esta tarea"
+    },
+    "taskNotFound": "La tarea no existe o ya fue eliminada.",
+    "notAssignee": "Esta tarea no está asignada a ti.",
+    "notCreatorReject": "Solo quien creó la tarea puede rechazarla.",
+    "notCreatorUpdate": "Solo puedes editar las tareas que has creado.",
+    "notCreatorDelete": "Solo puedes eliminar las tareas que has creado.",
+    "notParticipant": "Solo quien la creó o quien la tiene asignada puede archivar esta tarea.",
+    "wrongStatus": "Esta tarea no está en el estado correcto para esa acción.",
+    "proofRequired": "Esta tarea necesita una prueba. Sube una prueba para completarla.",
+    "invalidProofType": "Tipo de prueba no válido. Usa una imagen, un vídeo, un PDF o un texto.",
+    "statusNotAllowed": "Este cambio de estado no está permitido.",
+    "titleRequired": "El título de la tarea es obligatorio.",
+    "invalidField": "La modificación incluye campos que no se pueden cambiar.",
+    "fallback": {
+      "archive": "No se pudo archivar la tarea.",
+      "create": "No se pudo crear la tarea.",
+      "delete": "No se pudo eliminar la tarea.",
+      "reject": "No se pudo rechazar la tarea.",
+      "status": "No se pudo actualizar el estado de la tarea.",
+      "submit": "No se pudo enviar la tarea a revisión.",
+      "update": "No se pudo actualizar la tarea."
     }
   }
 }

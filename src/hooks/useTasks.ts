@@ -38,6 +38,7 @@ import {
   updateTaskViaRpc,
   type TaskUpdatePatch,
 } from '../domain/missions';
+import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
 
 // Helper to reliably get an error message string
 interface ErrorWithMessage {
@@ -55,6 +56,14 @@ function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
 }
 
 function getErrorMessage(error: unknown): string {
+  // A lifecycle refusal only carries a code plus a generic fallback message,
+  // so it is localized here rather than read off `.message`. The i18next
+  // singleton is used directly: these strings are baked into a toast at throw
+  // time, so there is nothing to re-render on a language switch.
+  const localized = translateTaskLifecycleErrorObject(error);
+  if (localized) {
+    return localized;
+  }
   if (error instanceof Error) {
     return error.message;
   }

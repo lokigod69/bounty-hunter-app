@@ -5,8 +5,6 @@ import { ThemeDefinition, ThemeId } from './theme.types';
 
 export const guildTheme: ThemeDefinition = {
   id: 'guild',
-  label: 'Guild Mode',
-  description: 'Playful, sci-fi inspired. Perfect for friends, crews, and gaming guilds.',
   strings: {
     appName: 'Bounty Hunter',
     missionSingular: 'mission',
@@ -54,8 +52,6 @@ export const guildTheme: ThemeDefinition = {
 
 export const familyTheme: ThemeDefinition = {
   id: 'family',
-  label: 'Family Mode',
-  description: 'Warm and simple. Perfect for families sharing chores and tasks.',
   strings: {
     appName: 'Bounty Hunter',
     missionSingular: 'chore',
@@ -103,8 +99,6 @@ export const familyTheme: ThemeDefinition = {
 
 export const coupleTheme: ThemeDefinition = {
   id: 'couple',
-  label: 'Couple Mode',
-  description: 'Intimate and light. Perfect for couples gamifying care and shared goals.',
   strings: {
     appName: 'Bounty Hunter',
     missionSingular: 'request',

@@ -110,7 +110,7 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
   const handleFileSelect = (file: File) => {
     const validation = validateRewardImage(file);
     if (!validation.valid) {
-      setUploadError(validation.error || 'Invalid file');
+      setUploadError(validation.error || t('rewards.imageField.invalidFile'));
       return;
     }
 
@@ -161,7 +161,7 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
           );
 
           if (!uploadResult.success) {
-            setUploadError(uploadResult.error || 'Upload failed');
+            setUploadError(uploadResult.error || t('rewards.imageField.uploadFailed'));
             setIsUploading(false);
             return;
           }
@@ -185,8 +185,8 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
         onSuccess();
         onClose();
       }
-    } catch (err) {
-      setUploadError('Failed to update bounty. Please try again.');
+    } catch {
+      setUploadError(t('rewards.editModal.updateFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -254,11 +254,11 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
 
             {/* R22: Image selection with three options */}
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">Reward Image</label>
+              <label className="block text-sm font-medium text-white/70 mb-2">{t('rewards.imageField.label')}</label>
               <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
                 <button type="button" onClick={() => setImageType('url')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'url' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useImageUrl')}</button>
-                <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>Upload</button>
+                <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.imageField.useUpload')}</button>
               </div>
 
               {imageType === 'emoji' && (
@@ -284,18 +284,18 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
                     <div className="relative">
                       {/* R26: Square aspect ratio preview to match RewardCard */}
                       <div className="w-full aspect-square rounded-lg overflow-hidden border border-gray-700">
-                        <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={uploadPreview} alt={t('rewards.imageField.previewAlt')} className="w-full h-full object-cover" />
                       </div>
                       <button
                         type="button"
                         onClick={handleClearUpload}
                         className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-500 rounded-full text-white transition"
-                        aria-label="Remove image"
+                        aria-label={t('rewards.imageField.removeImage')}
                       >
                         <Trash2 size={16} />
                       </button>
                       {uploadFile && <p className="text-xs text-white/50 mt-1 text-center">{uploadFile.name}</p>}
-                      {existingImageUrl && !uploadFile && <p className="text-xs text-teal-400/70 mt-1 text-center">Current uploaded image</p>}
+                      {existingImageUrl && !uploadFile && <p className="text-xs text-teal-400/70 mt-1 text-center">{t('rewards.imageField.currentUpload')}</p>}
                     </div>
                   ) : (
                     <FileUpload
@@ -304,9 +304,12 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
                     >
                       <div className="w-full p-6 border-2 border-dashed border-gray-600 rounded-lg hover:border-teal-500 transition cursor-pointer text-center">
                         <Upload size={32} className="mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-white/70">Click to upload image</p>
+                        <p className="text-sm text-white/70">{t('rewards.imageField.clickToUpload')}</p>
                         <p className="text-xs text-white/50 mt-1">
-                          {REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase()} - Max {REWARD_IMAGE_MAX_SIZE_MB}MB
+                          {t('rewards.imageField.fileHint', {
+                            formats: REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase(),
+                            size: REWARD_IMAGE_MAX_SIZE_MB,
+                          })}
                         </p>
                       </div>
                     </FileUpload>
@@ -323,7 +326,7 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
               {t('rewards.editModal.cancelButton')}
             </AppButton>
             <AppButton type="submit" variant="cta" loading={isLoading || isUploading} className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px]">
-              {isLoading || isUploading ? (isUploading ? 'Uploading...' : t('rewards.editModal.submittingButton')) : t('rewards.editModal.submitButton')}
+              {isLoading || isUploading ? (isUploading ? t('rewards.imageField.uploading') : t('rewards.editModal.submittingButton')) : t('rewards.editModal.submitButton')}
             </AppButton>
         </div>
       </form>

@@ -17,7 +17,7 @@ import type {
 export type MissionId = string;
 type TaskLifecycleClient = SupabaseClient<Database>;
 type TaskMutationClient = SupabaseClient<Database>;
-type TaskLifecycleOperation = 'archive' | 'create' | 'delete' | 'reject' | 'status' | 'submit' | 'update';
+export type TaskLifecycleOperation = 'archive' | 'create' | 'delete' | 'reject' | 'status' | 'submit' | 'update';
 
 export type CreateTaskRpcArgs =
   Database['public']['Functions']['create_task']['Args'];
@@ -34,6 +34,17 @@ export type TaskUpdatePatch = Partial<Pick<
   | 'is_daily'
 >>;
 
+/**
+ * Last-resort English text for a lifecycle failure with no machine-readable
+ * code — a raw transport/Postgres error, not one of our own refusals.
+ *
+ * The per-code message TABLE deliberately does not live here. A code is a fact
+ * about what the server refused; the sentence shown to a human is copy, and
+ * copy belongs to i18n. See src/i18n/taskLifecycleErrors.ts, which maps
+ * `TaskLifecycleRpcError.code` + `.operation` onto `taskErrors.*` keys. This
+ * module must stay free of any i18next dependency: it is domain code and is
+ * unit-tested without a translator in scope.
+ */
 const operationFallbacks: Record<TaskLifecycleOperation, string> = {
   archive: 'Failed to archive task.',
   create: 'Failed to create task.',
@@ -44,50 +55,11 @@ const operationFallbacks: Record<TaskLifecycleOperation, string> = {
   update: 'Failed to update task.',
 };
 
-export function getTaskLifecycleRpcErrorMessage(
-  code: TaskLifecycleRpcErrorCode | string | undefined,
-  operation: TaskLifecycleOperation,
-): string {
-  switch (code) {
-    case 'not_authenticated':
-      return `You must be logged in to ${operation} this task.`;
-    case 'task_not_found':
-      return 'Task not found or has been deleted.';
-    case 'not_assignee':
-      return 'You are not assigned to this task.';
-    case 'not_creator':
-      return operation === 'reject'
-        ? 'Only the task creator can reject this task.'
-        : operation === 'update'
-        ? 'You can only edit tasks that you created.'
-        : 'You can only delete tasks that you created.';
-    case 'not_participant':
-      return 'Only the creator or assignee can archive this task.';
-    case 'wrong_status':
-      return 'This task is not in the correct status for that action.';
-    case 'proof_required':
-      return 'This task requires proof. Please upload proof to complete.';
-    case 'invalid_proof_type':
-      return 'Invalid proof type. Use an image, video, PDF, or text proof.';
-    case 'status_not_allowed':
-      return 'This status change is not allowed.';
-    case 'title_required':
-      return 'Task title is required.';
-    case 'invalid_field':
-      return 'Task update contains fields that cannot be changed.';
-    case 'self_assigned_credit_reward':
-      // Proposal 013. Deliberately says WHY, not just "not allowed" — the rule
-      // is a product statement about what standing means, not a validation nit.
-      return "You can't pay yourself credits — standing is earned from someone else's judgement. Assign this to someone, or pick a custom reward.";
-    default:
-      return operationFallbacks[operation];
-  }
-}
-
 /**
- * Carries the machine-readable RPC error code alongside the English fallback
- * message. UI that has a translator can localize from `.code`; everything that
- * only reads `.message` behaves exactly as it did before this class existed.
+ * Carries the machine-readable RPC error code. `.message` is only the generic
+ * per-operation fallback: any surface that has a translator localizes from
+ * `.code` via the i18n layer, and one that does not still shows a sentence
+ * rather than a raw error code.
  */
 export class TaskLifecycleRpcError extends Error {
   readonly code: TaskLifecycleRpcErrorCode | string | undefined;
@@ -97,7 +69,7 @@ export class TaskLifecycleRpcError extends Error {
     code: TaskLifecycleRpcErrorCode | string | undefined,
     operation: TaskLifecycleOperation,
   ) {
-    super(getTaskLifecycleRpcErrorMessage(code, operation));
+    super(operationFallbacks[operation]);
     this.name = 'TaskLifecycleRpcError';
     this.code = code;
     this.operation = operation;
