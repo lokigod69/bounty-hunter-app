@@ -338,7 +338,8 @@
       "previewAlt": "Förhandsvisning",
       "removeImage": "Ta bort bilden",
       "currentUpload": "Nuvarande uppladdade bild",
-      "invalidFile": "Ogiltig fil",
+      "invalidFile": "Ogiltig filtyp. Tillåtna format: {{formats}}.",
+      "fileTooLarge": "Filen är för stor. Maximal storlek: {{size}} MB.",
       "uploadFailed": "Uppladdningen misslyckades"
     }
   },

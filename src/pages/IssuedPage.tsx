@@ -297,9 +297,12 @@ export default function IssuedPage() {
       await refetchIssuedContracts();
 
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : t('contracts.rejectionFailedUnknown');
+      // reject_task is RPC-authoritative, so the refusal arrives as a code with
+      // only a generic fallback on `.message` — localize from the code first.
+      const errorMessage = translateTaskLifecycleErrorObject(error, t)
+        ?? (error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : t('contracts.rejectionFailedUnknown'));
       toast.error(errorMessage, { id: toastId });
     } finally {
       setRejectingTaskId(null);
@@ -326,9 +329,10 @@ export default function IssuedPage() {
       toast.success(t('contracts.archiveSuccess'), { id: toastId });
       await refetchIssuedContracts();
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : t('contracts.archiveFailed');
+      const errorMessage = translateTaskLifecycleErrorObject(error, t)
+        ?? (error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : t('contracts.archiveFailed'));
       toast.error(errorMessage, { id: toastId });
       throw error instanceof Error ? error : new Error(errorMessage);
     }

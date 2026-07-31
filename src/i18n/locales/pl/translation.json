@@ -338,7 +338,8 @@
       "previewAlt": "Podgląd",
       "removeImage": "Usuń obraz",
       "currentUpload": "Obecnie przesłany obraz",
-      "invalidFile": "Nieprawidłowy plik",
+      "invalidFile": "Nieprawidłowy typ pliku. Dozwolone formaty: {{formats}}.",
+      "fileTooLarge": "Plik jest za duży. Maksymalny rozmiar: {{size}} MB.",
       "uploadFailed": "Przesyłanie nie powiodło się"
     }
   },

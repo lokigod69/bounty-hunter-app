@@ -338,7 +338,8 @@
       "previewAlt": "Náhled",
       "removeImage": "Odebrat obrázek",
       "currentUpload": "Aktuálně nahraný obrázek",
-      "invalidFile": "Neplatný soubor",
+      "invalidFile": "Neplatný typ souboru. Povolené formáty: {{formats}}.",
+      "fileTooLarge": "Soubor je příliš velký. Maximální velikost: {{size}} MB.",
       "uploadFailed": "Nahrávání se nezdařilo"
     }
   },

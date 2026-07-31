@@ -338,7 +338,8 @@
       "previewAlt": "Aperçu",
       "removeImage": "Retirer l'image",
       "currentUpload": "Image actuellement téléversée",
-      "invalidFile": "Fichier invalide",
+      "invalidFile": "Type de fichier invalide. Formats autorisés : {{formats}}.",
+      "fileTooLarge": "Le fichier est trop volumineux. Taille maximale : {{size}} Mo.",
       "uploadFailed": "Échec du téléversement"
     }
   },

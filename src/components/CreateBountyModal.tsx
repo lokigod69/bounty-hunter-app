@@ -22,8 +22,8 @@ import {
   uploadRewardImage,
   validateRewardImage,
   REWARD_IMAGE_MAX_SIZE_MB,
-  REWARD_IMAGE_ALLOWED_EXTENSIONS,
 } from '../lib/rewardImageUpload';
+import { rewardImageAllowedFormats, translateRewardImageError } from '../i18n/rewardImageErrors';
 
 interface CreateBountyModalProps {
   isOpen: boolean;
@@ -55,7 +55,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
   const handleFileSelect = (file: File) => {
     const validation = validateRewardImage(file);
     if (!validation.valid) {
-      setUploadError(validation.error || t('rewards.imageField.invalidFile'));
+      setUploadError(translateRewardImageError(validation.errorCode, t));
       return;
     }
 
@@ -108,7 +108,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
         );
 
         if (!uploadResult.success) {
-          setUploadError(uploadResult.error || t('rewards.imageField.uploadFailed'));
+          setUploadError(translateRewardImageError(uploadResult.errorCode, t));
           setIsUploading(false);
           return;
         }
@@ -253,7 +253,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
                         <p className="text-sm text-white/70">{t('rewards.imageField.clickToUpload')}</p>
                         <p className="text-xs text-white/50 mt-1">
                           {t('rewards.imageField.fileHint', {
-                            formats: REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase(),
+                            formats: rewardImageAllowedFormats(),
                             size: REWARD_IMAGE_MAX_SIZE_MB,
                           })}
                         </p>

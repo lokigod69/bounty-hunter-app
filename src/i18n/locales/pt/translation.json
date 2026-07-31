@@ -338,7 +338,8 @@
       "previewAlt": "Pré-visualização",
       "removeImage": "Remover a imagem",
       "currentUpload": "Imagem carregada atualmente",
-      "invalidFile": "Ficheiro inválido",
+      "invalidFile": "Tipo de ficheiro inválido. Formatos permitidos: {{formats}}.",
+      "fileTooLarge": "O ficheiro é demasiado grande. Tamanho máximo: {{size}} MB.",
       "uploadFailed": "Não foi possível carregar"
     }
   },

@@ -351,7 +351,8 @@
       "previewAlt": "Vorschau",
       "removeImage": "Bild entfernen",
       "currentUpload": "Aktuell hochgeladenes Bild",
-      "invalidFile": "Ungültige Datei",
+      "invalidFile": "Ungültiger Dateityp. Erlaubte Formate: {{formats}}.",
+      "fileTooLarge": "Die Datei ist zu groß. Maximale Größe: {{size}} MB.",
       "uploadFailed": "Hochladen fehlgeschlagen"
     }
   },

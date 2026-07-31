@@ -338,7 +338,8 @@
       "previewAlt": "Preview",
       "removeImage": "Remove image",
       "currentUpload": "Current uploaded image",
-      "invalidFile": "Invalid file",
+      "invalidFile": "Invalid file type. Allowed formats: {{formats}}.",
+      "fileTooLarge": "File is too large. Maximum size is {{size}}MB.",
       "uploadFailed": "Upload failed"
     }
   },

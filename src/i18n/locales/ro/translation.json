@@ -338,7 +338,8 @@
       "previewAlt": "Previzualizare",
       "removeImage": "Elimină imaginea",
       "currentUpload": "Imaginea încărcată acum",
-      "invalidFile": "Fișier nevalid",
+      "invalidFile": "Tip de fișier nevalid. Formate permise: {{formats}}.",
+      "fileTooLarge": "Fișierul este prea mare. Dimensiune maximă: {{size}} MB.",
       "uploadFailed": "Încărcarea a eșuat"
     }
   },

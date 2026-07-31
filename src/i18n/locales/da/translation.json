@@ -338,7 +338,8 @@
       "previewAlt": "Forhåndsvisning",
       "removeImage": "Fjern billedet",
       "currentUpload": "Nuværende uploadede billede",
-      "invalidFile": "Ugyldig fil",
+      "invalidFile": "Ugyldig filtype. Tilladte formater: {{formats}}.",
+      "fileTooLarge": "Filen er for stor. Maksimal størrelse: {{size}} MB.",
       "uploadFailed": "Upload mislykkedes"
     }
   },

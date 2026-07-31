@@ -33,6 +33,7 @@ import { useUI } from '../context/UIContext';
 import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
+import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
 import { useNavigate } from 'react-router-dom';
 import emptyMissions from '../assets/generated/empty-missions.webp';
 
@@ -81,7 +82,13 @@ export default function Dashboard() {
       return proofUrl;
     } catch (error: unknown) {
       let message = 'Couldn\'t submit proof, please try again.';
-      if (error instanceof Error) {
+      // A lifecycle refusal carries a machine-readable code and only a generic
+      // fallback on `.message`, so it is localized from the code. Anything else
+      // keeps its own message exactly as before.
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        message = localized;
+      } else if (error instanceof Error) {
         message = error.message || message;
       }
       toast.error(message);
@@ -110,7 +117,10 @@ export default function Dashboard() {
       return true;
     } catch (error: unknown) {
       let message = 'Failed to submit task. Please try again.';
-      if (error instanceof Error) {
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        message = localized;
+      } else if (error instanceof Error) {
         message = error.message || message;
       }
       toast.error(message, { id: toastId });
@@ -138,7 +148,10 @@ export default function Dashboard() {
       if (refetchAssignedContracts) refetchAssignedContracts();
     } catch (error: unknown) {
       let message = 'Failed to archive task. Please try again.';
-      if (error instanceof Error) {
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        message = localized;
+      } else if (error instanceof Error) {
         message = error.message || message;
       }
       toast.error(message, { id: toastId });
@@ -187,10 +200,13 @@ export default function Dashboard() {
 
     } catch (error: unknown) {
       let message = 'Failed to update task status.';
-      if (error instanceof Error) {
+      const localized = translateTaskLifecycleErrorObject(error, t);
+      if (localized) {
+        message = localized;
+      } else if (error instanceof Error) {
         message = error.message;
       }
-      
+
       // Android-specific error handling for common network issues
       const userAgent = navigator.userAgent.toLowerCase();
       const isAndroid = userAgent.includes('android');

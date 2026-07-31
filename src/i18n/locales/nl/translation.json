@@ -338,7 +338,8 @@
       "previewAlt": "Voorbeeld",
       "removeImage": "Afbeelding verwijderen",
       "currentUpload": "Huidige geüploade afbeelding",
-      "invalidFile": "Ongeldig bestand",
+      "invalidFile": "Ongeldig bestandstype. Toegestane formaten: {{formats}}.",
+      "fileTooLarge": "Het bestand is te groot. Maximale grootte: {{size}} MB.",
       "uploadFailed": "Uploaden mislukt"
     }
   },

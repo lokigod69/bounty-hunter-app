@@ -34,37 +34,47 @@ export const REWARD_IMAGE_ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'we
  */
 export const REWARD_IMAGES_BUCKET = 'reward-images';
 
+/**
+ * What went wrong, as a machine-readable fact rather than a sentence.
+ *
+ * Same code-not-copy rule the task lifecycle follows (src/domain/missions.ts):
+ * this is a `lib` module, it must stay free of i18next, and a hard-coded English
+ * string returned from here can never be translated by the caller — the caller
+ * would have to show it verbatim. src/i18n/rewardImageErrors.ts owns the copy.
+ */
+export type RewardImageErrorCode =
+  /** MIME type is not in REWARD_IMAGE_ALLOWED_TYPES. */
+  | 'invalid_type'
+  /** Bigger than REWARD_IMAGE_MAX_SIZE. */
+  | 'file_too_large'
+  /** Storage rejected the upload, or it threw. */
+  | 'upload_failed';
+
 export interface UploadRewardImageResult {
   success: boolean;
   publicUrl?: string;
-  error?: string;
+  errorCode?: RewardImageErrorCode;
 }
 
 export interface ValidateRewardImageResult {
   valid: boolean;
-  error?: string;
+  errorCode?: RewardImageErrorCode;
 }
 
 /**
  * Validates a file before upload
  * @param file - The file to validate
- * @returns Validation result with error message if invalid
+ * @returns Validation result with an error code if invalid
  */
 export function validateRewardImage(file: File): ValidateRewardImageResult {
   // Check file type
   if (!REWARD_IMAGE_ALLOWED_TYPES.includes(file.type)) {
-    return {
-      valid: false,
-      error: `Invalid file type. Allowed: ${REWARD_IMAGE_ALLOWED_EXTENSIONS.join(', ').toUpperCase()}`,
-    };
+    return { valid: false, errorCode: 'invalid_type' };
   }
 
   // Check file size
   if (file.size > REWARD_IMAGE_MAX_SIZE) {
-    return {
-      valid: false,
-      error: `File too large. Maximum size is ${REWARD_IMAGE_MAX_SIZE_MB}MB.`,
-    };
+    return { valid: false, errorCode: 'file_too_large' };
   }
 
   return { valid: true };
@@ -88,7 +98,7 @@ export async function uploadRewardImage(
   // Validate file first
   const validation = validateRewardImage(file);
   if (!validation.valid) {
-    return { success: false, error: validation.error };
+    return { success: false, errorCode: validation.errorCode };
   }
 
   try {
@@ -103,10 +113,7 @@ export async function uploadRewardImage(
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      return {
-        success: false,
-        error: uploadError.message || 'Failed to upload image. Please try again.',
-      };
+      return { success: false, errorCode: 'upload_failed' };
     }
 
     // Get public URL
@@ -118,11 +125,8 @@ export async function uploadRewardImage(
       success: true,
       publicUrl: urlData.publicUrl,
     };
-  } catch (err) {
-    return {
-      success: false,
-      error: 'Could not upload image. Please try again.',
-    };
+  } catch {
+    return { success: false, errorCode: 'upload_failed' };
   }
 }
 
