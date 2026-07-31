@@ -3,15 +3,37 @@
 Stop `approve_task` minting credits when the assignee is the creator; refuse the
 combination at create/edit time so the app never promises what it will not pay.
 
-**Date**: DRAFTED 2026-07-29 — **APPROVED by Michael, NOT YET APPLIED**
+**Date**: DRAFTED 2026-07-29 — **APPLIED TO PRODUCTION 2026-07-30** ✅
 **Priority**: P2 | **Risk**: 🟢 Low | **Downtime**: none | **Deploy ordering**: none
 
-## Why Michael runs this and not Claude
+## Applied — 2026-07-30
 
-The 2026-07-29 session had no production DB credentials — the password lives only in a
-chat transcript, nothing in the repo stores it, and the session's attempts to reach the
-Supabase CLI were blocked. The client half of 013 is already shipped and pushed; this
-runbook is the remaining half.
+Michael supplied the DB password in-session, so this ran centrally rather than by hand.
+Record of the run:
+
+| Step | Result |
+|---|---|
+| Pre-flight `013_validation.sql` | #1 confirmed 012 live; **#3 guards all `f`** (unapplied); #5/#6/#7 already **zero rows**; #8 `increment_user_credits` unreachable from `anon`/`authenticated`; #9/#10 no triggers |
+| Schema backup | `supabase/schema_backup_20260730_185314.sql` (239,211 bytes) |
+| Apply | `BEGIN` … 3× `CREATE FUNCTION`/`REVOKE`/`GRANT`/`COMMENT` … `COMMIT`, psql exit 0 |
+| Post-validate | **#3 guards now `create_task=t`, `update_task=t`, `approve_task` assignee-guard `t`**; #4 grants intact; #8 still locked |
+
+Body hashes moved, which is the proof the swap happened rather than a no-op:
+
+| function | before | after |
+|---|---|---|
+| `approve_task` | `cfc5d58d66daa3aecfee55aba84e6830` | `2e093f814aeba44d872a820b4d0fce46` |
+| `create_task`  | `b804afcf82e38ff9f0678e922435b5e2` | `988bf30faa93f00465042e9a9bb583f3` |
+| `update_task`  | `47384ed7a2ca920cad1f74978768f27c` | `b8e2629ba445f875860334b744c2c118` |
+
+**Correction to the record.** This runbook and `memory/STATE.md` both described
+`tesatmynutes` as "the one known self-assigned contract". It was not: its `created_by` was
+cryptobonobo and its `assigned_to` was the gmail account — two different users — and its
+reward type was `text`, not `credit`. That is why validation #5–#7 returned zero rows
+*before* any wipe. The self-assign hole was real as a **capability** in the function
+bodies; it had never actually been exercised on this database. 013 closes the capability.
+
+Step 5 (browser test) is still outstanding and is still Michael's.
 
 ## What This Does
 

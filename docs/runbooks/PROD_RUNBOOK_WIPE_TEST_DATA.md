@@ -1,14 +1,58 @@
 # PROD Runbook — Wipe test data
 
-**Date**: WRITTEN 2026-07-29 on Michael's "wipe everything" — **NOT YET RUN**
+**Date**: WRITTEN 2026-07-29 — **SCOPE A RUN AGAINST PRODUCTION 2026-07-30** ✅
 **Priority**: P3 (housekeeping) | **Risk**: 🔴 High, and unlike a migration there is no
 rollback — only a restore from the backup you take in step 1 | **Downtime**: none
 
-## Why Michael runs this and not Claude
+## Run record — 2026-07-30, scope A
 
-The 2026-07-29 session had no production DB credentials and its attempts to reach the
-Supabase tooling were blocked. Everything below is written, committed and gated; it needs
-a shell with the password.
+Michael chose scope A plus a manual single-account deletion (below) over scope B, so the
+clean board and the signup re-test are both available without the one-way door.
+
+| | BEFORE | AFTER |
+|---|---|---|
+| tasks | 2 | 0 |
+| friendships | 2 | 0 |
+| invites | 1 | 0 |
+| rewards_store, collected_rewards, user_credits, credit_transactions, daily_mission_streaks | 0 | 0 |
+| profiles (KEPT) | 3 | 3 |
+| auth.users (KEPT) | 3 | 3 |
+
+`UPDATE 1` — one stale `partner_user_id` was nulled. Backup used:
+`supabase/data_backup_20260730_185223.sql` (9,717 bytes, 11 verified INSERTs).
+
+### ⚠️ A bug in `backup_data.ps1` was found and fixed during this run — read this
+
+The first backup reported success with **3 INSERT statements and not one row of the
+`public` schema**. Cause: the script passed `--schema=public --table=auth.users` to a
+single `pg_dump`. In pg_dump, `--table` *narrows* the selection and `--schema` does not add
+the public tables back, so the dump contained only `auth.users`. The old guard — "at least
+one INSERT" — passed, because `auth.users` supplied three.
+
+That is exactly the failure this file warns about one section down, and it would have
+authorised a wipe against a backup holding none of the rows being destroyed.
+
+Fixed in the same session: the dump is now **two `pg_dump` invocations** (public schema,
+then `auth.users`) concatenated at the byte level, and the guard now queries live row
+counts first and asserts **per table** that the dump contains exactly that many INSERTs. It
+refuses to report success on any mismatch. The verified run printed:
+
+```
+public.tasks       live=2 dumped=2 ok      public.profiles  live=3 dumped=3 ok
+public.friendships live=2 dumped=2 ok      auth.users       live=3 dumped=3 ok
+public.invites     live=1 dumped=1 ok      (+5 empty tables ok)
+```
+
+**If you ever restore from a `data_backup_*.sql` taken before 2026-07-30, check what is
+actually in it first.** Any such file may contain `auth.users` only.
+
+### Still to do by hand
+
+- **Storage buckets** (step 3 below) — not covered by the SQL, still holds test proof files.
+- **The signup/onboarding re-test**: delete ONE auth user in the Supabase dashboard
+  (Authentication → Users) and register again with that address. If the confirmation email
+  is misconfigured, the other two accounts still get you in — which is the whole reason
+  scope B was declined.
 
 ## Pick a scope first
 
@@ -101,6 +145,17 @@ it just leaves storage bytes you are paying for.
 ```powershell
 psql "host=... user=... dbname=postgres" -v ON_ERROR_STOP=1 -f supabase\data_backup_<ts>.sql
 ```
+
+**`profiles` has a circular foreign key** (`partner_user_id` points back at `profiles`), and
+pg_dump says so on every data-only dump:
+
+> `warning: there are circular foreign-key constraints on this table: profiles`
+> `hint: You might not be able to restore the dump without using --disable-triggers`
+
+A plain replay can therefore fail on ordering. If it does, restore that portion with
+constraints deferred — `psql -c "SET session_replication_role = replica"` around the load,
+or re-dump with `--disable-triggers`. Both need superuser-ish rights; on Supabase the
+`postgres` role has them. Worth knowing **before** you need the restore, not during it.
 
 The dump is data-only, so the schema must already be in place — which it is, since the
 wipe does not touch it. **Scope B caveat:** the dump includes `auth.users` rows, but

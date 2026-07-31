@@ -33,3 +33,9 @@ skills/
 # Database backups — never commit
 db_cluster-*.backup/
 *.backup
+
+# DATA backups specifically. schema_backup_*.sql is committed on purpose (it is
+# --schema-only and carries no rows), but data_backup_*.sql dumps auth.users —
+# real email addresses, encrypted_password, recovery_token, confirmation_token.
+# Those must never enter git history, where deleting them later does not help.
+supabase/data_backup_*.sql
