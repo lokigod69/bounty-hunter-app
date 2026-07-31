@@ -1,14 +1,45 @@
 # Current State
-Last updated: 2026-07-29 (second session)
+Last updated: 2026-07-30
 
-## ⚠️ ACTION REQUIRED (Michael)
-**Two prod runs, both written and gated, neither executed — this agent has no production DB access.**
-The password is not in the environment or the repo, and both routes to obtain it were blocked by the
-permission classifier. Expect this every session: prod SQL is a Michael action unless that changes.
-1. `docs/runbooks/PROD_RUNBOOK_013.md` — the SQL half of proposal 013. Approved, client half shipped.
-2. `docs/runbooks/PROD_RUNBOOK_WIPE_TEST_DATA.md` — the wipe. **Choose scope A or B first** (A keeps
-   accounts and is recommended; B forces re-registration and is one-way). Run the wipe before 013 and
-   013's validation queries #5–#7 come back empty.
+## ✅ Both prod runs are DONE (2026-07-30)
+Michael pasted the DB password in-session, so both gated runbooks executed centrally.
+1. **Proposal 013 APPLIED.** Guards live on `create_task`, `update_task` and `approve_task`; all three
+   function body hashes moved; grants intact; `increment_user_credits` still unreachable from
+   anon/authenticated. Run record with before/after hashes is in `docs/runbooks/PROD_RUNBOOK_013.md`.
+2. **Test-data wipe RUN, scope A.** tasks 2→0, friendships 2→0, invites 1→0, one stale
+   `partner_user_id` nulled; profiles and `auth.users` kept at 3.
+
+**Still Michael's, and small:** empty the `bounty-proofs` storage bucket (the SQL deliberately does not
+touch storage), and — when he wants to exercise signup/onboarding — delete ONE auth user in the
+dashboard and re-register. That replaced scope B: it gets the same test while leaving two working
+accounts as a way back in if confirmation email is misconfigured.
+
+## 🔴 ACTION REQUIRED (Michael) — two new proposals, one of them a security hole
+Both found on 2026-07-30 by inspecting the **live database** rather than the repo. Neither appears in
+`supabase/migrations/`, which is why neither was caught before. Both DRAFTED, gated and **NOT APPLIED** —
+they need an explicit go. Runbook: `docs/runbooks/PROD_RUNBOOK_014_015.md`. **014 before 015.**
+- **014 — `public.profiles` has four RLS policies and RLS switched OFF, so all four are inert**, while
+  `anon` and `authenticated` hold DELETE/INSERT/UPDATE/TRUNCATE. The anon key ships in the public JS
+  bundle, so anyone who reads it out can **update, delete or truncate every profile row**. `tasks`,
+  `friendships` and `user_credits` all have RLS on — `profiles` is the only one that doesn't. The fix is
+  one line and every client write path was checked against the existing policies first; readability is
+  unchanged (SELECT is `USING (true)` by design).
+- **015 — `supabase_realtime` has ZERO tables**, so no change events are emitted and **all five**
+  `postgres_changes` subscriptions in the client are silently inert (tasks ×2, `user_credits`,
+  `friendships`, partner state). No error is raised; the symptom looks like a caching bug. This is the
+  real answer to the parked "is `friendships` in the realtime publication" question — nothing is.
+  Likely fallout from the 2026-07-08 project migration, like the auth Site URL and the edge functions.
+
+## ⚠️ Two findings from this session worth carrying forward
+- **`backup_data.ps1` was producing backups that contained only `auth.users`.** `--table` narrows a
+  `pg_dump` and `--schema=public` does not add the public tables back; the "≥1 INSERT" guard passed on
+  `auth.users`' three rows and printed success in green. It would have authorised the irreversible wipe
+  against a backup holding none of the rows at risk. Fixed: two dumps, byte-level concatenation, and a
+  guard that asserts per-table counts against the live DB. **Any `data_backup_*.sql` dated before
+  2026-07-30 may contain `auth.users` only — check before trusting one.**
+- **`tesatmynutes` was never a self-assigned contract** (`created_by` ≠ `assigned_to`, reward type
+  `text`). The self-assign hole was real as a capability in the function bodies but had never been
+  exercised on this database. Previous entries in this file and in the 013 runbook said otherwise.
 
 ## ✅ All three parked decisions are answered and shipped (2026-07-29, second session)
 - **013** — approved; open points A–E all decided, **E answered from the code** (no path in the
@@ -35,6 +66,18 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - As of 2026-07-24 Wave C: `npm run build` passed, `npm run lint` 0 errors / 3 pre-existing fast-refresh warnings, and app TypeScript is clean. `npm audit --omit=dev` was clean on 2026-07-15.
 
 ## In progress
+- **2026-07-30 — four commits, ALL PUSHED (`bdabeee`, `45d70af`, `c12c777`, `0826cfb`).** Both prod runs
+  executed (see top). Extraction finished: 93 keys × 12 locales, 466 → 559 leaves each — EmojiPicker,
+  FriendCard, FriendSelector, the reward image field, Layout aria-labels, `themes.ts` mode
+  label/description (properties **removed** from `ThemeDefinition` so they cannot be re-hardcoded, and
+  they now follow a language switch), and the RPC error table (moved to a UI-layer
+  `src/i18n/taskLifecycleErrors.ts`; the domain layer still refuses to import i18next). The three
+  remaining mobile MAJORs closed with 15 new guards, 10 of them confirmed failing on the pre-fix markup
+  first. New locale-aware formatting layer `src/i18n/format.ts` + `useFormatters()`, locale-as-first-arg,
+  with the first batch of call sites converted. `src/utils/dateUtils.ts` deleted (Sunday-first, zero
+  importers). **Real mojibake fixed in `RewardsStorePage.tsx`** — `Â·` where `·` belonged, so users read
+  "Lifetime earned Â· 1,234"; a tree-wide scan of `src/` found only that and one comment. Gates at close:
+  tsc 0, **312 tests / 22 files**, lint 0 errors / 3 known warnings, build warning-free, bundle 401.26 kB.
 - **2026-07-29 second session — five commits, ALL PUSHED (`d223535`, `d1d243b`, `eed7cc0`, `2412cb0`, `d5dedb8`), plus the six stranded ones from the morning (`140b90e..c6baa48`).** Michael answered all three decisions at once and asked for the mobile pass, the extraction, a push and a wipe. Shipped: rank ladder + 013 client half; German informal; the mobile BLOCKER and six MAJORs; the two prod runbooks; the onboarding i18n extraction into twelve locales. Gates at close: tsc 0, **240 tests / 20 files**, lint 0 errors / 3 known warnings, build pass and warning-free, main bundle 396.25 kB.
 - **⚠️ Nothing in this session touched production.** 013's SQL and the wipe are written, gated and unrun — see ACTION REQUIRED at the top.
 - **2026-07-29 first session (three commits, since pushed):** `24a7613` proposal 013 (self-assign hole, DRAFT + locally proven, Michael-gated); `7831ff9` five design fixes from Michael's browser walkthrough (one `--modal-scrim` token replacing five hard-coded backdrops; mission-modal empty-column root cause — `children` is a JSX array so it was always truthy; equal-height description/reward panels; German header collision fixed width-robustly; single-mode selectors hidden); `9620413` i18n rearchitected for 12 locales (lazy chunks, `languages.ts` registry, detector dropped, 17 new tests). Gates green throughout: tsc 0, 127 tests/19 files, lint 0 errors/3 known warnings, build pass + warning-free.
@@ -60,8 +103,12 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - ~~Proposal-011 RPCs do not exist on the live DB yet~~ RESOLVED 2026-07-10: applied + pushed (see "In progress"). Runtime lifecycle testing (create → start → submit → reject → resubmit → approve → archive → delete, two real users) is still un-browser-tested — next thing to verify.
 - ~~Legacy Gmail notification Edge Functions need auth hardening or undeployment~~ RESOLVED 2026-07-28 (4803957): verified ZERO functions deployed on mvbmpcmexkgfairnthux (`supabase functions list`); repo-side the two send-alert functions were already 401+410 fail-closed, `notify-reward-creator` gained escapeHtml on user strings, dead `create-daily-tasks` (nonexistent `recurring_contract_*` tables) became a fail-closed stub. Security tests lock all of it.
 - Standing self-assign hole: **fix DRAFTED + locally proven, NOT APPLIED** (proposal 013, 24a7613 — awaiting Michael's go per the prod-SQL rule). Still open on the live DB. The hole is that `approve_task` requires `created_by = auth.uid()` and pays `assigned_to`, which are not in tension when one person is both, so self-created self-assigned tasks mint `total_earned` (and thus Wave 2 rank). 013 closes it in `approve_task` (the only function that can reach `increment_user_credits`) plus `create_task`/`update_task` for UX. Two colluding accounts remain able to inflate each other's standing — no server-side rule distinguishes that from a real household; named as open point D, deliberately unfixed.
-- **Hard-coded English strings: onboarding DONE, the rest still open.** The whole onboarding flow was extracted and translated into all twelve locales on 2026-07-29 (d5dedb8, 51 keys × 12). **Still hard-coded:** EmojiPicker's 20 tooltips, FriendCard, FriendSelector, the CreateBounty/EditBounty modals, Layout aria-labels, the top-level `label`/`description` of all three modes in `themes.ts`, and the English message table in `getTaskLifecycleRpcErrorMessage` (`src/domain/missions.ts` — `TaskLifecycleRpcError.code` is now the mechanism to move it, see DECISIONS). Plus **13 locale-unaware formatters** (`toLocaleDateString(undefined, …)`, a hard-coded `k` suffix, `Intl` never given the active language, `dateUtils` assuming Sunday-first) and **5 concatenated pluralisations** — neither of which extraction alone fixes.
-- ~~**Mobile is not optimised**~~ **BLOCKER + six MAJORs RESOLVED 2026-07-29 (eed7cc0).** Landscape header (new `nav` screen, width AND height), modal `dvh` + `--visual-vh` keyboard clamp, coarse-pointer input sizing, additive `.safe-top`, single page gutter, one-column reward grid below 420px, reachable first tab. Pinned by 9 guards in `mobileLayout.test.ts`, each probed against the pre-fix shape. **Still open from the same audit:** portrait header logo overlapping standing/credits, FriendCard action rows overflowing, and German daily-task cards losing the title entirely. None browser-verified yet — the fixes are reasoned from the CSS and the emitted stylesheet, not seen on a device.
+- **Hard-coded English strings: the named backlog is DONE; new surfaces found.** Onboarding (2026-07-29, 51 keys × 12) and then EmojiPicker, FriendCard, FriendSelector, the reward modals, Layout aria-labels, `themes.ts` and the RPC error table (2026-07-30, 93 keys × 12). **Newly identified and still open:** `src/pages/Dashboard.tsx` (~a dozen toast/error sentences), `src/hooks/useTasks.ts` (~35 toasts and pre-check messages), `src/components/ProofModal.tsx` (fully English), `src/lib/rewardImageUpload.ts`, and RewardCard's "✓ Collected" / "Need N more" strings. These were never in the original list — the list was of *known* surfaces, not an audit.
+- **Locale-unaware formatting: layer built, ~half the call sites converted.** `src/i18n/format.ts` + `useFormatters()` exist and are tested across all twelve locales. Converted: StandingBlock, RewardCard dates, RankUpCeremony, ProofModal file size, RewardsStorePage balance. `dateUtils` deleted (2 defects closed by removal). **Still open:** the credit badge's compact formatter in `UserCredits.tsx`, the two duplicated countdown timers (`TaskCard.tsx` and `MissionModalShell.tsx` — byte-identical, and the modal copy also remounts its timer on every parent render), `Coin.tsx`'s `String(value)`, and ProofModal's percent.
+- **5 concatenated pluralisations — blocked on the parity gate, and this is the important part.** `Dashboard.tsx` ×3, `RewardsStorePage.tsx`, `RewardCard.tsx` build plurals with `n === 1` ternaries. Polish and Czech need four CLDR categories and Romanian three, so a two-form ternary is wrong for most integers in three locales. Two complications: (a) `languages.test.ts` asserts **exact leaf-key set equality**, so every `_few`/`_many` key Polish needs will fail as an "extra" — the gate must be taught to compare plural *families* against `Intl.PluralRules(code).resolvedOptions().pluralCategories` **before** any of the five is touched; (b) the noun is theme-scoped and in Polish/Czech the noun itself inflects, so interpolating `{{noun}}` into a plural sentence cannot be made grammatical — it needs per-mode plural keys (3 modes × 3 nouns × N categories × 12 locales).
+- **Timezone bug, separate class from the above:** `src/domain/streaks.ts:58`, `src/hooks/useDailyMissionStreak.ts:51` and `src/components/TaskForm.tsx:226` use `new Date().toISOString().split('T')[0]`, which computes the day boundary in **UTC**. At UTC+8 the streak day rolls over at 08:00 local. `src/hooks/useDailyQuote.ts:46` does it correctly with local getters — copy that.
+- ~~**Mobile is not optimised**~~ **ENTIRE AUDIT NOW CLOSED IN CODE.** BLOCKER + six MAJORs on 2026-07-29 (eed7cc0); the last three MAJORs on 2026-07-30 (c12c777) — portrait header overlap, FriendCard overflow, German daily-task titles. 24 guards in `mobileLayout.test.ts`. **Still not browser-verified: none of it.** Every fix in both batches is reasoned from the source, the font metrics and the emitted stylesheet; no device has rendered any of it. That is now the single largest unverified area in the project.
+- **One deliberate visual change Michael has not seen:** below the `sm` breakpoint (640px) the "BOUNTY HUNTER" wordmark **no longer renders** — only the logo mark. Measured against the actual Mandalore font it needs a 507px viewport, so on a phone in portrait there is no size at which it fits alongside the sigil and credit pill. It was previously overlapping them rather than fitting. If he wants the wordmark on phones, the answer is a smaller/abbreviated mark, not a smaller font.
 - ~~Build warnings~~ RESOLVED 2026-07-14 (fa0d3bf): build is warning-free — vite manualChunks vendor split (main chunk 722→388 kB, gzip 213→111 kB), useRewardsStore dynamic imports made static, C1.jpg had already been fixed earlier (docs were stale). Route-level lazy loading deliberately skipped (stale-chunk-404-after-redeploy risk on Vercel > ~40 kB gain).
 - README.md is stale in spots (claims no test script; vitest suite exists). docs/overview.md + docs/open-questions.md are 2025-10 vintage — several issues there were since fixed by proposals 001–008; treat as historical.
 
@@ -72,10 +119,11 @@ Private gamified chores/missions app for small trusted groups: missions → proo
 - ~~DB types regeneration pending~~ DONE 2026-07-08 session 2 (fcb830d): regenerated from mvbmpcmexkgfairnthux via `supabase gen types --project-id` (NOT `--linked`, which wants a DB password); file is UTF-8 now.
 
 ## Next actions
--1. ~~**Michael's three decisions**~~ **ALL ANSWERED AND SHIPPED 2026-07-29** (see the top of this file).
-0. **Michael runs the two prod runbooks** (013 apply, test-data wipe) — this agent cannot reach the DB.
-0.1 **Browser-verify the mobile pass on a real phone**, in landscape as well as portrait. The fixes are reasoned from the CSS and confirmed against the emitted stylesheet, but no device has rendered them. Worth checking specifically: the hamburger appears in landscape, a modal's submit button stays reachable with the keyboard open, focusing an input does not zoom the page, and the German Friends tab bar can reach its first tab.
-0.2 **Next build item: finish the extraction.** Remaining surfaces listed in Known problems — EmojiPicker, FriendCard, FriendSelector, the reward modals, Layout aria-labels, `themes.ts` mode label/description, and the RPC error table. Then the 13 locale-unaware formatters and 5 concatenated pluralisations, which extraction alone does not fix and which need `Intl` wired to the active language. Then the three remaining mobile MAJORs (portrait header logo overlap, FriendCard action rows, German daily-task card titles).
+-1. ~~**Michael's three decisions**~~ **ALL ANSWERED AND SHIPPED 2026-07-29.**
+0. ~~**Michael runs the two prod runbooks**~~ **BOTH DONE 2026-07-30** (see the top of this file).
+0.1 **Browser-verify on a real phone — now the biggest gap by far.** Ten mobile fixes across two batches, none seen on a device. Portrait: the wordmark is gone below 640px (intended — see Known problems) and the logo must no longer overlap the sigil/credits; FriendCard action rows must wrap instead of spilling; a German daily-task card must show its title. Landscape: the hamburger appears, a modal's submit button stays reachable with the keyboard up, focusing an input does not zoom, the German Friends tab bar reaches its first tab.
+0.2 **Michael: empty the `bounty-proofs` storage bucket**, and delete one auth user when he wants to re-test signup + onboarding in a non-English language.
+0.3 **Next build item, in this order:** (a) teach `languages.test.ts` about CLDR plural categories — it blocks the 5 pluralisations and nothing else can proceed past it; (b) the remaining formatter call sites (credit badge compact, the two duplicated countdowns, Coin, ProofModal percent); (c) the newly-found hard-coded surfaces (Dashboard, useTasks, ProofModal, rewardImageUpload, RewardCard); (d) the UTC day-boundary bug in streaks. Detail for all four is in Known problems.
 0a. ~~Michael: run the 012 SQL rollout~~ **DONE 2026-07-28 (applied centrally).** Remaining: browser-test one create + one edit to confirm the RPC path end-to-end with a real `auth.uid()`. (Password rotation: **cancelled by Michael 2026-07-29**, see top.)
 0b. ~~Arbitrate Codex review~~ DONE (8/8 fixed, 8e58cf4). Next build pick: deferred waves 3/4/5 (economy anchor, bottom thumb rail chassis, THE ROSTER, presence), a 013 proposal closing the self-assign standing hole, or provider-level credits dedupe.
 1. Michael: browser/device smoke Waves 0/B/C (+ new Wave 2 standing/rank-up) as two users (all four commits are pushed — Vercel test env has them) — accept/transmit/approval seals anchor correctly; sent-back lifts without punitive feedback; only the hunter gets payday + coin/count refresh; no payday replays on login; lifetime earned/Login/English+German creed render; evidence/modal/archive checks pass. NOTE: a wiped/fresh device is now sound-OFF by default (haptics on) — that's the new intended default, not a bug; the profile toggle re-enables sound. Also eyeball the Mandalore glyph specimen (artifact link in LOG 2026-07-24 later) to settle open question #6.

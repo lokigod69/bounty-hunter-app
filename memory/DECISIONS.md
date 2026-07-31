@@ -4,6 +4,30 @@ Wrong turns are part of the memory.
 
 Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history, migrations, and docs — decision visible, rationale partly inferred.
 
+## 2026-07-30 — A backup guard must be checked against the live database, not against itself
+**Status:** active (bdabeee)
+**Decision:** `backup_data.ps1` now takes live row counts *before* dumping and asserts, per table, that the dump contains exactly that many INSERT statements. It refuses to report success on any mismatch. The dump is two `pg_dump` runs (public schema, then `auth.users`) concatenated at the byte level.
+**Why:** The old script passed `--schema=public --table=auth.users` to a single `pg_dump`. `--table` narrows the selection and `--schema` does not add the public tables back, so the dump contained `auth.users` and nothing else. The guard asked only for "at least one INSERT" — `auth.users` supplied three — so it printed success in green while holding none of the rows a wipe was about to destroy. A self-referential guard cannot catch a dump of the wrong scope; only the live database can.
+**Consequence:** Any `data_backup_*.sql` from **before 2026-07-30 may contain `auth.users` only** — check before trusting one. Byte-level concatenation is deliberate: `Get-Content`/`Set-Content` would round-trip the dump through PowerShell 5.1's encoding layer, see [[bounty-hunter-powershell-utf8]]. Related: the 2026-07-28 finding that every prod script reported success unconditionally — same family, and the reason the exit-code checks alone were not enough.
+
+## 2026-07-30 — Scope A plus one hand-deleted account, instead of scope B
+**Status:** active
+**Decision:** The production wipe ran as scope A (app data cleared, accounts kept). Michael deletes a single `auth.users` row in the dashboard when he wants to exercise signup.
+**Why:** He asked for both a clean board and a look at the registration/onboarding flow, and named scope A and scope B in the same breath. Scope B delivers both but is one-way: a public-schema restore cannot bring auth accounts back, and re-registration depends on dashboard auth config that was wrong as recently as 2026-07-11. Deleting one account of three gets the same test while leaving two working ways back in.
+**Consequence:** The signup re-test is now Michael-paced rather than forced. Data at risk was trivial anyway — 2 test contracts, 2 friendships, 1 invite, zero credits.
+
+## 2026-07-30 — Formatting takes locale as an argument; it never reads the active language
+**Status:** active (0826cfb)
+**Decision:** `src/i18n/format.ts` exposes pure functions whose **first parameter is the locale**. `useFormatters()` is a thin hook that binds them to `i18n.language` for components. Plain modules are *given* a locale by their caller and never import the i18next singleton.
+**Why:** The same rule `src/domain/missions.ts` set when it refused to import i18next and carried a `.code` instead. Importing the singleton into `utils/` would make pure helpers stateful, untestable without booting i18next, and would invert the dependency direction. The hook depends on `useTranslation()` specifically because that subscription is what re-renders on `languageChanged` — reading `i18n.language` directly formats correctly on first paint and then goes stale, which is the subtler version of the bug being fixed.
+**Consequence:** Twelve-locale tests need no i18next boot. Intl instances are memoized by locale+options because countdown timers re-render every card every 60s.
+
+## 2026-07-30 — Dead code with a locale bug gets deleted, not fixed
+**Status:** active (0826cfb)
+**Decision:** `src/utils/dateUtils.ts` was deleted rather than made locale-aware.
+**Why:** Its `getStartOfWeek` hard-coded Sunday-first, citing "typical US calendar", while eleven of the twelve locales are ISO Monday-first. The correct fix needs `Intl.Locale.getWeekInfo()`, which WebKit does not have — and this app ships to iOS through Capacitor, so it would have needed a hand-maintained fallback table. A grep showed **zero importers** anywhere in `src`. Building a WebKit fallback for code nobody calls is cost with no benefit, and leaving it invites someone to use a US-centric week helper by accident.
+**Consequence:** Two of the thirteen catalogued formatter defects closed by deletion. If weekly aggregates are ever needed, add them to `format.ts` with locale as the first argument.
+
 ## 2026-07-29 (later) — German switches to informal "du"
 **Status:** active (d1d243b) — ⚠️ supersedes the last clause of [[#2026-07-29 — Twelve languages, endonym picker, informal register for the new ten]]
 **Decision:** German now addresses the user informally, matching the other eleven locales. Pinned by a register guard in `languages.test.ts`.
