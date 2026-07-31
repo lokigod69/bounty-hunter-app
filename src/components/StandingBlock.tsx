@@ -9,6 +9,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { standingRankKey, type Standing } from '../core/credits/standing.domain';
+import { useFormatters } from '../hooks/useFormatters';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { StandingSigil } from './visual/StandingSigil';
 
@@ -22,6 +23,7 @@ interface StandingBlockProps {
 export function StandingBlock({ standing, known, compact = false }: StandingBlockProps) {
   const { t } = useTranslation();
   const { strings } = useThemeStrings();
+  const fmt = useFormatters();
 
   // Never show a wrong rank while loading — absence beats a lie.
   if (!known) return null;
@@ -33,8 +35,12 @@ export function StandingBlock({ standing, known, compact = false }: StandingBloc
       : standing.nextThreshold === null
         ? rankWord
         : t('standing.progressToNext', {
-            earned: standing.earned.toLocaleString(),
-            next: standing.nextThreshold.toLocaleString(),
+            // Bare toLocaleString() follows the DEVICE locale, so a German
+            // reading German copy got "2,000" where the rest of the app writes
+            // "2.000". This string also feeds the title and aria-label below,
+            // so the screen-reader rendering was wrong in the same way.
+            earned: fmt.number(standing.earned),
+            next: fmt.number(standing.nextThreshold),
           });
 
   return (

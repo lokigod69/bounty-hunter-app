@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { standingRankKey } from '../../core/credits/standing.domain';
+import { useFormatters } from '../../hooks/useFormatters';
 import { RANK_UP_EVENT, type RankUpEventDetail } from '../../hooks/useStanding';
 import { useThemeStrings } from '../../hooks/useThemeStrings';
 import { feedback } from '../../utils/feedback';
@@ -24,6 +25,7 @@ const HOLD_REDUCED_MS = 4500;
 export function RankUpCeremony() {
   const { t } = useTranslation();
   const { strings } = useThemeStrings();
+  const fmt = useFormatters();
   const [detail, setDetail] = useState<RankUpEventDetail | null>(null);
   const dismissTimer = useRef<number | null>(null);
 
@@ -66,7 +68,9 @@ export function RankUpCeremony() {
         </div>
         <div className="rankup-word">{rankWord}</div>
         <div className="rankup-subline">
-          {detail.earned.toLocaleString()} {t('standing.earnedSuffix')}
+          {/* The highest-emotion moment in the app was rendering an OS-locale
+              number next to translated copy. */}
+          {fmt.number(detail.earned)} {t('standing.earnedSuffix')}
         </div>
       </div>
     </div>

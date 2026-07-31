@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { useFormatters } from '../hooks/useFormatters';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Pencil, Trash2, Gift, Check, Undo2 } from 'lucide-react';
 import { Coin } from './visual/Coin';
@@ -55,6 +56,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
   const { t } = useTranslation();
   const { themeId } = useTheme();
   const { strings } = useThemeStrings();
+  const fmt = useFormatters();
   const { id, name, description, image_url, credit_cost, is_active } = reward;
   const [imageError, setImageError] = useState(false);
   // R27: Lightbox state for full image view
@@ -249,13 +251,11 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
                   <Check size={12} /> {t('rewards.rewardCard.redeemedBadge')}
                 </span>
                 <p className="text-xs text-white/50">
-                  {t('rewards.rewardCard.redeemedOn', {
-                    date: new Date(redeemedAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    }),
-                  })}
+                  {/* toLocaleDateString(undefined, …) is the DEVICE locale, not
+                      the app's: German copy rendered "Mar 3, 2026" on an en-US
+                      phone, and the same account rendered differently on a
+                      different device. */}
+                  {t('rewards.rewardCard.redeemedOn', { date: fmt.date(redeemedAt) })}
                 </p>
               </>
             ) : (
@@ -263,13 +263,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/50">
                   ✓ Collected
                 </span>
-                <p className="text-xs text-white/50">
-                  {new Date(collectedAt).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </p>
+                <p className="text-xs text-white/50">{fmt.date(collectedAt)}</p>
               </>
             )}
           </div>

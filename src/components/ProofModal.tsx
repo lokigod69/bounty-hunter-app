@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone, FileRejection } from 'react-dropzone';
 import { UploadCloud, File as FileIcon } from 'lucide-react';
+import { useFormatters } from '../hooks/useFormatters';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
 import { PROOF_MAX_FILE_SIZE, PROOF_MAX_FILE_SIZE_MB, PROOF_ALLOWED_FILE_TYPES, PROOF_ACCEPTED_TYPES_LABEL } from '../lib/proofConfig';
@@ -18,6 +19,7 @@ interface ProofModalProps {
 }
 
 const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgress }) => {
+  const fmt = useFormatters();
   const [file, setFile] = useState<File | null>(null);
   const [textDescription, setTextDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +124,10 @@ const ProofModal: React.FC<ProofModalProps> = ({ onClose, onSubmit, uploadProgre
                 <div className="text-center text-slate-300">
                   <FileIcon size={48} className="mx-auto mb-2" />
                   <p className="font-semibold">{file.name}</p>
-                  <p className="text-xs">({(file.size / 1024).toFixed(2)} KB)</p>
+                  {/* toFixed(2) hard-codes a "." decimal separator, so German
+                      read "342.17 KB" in a UI that writes "342,17". style:'unit'
+                      gives the separator and the localized unit in one call. */}
+                  <p className="text-xs">({fmt.fileSize(file.size)})</p>
                 </div>
               ) : (
                 <div className="text-center text-slate-400">

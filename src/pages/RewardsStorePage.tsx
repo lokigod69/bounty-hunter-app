@@ -8,6 +8,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
+import { useFormatters } from '../hooks/useFormatters';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { Plus, ShoppingCart } from 'lucide-react';
 import { useRewardsStore } from '../hooks/useRewardsStore';
@@ -34,7 +35,8 @@ import emptyStore from '../assets/generated/empty-store.webp';
 type Tab = 'available' | 'created' | 'collected';
 
 const RewardsStorePage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const fmt = useFormatters();
   const [searchParams] = useSearchParams();
   const { strings } = useThemeStrings();
   const { isMobileMenuOpen } = useUI();
@@ -306,13 +308,15 @@ const RewardsStorePage: React.FC = () => {
                   </span>
                   {/* V1: Static gold balance number is the currency identity.
                       (The old shimmer rendered blank for reduced-motion and
-                      high-contrast users â€” its overrides never restored a color.) */}
+                      high-contrast users — its overrides never restored a color.) */}
                   <span className="text-display leading-none credit-gold-text">
-                    {userCredits ?? 0}
+                    {/* The headline balance was the one number on this page
+                        rendered raw, directly above a correctly-formatted one. */}
+                    {fmt.number(userCredits ?? 0)}
                   </span>
                   {typeof totalEarned === 'number' && (
                     <span className="mt-2 text-xs text-white/45 tabular-nums">
-                      {t('rewards.lifetimeEarned')} Â· {totalEarned.toLocaleString(i18n.language)}
+                      {t('rewards.lifetimeEarned')} · {fmt.number(totalEarned)}
                     </span>
                   )}
                   {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
