@@ -202,13 +202,41 @@ export default function Layout() {
               of laying out tighter they overlapped — the German rank word
               UNGESCHWOREN landed on top of the Verlauf nav item. */}
           <div className="flex-grow min-w-0 flex items-center space-x-8">
-            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
-              <img 
-                src={logo} 
+            {/* min-w-0, NOT flex-shrink-0. The group above has min-w-0 so IT
+                yields under pressure — but an unshrinkable child does not
+                shrink with its parent, it overflows the parent's box and paints
+                over the next sibling. At 390px this row demanded 474.7px of the
+                358px it has (40px mark + 8px gap + 215.7px wordmark against the
+                211px mobile cluster), so 117px of "BOUNTY HUNTER" landed on top
+                of the standing sigil and the credit pill — and
+                body{overflow-x:hidden} meant it read as overlapping controls
+                rather than a broken layout, exactly like the landscape BLOCKER.
+                The mark never shrinks; the wordmark is what yields. */}
+            <Link to="/" className="flex items-center space-x-2 min-w-0">
+              <img
+                src={logo}
                 alt={t('layout.logoAlt')}
-                className="h-10 w-10"
+                className="h-10 w-10 flex-shrink-0"
               />
-              <span className="app-title text-2xl text-white">{strings.appName}</span>
+              {/* Measured out of mandaloretitle.ttf: "BOUNTY HUNTER" is
+                  7.428em, i.e. 215.7px at text-2xl with .app-title's 0.12em
+                  tracking. With the 40px mark and the 211px mobile control
+                  cluster (sigil + credit pill + menu button, all of which earn
+                  their place) the wordmark needs a 507px viewport. It does not
+                  fit on any phone in portrait at any readable size, so below sm
+                  only the mark renders.
+
+                  `sm:` is width-only and that is correct HERE: the constraint
+                  genuinely is horizontal room, and it was checked against the
+                  landscape trap rather than assumed — iPhone SE landscape
+                  (667x375) has 608px and needs 474.7, iPhone 14 landscape
+                  (844x390) has 736px and needs 505.9 at the wider 0.22em
+                  tracking. truncate is the backstop for the crowded 768px
+                  desktop header, in the same spirit as .standing-rank's 14ch
+                  clamp: it never fires at the sizes above. */}
+              <span className="app-title text-2xl text-white hidden sm:inline min-w-0 truncate">
+                {strings.appName}
+              </span>
             </Link>
 
             {/* Desktop Navigation. `nav:` not `md:` — see tailwind.config.js:

@@ -209,10 +209,20 @@ const UserCredits: React.FC = () => {
   const animatedValue = useCountUp(credits ?? 0);
 
   if (loading) {
+    // Same footprint as the loaded badge, deliberately. This branch used to
+    // render a whole sentence — German "Credits werden geladen..." is 168.8px
+    // at text-sm — inside the header's credit pill, which is flex-shrink-0.
+    // That took the mobile control cluster from 211px to 334px of the 358px a
+    // 390px phone has, leaving 24px for the logo and wordmark; it also made the
+    // pill jump 123px narrower the instant the balance arrived. The wording
+    // survives as an aria-label, so screen readers lose nothing.
     return (
-      <div className="flex items-center space-x-2 text-sm text-slate-400">
-        <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-        <span>{t('common.loadingCredits')}</span>
+      <div className="credit-badge" role="status" aria-label={t('common.loadingCredits')}>
+        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
+        <span
+          className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
+          aria-hidden="true"
+        />
       </div>
     );
   }

@@ -349,10 +349,32 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">
-            <div className="flex-1 min-w-0 flex items-start gap-2">
+            {/* flex-wrap, and a real basis on the title further down.
+                Both badges are `whitespace-nowrap flex-shrink-0` and the
+                countdown column is flex-shrink-0, so the h3 was the only box in
+                this row with both flex-shrink:1 and min-width:0 — flexbox
+                resolved the ENTIRE deficit against it and min-w-0 put its floor
+                at zero. line-clamp-2 compiles to overflow:hidden, so a
+                zero-width title renders nothing at all: no ellipsis, no
+                overflow, no clue that a title exists.
+
+                German is where it crosses zero. "Zurückgesendet" (112px) +
+                "Täglicher Moment" (139px) + two 8px gaps = 268px of nowrap
+                badges. The content box is 296px on a 360px phone and 264px in
+                the desktop lg:grid-cols-3 grid ((1024-64-48)/3 = 304px card,
+                sm:p-5) — subtract the row gap and a 69px countdown and the
+                title was owed -48px and -80px respectively. English lands at
+                176px and merely looks cramped, which is why this read as a
+                German bug. Polish is worse than German again at 289px.
+
+                Not fixed with a breakpoint, and that is the point: the
+                narrowest task card in the app is a DESKTOP one (264px), 32px
+                narrower than a 360px phone's, so an xs:/sm: fix would have
+                closed the report and left the desktop grid broken. */}
+            <div className="flex-1 min-w-0 flex flex-wrap items-start gap-2">
               {/* R28: Status chip - mode-aware styling for pending */}
               <span
-                className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
+                className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 max-w-full min-w-0 ${
                   isArchived
                     ? 'bg-slate-600/30 text-slate-400 border border-slate-600/50'
                     : safeStatus === 'completed'
@@ -374,22 +396,37 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     : undefined
                 }
               >
-                {isArchived ? t('taskStatus.archived') :
-                 safeStatus === 'pending' ? t('taskStatus.pending') :
-                 safeStatus === 'in_progress' ? t('taskStatus.inProgress') :
-                 safeStatus === 'review' ? t('taskStatus.review') :
-                 safeStatus === 'completed' ? t('taskStatus.completed') :
-                 safeStatus === 'rejected' ? t('taskStatus.rejected') :
-                 safeStatus}
+                {/* max-w-full + truncate on the label is a backstop for locales
+                    we have not added yet, in the same spirit as
+                    .standing-rank's 14ch clamp. The widest shipped chip is
+                    Swedish "Under granskning" at 122px and the narrowest line a
+                    badge ever gets is 187px, so it never fires today — it just
+                    guarantees the row cannot overflow the card whatever a
+                    translator writes. */}
+                <span className="truncate">
+                  {isArchived ? t('taskStatus.archived') :
+                   safeStatus === 'pending' ? t('taskStatus.pending') :
+                   safeStatus === 'in_progress' ? t('taskStatus.inProgress') :
+                   safeStatus === 'review' ? t('taskStatus.review') :
+                   safeStatus === 'completed' ? t('taskStatus.completed') :
+                   safeStatus === 'rejected' ? t('taskStatus.rejected') :
+                   safeStatus}
+                </span>
               </span>
               {/* R35: Daily-mission badge — dormant until is_daily is set (no layout impact when absent) */}
               {task.is_daily && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-orange-500/20 text-orange-400 border border-orange-500/50">
-                  <Flame size={12} />
-                  {strings.dailyLabel}
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap flex-shrink-0 max-w-full min-w-0 bg-orange-500/20 text-orange-400 border border-orange-500/50">
+                  <Flame size={12} className="flex-shrink-0" />
+                  {/* Widest shipped label: Polish "Codzienny obowiązek", 161px
+                      against a 187px minimum line. Same backstop as the chip. */}
+                  <span className="truncate">{strings.dailyLabel}</span>
                 </span>
               )}
-              <h3 className={`text-base sm:text-lg font-bold ${titleColorClass} min-w-0 line-clamp-2`} title={title}>
+              {/* basis-40: the title asks for 160px — about two clamped lines of
+                  ~20 characters. If the badges leave less than that, it wraps to
+                  its own line and flex-1 grows it to the full row width, instead
+                  of being squeezed to zero and disappearing entirely. */}
+              <h3 className={`text-base sm:text-lg font-bold ${titleColorClass} flex-1 basis-40 min-w-0 line-clamp-2`} title={title}>
                 {title}
               </h3>
             </div>
