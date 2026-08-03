@@ -1,5 +1,21 @@
 # Current State
-Last updated: 2026-07-30
+Last updated: 2026-08-03
+
+## 🚀 Phase A of the LaunchOS launch-critical path is IN PROGRESS (2026-08-03)
+Michael handed over the ordered launch plan from Launch OS (D-022, target: TestFlight INTERNAL build).
+A1 = apply 014, A2 = apply the **corrected** 015 + two-browser realtime test, A3 = Michael rotates the
+DB password in the dashboard AFTER the applies (2 min; never paste the new one anywhere), A4/A5 = the
+Mac/Xcode leg (`IOS_SHIP_RUNBOOK.md`; fresh `npm run build` + `npx cap sync ios` there — the embedded
+native payload is stale; internal testers = App Store Connect team members only, NO external testers
+until Phase B compliance). **A1/A2 are staged and blocked on exactly one input: Michael pasting the
+current DB password.** He has already given the explicit go for both.
+- **015 was CORRECTED 2026-08-03 before applying** (LaunchOS sweep finding, verified against code):
+  `usePartnerState.ts:149` subscribes to `friendships`, not `profiles` as the draft claimed — nothing
+  subscribes to `profiles`, so 015 now publishes three tables (tasks, user_credits, friendships).
+  014 still goes first. The four-table version was never applied.
+- **Password rotation REOPENED by the launch decision** — not a flip-flop: the 2026-07-29 closure
+  explicitly said "rotate if the project ever takes real users"; TestFlight is that trigger, and the
+  password entered a second transcript on 2026-07-30. Rotation is A3, after 014/015.
 
 ## ✅ Both prod runs are DONE (2026-07-30)
 Michael pasted the DB password in-session, so both gated runbooks executed centrally.
@@ -14,7 +30,7 @@ touch storage), and — when he wants to exercise signup/onboarding — delete O
 dashboard and re-register. That replaced scope B: it gets the same test while leaving two working
 accounts as a way back in if confirmation email is misconfigured.
 
-## 🔴 ACTION REQUIRED (Michael) — two new proposals, one of them a security hole
+## 🔴 ACTION REQUIRED (Michael) — paste the DB password so 014/015 can run (go already given 2026-08-03)
 Both found on 2026-07-30 by inspecting the **live database** rather than the repo. Neither appears in
 `supabase/migrations/`, which is why neither was caught before. Both DRAFTED, gated and **NOT APPLIED** —
 they need an explicit go. Runbook: `docs/runbooks/PROD_RUNBOOK_014_015.md`. **014 before 015.**
@@ -48,7 +64,7 @@ they need an explicit go. Runbook: `docs/runbooks/PROD_RUNBOOK_014_015.md`. **01
 - **Rank ladder** — recalibrated to **0/30/150/600/2000**.
 - **German** — now informal "du", pinned by a probed register guard.
 
-~~**Rotate the Supabase DB password.**~~ **CLOSED 2026-07-29 by Michael's explicit decision: not rotating, the password stays.** It was shared in chat on 2026-07-28 to unblock the 012 rollout and so lives in a session transcript; Michael judged that acceptable for this private project. Risk accepted, not forgotten: if the project ever takes real users or the transcript leaves his control, rotate then (dashboard → Project Settings → Database → Reset password; nothing in the repo stores it, so rotating breaks nothing).
+~~**Rotate the Supabase DB password.**~~ ~~CLOSED 2026-07-29~~ **REOPENED 2026-08-03 as Phase A3 (LaunchOS D-022): rotate AFTER 014/015 apply — the closure's own condition ("if the project ever takes real users… rotate then") fires with TestFlight.** Original record: **CLOSED 2026-07-29 by Michael's explicit decision: not rotating, the password stays.** It was shared in chat on 2026-07-28 to unblock the 012 rollout and so lives in a session transcript; Michael judged that acceptable for this private project. Risk accepted, not forgotten: if the project ever takes real users or the transcript leaves his control, rotate then (dashboard → Project Settings → Database → Reset password; nothing in the repo stores it, so rotating breaks nothing).
 
 ~~Deployed create/edit-mission is BROKEN until the 012 SQL runs~~ **RESOLVED 2026-07-28: 012 is APPLIED and the client is deployed** (see In progress).
 

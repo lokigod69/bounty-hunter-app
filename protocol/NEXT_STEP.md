@@ -1,36 +1,31 @@
-# NEXT STEP — Bounty Hunter/main — updated 2026-07-30 (both prod runs DONE; two new DB findings, one a security hole)
+# NEXT STEP — Bounty Hunter/main — updated 2026-08-03 (Phase A live; 015 corrected; applies blocked on the password)
 
 ## FOR YOU
 
-1. **🔴 Two new proposals need your go — one is a security hole.** Both found by inspecting the live
-   database, neither visible in the repo. Runbook: `docs/runbooks/PROD_RUNBOOK_014_015.md`. **014 before 015.**
-   - **014** — `public.profiles` has four RLS policies and **RLS switched off**, so all four are inert,
-     while `anon` and `authenticated` hold DELETE/INSERT/UPDATE/TRUNCATE. The anon key ships in your
-     deployed JS bundle, so anyone who reads it out can rewrite or truncate every profile row. `tasks`,
-     `friendships` and `user_credits` all have RLS on — profiles is the only one that doesn't, and no
-     migration ever enabled it. Fix is one line; every client write path was checked against the
-     existing policies first, and profile *readability* does not change.
-   - **015** — `supabase_realtime` contains **zero tables**, so all five `postgres_changes`
-     subscriptions in the app receive nothing. Live updates have never worked on this project. This is
-     the real answer to the parked "is `friendships` in the publication" question.
-2. **Browser-test on a real phone — now the single biggest gap.** Ten mobile fixes across two batches,
-   none seen on a device. Portrait: the wordmark is **deliberately gone below 640px** (it needs a 507px
-   viewport; it was overlapping the sigil and credits, not fitting) — the logo mark must not overlap
-   anything, FriendCard action rows must wrap, and a German daily-task card must show its title.
-   Landscape: hamburger appears, a modal's submit stays reachable with the keyboard up, focusing an
-   input doesn't zoom, the German Friends tab bar reaches its first tab.
-3. **Delete ONE auth user in the dashboard when you want the signup + onboarding re-test** (three exist).
-   That was the alternative to scope B: same test, and two working accounts left as a way back in if
-   confirmation email is misconfigured. Try onboarding in a non-English language while you're there.
-4. **Nothing to do for storage** — all three buckets were already empty, so the wipe runbook's manual
-   step 3 is a no-op.
-5. **Still outstanding from before:** browser-test one create + one edit mission (the last unverified
-   piece of 012 — the wipe gave you an empty board to do it on), paste the branded email templates.
+1. **🔑 Paste the current Supabase DB password into the session** (dashboard → Project Settings →
+   Database if you've lost it). That is the only thing blocking A1+A2 — your go is already recorded,
+   the runbook is staged, and 015 was corrected first (it published `profiles`, which nothing
+   subscribes to; the live partner-state listener watches `friendships` — verified in code). The
+   session will then run: backup → validate → apply 014 → re-validate → apply 015 → re-validate,
+   with run records into `docs/runbooks/PROD_RUNBOOK_014_015.md`.
+2. **After both apply: rotate the DB password yourself (A3, ~2 min)** — dashboard → Project
+   Settings → Database → Reset password. Never paste the new one anywhere. Rotating BEFORE the
+   applies would strand them, so order matters.
+3. **Then the two-browser realtime test** (first time it can ever have worked here): create a
+   contract in A → appears in B without refresh; approve in A → B's balance moves; friend request
+   in A → B's nav badge increments. Plus the 014 write test: change theme/language/name/avatar,
+   set partner, onboard a fresh account.
+4. **A4/A5 are the Mac leg** — `docs/runbooks/IOS_SHIP_RUNBOOK.md` (iOS floor line now correctly
+   15.0). Fresh `npm run build` + `npx cap sync ios` on the Mac first (embedded payload is stale),
+   DEVELOPMENT_TEAM/signing, device smoke, then TestFlight **internal only** (team members; external
+   testers are gated by Phase B compliance).
+5. **Still open from before:** real-device mobile check (ten fixes, none seen on a device), delete
+   one auth user for the signup re-test, paste the branded email templates.
 
 ## PASTE THIS
 
 Resume Bounty Hunter, workstream main, under protocol-os.
 Read protocol/PROTOCOL.md, protocol/NEXT_STEP.md, memory/INDEX.md, memory/STATE.md.
-Verify state: main at `f9f2165` or later and everything pushed — `git log origin/main..HEAD` empty. Run `git diff --check`, `npx tsc -p tsconfig.app.json --noEmit`, `npm test`, `npm run lint`, `npm run build` (expect: 0 errors, 355 tests/24 files, 0 lint errors/3 known warnings, build pass and warning-free, main bundle ~401 kB).
-DONE 2026-07-30 (7 commits, all pushed): **Michael pasted the DB password, so both gated prod runs finally executed.** (a) **013 APPLIED** — guards live on create/update/approve, all three body md5s moved (`approve_task` cfc5d58d→2e093f81), grants intact, `increment_user_credits` still unreachable from anon/authenticated. (b) **Wipe RUN, scope A** — tasks 2→0, friendships 2→0, invites 1→0, one stale `partner_user_id` nulled, profiles + auth.users kept at 3. Scope B was **declined in favour of a third option**: scope A plus Michael deleting one auth user by hand, which gets the signup re-test without the one-way door. (c) **⚠️ `backup_data.ps1` was producing backups that protected nothing** — `--schema=public --table=auth.users` to ONE pg_dump means `--table` narrows and `--schema` does not add public back, so the dump held `auth.users` and nothing else; the "≥1 INSERT" guard passed on its three rows and printed green. It would have authorised the irreversible wipe against a backup containing none of the rows at risk. Now two dumps concatenated at byte level, and the guard asserts **per-table counts against the live DB** (11/11 verified). **Any data_backup_*.sql before 2026-07-30 may hold auth.users only.** (d) **Correction: `tesatmynutes` was never self-assigned** (`created_by` ≠ `assigned_to`, reward `text`) — the self-assign hole was real as a capability but never exercised. (e) **Extraction FINISHED: 93 keys × 12** (466→559 leaves) — EmojiPicker, FriendCard, FriendSelector, reward image field, Layout aria-labels, `themes.ts` (label/description **removed from `ThemeDefinition`** so they can't be re-hardcoded, and they now follow a language switch), RPC error table → UI-layer `taskLifecycleErrors.ts` with the domain layer still refusing i18next. (f) **Last three mobile MAJORs closed**, 15 guards, 10 confirmed failing pre-fix. The header bug was **an unshrinkable child overflowing a `min-w-0` parent**; the German title vanished because `line-clamp-2` is `overflow:hidden` so a zero-width box renders *nothing*; and it was sized to the **desktop** `lg:grid-cols-3` card at 264px — the narrowest card in the app is not on the narrowest viewport. (g) **New `src/i18n/format.ts` + `useFormatters()`**, locale-as-first-argument so plain modules stay pure. `dateUtils.ts` **deleted** (Sunday-first, zero importers). **CLDR does not abbreviate thousands in German or Italian at all** — 12000 is "12.000", abbreviation starts at millions; pinned by a test. (h) **Real mojibake in `RewardsStorePage.tsx`** — users were reading "Lifetime earned Â· 1,234"; tree-wide scan found only that and one comment. (i) **Codex review found one MAJOR the gates could not**: six lifecycle-error paths rendered the generic fallback instead of the mapped sentence — a regression in English too. Fixed, plus two unreachable dead keys fixed at the source (`rewardImageUpload.ts` now returns codes). New guard brace-matches every try/catch and fails any that can receive a lifecycle refusal without translating; verified to fail on the real defect. (j) **Two new DB findings written as proposals 014/015, NOT applied** — see FOR YOU.
-NEXT: Michael's 014/015 go, the real-device mobile check, and one deleted account for the signup test. Then: (1) teach `languages.test.ts` about CLDR plural categories — it **blocks** the 5 concatenated pluralisations and nothing else can proceed past it; (2) the remaining formatter call sites (credit badge compact, the two duplicated countdowns, Coin, ProofModal percent); (3) newly-catalogued hard-coded surfaces — **Dashboard.tsx has ~38 English strings and exactly one `t()` call**, plus useTasks (~35), ProofModal; (4) the UTC day-boundary bug in streaks (`toISOString().split('T')[0]` rolls the day at 08:00 at UTC+8). Mode 2 rules and the Status Block apply.
+Verify state: main at `687697c` or later, `git log origin/main..HEAD` empty, clean tree. Gates (all green 2026-08-03): tsc 0, 355 tests/24 files, lint 0 errors/3 known warnings, build warning-free, bundle ~401.5 kB.
+DONE 2026-08-03: Phase A of the LaunchOS launch-critical path (D-022) opened. **Proposal 015 CORRECTED before applying** — the draft published four tables incl. `profiles` on a wrong claim that `usePartnerState` watches it; the hook watches `friendships` (`usePartnerState.ts:149`), nothing subscribes to `profiles`, so 015 now publishes tasks/user_credits/friendships. up/down/validation/runbook all fixed; four-table version never applied; 014-before-015 order kept. Three stale doc lines fixed (STATE:105 + DECISIONS:91 said 013 unapplied though applied 2026-07-30; IOS runbook said floor 14.0, is 15.0). Password rotation REOPENED as A3 per the 2026-07-29 closure's own take-real-users condition.
+NEXT: **If Michael's message contains the DB password: run A1+A2 immediately** per `docs/runbooks/PROD_RUNBOOK_014_015.md` (backup first, scratchpad PGPASSFILE, never store or commit the password; append run records to the runbook, update STATE/BOARD, remind him to rotate = A3). If not, ask for it — nothing else in Phase A is executable from Windows. After the applies: his two-browser realtime + 014 write tests, then the Mac leg (A4/A5). Build backlog unchanged behind Phase A: CLDR plural gate in `languages.test.ts` first, then remaining formatter call sites, then the newly-catalogued hard-coded surfaces (Dashboard ~38, useTasks ~35, ProofModal), then the UTC streak-day bug. Mode 2 rules and the Status Block apply.
