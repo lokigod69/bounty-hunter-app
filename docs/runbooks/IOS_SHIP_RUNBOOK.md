@@ -34,7 +34,9 @@ npx cap open ios         # opens ios/App/App.xcworkspace in Xcode (NOT the .xcod
    `com.bountyhunter.app` (change only if the id is taken in your account —
    if you change it, also update `appId` in capacitor.config.ts + the
    CFBundleURLName in Info.plist).
-2. General → Minimum Deployments: iOS 14.0 (matches Podfile).
+2. General → Minimum Deployments: iOS 15.0 (matches Podfile + pbxproj; 14.0 was
+   stale here — Capacitor 8's podspec minimum is 15.0 and the floor was raised
+   repo-wide on 2026-07-24).
 3. App icon: `Assets.xcassets/AppIcon.appiconset` currently has a single 512@2x
    (=1024) image — Xcode 14+ accepts a single 1024 icon ("Single Size"); verify it
    renders, otherwise regenerate from `assets-src/` artwork.

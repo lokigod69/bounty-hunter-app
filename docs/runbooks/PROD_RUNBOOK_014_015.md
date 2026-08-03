@@ -5,18 +5,28 @@
 database rather than the repo. Neither defect is visible in `supabase/migrations/`,
 which is why neither was caught before.
 
+> **CORRECTED 2026-08-03, before applying** (caught by the LaunchOS external review):
+> the first draft of 015 published four tables, including `profiles`, because its
+> subscription inventory said `usePartnerState.ts` watches `profiles`. It watches
+> `friendships` (`usePartnerState.ts:149`) and derives the entire partner state
+> machine from friendships rows; its `profiles` read is a plain fetch, not a
+> subscription. Nothing subscribes to `profiles`, so 015 now publishes **three**
+> tables. The four-table version was never applied.
+
 | | 014 | 015 |
 |---|---|---|
-| What | `ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY` | Add 4 tables to the `supabase_realtime` publication |
+| What | `ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY` | Add 3 tables to the `supabase_realtime` publication |
 | Class | 🔴 **Security** | 🟡 Functionality |
 | Risk of applying | 🟢 Low | 🟢 Low |
 | Reversible | Yes, one line | Yes, one line |
 | Downtime | None | None |
 | Client deploy needed | No | No |
 
-**Apply 014 before 015.** 015 publishes `profiles`, and Realtime decides who may
-receive a row by applying that table's RLS. Publishing `profiles` while its RLS is
-off would broadcast profile changes to every connected client.
+**Apply 014 before 015.** Since the correction, 015 no longer publishes `profiles`,
+so the original hard dependency (publishing an RLS-off table broadcasts it to every
+connected client) is gone — but keep the order: 014 is the security fix, and the
+rule it enforces (never publish a table whose RLS is off) is the same rule 015's
+validation checks.
 
 ---
 
@@ -95,7 +105,7 @@ client connect, subscribe, and receive nothing:
 | `src/hooks/useTasks.ts` | tasks | second, older subscription |
 | `src/components/UserCredits.tsx` | user_credits | the header balance |
 | `src/hooks/useFriends.ts` | friendships | the nav badge |
-| `src/hooks/usePartnerState.ts` | profiles | couple-mode partner state |
+| `src/hooks/usePartnerState.ts` | friendships | couple-mode partner state (derived from friendships rows) |
 
 No error is raised — which is why it survived. The symptom is "the other browser
 didn't update", which reads like a caching or refetch bug.
@@ -112,9 +122,9 @@ The SQL is idempotent — each `ADD TABLE` is guarded, so re-running is a no-op.
 
 ```powershell
 $env:PROD_CONFIRM = "YES"
-psql "<conn>" -f db\proposals\015_validation.sql        # BEFORE — #2 zero rows; #3 must show profiles = t
+psql "<conn>" -f db\proposals\015_validation.sql        # BEFORE — #2 zero rows; #3 all three t
 scripts\prod\apply_sql.ps1 -Sql db\proposals\015_realtime_publication.up.sql
-psql "<conn>" -f db\proposals\015_validation.sql        # AFTER — #2 lists the four tables
+psql "<conn>" -f db\proposals\015_validation.sql        # AFTER — #2 lists the three tables
 ```
 
 ### Browser test after applying

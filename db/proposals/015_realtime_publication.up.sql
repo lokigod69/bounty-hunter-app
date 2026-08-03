@@ -1,5 +1,12 @@
 -- db/proposals/015_realtime_publication.up.sql
--- Publish the four tables the client subscribes to, so realtime actually fires.
+-- Publish the three tables the client subscribes to, so realtime actually fires.
+--
+-- CORRECTED 2026-08-03 before applying: the original draft listed
+-- usePartnerState.ts as subscribing to `profiles` and published four tables.
+-- The hook actually subscribes to `friendships` (usePartnerState.ts:149) and
+-- derives the whole partner state machine from friendships rows — the profiles
+-- read inside it is a plain fetch of the partner's display profile, not a
+-- subscription. NO client subscribes to `profiles`, so it is not published.
 --
 -- FOUND 2026-07-30 by inspecting the live database. The `supabase_realtime`
 -- publication exists, has `puballtables = false`, and contains ZERO tables.
@@ -10,7 +17,7 @@
 --   src/hooks/useTasks.ts          tasks         second, older subscription
 --   src/components/UserCredits.tsx user_credits  live balance in the header
 --   src/hooks/useFriends.ts        friendships   the nav badge
---   src/hooks/usePartnerState.ts   profiles      couple-mode partner state
+--   src/hooks/usePartnerState.ts   friendships   couple-mode partner state (derived from friendships rows)
 --
 -- They connect, subscribe and receive nothing. No error is raised, which is why
 -- this survived: the symptom is "the other browser didn't update", which reads
@@ -21,11 +28,12 @@
 -- old project's dashboard-side realtime config did not transfer, exactly like
 -- the auth Site URL and the edge functions did not.
 --
--- ORDERING: apply 014 (profiles RLS) FIRST. Realtime applies RLS per subscriber
--- when deciding who may receive a row, so publishing `profiles` while its RLS is
--- off would broadcast profile changes to every connected client. With 014 in
--- place the SELECT policy governs, and it is `USING (true)` - profiles are
--- public by design in this app, so that is the intended visibility.
+-- ORDERING: apply 014 (profiles RLS) FIRST anyway. Since the 2026-08-03
+-- correction `profiles` is no longer published, so the hard dependency the
+-- original draft described (publishing an RLS-off table broadcasts it to every
+-- connected client) is gone — but 014 is the security fix and 015 is a
+-- functionality fix, and Realtime applies each published table's RLS per
+-- subscriber, so the discipline stays: never publish a table whose RLS is off.
 
 BEGIN;
 
@@ -35,7 +43,7 @@ DO $$
 DECLARE
   t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['tasks','user_credits','friendships','profiles'] LOOP
+  FOREACH t IN ARRAY ARRAY['tasks','user_credits','friendships'] LOOP
     IF NOT EXISTS (
       SELECT 1 FROM pg_publication_tables
       WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = t
@@ -61,6 +69,9 @@ COMMIT;
 -- the previous values.
 --
 -- NOT added, on purpose:
+--   profiles - no client subscribes to it (the original draft said
+--     usePartnerState did; it subscribes to friendships). If a profiles
+--     subscription is ever added, publish it only with RLS on (proposal 014).
 --   rewards_store, collected_rewards, credit_transactions,
 --   daily_mission_streaks, invites - no client subscribes to them. Publishing a
 --   table nobody listens to is WAL traffic and broadcast surface for nothing.
