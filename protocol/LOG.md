@@ -48,3 +48,4 @@
 2026-09-07 — Pushed source 03f9323 and design handoff a4bd2fb to origin/main. Replaced the German phone evidence image after discovering the first capture showed its loading state; verified the replacement visually. No runtime changes after the final gates.
 
 2026-09-07 — B/C explicitly approved and implemented as 59c29e2, independently reversible. Device-local skins, two RGBA WebPs (49,958 bytes), adjacent localized credit amounts, aligned panels/equal actions, one-shot rim glints. 345/29 tests, app types/build pass; lint 0 errors/3 known warnings. Browser desktop/390/360, German 12.500, reload/A fallback, keyboard feedback, Accept/Approve/Reject; no errors. Source and design/evidence handoff prepared for main. Release/security/iPhone work deferred to next milestone.
+2026-09-07 — Pushed source 59c29e2 and design/evidence handoff e08e5f9 to origin/main. Local preview remains open on Forged, with all three skins selectable. No native/release-readiness claim.

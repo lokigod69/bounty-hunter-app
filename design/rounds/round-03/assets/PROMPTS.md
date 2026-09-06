@@ -25,4 +25,3 @@ This returned a white RGB ground. A final extraction produced verified RGBA:
 Make the white background transparent, including the center hole. Keep the frame unchanged.
 
 Final sources copied non-destructively from built-in outputs exec-f7b048f4-9e14-480f-9524-9304f4eb26eb.png (B) and exec-a5bf00e5-d9b3-445b-94c0-cf566aa4ee58.png (C). No semantic image editing was performed in code; only resizing/compression of final generated alpha assets.
-

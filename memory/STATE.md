@@ -17,7 +17,7 @@ Private missions and rewards between connected accounts. One People list support
 - Dependency audit: 2 moderate React Router package findings remain; reviewed major upgrade is next security work. Compatible patches removed the other reported advisories.
 
 ## Latest milestone — A/B/C skins and dialog polish
-- Michael approved B/C on 2026-09-07. Source 59c29e2 is independently reversible from A (03f9323) and the workflow pass (c8a52c3).
+- Michael approved B/C on 2026-09-07. Source 59c29e2 is pushed to main and independently reversible from A (03f9323) and the workflow pass (c8a52c3).
 - Avatar → Appearance offers Starlight, Forged and Astral. Skin is device-local, independent of the Mint/Gold/Rose account palette. A remains the unsaved default; changing skin never changes recipients or missions.
 - B metal/brass and C angular optical frames cover navigation, cards, dialogs and controls. Two true-alpha WebPs total 49,958 bytes. Live Mandalore/Poppins and all twelve translations remain; no new dependency or DB setting.
 - Credits display beside the coin in readable live numerals; unused spin/overlay code removed. Evidence/reward panels align, action pairs share sizing, mission card minimum heights agree, and button rims glint once on hover/focus/press.
