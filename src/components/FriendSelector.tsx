@@ -20,6 +20,6 @@ export default function FriendSelector({ selectedFriend, setSelectedFriend, clas
   return <select value={selectedFriend || ''} onChange={event => setSelectedFriend(event.target.value)}
     aria-label={placeholder || t('friendSelector.placeholder')} className={`input-field w-full ${className}`}>
     <option value="">{friends.length ? (placeholder || t('friendSelector.placeholder')) : t('friendSelector.empty')}</option>
-    {friends.map(({ friend }) => <option key={friend.id} value={friend.id}>{friend.display_name || friend.email}</option>)}
+    {friends.map(({ friend }) => <option key={friend.id} value={friend.id}>{friend.display_name || t('layout.unknownUser')}</option>)}
   </select>;
 }

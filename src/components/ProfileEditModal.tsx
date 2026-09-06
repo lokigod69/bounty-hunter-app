@@ -1,3 +1,4 @@
+import { ensureProfileForUser } from '../lib/profileBootstrap';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -132,6 +133,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     const toastId = toast.loading(t('profile.saving'));
 
     try {
+      if (!profile) {
+        const bootstrapped = await ensureProfileForUser(supabase, user);
+        if (bootstrapped.error || !bootstrapped.profile) throw bootstrapped.error ?? new Error('Profile unavailable');
+      }
       // R16: Build display name with fallbacks for first-time profile
       const baseDisplayName =
         displayName?.trim() ||
@@ -155,20 +160,13 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
         avatarUrl = publicUrlData.publicUrl;
       }
 
-      // R12: Upsert must include `email` since it's required for INSERT
-      // If profile doesn't exist, upsert will INSERT which requires email
+      // Bootstrap owns creation. Keep the Auth-owned email in sync without
+      // selecting it; a stale stored email would fail 016's self-update policy.
       const { error: updateError } = await supabase
         .from('profiles')
-        .upsert(
-          {
-            id: user.id,
-            email: user.email || '',  // Required for INSERT
-            display_name: baseDisplayName || null,
-            avatar_url: avatarUrl || null,
-          },
-          { onConflict: 'id' }
-        )
-        .select('*')
+        .update({ email: user.email || '', display_name: baseDisplayName || null, avatar_url: avatarUrl || null })
+        .eq('id', user.id)
+        .select('id, display_name, avatar_url, theme, onboarding_completed')
         .single();
 
       if (updateError) {

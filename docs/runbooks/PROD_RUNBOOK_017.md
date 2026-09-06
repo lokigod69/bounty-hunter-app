@@ -45,7 +45,7 @@ The invitation is an explicit consent mechanism: the inviter creates/shares a
 token, and the recipient redeems it. The SECURITY DEFINER invite function deliberately
 bypasses direct-client insert/update rules. Its token checks and permissions are
 unchanged. Revoking a relationship does not delete existing mission history or
-implement a product block; that remains separate work.
+implement a product block; staged 019 adds that separate boundary.
 
 ## Review and preflight
 
@@ -74,7 +74,7 @@ implement a product block; that remains separate work.
 
 ```powershell
 $env:PROD_CONFIRM = 'YES'
-scripts/prod/apply_sql.ps1 -Sql db/proposals/017_connection_consent.up.sql
+scripts/prod/apply_sql.ps1 -Sql db/proposals/017_connection_consent.up.sql -BackupManifest $reviewedBackup
 psql --host aws-1-ap-south-1.pooler.supabase.com --port 5432 --username postgres.mvbmpcmexkgfairnthux --dbname postgres -X -v ON_ERROR_STOP=1 -f db/proposals/017_validation.sql
 ```
 

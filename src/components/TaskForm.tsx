@@ -240,7 +240,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask, initi
                   <option value="">{t('taskForm.assignToPlaceholder')}</option>
                   {friends.map((friendship) => (
                     <option key={friendship.friend.id} value={friendship.friend.id}>
-                      {friendship.friend.display_name || friendship.friend.email}
+                      {friendship.friend.display_name || t('layout.unknownUser')}
                     </option>
                   ))}
                 </select>

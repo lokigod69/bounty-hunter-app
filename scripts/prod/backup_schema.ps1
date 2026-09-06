@@ -1,35 +1,48 @@
 param(
-  # Defaults updated 2026-07-10 to the CURRENT live project (mvbmpcmexkgfairnthux,
-  # ap-south-1). The old paused project (tsnjpylkgsovjujoczll) needs explicit params.
-  [string]$DbHost = "aws-1-ap-south-1.pooler.supabase.com",
-  [int]$DbPort    = 5432,
-  [string]$DbUser = "postgres.mvbmpcmexkgfairnthux",
-  [string]$DbName = "postgres"
+  [string]$DbHost = 'aws-1-ap-south-1.pooler.supabase.com',
+  [int]$DbPort = 5432,
+  [string]$DbUser = 'postgres.mvbmpcmexkgfairnthux',
+  [string]$DbName = 'postgres',
+  [switch]$NoPrompt,
+  [string]$OutputDirectory = (Join-Path $PSScriptRoot '../../supabase/backups')
 )
+$ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/schema_backup_guard.ps1"
 
-if ($env:PROD_CONFIRM -ne "YES") { throw "Set PROD_CONFIRM=YES to allow prod actions." }
-
-function Read-Plain([string]$prompt) {
-  $sec = Read-Host $prompt -AsSecureString
-  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
-  try { [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+# A read-only backup is never permission to apply a migration.
+$backupDirectory = $OutputDirectory
+New-Item -ItemType Directory -Force -Path $backupDirectory | Out-Null
+$stamp = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
+$archivePath = Join-Path $backupDirectory "schema_acl_$stamp.backup"
+$manifestPath = "$archivePath.json"
+$priorPassword = $env:PGPASSWORD
+$priorSslMode = $env:PGSSLMODE
+try {
+  if (-not $env:PGSSLMODE) { $env:PGSSLMODE = 'require' }
+  $pgpass = if ($env:PGPASSFILE) { $env:PGPASSFILE } elseif ($env:APPDATA) { Join-Path $env:APPDATA 'postgresql/pgpass.conf' } else { Join-Path $env:HOME '.pgpass' }
+  if (-not $env:PGPASSWORD -and -not (Test-Path -LiteralPath $pgpass)) {
+    if ($NoPrompt) { throw 'No secure database password/pgpass is configured. No backup or migration was performed.' }
+    $securePassword = Read-Host 'Database password (hidden; never paste it into chat)' -AsSecureString
+    $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+    try { $env:PGPASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
+  }
+  $dumpCommand = (Get-Command pg_dump -ErrorAction Stop).Source
+  # Preserve owners, grants and policies. The old --no-privileges erased the
+  # permissions these releases repair. No Auth rows or Storage bytes are dumped.
+  & $dumpCommand --host $DbHost --port $DbPort --username $DbUser --dbname $DbName --no-password --format=custom --schema-only --schema=public --schema=storage --schema=bounty_private --quote-all-identifiers --file $archivePath
+  if ($LASTEXITCODE -ne 0) { throw 'Schema/ACL dump failed. No verified backup was recorded.' }
+  Assert-SchemaArchive -ArchivePath $archivePath
+  [ordered]@{
+    version = 1; kind = 'schema-acl'; createdAt = [DateTimeOffset]::UtcNow.ToString('o')
+    host = $DbHost; port = $DbPort; user = $DbUser; database = $DbName
+    schemas = @('public', 'storage', 'bounty_private'); archive = [IO.Path]::GetFileName($archivePath)
+    sha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
+  } | ConvertTo-Json | Set-Content -LiteralPath $manifestPath -Encoding utf8
+  Write-Host "Verified schema/ACL archive: $archivePath" -ForegroundColor Green
+  Write-Host "Manifest for the reviewed apply: $manifestPath"
+  Write-Host 'Schema/permissions only. Data or object deletion needs a separate data/object backup.'
+} finally {
+  $env:PGPASSWORD = $priorPassword
+  $env:PGSSLMODE = $priorSslMode
 }
-
-if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password" }
-
-$ts = Get-Date -Format "yyyyMMdd_HHmmss"
-& pg_dump --schema-only --no-owner --no-privileges --quote-all-identifiers --role=postgres `
-  --host $DbHost --port $DbPort --username $DbUser --dbname $DbName `
-  -f "supabase\schema_backup_$ts.sql"
-$exit = $LASTEXITCODE
-
-$env:PGPASSWORD = $null
-# A backup that did not happen is worse than no backup: it authorizes an apply.
-# 2026-07-28: an auth failure still printed "Backup written" for a file that did
-# not exist. Verify the dump both exited clean AND produced a plausible file.
-if ($exit -ne 0) { throw "BACKUP FAILED (pg_dump exit $exit). Do NOT apply any migration." }
-$backupPath = "supabase\schema_backup_$ts.sql"
-if (-not (Test-Path $backupPath)) { throw "BACKUP FAILED: $backupPath was never written. Do NOT apply any migration." }
-$size = (Get-Item $backupPath).Length
-if ($size -lt 50000) { throw "BACKUP SUSPECT: $backupPath is only $size bytes (expected >50 KB). Do NOT apply any migration." }
-Write-Host "Backup written: $backupPath ($size bytes)" -ForegroundColor Green

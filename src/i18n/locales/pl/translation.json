@@ -564,5 +564,25 @@
     },
     "for": "Dla",
     "from": "Od"
+  },
+  "safety": {
+    "title": "Bezpieczeństwo",
+    "person": "Bezpieczeństwo: {{name}}",
+    "block": "Zablokuj",
+    "unblock": "Odblokuj",
+    "blockDetails": "Blokowanie usuwa połączenie i ukrywa wspólne misje oraz nagrody. Twoje kredyty pozostają bez zmian.",
+    "unblockDetails": "Odblokowanie nie przywraca połączenia. Potrzebne będzie nowe zaproszenie.",
+    "report": "Zgłoś",
+    "received": "Zgłoszenie otrzymane. Możesz też zablokować tę osobę.",
+    "reason": "Powód",
+    "details": "Szczegóły (opcjonalnie)",
+    "send": "Wyślij zgłoszenie",
+    "failed": "Niedostępne. Spróbuj ponownie za chwilę.",
+    "blockedPeople": "Zablokowane osoby",
+    "none": "Brak zablokowanych osób.",
+    "harassment": "Nękanie",
+    "unsafe_content": "Niebezpieczne treści",
+    "spam": "Spam",
+    "other": "Inne"
   }
 }

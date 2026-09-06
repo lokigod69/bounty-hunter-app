@@ -564,5 +564,25 @@
     },
     "for": "Pour",
     "from": "De"
+  },
+  "safety": {
+    "title": "Sécurité",
+    "person": "Sécurité pour {{name}}",
+    "block": "Bloquer",
+    "unblock": "Débloquer",
+    "blockDetails": "Le blocage met fin à votre connexion et masque les missions et récompenses partagées. Vos crédits sont conservés.",
+    "unblockDetails": "Débloquer ne rétablit pas la connexion. Une nouvelle invitation sera nécessaire.",
+    "report": "Signaler",
+    "received": "Signalement reçu. Vous pouvez aussi bloquer cette personne.",
+    "reason": "Motif",
+    "details": "Détails (facultatif)",
+    "send": "Envoyer le signalement",
+    "failed": "Indisponible. Veuillez réessayer dans un instant.",
+    "blockedPeople": "Personnes bloquées",
+    "none": "Aucune personne bloquée.",
+    "harassment": "Harcèlement",
+    "unsafe_content": "Contenu dangereux",
+    "spam": "Spam",
+    "other": "Autre"
   }
 }

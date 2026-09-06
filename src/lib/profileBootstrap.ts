@@ -13,9 +13,7 @@
 // fetching the existing profile instead of failing.
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import type { Database } from '../types/database';
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
+import type { Profile } from '../types/custom';
 
 export async function ensureProfileForUser(
   supabase: SupabaseClient,
@@ -25,7 +23,7 @@ export async function ensureProfileForUser(
     // 1. Try to load existing profile
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, display_name, avatar_url, theme, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle();   // Returns null data when no row found, not an error
 
@@ -59,7 +57,7 @@ export async function ensureProfileForUser(
     const { data: inserted, error: insertError } = await supabase
       .from('profiles')
       .insert(insertPayload)
-      .select('*')
+      .select('id, display_name, avatar_url, theme, onboarding_completed')
       .single();
 
     if (insertError) {
@@ -68,7 +66,7 @@ export async function ensureProfileForUser(
       if (insertError.code === '23505') {
         const { data: existingProfile, error: refetchError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, display_name, avatar_url, theme, onboarding_completed')
           .eq('id', user.id)
           .maybeSingle();
 

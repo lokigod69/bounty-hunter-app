@@ -1,3 +1,4 @@
+import { PersonSafety } from '../PersonSafety';
 // src/components/modals/MissionModalShell.tsx
 // R9: Unified modal shell for mission-related modals
 // Wave B: Synchronous mobile layout plus accessible dialog focus management.
@@ -48,6 +49,7 @@ import heroCouple from '../../assets/generated/hero-couple.webp';
 // ============================================================================
 
 interface UserInfo {
+  id?: string;
   name: string;
   avatar?: string;
 }
@@ -411,6 +413,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 <User size={16} className="text-white/40" />
               )}
               <span>{contextLabel}</span>
+              {contextUser?.id && <PersonSafety personId={contextUser.id} name={contextUser.name} />}
             </div>
           </div>
         </div>

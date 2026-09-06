@@ -564,5 +564,25 @@
     },
     "for": "Till",
     "from": "Från"
+  },
+  "safety": {
+    "title": "Säkerhet",
+    "person": "Säkerhet för {{name}}",
+    "block": "Blockera",
+    "unblock": "Avblockera",
+    "blockDetails": "Blockering avslutar er kontakt och döljer delade uppdrag och belöningar. Dina krediter behålls.",
+    "unblockDetails": "Avblockering återställer inte kontakten. Ni behöver en ny inbjudan.",
+    "report": "Anmäl",
+    "received": "Anmälan mottagen. Du kan också blockera personen.",
+    "reason": "Orsak",
+    "details": "Detaljer (valfritt)",
+    "send": "Skicka anmälan",
+    "failed": "Inte tillgängligt. Försök igen om en stund.",
+    "blockedPeople": "Blockerade personer",
+    "none": "Inga blockerade personer.",
+    "harassment": "Trakasserier",
+    "unsafe_content": "Farligt innehåll",
+    "spam": "Skräppost",
+    "other": "Annat"
   }
 }

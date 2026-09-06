@@ -20,6 +20,12 @@ for (const skin of SKIN_IDS) {
   toolbar.append(button);
 }
 document.body.append(toolbar);
-const sync = () => toolbar.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.skinChoice === document.documentElement.dataset.skin)));
+const reset = document.createElement('button');
+reset.type = 'button';
+reset.textContent = 'Reset';
+reset.title = 'Reset sample data';
+reset.onclick = () => { sessionStorage.removeItem('bh-preview-safety'); window.location.reload(); };
+toolbar.append(reset);
+const sync = () => toolbar.querySelectorAll('button[data-skin-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.skinChoice === document.documentElement.dataset.skin)));
 new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin'] });
 sync();

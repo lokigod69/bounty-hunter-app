@@ -564,5 +564,25 @@
     },
     "for": "Voor",
     "from": "Van"
+  },
+  "safety": {
+    "title": "Veiligheid",
+    "person": "Veiligheid voor {{name}}",
+    "block": "Blokkeren",
+    "unblock": "Deblokkeren",
+    "blockDetails": "Blokkeren verbreekt jullie verbinding en verbergt gedeelde missies en beloningen. Je credits blijven behouden.",
+    "unblockDetails": "Deblokkeren herstelt de verbinding niet. Er is een nieuwe uitnodiging nodig.",
+    "report": "Melden",
+    "received": "Melding ontvangen. Je kunt deze persoon ook blokkeren.",
+    "reason": "Reden",
+    "details": "Details (optioneel)",
+    "send": "Melding versturen",
+    "failed": "Niet beschikbaar. Probeer het zo opnieuw.",
+    "blockedPeople": "Geblokkeerde personen",
+    "none": "Geen geblokkeerde personen.",
+    "harassment": "Intimidatie",
+    "unsafe_content": "Onveilige inhoud",
+    "spam": "Spam",
+    "other": "Anders"
   }
 }

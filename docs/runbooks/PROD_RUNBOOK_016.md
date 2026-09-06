@@ -63,24 +63,20 @@ and [privilege revocation](https://www.postgresql.org/docs/17/sql-revoke.html).
 3. Run `node tests/security-db/run-016.mjs`. It starts a disposable PostgreSQL on
    loopback only and accepts no remote connection argument. `initdb`, `pg_ctl` and
    `psql` must be on PATH. No npm package installation is needed.
-4. Take a fresh validated schema backup using the existing protected workflow.
-   The standard backup omits ACLs, so also capture a private ACL-preserving dump:
+4. Take a fresh schema/ACL backup with the corrected protected helper (or double-click protocol/backup-release.bat):
 
    ```powershell
-   $env:PROD_CONFIRM = 'YES'
    scripts/prod/backup_schema.ps1
-   # Use a secure pgpass file/password prompt, never a password in a command/chat.
-   # A .backup suffix is ignored by Git. Despite its suffix this is plain SQL.
-   pg_dump --host aws-1-ap-south-1.pooler.supabase.com --port 5432 --username postgres.mvbmpcmexkgfairnthux --dbname postgres --schema-only --no-owner --schema public --schema storage --file supabase/016_schema_acl_before.backup
-   if ($LASTEXITCODE -ne 0) { throw 'ACL backup failed: do not apply' }
-   if (!(Test-Path supabase/016_schema_acl_before.backup) -or (Get-Item supabase/016_schema_acl_before.backup).Length -lt 50000) { throw 'ACL backup missing/suspect: do not apply' }
    ```
 
-   Store backups privately and check their contents for table definitions, policies,
-   and GRANT/REVOKE statements. A schema dump can contain function bodies and must
-   not be published blindly. These files do not back up object bytes; 016 never
-   edits bucket visibility or object records/bytes. A wider data change requires
-   its own data/object backup plan.
+   Use its hidden password prompt or secure pgpass, never a password in chat/commands.
+   It writes an ignored custom pg_dump archive plus a target-bound SHA-256 manifest
+   under supabase/backups/. Owners, policies and grants are preserved for public,
+   storage and bounty_private when present. No PROD_CONFIRM is needed for this
+   read-only step. Record the exact printed manifest path as $reviewedBackup.
+   The apply helper checks its target, 24-hour age, scope, hash and archive inventory.
+   Schema/permissions only: data/Auth records and Storage bytes need separate backups.
+   A real local restore and negative guard cases run in the 019 test suite.
 5. Give Michael the exact up.sql, this runbook, current diff, local test evidence and
    verified backup location. Record the explicit go. A same-day file alone is not
    permission to apply.
@@ -89,7 +85,7 @@ and [privilege revocation](https://www.postgresql.org/docs/17/sql-revoke.html).
 
 ```powershell
 $env:PROD_CONFIRM = 'YES'
-scripts/prod/apply_sql.ps1 -Sql db/proposals/016_profile_storage_repair.up.sql
+scripts/prod/apply_sql.ps1 -Sql db/proposals/016_profile_storage_repair.up.sql -BackupManifest $reviewedBackup
 psql --host aws-1-ap-south-1.pooler.supabase.com --port 5432 --username postgres.mvbmpcmexkgfairnthux --dbname postgres -X -v ON_ERROR_STOP=1 -f db/proposals/016_validation.sql
 ```
 

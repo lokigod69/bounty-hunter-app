@@ -564,5 +564,25 @@
     },
     "for": "Per",
     "from": "Da"
+  },
+  "safety": {
+    "title": "Sicurezza",
+    "person": "Sicurezza per {{name}}",
+    "block": "Blocca",
+    "unblock": "Sblocca",
+    "blockDetails": "Il blocco interrompe il collegamento e nasconde le missioni e le ricompense condivise. I tuoi crediti rimangono invariati.",
+    "unblockDetails": "Lo sblocco non ripristina il collegamento. Servirà un nuovo invito.",
+    "report": "Segnala",
+    "received": "Segnalazione ricevuta. Puoi anche bloccare questa persona.",
+    "reason": "Motivo",
+    "details": "Dettagli (facoltativo)",
+    "send": "Invia segnalazione",
+    "failed": "Non disponibile. Riprova tra poco.",
+    "blockedPeople": "Persone bloccate",
+    "none": "Nessuna persona bloccata.",
+    "harassment": "Molestie",
+    "unsafe_content": "Contenuti pericolosi",
+    "spam": "Spam",
+    "other": "Altro"
   }
 }

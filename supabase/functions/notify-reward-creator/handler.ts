@@ -9,6 +9,7 @@ export interface NotificationClient {
   };
   findCollection(rewardId: string, collectorId: string): PromiseLike<RowResult>;
   findReward(rewardId: string): PromiseLike<RowResult>;
+  pairAllowed(actorId: string, recipientId: string): PromiseLike<{ data: boolean | null; error: unknown }>;
 }
 
 interface Dependencies {
@@ -120,6 +121,10 @@ export function createRewardNotificationHandler(deps: Dependencies) {
       if (creatorError || !creator?.email || !creator.email_confirmed_at) {
         throw new RequestError(409, 'Notification recipient is unavailable.');
       }
+
+      const permitted = await client.pairAllowed(user.id, reward.creator_id);
+      if (permitted.error) throw new RequestError(503, 'Notifications are temporarily unavailable.');
+      if (permitted.data !== true) throw new RequestError(403, 'Notification is not permitted.');
 
       // Generic content avoids exposing mission/reward text on email previews and
       // keeps retries stable when somebody changes a display name or reward title.

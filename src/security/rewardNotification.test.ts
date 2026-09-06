@@ -19,7 +19,9 @@ function setup() {
     data: { user: { id: creatorId, email: 'verified@example.com', email_confirmed_at: '2026-01-01T00:00:00Z' } },
     error: null,
   });
+  const pairAllowed = vi.fn().mockResolvedValue({ data: true, error: null });
   const client: NotificationClient = {
+    pairAllowed,
     auth: { getUser, admin: { getUserById } },
     async findCollection(reward, collector) {
       queries.push({ table: 'collected_rewards', filters: [['reward_id', reward], ['collector_id', collector]] });
@@ -34,7 +36,7 @@ function setup() {
   const getClient = vi.fn(() => client);
   const env: Record<string, string> = { RESEND_API_KEY: 'server-test-key', RESEND_FROM_EMAIL: 'Bounty Hunter <app@example.com>' };
   const handler = createRewardNotificationHandler({ getClient, getEnv: (key) => env[key], fetch: fetchMock, now: () => now });
-  return { handler, rows, queries, getUser, getUserById, fetchMock, getClient, env };
+  return { handler, rows, queries, getUser, getUserById, fetchMock, getClient, env, pairAllowed };
 }
 
 function request(body: unknown = { reward_id: rewardId, collector_id: collectorId }, extraHeaders: Record<string, string> = {}) {
@@ -45,6 +47,13 @@ function request(body: unknown = { reward_id: rewardId, collector_id: collectorI
 }
 
 describe('reward notification authorization and delivery', () => {
+  it.each([{ data: false, error: null }, { data: null, error: { message: 'missing RPC' } }])('never sends when the safety check denies or fails: %j', async (result) => {
+    const { handler, pairAllowed, fetchMock } = setup();
+    pairAllowed.mockResolvedValue(result);
+    expect((await handler(request())).status).toBe(result.error ? 503 : 403);
+    expect(pairAllowed).toHaveBeenCalledWith(collectorId, creatorId);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('allows preflight and rejects non-POST methods without querying or sending', async () => {
     const { handler, getClient, fetchMock } = setup();
     expect((await handler(new Request('https://function.example', { method: 'OPTIONS' }))).status).toBe(204);

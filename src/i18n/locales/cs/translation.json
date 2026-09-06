@@ -564,5 +564,25 @@
     },
     "for": "Pro",
     "from": "Od"
+  },
+  "safety": {
+    "title": "Bezpečnost",
+    "person": "Bezpečnost pro {{name}}",
+    "block": "Zablokovat",
+    "unblock": "Odblokovat",
+    "blockDetails": "Blokování ukončí vaše spojení a skryje sdílené mise a odměny. Tvé kredity zůstanou beze změny.",
+    "unblockDetails": "Odblokování neobnoví spojení. Budete potřebovat novou pozvánku.",
+    "report": "Nahlásit",
+    "received": "Hlášení přijato. Tuto osobu můžeš také zablokovat.",
+    "reason": "Důvod",
+    "details": "Podrobnosti (volitelné)",
+    "send": "Odeslat hlášení",
+    "failed": "Nedostupné. Zkus to prosím za chvíli znovu.",
+    "blockedPeople": "Zablokované osoby",
+    "none": "Žádné zablokované osoby.",
+    "harassment": "Obtěžování",
+    "unsafe_content": "Nebezpečný obsah",
+    "spam": "Spam",
+    "other": "Jiné"
   }
 }

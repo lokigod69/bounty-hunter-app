@@ -34,6 +34,16 @@ const tables = {
   rewards_store: empty ? [] : [{ id: 'reward-one', name: 'A slow Sunday breakfast', description: 'Coffee, pancakes, and no rush. Pick a Sunday together.', creator_id: alex, assigned_to: me, credit_cost: 20, is_active: true, image_url: null, emoji: '🥞', created_at: now, updated_at: now, is_redeemed: false }],
   collected_rewards: [], daily_mission_streaks: [],
 };
+// Sample blocks survive the UI reload; the preview toolbar can reset them.
+// The real backend never reads this preview-only key.
+let safety = { blocked: [], disconnected: [] };
+try { safety = JSON.parse(window.sessionStorage.getItem('bh-preview-safety') || 'null') || safety; } catch { /* isolated test environment */ }
+function applySampleBlocks() {
+  tables.friendships = tables.friendships.filter(row => !safety.disconnected.includes(row.user1_id) && !safety.disconnected.includes(row.user2_id));
+  tables.tasks = tables.tasks.filter(row => !safety.blocked.includes(row.created_by) && !safety.blocked.includes(row.assigned_to));
+  tables.rewards_store = tables.rewards_store.filter(row => !safety.blocked.includes(row.creator_id) && !safety.blocked.includes(row.assigned_to));
+}
+applySampleBlocks();
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...headers } });
 const split = value => { let depth = 0, from = 0; const parts = []; [...value].forEach((c, i) => { if (c === '(') depth++; if (c === ')') depth--; if (c === ',' && depth === 0) { parts.push(value.slice(from, i)); from = i + 1; } }); parts.push(value.slice(from)); return parts; };
 function matches(row, condition) {
@@ -51,6 +61,15 @@ let inviteAttempts = 0;
 const listeners = new Set();
 const changed = () => queueMicrotask(() => listeners.forEach(callback => callback({ eventType: 'UPDATE' })));
 async function rpc(name, args) {
+  if (name === 'list_blocked_people') return json(profiles.filter(p => safety.blocked.includes(p.id)));
+  if (name === 'lookup_contacts') return json(profiles.filter(p => p.id !== me && p.display_name.toLowerCase().startsWith(args.p_query.toLowerCase()) && !safety.blocked.includes(p.id) && !tables.friendships.some(f => f.user1_id === p.id || f.user2_id === p.id)).slice(0, 5));
+  if (name === 'report_person') return json(crypto.randomUUID());
+  if (name === 'set_person_block') {
+    safety.blocked = safety.blocked.filter(id => id !== args.p_person);
+    if (args.p_blocked) { safety.blocked.push(args.p_person); safety.disconnected = [...new Set([...safety.disconnected, args.p_person])]; }
+    try { window.sessionStorage.setItem('bh-preview-safety', JSON.stringify(safety)); } catch { return json({ message: 'Sample storage unavailable.' }, 503); }
+    applySampleBlocks(); return json(true);
+  }
   if (name === 'get_or_create_invite') return json({ success: true, token: 'sample-invite' });
   if (name === 'purchase_reward') {
     const fail = (error, message) => json({ success: false, error, message });

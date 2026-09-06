@@ -1,3 +1,5 @@
+import { contactSafetyEnabled, lookupContacts, listBlockedPeople } from '../lib/contactSafety';
+import { PersonSafety } from '../components/PersonSafety';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
@@ -7,9 +9,7 @@ import FriendCard from '../components/FriendCard';
 import { UserPlus, Users, Share2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Database } from '../types/database';
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
+import type { PersonSummary as Profile } from '../types/custom';
 import { feedback } from '../utils/feedback';
 import { useTranslation } from 'react-i18next';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -39,7 +39,7 @@ function FriendListSkeleton() {
   );
 }
 
-export default function Friends() {
+function FriendsForAccount() {
   const { t } = useTranslation();
   const { strings } = useThemeStrings();
   const { user, profile, profileLoading } = useAuth();
@@ -66,6 +66,15 @@ export default function Friends() {
       setIsSharingInvite(false);
     }
   };
+
+  const [blockedPeople, setBlockedPeople] = useState<Profile[]>([]);
+  const [blockedError, setBlockedError] = useState(false);
+  useEffect(() => {
+    if (!contactSafetyEnabled() || !user?.id) return;
+    let current = true;
+    void listBlockedPeople().then(people => { if (current) setBlockedPeople(people); }).catch(() => { if (current) setBlockedError(true); });
+    return () => { current = false; };
+  }, [user?.id]);
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
 
@@ -98,7 +107,7 @@ export default function Friends() {
       clearTimeout(searchTimeout.current);
     }
     
-    if (value.length < 2) {
+    if (value.trim().length < 3 || value.trim().length > 64) {
       setSearchResults([]);
       setShowDropdown(false);
       return;
@@ -114,30 +123,8 @@ export default function Friends() {
     if (!user) return;
     setIsSearching(true);
     try {
-      // Search users by display name
-      const { data: users, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .ilike('display_name', `%${searchValue}%`)
-        .neq('id', user.id)
-        .limit(5);
-        
-      if (error) throw error;
-      
-      // Filter out existing friends
-      const { data: friendships } = await supabase
-        .from('friendships')
-        .select('user1_id, user2_id')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-        
-      const friendIds = new Set();
-      friendships?.forEach(f => {
-        if (f.user1_id === user.id) friendIds.add(f.user2_id);
-        if (f.user2_id === user.id) friendIds.add(f.user1_id);
-      });
-      
+      const availableUsers = await lookupContacts(searchValue);
       if (epoch !== searchEpoch.current) return;
-      const availableUsers = users?.filter(u => !friendIds.has(u.id)) || [];
       setSearchDone(true);
       setSearchResults(availableUsers);
       setShowDropdown(availableUsers.length > 0);
@@ -249,13 +236,14 @@ export default function Friends() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <AppButton variant="cta" icon={<Share2 size={18} />} loading={isSharingInvite} onClick={handleShareInvite}>{t('invite.inviteSomeone')}</AppButton>
           </div>
-          <details className="optional-details">
+          {contactSafetyEnabled() && <details className="optional-details">
             <summary>{t('workflow.findExisting')}</summary>
           {/* Add Friend Form */}
           <div className="relative mb-6">
             <div className="relative">
               <input
                 type="text"
+                maxLength={64}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 aria-label={t('friends.searchPlaceholder')}
@@ -281,7 +269,7 @@ export default function Friends() {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={userResult.avatar_url || avatarFallback(userResult.email)}
+                        src={userResult.avatar_url || avatarFallback(userResult.display_name || userResult.id)}
                         alt={userResult.display_name || 'user avatar'}
                         className="w-10 h-10 rounded-full"
                       />
@@ -294,7 +282,10 @@ export default function Friends() {
             )}
           </div>
 
-          </details>
+          </details>}
+          {contactSafetyEnabled() && <details className="optional-details"><summary>{t('safety.blockedPeople')}</summary>
+            {blockedError ? <p role="alert">{t('safety.failed')}</p> : blockedPeople.length === 0 ? <p>{t('safety.none')}</p> : blockedPeople.map(person => <div key={person.id} className="flex items-center justify-between gap-3 py-2"><span>{person.display_name || t('layout.unknownUser')}</span><PersonSafety personId={person.id} name={person.display_name || t('layout.unknownUser')} blocked /></div>)}
+          </details>}
 
           {/* Tabs */}
           <TabBar
@@ -436,4 +427,10 @@ export default function Friends() {
       </PageContainer>
     </PullToRefresh>
   );
+}
+
+// Discard pending searches, block lists and dialogs on account changes.
+export default function Friends() {
+  const { user } = useAuth();
+  return <FriendsForAccount key={user?.id ?? 'signed-out'} />;
 }

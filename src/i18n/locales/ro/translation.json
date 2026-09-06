@@ -564,5 +564,25 @@
     },
     "for": "Pentru",
     "from": "De la"
+  },
+  "safety": {
+    "title": "Siguranță",
+    "person": "Siguranță pentru {{name}}",
+    "block": "Blochează",
+    "unblock": "Deblochează",
+    "blockDetails": "Blocarea încheie conexiunea și ascunde misiunile și recompensele comune. Creditele tale rămân neschimbate.",
+    "unblockDetails": "Deblocarea nu restabilește conexiunea. Veți avea nevoie de o nouă invitație.",
+    "report": "Raportează",
+    "received": "Raport primit. Poți și să blochezi această persoană.",
+    "reason": "Motiv",
+    "details": "Detalii (opțional)",
+    "send": "Trimite raportul",
+    "failed": "Indisponibil. Încearcă din nou în scurt timp.",
+    "blockedPeople": "Persoane blocate",
+    "none": "Nicio persoană blocată.",
+    "harassment": "Hărțuire",
+    "unsafe_content": "Conținut periculos",
+    "spam": "Spam",
+    "other": "Altul"
   }
 }

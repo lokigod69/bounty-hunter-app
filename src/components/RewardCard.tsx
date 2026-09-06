@@ -6,6 +6,7 @@
 // A component to display a single reward or bounty item.
 
 import React, { useState, useEffect } from 'react';
+import { PersonSafety } from './PersonSafety';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useFormatters } from '../hooks/useFormatters';
@@ -198,6 +199,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           {/* Right: Profile avatar showing who it's from/to */}
           {(view === 'available' || view === 'collected') && reward.creator_profile && (
             <div className="flex items-center gap-1.5" title={reward.creator_profile.display_name || ''}>
+              {reward.creator_id && <PersonSafety personId={reward.creator_id} name={reward.creator_profile.display_name || t('layout.unknownUser')} />}
               <span className="text-xs text-white/50">{t('workflow.from')}</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
                 <img
@@ -210,6 +212,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           )}
           {view === 'created' && reward.assignee_profile && (
             <div className="flex items-center gap-1.5" title={`To: ${reward.assignee_profile.display_name || 'Unknown'}`}>
+              {reward.assigned_to && <PersonSafety personId={reward.assigned_to} name={reward.assignee_profile.display_name || t('layout.unknownUser')} />}
               <span className="text-xs text-white/50">To:</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
                 <img

@@ -564,5 +564,25 @@
     },
     "for": "For",
     "from": "From"
+  },
+  "safety": {
+    "title": "Safety",
+    "person": "Safety for {{name}}",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blockDetails": "Blocking ends your connection and hides shared missions and rewards. Your credits stay the same.",
+    "unblockDetails": "Unblocking does not reconnect you. You will need a new invitation.",
+    "report": "Report",
+    "received": "Report received. You can also block this person.",
+    "reason": "Reason",
+    "details": "Details (optional)",
+    "send": "Send report",
+    "failed": "Unavailable. Please try again shortly.",
+    "blockedPeople": "Blocked people",
+    "none": "No blocked people.",
+    "harassment": "Harassment",
+    "unsafe_content": "Unsafe content",
+    "spam": "Spam",
+    "other": "Other"
   }
 }

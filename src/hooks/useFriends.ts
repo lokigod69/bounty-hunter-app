@@ -13,7 +13,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // Define type aliases locally
 type Friendship = Database['public']['Tables']['friendships']['Row'];
-type Profile = Database['public']['Tables']['profiles']['Row'];
+type Profile = import('../types/custom').PersonSummary;
 
 interface FriendWithProfile extends Friendship {
   friend: Profile;
@@ -85,7 +85,7 @@ export function useFriends(userId: string | undefined) {
         // Get friend's profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, display_name, avatar_url')
           .eq('id', friendId)
           .single();
 
@@ -213,56 +213,6 @@ export function useFriends(userId: string | undefined) {
     };
   }, [userId, fetchFriendships]);
 
-  const sendFriendRequest = async (friendEmail: string) => {
-    try {
-      setError(null);
-
-      if (!userId) throw new Error('User not authenticated');
-
-      // Find user by email
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', friendEmail)
-        .single();
-
-      if (userError) throw new Error('User not found');
-      if (userData.id === userId) throw new Error('You cannot add yourself as a friend');
-
-      // Check if friendship already exists
-      const { data: existingFriendship, error: checkError } = await supabase
-        .from('friendships')
-        .select('*')
-        .or(`and(user1_id.eq.${userId},user2_id.eq.${userData.id}),and(user1_id.eq.${userData.id},user2_id.eq.${userId})`)
-        .maybeSingle();
-
-      if (checkError) throw checkError;
-      if (existingFriendship) throw new Error('Friendship already exists');
-
-      // Create new friendship request
-      const { data, error } = await supabase
-        .from('friendships')
-        .insert({
-          user1_id: userId,
-          user2_id: userData.id,
-          status: 'pending',
-          requested_by: userId,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      if (userId) {
-        await fetchFriendships(userId); // Re-fetch friendships to update UI
-      }
-      notifyFriendshipsChanged();
-      return data;
-    } catch (error) {
-      setError((error as Error).message ?? null);
-      return null;
-    }
-  };
-
   const respondToFriendRequest = async (friendshipId: string, accept: boolean) => {
     try {
       setError(null);
@@ -362,7 +312,6 @@ export function useFriends(userId: string | undefined) {
     loading,
     isRefreshing,
     error,
-    sendFriendRequest,
     respondToFriendRequest,
     removeFriend,
     cancelSentRequest,

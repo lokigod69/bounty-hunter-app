@@ -106,12 +106,12 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         profiles:profiles!assigned_to (
           id,
           display_name,
-          email
+          avatar_url
         ),
         creator_profile:profiles!created_by (
           id,
           display_name,
-          email
+          avatar_url
         )
       `;
 
@@ -249,8 +249,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .from('tasks')
         .select(`
           *,
-          profiles:profiles!assigned_to ( id, display_name, email ),
-          creator_profile:profiles!created_by ( id, display_name, email )
+          profiles:profiles!assigned_to ( id, display_name, avatar_url ),
+          creator_profile:profiles!created_by ( id, display_name, avatar_url )
         `)
         .eq('id', taskId)
         .single();
@@ -336,8 +336,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .from('tasks')
         .select(`
           *,
-          profiles:profiles!assigned_to ( id, display_name, email ),
-          creator_profile:profiles!created_by ( id, display_name, email )
+          profiles:profiles!assigned_to ( id, display_name, avatar_url ),
+          creator_profile:profiles!created_by ( id, display_name, avatar_url )
         `)
         .eq('id', createdTaskId)
         .single();
@@ -439,8 +439,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           .from('tasks')
           .select(`
             *,
-            profiles:profiles!assigned_to ( id, display_name, email ),
-            creator_profile:profiles!created_by ( id, display_name, email )
+            profiles:profiles!assigned_to ( id, display_name, avatar_url ),
+            creator_profile:profiles!created_by ( id, display_name, avatar_url )
           `)
           .eq('id', taskId)
           .single();
@@ -508,8 +508,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
           .from('tasks')
           .select(`
             *,
-            profiles:profiles!assigned_to ( id, display_name, email ),
-            creator_profile:profiles!created_by ( id, display_name, email )
+            profiles:profiles!assigned_to ( id, display_name, avatar_url ),
+            creator_profile:profiles!created_by ( id, display_name, avatar_url )
           `)
           .eq('id', taskId)
           .single();
@@ -667,8 +667,8 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
         .from('tasks')
         .select(`
           *,
-          profiles:profiles!assigned_to ( id, display_name, email ),
-          creator_profile:profiles!created_by ( id, display_name, email )
+          profiles:profiles!assigned_to ( id, display_name, avatar_url ),
+          creator_profile:profiles!created_by ( id, display_name, avatar_url )
         `)
         .eq('id', taskId)
         .single();

@@ -564,5 +564,25 @@
     },
     "for": "Til",
     "from": "Fra"
+  },
+  "safety": {
+    "title": "Sikkerhed",
+    "person": "Sikkerhed for {{name}}",
+    "block": "Bloker",
+    "unblock": "Fjern blokering",
+    "blockDetails": "Blokering afslutter jeres forbindelse og skjuler fælles missioner og belønninger. Dine kreditter bevares.",
+    "unblockDetails": "At fjerne blokeringen genskaber ikke forbindelsen. I skal bruge en ny invitation.",
+    "report": "Anmeld",
+    "received": "Anmeldelse modtaget. Du kan også blokere personen.",
+    "reason": "Årsag",
+    "details": "Detaljer (valgfrit)",
+    "send": "Send anmeldelse",
+    "failed": "Ikke tilgængeligt. Prøv igen om lidt.",
+    "blockedPeople": "Blokerede personer",
+    "none": "Ingen blokerede personer.",
+    "harassment": "Chikane",
+    "unsafe_content": "Farligt indhold",
+    "spam": "Spam",
+    "other": "Andet"
   }
 }

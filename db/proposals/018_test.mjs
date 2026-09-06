@@ -8,7 +8,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-assert.equal(process.argv.length, 2, 'This runner accepts no database input');
+const include019 = process.argv.slice(2).includes('--include-019');
+assert(process.argv.slice(2).every(arg => arg === '--include-019'), 'Only --include-019 accepted; no database input');
 const scratchParent = path.join(root, 'node_modules');
 const scratch = path.join(scratchParent, `.security-db-018-${process.pid}`);
 const dataDir = path.join(scratch, 'data');
@@ -128,6 +129,10 @@ try {
   // Deliberately broad fixture helper tests the trigger even inside owner-rights
   // RPCs. It is never deployed; real client table ACL/RLS is also retained above.
   sql(`CREATE FUNCTION test.mutate(statement text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN EXECUTE statement; END $$; GRANT EXECUTE ON FUNCTION test.mutate(text) TO authenticated;`);
+  if (include019) {
+    const { run019 } = await import('../../tests/security-db/019-cases.mjs');
+    await run019({ sql, read, check, as, truth, denied, q, user, task, reward, sid, op, port, root, scratch });
+  }
   sql(`BEGIN; ${as()} SELECT ${begin()}; COMMIT;`);
   sql(`UPDATE auth.sessions SET created_at=now()-interval '1 hour' WHERE id='${sid(1)}';`);
   check('same operation/session resumes beyond initial freshness window', truth(`${begin()}->>'phase'='storage'`, 'resume old session'));

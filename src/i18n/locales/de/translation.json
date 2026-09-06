@@ -564,5 +564,25 @@
     },
     "for": "Für",
     "from": "Von"
+  },
+  "safety": {
+    "title": "Sicherheit",
+    "person": "Sicherheit für {{name}}",
+    "block": "Blockieren",
+    "unblock": "Entsperren",
+    "blockDetails": "Blockieren beendet eure Verbindung und verbirgt gemeinsame Missionen und Belohnungen. Dein Guthaben bleibt erhalten.",
+    "unblockDetails": "Entsperren stellt die Verbindung nicht wieder her. Dafür brauchst du eine neue Einladung.",
+    "report": "Melden",
+    "received": "Meldung erhalten. Du kannst diese Person auch blockieren.",
+    "reason": "Grund",
+    "details": "Details (optional)",
+    "send": "Meldung senden",
+    "failed": "Nicht verfügbar. Bitte versuche es gleich erneut.",
+    "blockedPeople": "Blockierte Personen",
+    "none": "Keine blockierten Personen.",
+    "harassment": "Belästigung",
+    "unsafe_content": "Gefährliche Inhalte",
+    "spam": "Spam",
+    "other": "Sonstiges"
   }
 }

@@ -1,53 +1,27 @@
 param(
-  [Parameter(Mandatory = $true)][string]$Sql,
-  [string]$DbHost = "aws-1-ap-south-1.pooler.supabase.com",
-  [int]$DbPort    = 5432,
-  [string]$DbUser = "postgres.mvbmpcmexkgfairnthux",
-  [string]$DbName = "postgres"
+  [Parameter(Mandatory)][string]$Sql,
+  [Parameter(Mandatory)][string]$BackupManifest,
+  [string]$DbHost = 'aws-1-ap-south-1.pooler.supabase.com',
+  [int]$DbPort = 5432,
+  [string]$DbUser = 'postgres.mvbmpcmexkgfairnthux',
+  [string]$DbName = 'postgres'
 )
-
-# Generic apply, same gates as apply_011/012/013_up.ps1 but with -Sql required
-# rather than defaulted. Added 2026-07-30 for proposals 014 and 015 - copying
-# apply_013_up.ps1 once per proposal is how the "reports success unconditionally"
-# bug came to exist in twelve places at once.
-#
-# Read-only validation should go through psql directly; this script is for
-# writes and says so.
-
-if ($env:PROD_CONFIRM -ne "YES") { throw "Set PROD_CONFIRM=YES to allow prod actions." }
-
-function Read-Plain([string]$prompt) {
-  $sec = Read-Host $prompt -AsSecureString
-  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
-  try { [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+$ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/schema_backup_guard.ps1"
+if ($env:PROD_CONFIRM -ne 'YES') { throw 'Explicit review/go is required. Set PROD_CONFIRM=YES only after approval.' }
+if (-not (Test-Path -LiteralPath $Sql -PathType Leaf)) { throw "Migration not found: $Sql" }
+$archive = Assert-SchemaBackup -ManifestPath $BackupManifest -DbHost $DbHost -DbPort $DbPort -DbUser $DbUser -DbName $DbName
+Write-Host "Verified schema/ACL backup: $archive" -ForegroundColor Cyan
+Write-Host "Applying reviewed SQL: $Sql" -ForegroundColor Cyan
+$priorSslMode = $env:PGSSLMODE
+try {
+  if (-not $env:PGSSLMODE) { $env:PGSSLMODE = 'require' }
+  $psqlCommand = (Get-Command psql -ErrorAction Stop).Source
+  # psql uses pgpass/PGPASSWORD or its own private password prompt.
+  # Each reviewed proposal owns its transaction and assertion guards.
+  & $psqlCommand --host $DbHost --port $DbPort --username $DbUser --dbname $DbName -X -v ON_ERROR_STOP=1 -f $Sql
+  if ($LASTEXITCODE -ne 0) { throw 'Apply failed. Inspect the transaction result before retrying; do not assume no statements ran.' }
+  Write-Host 'SQL completed. Run matching validation and hosted authorization checks.' -ForegroundColor Green
+} finally {
+  $env:PGSSLMODE = $priorSslMode
 }
-
-if (-not (Test-Path $Sql)) { throw "Migration not found: $Sql" }
-
-# A same-day schema backup is required. An apply authorised by a backup that
-# does not exist is the failure mode this folder keeps rediscovering.
-$today = Get-Date -Format "yyyyMMdd"
-$backup = Get-ChildItem "supabase\schema_backup_$today*.sql" -ErrorAction SilentlyContinue |
-          Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if (-not $backup) {
-  throw "No schema backup from today found (supabase\schema_backup_$today*.sql). Run scripts\prod\backup_schema.ps1 first."
-}
-if ($backup.Length -lt 50000) {
-  throw "Today's schema backup $($backup.Name) is only $($backup.Length) bytes. Refusing to apply against a suspect backup."
-}
-Write-Host "Using schema backup: $($backup.Name) ($($backup.Length) bytes)" -ForegroundColor Cyan
-Write-Host "Applying: $Sql" -ForegroundColor Cyan
-
-if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Plain "Enter PROD DB password" }
-
-$psqlPath = "C:\Users\micha\scoop\apps\postgresql\current\bin\psql.exe"
-& $psqlPath "host=$DbHost port=$DbPort user=$DbUser dbname=$DbName" -v ON_ERROR_STOP=1 -f $Sql
-$exit = $LASTEXITCODE
-
-$env:PGPASSWORD = $null
-
-# Never claim a prod write that did not happen (2026-07-28: a password-auth
-# failure was reported as a successful migration by every script in this folder).
-if ($exit -ne 0) { throw "APPLY FAILED (psql exit $exit). Nothing was applied." }
-Write-Host "Applied successfully: $Sql" -ForegroundColor Green
-Write-Host "Now re-run the matching validation file and compare against the BEFORE run." -ForegroundColor Yellow

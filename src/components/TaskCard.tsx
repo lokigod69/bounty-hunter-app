@@ -148,8 +148,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
         title={title}
         description={description || undefined}
         deadline={deadline}
-        fromUser={creator ? { name: creator.display_name || 'Unknown', avatar: creator.avatar_url || undefined } : undefined}
-        toUser={assignee ? { name: assignee.display_name || 'Unknown', avatar: assignee.avatar_url || undefined } : undefined}
+        fromUser={creator ? { id: task.created_by || undefined, name: creator.display_name || 'Unknown', avatar: creator.avatar_url || undefined } : undefined}
+        toUser={assignee ? { id: task.assigned_to || undefined, name: assignee.display_name || 'Unknown', avatar: assignee.avatar_url || undefined } : undefined}
         reward={reward_text ? {
           type: reward_type === 'credit' ? 'credit' : task.image_url ? 'image' : 'text',
           value: reward_type === 'credit' ? parseInt(reward_text, 10) : reward_text,

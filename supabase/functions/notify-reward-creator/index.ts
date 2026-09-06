@@ -16,6 +16,7 @@ serve(createRewardNotificationHandler({
         .select('id, collected_at').eq('reward_id', rewardId).eq('collector_id', collectorId).maybeSingle(),
       findReward: (rewardId) => client.from('rewards_store')
         .select('creator_id').eq('id', rewardId).maybeSingle(),
+      pairAllowed: (actorId, recipientId) => client.rpc('notification_pair_allowed', { p_actor: actorId, p_recipient: recipientId }),
     };
   },
   getEnv: (name) => Deno.env.get(name),

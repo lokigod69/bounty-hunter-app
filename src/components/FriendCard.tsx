@@ -1,16 +1,17 @@
+import { PersonSafety } from './PersonSafety';
 // src/components/FriendCard.tsx
 // Phase 1: Updated to use BaseCard for consistent styling.
 // Card component for displaying friend information.
 
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Profile } from '../types/custom';  // R25: Use custom Profile type
+import type { PersonSummary } from '../types/custom';
 import { X, UserX, Trash2, Check, Plus } from 'lucide-react';
 import { BaseCard } from './ui/BaseCard';
 import { AppButton } from './ui/AppButton';
 
 interface FriendCardProps {
-  profile: Profile;
+  profile: PersonSummary;
   friendshipId?: string;
   status?: 'accepted' | 'pending';
   isIncoming?: boolean;
@@ -32,7 +33,7 @@ export default function FriendCard({
 }: FriendCardProps) {
   const { t } = useTranslation();
 
-  // Get initials from display name or email
+  // Contact identity never needs an email address.
   const getInitials = () => {
     if (profile.display_name) {
       return profile.display_name
@@ -41,7 +42,7 @@ export default function FriendCard({
         .join('')
         .toUpperCase();
     }
-    return profile.email.substring(0, 2).toUpperCase();
+    return '?';
   };
 
   return (
@@ -66,7 +67,7 @@ export default function FriendCard({
           <div className="w-12 h-12 rounded-full overflow-hidden">
             <img
               src={profile.avatar_url}
-              alt={profile.display_name || profile.email}
+              alt={profile.display_name || t('layout.unknownUser')}
               className="w-full h-full object-cover"
             />
           </div>
@@ -78,16 +79,15 @@ export default function FriendCard({
       </div>
 
       {/* Info.
-          basis-40 (160px) is the floor at which a display name and an email are
+          basis-40 (160px) is the floor at which a display name are
           still worth rendering. It used to be flex-1 min-w-0 alone, which means
           "give away everything" — so this column reached 0 and the row STILL
           overflowed. With a basis the actions wrap onto their own line instead
           of eating the identity, which is the whole point of the card. */}
       <div className="flex-1 basis-40 min-w-0">
         <h3 className="font-medium truncate">
-          {profile.display_name || profile.email.split('@')[0]}
+          {profile.display_name || t('layout.unknownUser')}
         </h3>
-        <p className="text-sm text-white/70 truncate">{profile.email}</p>
       </div>
 
       {/* Status/Actions.
@@ -96,6 +96,7 @@ export default function FriendCard({
           wrapped line too. ml-auto right-aligns the cluster when it is alone on
           the second line and collapses to nothing when it shares the first. */}
       <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+        <PersonSafety personId={profile.id} name={profile.display_name || t('layout.unknownUser')} />
         {status === 'accepted' && (
           <>
             <Link to={`/issued?create=1&to=${encodeURIComponent(profile.id)}`} className="inline-flex items-center gap-1 min-h-[44px] text-sm text-[var(--mode-accent)]"><Plus size={16} />{t('workflow.newMission')}</Link>

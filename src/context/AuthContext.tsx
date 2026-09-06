@@ -8,7 +8,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { supabase } from '../lib/supabase';
-import { Profile } from '../types/custom';  // R25: Use custom Profile type with partner_user_id
+import { Profile } from '../types/custom';
 import { ensureProfileForUser } from '../lib/profileBootstrap';
 import toast from 'react-hot-toast';
 import { parseSupabaseAuthCallback } from '../lib/authRedirect';
@@ -253,11 +253,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loading = authLoading || profileLoading;
   const hasSession = !!session;
-  const hasProfile = !!profile && !!profile.id;
+  // A new session can arrive before its profile request finishes. Never expose
+  // the previous account's profile during that interval or after a failed read.
+  const currentProfile = profile?.id === user?.id ? profile : null;
+  const hasProfile = !!currentProfile;
 
   const value: AuthContextType = {
     user,
-    profile,
+    profile: currentProfile,
     session,
     loading,
     authLoading,

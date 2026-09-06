@@ -63,14 +63,15 @@ export type Task = Database['public']['Tables']['tasks']['Row'] & {
 };
 // partner_user_id, theme and onboarding_completed are in the generated types
 // since the 2026-07-08 regen (migrations applied to mvbmpcmexkgfairnthux).
-export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type PersonSummary = Pick<Database['public']['Tables']['profiles']['Row'], 'id' | 'display_name' | 'avatar_url'>;
+export type Profile = PersonSummary & Pick<Database['public']['Tables']['profiles']['Row'], 'theme' | 'onboarding_completed'>;
 export type NewTaskData = Database['public']['Tables']['tasks']['Insert'];
 export type UpdateTaskData = Database['public']['Tables']['tasks']['Update'];
 
 // Type for a task that includes joined profile data for creator and assignee
 export type TaskWithProfiles = Task & {
-  profiles: Profile | null; // This alias is based on the join in useTasks
-  creator_profile: Profile | null; // This alias is based on the join in useTasks
+  profiles: PersonSummary | null; // This alias is based on the join in useTasks
+  creator_profile: PersonSummary | null; // This alias is based on the join in useTasks
 };
 
 export type CollectedRewardRow =
