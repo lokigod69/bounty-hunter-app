@@ -215,10 +215,11 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
             {/* R27: Name field with character counter */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-white/70">{t('rewards.editModal.bountyNamePlaceholder')}</label>
+                <label htmlFor="edit-reward-name" className="text-sm font-medium text-white/70">{t('rewards.editModal.bountyNamePlaceholder')}</label>
                 <CharacterCounter current={name.length} max={TEXT_LIMITS.rewardName} />
               </div>
               <input
+                id="edit-reward-name"
                 type="text"
                 placeholder={t('rewards.editModal.bountyNamePlaceholder')}
                 value={name}
@@ -232,10 +233,11 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
             {/* R27: Description field with character counter */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-white/70">{t('rewards.editModal.descriptionPlaceholder')}</label>
+                <label htmlFor="edit-reward-description" className="text-sm font-medium text-white/70">{t('rewards.editModal.descriptionPlaceholder')}</label>
                 <CharacterCounter current={description.length} max={TEXT_LIMITS.rewardDescription} />
               </div>
               <textarea
+                id="edit-reward-description"
                 placeholder={t('rewards.editModal.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -243,7 +245,9 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
                 maxLength={TEXT_LIMITS.rewardDescription}
               />
             </div>
+            <label htmlFor="edit-reward-cost" className="block text-sm font-medium text-white/70">{t('rewards.editModal.creditCostPlaceholder')}</label>
             <input
+              id="edit-reward-cost"
               type="number"
               placeholder={t('rewards.editModal.creditCostPlaceholder')}
               value={creditCost}
@@ -253,8 +257,8 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
             />
 
             {/* R22: Image selection with three options */}
-            <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">{t('rewards.imageField.label')}</label>
+            <details className="optional-details">
+              <summary>{t('rewards.imageField.label')}</summary>
               <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
                 <button type="button" onClick={() => setImageType('url')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'url' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useImageUrl')}</button>
@@ -317,7 +321,7 @@ const EditBountyModal: React.FC<EditBountyModalProps> = ({ isOpen, onClose, onSu
                   {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
                 </div>
               )}
-            </div>
+            </details>
           </div>
 
           {/* Footer */}

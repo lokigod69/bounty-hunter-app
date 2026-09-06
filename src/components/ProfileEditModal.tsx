@@ -1,19 +1,8 @@
-// src/components/ProfileEditModal.tsx
-// This new component houses the profile editing form within a modal, 
-// allowing it to be opened from the main layout header.
-
-// src/components/ProfileEditModal.tsx
-// This new component houses the profile editing form within a modal, 
-// allowing it to be opened from the main layout header.
-// Added a sound effects toggle switch.
-// PHASE 1 FIX: Added mobile menu coordination for consistency and to prevent UI conflicts.
-// PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized modal behavior.
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateCcw, Vibrate, VibrateOff } from 'lucide-react';
+import { UserCircle, UploadCloud, Volume2, VolumeX, Shield, Home, Heart, RotateCcw, Vibrate, VibrateOff, LogOut } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import toast from 'react-hot-toast';
 import { soundManager } from '../utils/soundManager';
@@ -24,9 +13,13 @@ import { useTheme } from '../context/ThemeContext';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
 import { ConfirmModal } from './ui/ConfirmModal';
-import { themesById, PUBLIC_THEME_IDS } from '../theme/themes';
+import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 import { MODE_ACCENT_HEX } from '../theme/modeAccents';
+import { StandingBlock } from './StandingBlock';
+import { useStanding } from '../hooks/useStanding';
+import { useDailyQuote } from '../hooks/useDailyQuote';
+import { PageQuote } from './layout/PageQuote';
 import { clearOnboardingFlag } from '../lib/ftxGate';
 
 
@@ -51,11 +44,6 @@ const modeOptions: { id: ThemeId; icon: typeof Shield }[] =
     icon: MODE_ICON[theme.id],
   }));
 
-// Temporary V1 public gating: Family/Couple remain available in dev for internal
-// testing. Shared allowlist lives in src/theme/themes.ts (PUBLIC_THEME_IDS).
-const VISIBLE_PROFILE_MODE_OPTIONS = import.meta.env.DEV
-  ? modeOptions
-  : modeOptions.filter((option) => PUBLIC_THEME_IDS.includes(option.id));
 
 // R16: Helper to derive display name from email
 function deriveDisplayNameFromEmail(email: string | undefined): string {
@@ -68,6 +56,16 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   // R16: Also pull profileLoading to handle first-time profile scenario
   const { user, profile, profileLoading, refreshProfile } = useAuth();
   const { themeId, setThemeId } = useTheme();
+  const { standing, known } = useStanding();
+  const dailyQuote = useDailyQuote(known ? standing.unlockedCreedLines : undefined, user?.id);
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast.error(error.message); setSigningOut(false); return; }
+    onClose();
+    navigate('/login', { replace: true });
+  };
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -225,7 +223,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
     <ModalShell isOpen={isOpen} onClose={onClose} name="ProfileEditModal" labelledBy="profileedit-title">
       {/* Modal Header with enhanced mobile touch targets */}
       <div className="flex items-center justify-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
-        <h2 id="profileedit-title" className="text-lg sm:text-xl font-bold text-center">{t('profile.edit')}</h2>
+        <h2 id="profileedit-title" className="text-lg sm:text-xl font-bold text-center">{t('workflow.profile')}</h2>
       </div>
 
       {/* Modal Body (Scrollable) with enhanced mobile spacing */}
@@ -236,10 +234,10 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <img 
                   src={avatarPreview} 
                   alt="Avatar preview" 
-                  className="w-28 h-28 rounded-full object-cover border-2 border-cyan-400/50"
+                  className="w-20 h-20 rounded-full object-cover border-2 border-cyan-400/50"
                 />
               ) : (
-                <UserCircle size={112} className="text-white/30" />
+                <UserCircle size={80} className="text-white/30" />
               )}
               <FileUpload onFileSelect={handleFileSelect} accept="image/png, image/jpeg, image/gif">
                 <div className="btn-secondary cursor-pointer text-sm">
@@ -263,8 +261,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               />
             </div>
 
-            {/* Settings Section */}
-            <div className="space-y-4 pt-4 border-t border-gray-700/50">
+            <div className="space-y-4 pt-4 border-t border-white/10">
               {/* Sound Effects Toggle */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium flex items-center">
@@ -324,22 +321,21 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <LanguageSwitcher />
               </div>
 
-              {/* R10/R20/R21: Mode Switcher with helper text.
-                  Hidden entirely when there is only one mode to pick — a
-                  segmented control with a single, already-selected option is a
-                  question with one answer. Reappears automatically the moment
-                  PUBLIC_THEME_IDS grows (or in dev, where all three show). */}
-              {VISIBLE_PROFILE_MODE_OPTIONS.length > 1 && (
+              {/* Appearance changes colors and rank flavor only. */}
+              {modeOptions.length > 1 && (
               <div className="p-4 bg-gray-800/50 rounded-lg">
-                <label className="text-sm font-medium block mb-3">{t('profile.mode')}</label>
+                <label className="text-sm font-medium block mb-3">{t('workflow.appearance')}</label>
+                <p className="text-xs text-white/60 mb-3">{t('workflow.appearanceHint')}</p>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
-                  {VISIBLE_PROFILE_MODE_OPTIONS.map((option) => {
+                  {modeOptions.map((option) => {
                     const Icon = option.icon;
                     const isActive = themeId === option.id;
                     const accent = MODE_ACCENT_HEX[option.id];
                     return (
                       <button
                         key={option.id}
+                        aria-pressed={isActive}
+                        aria-label={t(`theme.${option.id}.label`)}
                         type="button"
                         onClick={() => {
                           setThemeId(option.id);
@@ -362,19 +358,19 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                         }`}
                       >
                         <Icon size={16} style={isActive ? { color: accent } : undefined} />
-                        <span className="hidden sm:inline">{t(`theme.${option.id}.label`)}</span>
+                        <span className="text-xs">{t(`theme.${option.id}.label`)}</span>
                       </button>
                     );
                   })}
                 </div>
-                {/* R20: Show hint for currently selected mode */}
-                <p className="text-xs text-white/50 mt-2 text-center">
-                  {modeOptions.some(o => o.id === themeId)
-                    ? t(`theme.${themeId}.description`)
-                    : t('profile.modeHintFallback')}
-                </p>
               </div>
               )}
+
+              <details className="optional-details">
+                <summary>{t('workflow.progress')}</summary>
+                <div className="pt-4"><StandingBlock standing={standing} known={known} /></div>
+                {dailyQuote && <PageQuote text={dailyQuote.text} author={dailyQuote.author} />}
+              </details>
 
               {/* Restart Onboarding (folded in from the removed /profile/edit page) */}
               <button
@@ -391,6 +387,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               {isUploading ? t('profile.saving') : t('profile.save')}
             </AppButton>
           </form>
+          <AppButton type="button" variant="ghost" fullWidth className="mt-4" loading={signingOut} icon={<LogOut size={18} />} onClick={handleSignOut}>{t('auth.signOut')}</AppButton>
       </div>
 
       <ConfirmModal

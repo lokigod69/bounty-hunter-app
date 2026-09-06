@@ -1,38 +1,21 @@
-// src/pages/Friends.tsx
-// Friends management page.
-// Changes:
-// - Updated page title to 'GUILD ROSTER' (Phase 5A, Step 3).
-// - Updated terminology: 'My Friends' to 'Guild Members', 'Add a Friend' to 'Recruit Member', 'Send Request' to 'Send Invitation' (Phase 5B, Step 4).
-// - Corrected prop name to `isConfirming` for ConfirmDeleteModal.
-// - Removed unused 'Search' icon import.
-// - Added functionality to cancel pending sent friend requests with a confirmation modal.
-// - Imported ConfirmDeleteModal and necessary state/handlers.
-// - Passed cancel handler to FriendCard for sent requests.
-// P1: Updated page header title to use theme strings.
-// Wave B: Populated roster and request lists stay mounted during refreshes.
-
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFriends } from '../hooks/useFriends';
 import { useInvite } from '../hooks/useInvite';
-import { usePartnerState } from '../hooks/usePartnerState';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import FriendCard from '../components/FriendCard';
-import { UserPlus, Users, Heart, Mail, CheckCircle, XCircle, UserCheck, Share2 } from 'lucide-react';
+import { UserPlus, Users, Share2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Database } from '../types/database';
-import { useNavigate } from 'react-router-dom';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 import { feedback } from '../utils/feedback';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
-import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, ConfirmModal, SectionHeader, Spinner, TabBar } from '../components/ui';
 import { avatarFallback } from '../lib/avatar';
 import emptyFriends from '../assets/generated/empty-friends.webp';
@@ -58,60 +41,19 @@ function FriendListSkeleton() {
 
 export default function Friends() {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
-  // R10: Use profileLoading to show skeleton while profile loads
-  // R25: Added setPartner for couple mode partner selection
-  const { user, profile, profileLoading, setPartner } = useAuth();
-  const navigate = useNavigate();
+  const { user, profile, profileLoading } = useAuth();
 
   const userIdForFriends = profile ? user?.id : undefined;
 
-  // For Couple Mode, use partner state; for other modes, use friends
-  const partnerState = usePartnerState(theme.id === 'couple' ? user?.id : undefined);
+  // Wait for profile bootstrap before loading connections.
   // R10: Only call useFriends when profile is loaded to avoid subscribe issues
   const { friends, pendingRequests, sentRequests, loading, error, respondToFriendRequest, removeFriend, cancelSentRequest, refreshFriends } = useFriends(
     userIdForFriends
   );
 
-  // R25: Get accepted friends list
-  const acceptedFriends = useMemo(() =>
-    friends.filter(f => f.status === 'accepted'),
-    [friends]
-  );
-
-  // R25: Compute partner profile from profile.partner_user_id
-  const selectedPartnerProfile = useMemo(() => {
-    if (!profile?.partner_user_id) return null;
-    const partnerFriend = acceptedFriends.find(f => f.friend?.id === profile.partner_user_id);
-    return partnerFriend?.friend || null;
-  }, [profile?.partner_user_id, acceptedFriends]);
-  const hasFriendshipData =
-    friends.length > 0 || pendingRequests.length > 0 || sentRequests.length > 0;
+  const hasFriendshipData = friends.length > 0 || pendingRequests.length > 0 || sentRequests.length > 0;
   const initialFriendsLoading = loading && !hasFriendshipData;
-  const initialPartnerLoading =
-    partnerState.isLoading &&
-    !selectedPartnerProfile &&
-    !partnerState.partnerProfile &&
-    !hasFriendshipData;
-
-  // R25: Auto-clear partner_user_id if partner is no longer in friends list
-  useEffect(() => {
-    if (!profile?.partner_user_id || loading) return;
-
-    // Only run when friends have loaded
-    if (friends.length === 0 && loading) return;
-
-    const isPartnerStillFriend = acceptedFriends.some(f => f.friend?.id === profile.partner_user_id);
-    if (!isPartnerStillFriend && acceptedFriends.length > 0) {
-      setPartner(null);
-    }
-  }, [profile?.partner_user_id, acceptedFriends, loading, setPartner, friends.length]);
-
-  // R25: Handle partner selection
-  const handleSelectPartner = async (friendId: string) => {
-    await setPartner(friendId);
-  };
 
   // Phase 2.5: shareable invite link (works for people without an account yet)
   const { shareInviteLink } = useInvite();
@@ -127,22 +69,6 @@ export default function Friends() {
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
 
-  // Unified identity values for current user with cache-busting
-  const myDisplayName =
-    profile?.display_name ??
-    user?.email?.split('@')[0] ??
-    'You';
-
-  // R15: RENDERING FALLBACKS - These are for DISPLAY ONLY, never written to DB
-  // myAvatarUrlBase: The actual DB value (null if user hasn't set one)
-  // myAvatarUrl: For rendering - uses placeholder when DB value is null
-  const myAvatarUrlBase = profile?.avatar_url ?? null; // DB VALUE - may be null
-  const myProfileUpdatedAt = (profile as { updated_at?: string | null } | null | undefined)?.updated_at;
-  const myAvatarCacheBuster = myProfileUpdatedAt ? `?v=${encodeURIComponent(myProfileUpdatedAt)}` : '';
-  const myAvatarUrl = myAvatarUrlBase
-    ? `${myAvatarUrlBase}${myAvatarCacheBuster}`
-    : avatarFallback(user?.email); // RENDER FALLBACK ONLY
-
   // State for cancel sent request confirmation modal
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [requestToCancelId, setRequestToCancelId] = useState<string | null>(null);
@@ -153,11 +79,19 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchEpoch = useRef(0);
+  const [searchDone, setSearchDone] = useState(false);
+  useEffect(() => () => { searchEpoch.current++; if (searchTimeout.current) clearTimeout(searchTimeout.current); }, []);
 
   // Debounced search function
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    searchEpoch.current++;
+    setSearchDone(false);
+    setIsSearching(false);
+    setSearchResults([]);
+    setShowDropdown(false);
     
     // Clear previous timeout
     if (searchTimeout.current) {
@@ -172,11 +106,11 @@ export default function Friends() {
     
     // Debounce search by 300ms
     searchTimeout.current = setTimeout(() => {
-      performSearch(value);
+      performSearch(value, searchEpoch.current);
     }, 300);
   };
 
-  const performSearch = async (searchValue: string) => {
+  const performSearch = async (searchValue: string, epoch: number) => {
     if (!user) return;
     setIsSearching(true);
     try {
@@ -202,13 +136,15 @@ export default function Friends() {
         if (f.user2_id === user.id) friendIds.add(f.user1_id);
       });
       
+      if (epoch !== searchEpoch.current) return;
       const availableUsers = users?.filter(u => !friendIds.has(u.id)) || [];
+      setSearchDone(true);
       setSearchResults(availableUsers);
       setShowDropdown(availableUsers.length > 0);
     } catch {
-      void 0;
+      if (epoch === searchEpoch.current) toast.error(t('friends.requestFailed'));
     } finally {
-      setIsSearching(false);
+      if (epoch === searchEpoch.current) setIsSearching(false);
     }
   };
 
@@ -285,9 +221,6 @@ export default function Friends() {
   };
 
   const handleRefresh = async () => {
-    if (theme.id === 'couple' && partnerState.refresh) {
-      await partnerState.refresh();
-    }
     if (refreshFriends) {
       await refreshFriends();
     }
@@ -305,250 +238,6 @@ export default function Friends() {
     );
   }
 
-  // R25: For Couple Mode, show partner based on profile.partner_user_id
-  if (theme.id === 'couple') {
-    return (
-      <PullToRefresh onRefresh={handleRefresh}>
-        <PageContainer>
-          <PageHeader
-            title={strings.friendsTitle}
-            subtitle={strings.friendsSubtitle}
-          />
-
-          <PageBody>
-            {/* Loading state */}
-            {(initialFriendsLoading || initialPartnerLoading) ? (
-              <PageState state="loading" />
-            ) : error ? (
-              <PageState state="error" message={error} onRetry={() => refreshFriends?.()} />
-            ) : selectedPartnerProfile ? (
-              /* R25: Partner is selected - show partner card */
-              <BaseCard>
-                <div className="text-center py-8">
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    <img
-                      src={selectedPartnerProfile.avatar_url || avatarFallback(selectedPartnerProfile.email)}
-                      alt={selectedPartnerProfile.display_name || 'partner'}
-                      className="w-24 h-24 rounded-full border-4 border-teal-400"
-                    />
-                    <Heart size={32} className="text-teal-400" />
-                    {user && (
-                      <img
-                        src={myAvatarUrl}
-                        alt={myDisplayName}
-                        className="w-24 h-24 rounded-full border-4 border-teal-400"
-                      />
-                    )}
-                  </div>
-                  <h3 className="text-subtitle text-white/90 mb-2 font-semibold">
-                    {selectedPartnerProfile.display_name || selectedPartnerProfile.email}
-                  </h3>
-                  <p className="text-body text-white/70 mb-6">{selectedPartnerProfile.email}</p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
-                    <AppButton variant="cta" onClick={() => navigate('/issued')}>
-                      Create request
-                    </AppButton>
-                    <AppButton variant="ghost" onClick={() => navigate('/rewards-store')}>
-                      Create gift
-                    </AppButton>
-                  </div>
-                  <button
-                    onClick={() => setPartner(null)}
-                    className="text-sm text-white/50 hover:text-white/70 transition"
-                  >
-                    Change partner
-                  </button>
-                </div>
-              </BaseCard>
-            ) : acceptedFriends.length > 0 ? (
-              /* R25: No partner selected, but have friends - show picker */
-              <BaseCard>
-                <div className="text-center py-8">
-                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">Select your partner</h3>
-                  <p className="text-body text-white/70 mb-6">
-                    Choose who you want to share requests and gifts with.
-                  </p>
-                  <div className="space-y-2 max-w-sm mx-auto">
-                    {acceptedFriends.map(({ friend }) => {
-                      if (!friend) return null;
-                      return (
-                        <button
-                          key={friend.id}
-                          onClick={() => handleSelectPartner(friend.id)}
-                          className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center justify-between transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={friend.avatar_url || avatarFallback(friend.email)}
-                              alt={friend.display_name || 'user'}
-                              className="w-10 h-10 rounded-full"
-                            />
-                            <span className="font-medium">{friend.display_name}</span>
-                          </div>
-                          <UserCheck size={20} className="text-[var(--mode-accent)]" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </BaseCard>
-            ) : partnerState.state === 'INVITE_SENT' ? (
-              /* Pending invite sent */
-              <BaseCard>
-                <div className="text-center py-12">
-                  <Mail size={64} className="mx-auto mb-6 text-yellow-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">
-                    Invite sent to {partnerState.partnerProfile?.display_name || partnerState.partnerProfile?.email || 'your partner'}
-                  </h3>
-                  <p className="text-body text-white/70 mb-8">
-                    Waiting for them to accept your invitation.
-                  </p>
-                  {partnerState.friendshipId && (
-                    <AppButton
-                      variant="ghost"
-                      className="mx-auto"
-                      onClick={() => handleRequestCancellationAttempt(partnerState.friendshipId!)}
-                    >
-                      Cancel invite
-                    </AppButton>
-                  )}
-                </div>
-              </BaseCard>
-            ) : partnerState.state === 'INVITE_RECEIVED' ? (
-              /* Pending invite received */
-              <BaseCard>
-                <div className="text-center py-12">
-                  <Mail size={64} className="mx-auto mb-6 text-blue-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">
-                    {partnerState.partnerProfile?.display_name || 'Someone'} invited you to connect
-                  </h3>
-                  {partnerState.partnerProfile && (
-                    <div className="flex items-center justify-center gap-3 mb-6">
-                      <img
-                        src={partnerState.partnerProfile.avatar_url || avatarFallback(partnerState.partnerProfile.email)}
-                        alt={partnerState.partnerProfile.display_name || 'partner'}
-                        className="w-16 h-16 rounded-full border-2 border-teal-400"
-                      />
-                      <div className="text-left">
-                        <p className="text-subtitle text-white font-semibold">
-                          {partnerState.partnerProfile.display_name || partnerState.partnerProfile.email}
-                        </p>
-                        <p className="text-body text-white/70 text-sm">{partnerState.partnerProfile.email}</p>
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    {partnerState.friendshipId && (
-                      <>
-                        <AppButton
-                          variant="cta"
-                          icon={<CheckCircle size={20} />}
-                          onClick={() => handleAcceptRequest(partnerState.friendshipId!)}
-                        >
-                          Accept
-                        </AppButton>
-                        <AppButton
-                          variant="ghost"
-                          icon={<XCircle size={20} />}
-                          onClick={() => handleRejectRequest(partnerState.friendshipId!)}
-                        >
-                          Decline
-                        </AppButton>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </BaseCard>
-            ) : (
-              /* No friends at all - show invite UI */
-              <BaseCard>
-                <div className="text-center py-12">
-                  <Heart size={64} className="mx-auto mb-6 text-teal-400" />
-                  <h3 className="text-subtitle text-white/90 mb-2">Invite your partner</h3>
-                  <p className="text-body text-white/70 mb-8">
-                    Search for your partner to start sharing requests and moments together.
-                  </p>
-                </div>
-              </BaseCard>
-            )}
-
-            {/* Search/Invite form for Couple Mode - show when no accepted friends */}
-            {acceptedFriends.length === 0 && !selectedPartnerProfile && (
-              <div className="relative mb-6 mt-6">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    placeholder="Search by name or email..."
-                    className="w-full pl-4 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-emerald-500 focus:outline-none text-white"
-                  />
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Spinner size="sm" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Dropdown Results */}
-                {showDropdown && (
-                  <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                    {searchResults.map((userResult) => (
-                      <button
-                        key={userResult.id}
-                        onClick={() => sendFriendRequest(userResult)}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={userResult.avatar_url || avatarFallback(userResult.email)}
-                            alt={userResult.display_name || 'user avatar'}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <span className="font-medium">{userResult.display_name}</span>
-                        </div>
-                        <UserPlus className="w-5 h-5 text-emerald-500" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Phase 2.5: share an invite link with someone not yet on the app */}
-                <div className="mt-4 flex justify-center">
-                  <AppButton
-                    variant="secondary"
-                    icon={<Share2 size={18} />}
-                    loading={isSharingInvite}
-                    onClick={handleShareInvite}
-                  >
-                    {t('invite.shareLink')}
-                  </AppButton>
-                </div>
-              </div>
-            )}
-
-            {/* Confirmation Modal for Cancelling Sent Request */}
-            {showCancelModal && (
-              <ConfirmModal
-                isOpen={showCancelModal}
-                onClose={handleCloseCancelModal}
-                onConfirm={handleConfirmCancelRequest}
-                title={t('friends.cancelRequestTitle')}
-                message={t('friends.cancelRequestMessage')}
-                variant="danger"
-                confirmLabel={t('friends.cancelRequestConfirm')}
-                loadingLabel={t('friends.cancelRequestLoading')}
-                loading={isCancelling}
-              />
-            )}
-          </PageBody>
-        </PageContainer>
-      </PullToRefresh>
-    );
-  }
-
-  // For Guild/Family modes, show regular friends UI
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <PageContainer>
@@ -558,6 +247,11 @@ export default function Friends() {
         />
 
         <PageBody>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <AppButton variant="cta" icon={<Share2 size={18} />} loading={isSharingInvite} onClick={handleShareInvite}>{t('invite.inviteSomeone')}</AppButton>
+          </div>
+          <details className="optional-details">
+            <summary>{t('workflow.findExisting')}</summary>
           {/* Add Friend Form */}
           <div className="relative mb-6">
             <div className="relative">
@@ -565,6 +259,7 @@ export default function Friends() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
+                aria-label={t('friends.searchPlaceholder')}
                 placeholder={t('friends.searchPlaceholder')}
                 className="w-full pl-4 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-emerald-500 focus:outline-none text-white"
               />
@@ -575,6 +270,7 @@ export default function Friends() {
               )}
             </div>
             
+            {searchDone && searchResults.length === 0 && <p role="status" className="mt-2 text-sm text-white/60">{t('workflow.noSearchResults')}</p>}
             {/* Dropdown Results */}
             {showDropdown && (
               <div className="absolute z-dropdown w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
@@ -599,17 +295,7 @@ export default function Friends() {
             )}
           </div>
 
-          {/* Phase 2.5: share an invite link with someone not yet on the app */}
-          <div className="mb-6 flex justify-center">
-            <AppButton
-              variant="secondary"
-              icon={<Share2 size={18} />}
-              loading={isSharingInvite}
-              onClick={handleShareInvite}
-            >
-              {t('invite.shareLink')}
-            </AppButton>
-          </div>
+          </details>
 
           {/* Tabs */}
           <TabBar
@@ -648,11 +334,6 @@ export default function Friends() {
           <section className="space-y-4">
             {friends.length > 0 ? (
               <>
-                <SectionHeader
-                  title={theme.id === 'family' ? 'Your Family' : 'Your Crew'}
-                  count={friends.length}
-                  className="mb-4"
-                />
                 <div className="space-y-3">
                   {friends.map((friendship) => (
                     <FriendCard
@@ -660,9 +341,7 @@ export default function Friends() {
                       profile={friendship.friend}
                       friendshipId={friendship.id}
                       status="accepted"
-                      isPartner={profile?.partner_user_id === friendship.friend?.id}  // R25
                       onRemove={handleRemoveFriend}
-                      onSetPartner={handleSelectPartner}  // R25
                     />
                   ))}
                 </div>
@@ -671,20 +350,8 @@ export default function Friends() {
               <EmptyState
                 illustration={emptyFriends}
                 title={strings.friendsTitle}
-                body={
-                  theme.id === 'family'
-                    ? t('invite.emptyBodyFamily')
-                    : t('invite.emptyBodyCrew')
-                }
+                body={t('workflow.peopleEmpty')}
               >
-                <AppButton
-                  variant="cta"
-                  icon={<UserPlus size={20} />}
-                  loading={isSharingInvite}
-                  onClick={handleShareInvite}
-                >
-                  {t('invite.inviteSomeone')}
-                </AppButton>
                 {pendingRequests.length > 0 && (
                   <AppButton variant="secondary" onClick={() => setActiveTab('requests')}>
                     {t('invite.viewRequests', { count: pendingRequests.length })}

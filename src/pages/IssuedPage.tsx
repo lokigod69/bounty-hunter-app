@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 // src/pages/IssuedPage.tsx
 // This component serves as the "MISSIONS" view, displaying contracts (missions) created BY the user.
 // - Uses `useIssuedContracts` hook for data fetching.
@@ -30,19 +31,15 @@ import type { IssuedContract } from '../hooks/useIssuedContracts';
 
 // Define TaskStatus locally based on known statuses
 export type TaskStatus = 'pending' | 'review' | 'completed' | 'archived' | 'rejected' | 'active'; // Added 'active' as a common one, adjust as needed
-import { Clock, AlertTriangle, CheckCircle, Plus, Clock3, Send } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
-import { useDailyQuote } from '../hooks/useDailyQuote';
-import { useStanding } from '../hooks/useStanding';
-import { PageQuote } from '../components/layout/PageQuote';
+import { Plus } from 'lucide-react'; // Removed ListChecks as AlertTriangle is now used for Pending // Added ListChecks for new summary cards, removed ScrollText
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { feedback } from '../utils/feedback';
 import { fireSeal } from '../components/visual/sealEvents';
 import { useUI } from '../context/UIContext';
 import { PageContainer } from '../components/layout/PageContainer';
-import { PageHeader } from '../components/layout/PageHeader';
+import { MissionsHeader } from '../components/layout/MissionsHeader';
 import { PageBody } from '../components/layout/PageBody';
-import { StatsRow } from '../components/layout/StatsRow';
-import { AppButton, EmptyState, PageState, SectionHeader, Fab, ConfirmModal } from '../components/ui';
+import { AppButton, EmptyState, PageState, SectionHeader, ConfirmModal } from '../components/ui';
 import { ModalShell } from '../components/ui/ModalShell';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import { TEXT_LIMITS } from '../config/textLimits';
@@ -61,7 +58,9 @@ import { useThemeStrings } from '../hooks/useThemeStrings';
 import emptyIssued from '../assets/generated/empty-issued.webp';
 
 export default function IssuedPage() {
-  const { isMobileMenuOpen, forceCloseMobileMenu, activeLayer } = useUI();
+  const { activeLayer } = useUI();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [initialAssignee, setInitialAssignee] = useState<string | undefined>();
   const { strings } = useThemeStrings();
   const { t } = useTranslation();
   // Phase 2.1: capitalized mode noun (Mission / Chore / Request) for interpolated toasts and dialogs
@@ -85,12 +84,6 @@ export default function IssuedPage() {
   // Phase 2.3: reject-with-reason modal state
   const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  // Wave 2: the creed follows your rank (see Dashboard).
-  const { standing, known: standingKnown } = useStanding();
-  const dailyQuote = useDailyQuote(
-    standingKnown ? standing.unlockedCreedLines : undefined,
-    user?.id
-  );
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false); // Renamed and initialized to false
   const [editingTask, setEditingTask] = useState<TaskFormTask | null>(null);
 
@@ -412,41 +405,29 @@ export default function IssuedPage() {
     }
   };
 
-  // Enhanced FAB click handler with mobile menu state coordination
+  useEffect(() => {
+    if (searchParams.get('create') !== '1') return;
+    setInitialAssignee(searchParams.get('to') || undefined);
+    setEditingTask(null);
+    setIsTaskFormOpen(true);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const handleCreateNewContract = () => {
     setEditingTask(null);
-    // If mobile menu is open, close it first
-    if (isMobileMenuOpen) {
-      forceCloseMobileMenu();
-      // Add a small delay to ensure state propagation before opening modal
-      setTimeout(() => {
-        setIsTaskFormOpen(true);
-      }, 50); // 50ms is enough for React state update
-    } else {
-      // Mobile menu is already closed, open modal immediately
-      setIsTaskFormOpen(true);
-    }
+    setInitialAssignee(undefined);
+    setIsTaskFormOpen(true);
   };
 
   const handleEditTaskRequest = (task: TaskFormTask) => {
     setEditingTask(task);
-    if (isMobileMenuOpen) {
-      forceCloseMobileMenu();
-      setTimeout(() => {
-        setIsTaskFormOpen(true);
-      }, 50);
-    } else {
-      setIsTaskFormOpen(true);
-    }
+    setIsTaskFormOpen(true);
   };
 
   if (loading && issuedContracts.length === 0) {
     return (
       <PageContainer>
-        <PageHeader
-          title={strings.issuedPageTitle}
-          subtitle={strings.issuedPageSubtitle}
-        />
+        <MissionsHeader onCreate={handleCreateNewContract} />
         <PageBody>
           <PageState state="loading" message={t('contracts.loadingMissions')} />
         </PageBody>
@@ -457,10 +438,7 @@ export default function IssuedPage() {
   if (error) {
     return (
       <PageContainer>
-        <PageHeader
-          title={strings.issuedPageTitle}
-          subtitle={strings.issuedPageSubtitle}
-        />
+        <MissionsHeader onCreate={handleCreateNewContract} />
         <PageBody>
           <PageState state="error" message={error} onRetry={refetchIssuedContracts} />
         </PageBody>
@@ -474,7 +452,6 @@ export default function IssuedPage() {
     }
   };
 
-  const hasMissions = sortedIssuedContracts.length > 0;
 
   // Section filtering for grouped display
   const pendingMissions = sortedIssuedContracts.filter(task => task.status === 'pending' || task.status === 'in_progress');
@@ -482,11 +459,6 @@ export default function IssuedPage() {
   const rejectedMissions = sortedIssuedContracts.filter(task => task.status === 'rejected');
   const completedMissions = sortedIssuedContracts.filter(task => task.status === 'completed');
 
-  const stats = {
-    pending: pendingMissions.length,
-    review: reviewMissions.length,
-    completed: completedMissions.length,
-  };
 
   return (
     <>
@@ -495,13 +467,10 @@ export default function IssuedPage() {
       {isTaskFormOpen && user && (
         <TaskForm
           userId={user.id}
+          initialAssignee={initialAssignee}
           onClose={() => {
             setIsTaskFormOpen(false);
             setEditingTask(null);
-            // Ensure mobile menu can be opened after modal closes
-            if (isMobileMenuOpen) {
-              forceCloseMobileMenu();
-            }
           }}
           onSubmit={handleSubmitContract}
           editingTask={editingTask}
@@ -512,44 +481,7 @@ export default function IssuedPage() {
       <PullToRefresh onRefresh={handleRefresh} isPullable={activeLayer !== 'modal'}>
         <PageContainer>
           {/* R21: Use theme strings directly for page title and subtitle */}
-          <PageHeader
-            title={strings.issuedPageTitle}
-            subtitle={strings.issuedPageSubtitle}
-          />
-
-          {/* R11: Moved quote to bottom of page for consistency */}
-
-          {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
-          {hasMissions && !isTaskFormOpen && !isMobileMenuOpen && (
-            <Fab
-              onClick={handleCreateNewContract}
-              label={t('contracts.createNewMission')}
-              icon={<Plus size={24} />}
-            />
-          )}
-
-          <StatsRow
-            stats={[
-              {
-                icon: <AlertTriangle size={32} />,
-                value: stats.pending,
-                label: t('contracts.open'),
-                iconColor: 'text-orange-400',
-              },
-              {
-                icon: <Clock size={32} />,
-                value: stats.review,
-                label: t('contracts.inReview'),
-                iconColor: 'text-yellow-400',
-              },
-              {
-                icon: <CheckCircle size={32} />,
-                value: stats.completed,
-                label: t('contracts.completed'),
-                iconColor: 'text-green-400',
-              },
-            ]}
-          />
+          <MissionsHeader onCreate={handleCreateNewContract} />
 
           <PageBody>
             {sortedIssuedContracts.length === 0 && !loading ? (
@@ -571,131 +503,23 @@ export default function IssuedPage() {
               </EmptyState>
             ) : (
               <>
-                {/* Section 1 - Pending/Active Missions */}
-                <div className="space-y-4">
-                  <SectionHeader
-                    title={t('contracts.open')}
-                    count={pendingMissions.length}
-                    accent="default"
-                  />
-                  {pendingMissions.length === 0 ? (
-                    <EmptyState icon={<Send />} title={t('contracts.allMissionsStarted')} />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                      {pendingMissions.map(task => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreatorView={true}
-                          onStatusUpdate={() => {}}
-                          onApprove={handleApprove}
-                          onReject={() => handleReject(task.id)}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={0}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                          onEditTaskRequest={handleEditTaskRequest}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Section 2 - Ready for Review */}
-                <div className="space-y-4">
-                  <SectionHeader
-                    title={t('contracts.inReview')}
-                    count={reviewMissions.length}
-                    accent="warning"
-                  />
-                  {reviewMissions.length === 0 ? (
-                    <EmptyState icon={<Clock3 />} title={t('contracts.nothingWaitingForReview')} />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                      {reviewMissions.map(task => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreatorView={true}
-                          onStatusUpdate={() => {}}
-                          onApprove={handleApprove}
-                          onReject={() => handleReject(task.id)}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={0}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                          onEditTaskRequest={handleEditTaskRequest}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Section 3 - Sent Back Missions */}
-                {rejectedMissions.length > 0 && (
-                  <div className="space-y-4">
-                    <SectionHeader
-                      title={t('contracts.sentBack')}
-                      count={rejectedMissions.length}
-                      accent="warning"
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                      {rejectedMissions.map(task => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreatorView={true}
-                          onStatusUpdate={() => {}}
-                          onApprove={handleApprove}
-                          onReject={() => handleReject(task.id)}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={0}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                          onEditTaskRequest={handleEditTaskRequest}
-                        />
-                      ))}
-                    </div>
+                {[
+                  { title: t('contracts.inReview'), tasks: reviewMissions, accent: 'warning' as const },
+                  { title: t('contracts.open'), tasks: pendingMissions, accent: 'default' as const },
+                  { title: t('contracts.sentBack'), tasks: rejectedMissions, accent: 'warning' as const },
+                  { title: t('contracts.completed'), tasks: completedMissions, accent: 'success' as const },
+                ].filter(section => section.tasks.length > 0).map(section => <section key={section.title} className="space-y-4">
+                  <SectionHeader title={section.title} count={section.tasks.length} accent={section.accent} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                    {section.tasks.map(task => <TaskCard key={task.id} task={task} isCreatorView={true}
+                      onStatusUpdate={() => {}} onApprove={handleApprove} onReject={() => handleReject(task.id)}
+                      onProofUpload={handleProofUpload} uploadProgress={0} onDeleteTaskRequest={handleDeleteTaskRequest}
+                      actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
+                      onEditTaskRequest={handleEditTaskRequest} refetchTasks={refetchIssuedContracts}
+                      onArchive={task.status === 'completed' ? handleArchive : undefined} />)}
                   </div>
-                )}
-
-                {/* Section 4 - Completed Missions */}
-                <div className="space-y-4">
-                  <SectionHeader
-                    title={t('contracts.completed')}
-                    count={completedMissions.length}
-                    accent="success"
-                  />
-                  {completedMissions.length === 0 ? (
-                    <EmptyState icon={<CheckCircle />} title={t('contracts.noCompletedMissionsYet')} />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                      {completedMissions.map(task => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          isCreatorView={true}
-                          onStatusUpdate={() => {}}
-                          onApprove={handleApprove}
-                          onReject={() => handleReject(task.id)}
-                          onProofUpload={handleProofUpload}
-                          uploadProgress={0}
-                          onDeleteTaskRequest={handleDeleteTaskRequest}
-                          actionLoading={approvingTaskId === task.id || rejectingTaskId === task.id}
-                          onEditTaskRequest={handleEditTaskRequest}
-                          refetchTasks={refetchIssuedContracts}
-                          onArchive={handleArchive}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                </section>)}
               </>
-            )}
-
-            {/* R11: Unified quote placement at bottom */}
-            {dailyQuote && (
-              <PageQuote text={dailyQuote.text} author={dailyQuote.author} />
             )}
           </PageBody>
 

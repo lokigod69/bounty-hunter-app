@@ -20,17 +20,18 @@ export function PageHeader({ title, subtitle, actions, className, ...props }: Pa
   return (
     <div
       className={cn(
-        'text-center mb-8',
+        'flex flex-wrap items-start justify-between gap-3 mb-6',
         className
       )}
       {...props}
     >
-      <h1 className="text-display app-title mb-2">{title}</h1>
+      <div className="min-w-0 flex-1"><h1 className="page-heading">{title}</h1>
       {subtitle && (
         <p className="text-meta text-white/60">{subtitle}</p>
       )}
+      </div>
       {actions && (
-        <div className="mt-4 flex justify-center gap-4">
+        <div className="flex flex-wrap gap-3">
           {actions}
         </div>
       )}

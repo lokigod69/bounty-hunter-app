@@ -1,11 +1,8 @@
 // src/context/ThemeContext.tsx
 // P1: Theme System - Theme context provider and hook for theme selection
 // Phase 2.6: theme persists to profiles for logged-in users.
-// Hardening 2026-07-11 (theme-leak fix): the authenticated profile is now the
-// authority and localStorage is only a cache. Public surfaces (login/invite,
-// fresh accounts with profile.theme=null) can only ever render a PUBLIC_THEME_IDS
-// theme, so a stale 'family'/'couple' left on the device by an earlier account
-// or dev session can no longer leak. Logout clears the cache entirely.
+// Profile is authoritative and localStorage is only a cache. All three palettes
+// are public appearance options. Logout clears the previous account cache.
 
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';

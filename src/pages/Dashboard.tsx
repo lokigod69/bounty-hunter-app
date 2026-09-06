@@ -1,36 +1,18 @@
-// src/pages/Dashboard.tsx
-// MAJOR REFACTOR: Completely rewrote task status update logic to fix Android/non-admin user issues
-// - Removed restrictive database filters that conflicted with RLS policies
-// - Let RLS handle permissions exclusively instead of double permission checking
-// - Enhanced error handling with specific error codes and Android optimizations
-// - TaskCard interactions (status updates, proof uploads) are now ENABLED with proper error handling
-// - Delete functionality is disabled for assignees (they should not delete tasks created by others)
-//   Handler functions provide clear error messages explaining why delete is not available.
-// P1: Updated page header title to use theme strings.
-// P3: Refactored into Mission Inbox with sections: "Do this now", "Waiting for approval", "Recently completed"
-// Wave B: Accept flow is live, populated boards survive refreshes, duplicate stats removed.
-
 import { useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useAssignedContracts } from '../hooks/useAssignedContracts';
-import { useIssuedContracts } from '../hooks/useIssuedContracts';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { toast } from 'react-hot-toast';
-import { CheckCircle2, Clock3, PlusCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Users } from 'lucide-react';
 import type { TaskStatus } from '../types/custom';
 import TaskCard from '../components/TaskCard';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { PageQuote } from '../components/layout/PageQuote';
-import { useDailyQuote } from '../hooks/useDailyQuote';
-import { useStanding } from '../hooks/useStanding';
 import { feedback } from '../utils/feedback';
 import { PageContainer } from '../components/layout/PageContainer';
-import { PageHeader } from '../components/layout/PageHeader';
+import { MissionsHeader } from '../components/layout/MissionsHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { useUI } from '../context/UIContext';
-import { BaseCard } from '../components/ui/BaseCard';
 import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
 import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
@@ -41,20 +23,9 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { activeLayer } = useUI();
   const { contracts: assignedContracts, loading, error, refetch: refetchAssignedContracts } = useAssignedContracts();
-  const { contracts: issuedContracts } = useIssuedContracts();
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const { strings } = useThemeStrings();
   const navigate = useNavigate();
-
-  // Wave 2: the creed follows your rank — undefined while standing loads keeps
-  // the foot of the board silent instead of drawing from the wrong pool.
-  // useStanding carries the balance too, so this page fetches credits once.
-  const { standing, known: standingKnown, credits: userCredits } = useStanding();
-  const dailyQuote = useDailyQuote(
-    standingKnown ? standing.unlockedCreedLines : undefined,
-    user?.id
-  );
 
   const handleDeleteTaskRequest = () => {
     // Assignees should not be able to delete tasks created by others
@@ -273,24 +244,10 @@ export default function Dashboard() {
     };
   }, [assignedContracts]);
 
-  // P3: Calculate issued missions summary stats
-  const issuedStats = useMemo(() => {
-    const awaitingProof = issuedContracts.filter(
-      (task) => task.status === 'pending' || task.status === 'in_progress'
-    ).length;
-    const pendingApproval = issuedContracts.filter(
-      (task) => task.status === 'review'
-    ).length;
-    return { awaitingProof, pendingApproval };
-  }, [issuedContracts]);
-
   if (loading && assignedContracts.length === 0) {
     return (
       <PageContainer>
-        <PageHeader
-          title={strings.inboxTitle}
-          subtitle={strings.inboxSubtitle}
-        />
+        <MissionsHeader />
         <PageBody>
           <PageState state="loading" message={t('common.loadingContracts')} />
         </PageBody>
@@ -301,7 +258,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <PageContainer>
-        <PageHeader title={strings.inboxTitle} />
+        <MissionsHeader />
         <PageBody>
           <PageState
             state="error"
@@ -327,202 +284,26 @@ export default function Dashboard() {
   return (
     <PullToRefresh onRefresh={handleRefresh} isPullable={!isPullToRefreshDisabled}>
       <PageContainer>
-        <PageHeader
-          title={strings.inboxTitle}
-          subtitle={strings.inboxSubtitle}
-        />
+        <MissionsHeader />
 
         <PageBody>
-          {/* Section 1 - Do this now */}
-          <div className="space-y-4">
-            <SectionHeader title={strings.sectionDoNowTitle} count={doNowMissions.length} accent="default" />
-            {doNowMissions.length === 0 ? (
-              <EmptyState
-                illustration={emptyMissions}
-                /* R14: Mode-aware empty state copy for inbox */
-                title={
-                  theme.id === 'guild'
-                    ? 'No missions right now'
-                    : theme.id === 'family'
-                      ? 'No chores assigned'
-                      : 'No requests yet'
-                }
-                body={
-                  theme.id === 'guild'
-                    ? 'Create a mission or check the store.'
-                    : theme.id === 'family'
-                      ? 'You\'re all clear for now.'
-                      : 'When your partner sends you a request, it will show up here.'
-                }
-              >
-                {/* R14: In couple mode, primary CTA is to create for partner */}
-                {theme.id === 'couple' ? (
-                  <AppButton
-                    variant="secondary"
-                    icon={<PlusCircle size={20} />}
-                    onClick={() => navigate('/issued')}
-                  >
-                    Create {strings.missionSingular} for your {strings.crewLabel}
-                  </AppButton>
-                ) : (
-                  <>
-                    <AppButton
-                      variant="cta"
-                      icon={<PlusCircle size={20} />}
-                      onClick={() => navigate('/issued')}
-                    >
-                      Create new {strings.missionSingular}
-                    </AppButton>
-                    <AppButton
-                      variant="secondary"
-                      icon={<ShoppingCart size={20} />}
-                      onClick={() => navigate('/rewards-store')}
-                    >
-                      Visit {strings.storeTitle}
-                    </AppButton>
-                  </>
-                )}
-              </EmptyState>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                {doNowMissions.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isCreatorView={false}
-                    onStatusUpdate={handleStatusUpdate}
-                    onProofUpload={handleProofUpload}
-                    onDirectComplete={handleDirectComplete}
-                    uploadProgress={0}
-                    onDeleteTaskRequest={handleDeleteTaskRequest}
-                    refetchTasks={refetchAssignedContracts}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Section 2 - Waiting for approval */}
-          <div className="space-y-4">
-            <SectionHeader title={strings.sectionWaitingApprovalTitle} count={waitingApprovalMissions.length} accent="warning" />
-            {waitingApprovalMissions.length === 0 ? (
-              <EmptyState
-                icon={<Clock3 />}
-                title="Nothing waiting for approval."
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                {waitingApprovalMissions.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isCreatorView={false}
-                    onStatusUpdate={handleStatusUpdate}
-                    onProofUpload={handleProofUpload}
-                    onDirectComplete={handleDirectComplete}
-                    uploadProgress={0}
-                    onDeleteTaskRequest={handleDeleteTaskRequest}
-                    refetchTasks={refetchAssignedContracts}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Section 3 - Recently completed */}
-          <div className="space-y-4">
-            <SectionHeader title={strings.sectionCompletedTitle} count={completedMissionCount} accent="success" />
-            {completedMissions.length === 0 ? (
-              <EmptyState
-                icon={<CheckCircle2 />}
-                title={`You haven't completed any ${strings.missionPlural} yet.`}
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-                {completedMissions.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isCreatorView={false}
-                    onStatusUpdate={handleStatusUpdate}
-                    onProofUpload={handleProofUpload}
-                    onDirectComplete={handleDirectComplete}
-                    uploadProgress={0}
-                    onDeleteTaskRequest={handleDeleteTaskRequest}
-                    refetchTasks={refetchAssignedContracts}
-                    onArchive={handleArchive}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Section 4 - Issued missions summary */}
-          {issuedContracts.length > 0 && (
-            <div className="space-y-4">
-              <BaseCard>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <SectionHeader title={strings.sectionIssuedSummaryTitle} className="mb-2" />
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      {issuedStats.awaitingProof > 0 && (
-                        <span className="text-white/70">
-                          {issuedStats.awaitingProof} {strings.missionPlural} awaiting proof
-                        </span>
-                      )}
-                      {issuedStats.pendingApproval > 0 && (
-                        <span className="text-white/70">
-                          {issuedStats.pendingApproval} {strings.missionPlural} pending your approval
-                        </span>
-                      )}
-                      {issuedStats.awaitingProof === 0 && issuedStats.pendingApproval === 0 && (
-                        <span className="text-white/70">All {strings.missionPlural} are up to date</span>
-                      )}
-                    </div>
-                  </div>
-                  <AppButton
-                    variant="ghost"
-                    onClick={() => navigate('/issued')}
-                    className="whitespace-nowrap"
-                  >
-                    Manage {strings.missionsLabel}
-                    <ArrowRight size={20} />
-                  </AppButton>
-                </div>
-              </BaseCard>
+          {doNowMissions.length === 0 && <EmptyState illustration={emptyMissions}
+            title={t('workflow.inboxEmpty')} body={t('workflow.inboxEmptyBody')}>
+            <AppButton variant="secondary" icon={<Users size={18} />} onClick={() => navigate('/friends')}>{t('workflow.openPeople')}</AppButton>
+          </EmptyState>}
+          {[
+            { title: strings.sectionDoNowTitle, tasks: doNowMissions, count: doNowMissions.length, accent: 'default' as const },
+            { title: strings.sectionWaitingApprovalTitle, tasks: waitingApprovalMissions, count: waitingApprovalMissions.length, accent: 'warning' as const },
+            { title: strings.sectionCompletedTitle, tasks: completedMissions, count: completedMissionCount, accent: 'success' as const },
+          ].filter(section => section.tasks.length > 0).map(section => <section key={section.title} className="space-y-4">
+            <SectionHeader title={section.title} count={section.count} accent={section.accent} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+              {section.tasks.map(task => <TaskCard key={task.id} task={task} isCreatorView={false}
+                onStatusUpdate={handleStatusUpdate} onProofUpload={handleProofUpload} onDirectComplete={handleDirectComplete}
+                uploadProgress={0} onDeleteTaskRequest={handleDeleteTaskRequest} refetchTasks={refetchAssignedContracts}
+                onArchive={task.status === 'completed' ? handleArchive : undefined} />)}
             </div>
-          )}
-
-          {/* Reward Store prompt - only show if user has credits */}
-          {(userCredits ?? 0) > 0 && (
-            <div className="space-y-4">
-              <BaseCard className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/20">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-subtitle text-white font-semibold mb-1">
-                      Visit {strings.storeTitle}
-                    </h3>
-                    <p className="text-body text-white/70 text-sm">
-                      You have {userCredits} {userCredits === 1 ? strings.tokenSingular : strings.tokenPlural} to spend. Check out available {strings.rewardPlural}!
-                    </p>
-                  </div>
-                  <AppButton
-                    variant="secondary"
-                    icon={<ShoppingCart size={20} />}
-                    onClick={() => navigate('/rewards-store')}
-                    className="whitespace-nowrap"
-                  >
-                    Go to {strings.storeTitle}
-                  </AppButton>
-                </div>
-              </BaseCard>
-            </div>
-          )}
-
-          {/* R11: Unified quote placement */}
-          {dailyQuote && (
-            <PageQuote text={dailyQuote.text} author={dailyQuote.author} />
-          )}
+          </section>)}
         </PageBody>
       </PageContainer>
     </PullToRefresh>

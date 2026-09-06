@@ -25,8 +25,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
 import { BaseCard } from '../components/ui/BaseCard';
-import { AppButton, EmptyState, PageState, Fab, ConfirmModal, TabBar } from '../components/ui';
-import { useUI } from '../context/UIContext';
+import { AppButton, EmptyState, PageState, ConfirmModal, TabBar } from '../components/ui';
 import { feedback } from '../utils/feedback';
 import { Coin } from '../components/visual/Coin';
 import emptyStore from '../assets/generated/empty-store.webp';
@@ -39,7 +38,6 @@ const RewardsStorePage: React.FC = () => {
   const fmt = useFormatters();
   const [searchParams] = useSearchParams();
   const { strings } = useThemeStrings();
-  const { isMobileMenuOpen } = useUI();
   const { user } = useAuth();
   const { rewards, isLoadingRewards, rewardsError, fetchRewards } = useRewardsStore();
   const { purchaseBounty, isLoading: isPurchasing } = usePurchaseBounty();
@@ -81,32 +79,6 @@ const RewardsStorePage: React.FC = () => {
   const collectedRewardIds = useMemo(() => {
     return new Set(collectedRewards.map(r => r.id));
   }, [collectedRewards]);
-
-  // P4: Calculate affordable rewards and distance to next reward
-  const { affordableCount, cheapestUnaffordable } = useMemo(() => {
-    const currentCredits = userCredits ?? 0;
-    const availableRewards = rewards.filter(reward => {
-      if (activeTab === 'available') {
-        // Assigned to me AND not already collected
-        return reward.assigned_to === user?.id && !collectedRewardIds.has(reward.id);
-      }
-      if (activeTab === 'created') {
-        return reward.creator_id === user?.id;
-      }
-      return false;
-    });
-
-    const affordable = availableRewards.filter(r => (r.credit_cost || 0) <= currentCredits);
-    const unaffordable = availableRewards.filter(r => (r.credit_cost || 0) > currentCredits);
-    const cheapest = unaffordable.length > 0
-      ? unaffordable.reduce((min, r) => (r.credit_cost || 0) < (min.credit_cost || 0) ? r : min, unaffordable[0])
-      : null;
-
-    return {
-      affordableCount: affordable.length,
-      cheapestUnaffordable: cheapest,
-    };
-  }, [rewards, userCredits, activeTab, user?.id, collectedRewardIds]);
 
   const handleRefresh = async () => {
     await fetchRewards();
@@ -237,7 +209,7 @@ const RewardsStorePage: React.FC = () => {
         <EmptyState
           illustration={emptyStore}
           title={strings.storeEmptyTitle}
-          body={strings.storeEmptyBody}
+          body={t(`rewards.empty.${activeTab}`)}
         >
           {user && (
             <AppButton
@@ -279,6 +251,7 @@ const RewardsStorePage: React.FC = () => {
         <PageHeader 
           title={strings.storeTitle} 
           subtitle={strings.storeSubtitle}
+          actions={<AppButton variant="cta" icon={<Plus size={18} />} onClick={() => setCreateModalOpen(true)}>{t('rewards.createBountyButton')}</AppButton>}
         />
 
         {/* R32: Balance Card - coin with value is the focal point */}
@@ -319,34 +292,9 @@ const RewardsStorePage: React.FC = () => {
                       {t('rewards.lifetimeEarned')} · {fmt.number(totalEarned)}
                     </span>
                   )}
-                  {/* R32: Contextual hint about balance - only show affordability hints on Available tab */}
-                  {(userCredits ?? 0) === 0 ? (
-                    <span className="text-sm text-white/70 mt-1">
-                      Complete {strings.missionPlural} to earn {strings.tokenPlural}
-                    </span>
-                  ) : activeTab === 'available' && affordableCount > 0 ? (
-                    <span className="text-sm text-teal-400/80 mt-1">
-                      {strings.storeCanAffordLabel} {affordableCount} {affordableCount === 1 ? strings.rewardSingular : strings.rewardPlural}
-                    </span>
-                  ) : activeTab === 'available' && cheapestUnaffordable ? (
-                    <>
-                      <span className="text-sm text-white/70 mt-1">
-                        {((cheapestUnaffordable.credit_cost || 0) - (userCredits ?? 0))} more to "{cheapestUnaffordable.name}"
-                      </span>
-                      {/* V1: Progress-to-next-reward bar (gold fill, clamped 0-100%) */}
-                      <div className="mt-2 h-2 w-full rounded-full bg-white/10 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-yellow-400 transition-all duration-500"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, ((userCredits ?? 0) / (cheapestUnaffordable.credit_cost || 1)) * 100))}%`,
-                          }}
-                        />
-                      </div>
-                    </>
-                  ) : null}
                 </div>
                 {/* R32: Coin with value is now the primary balance display */}
-                <Coin size="xl" variant="static" value={userCredits ?? 0} />
+                <Coin size="lg" variant="static" />
               </div>
             </BaseCard>
           </div>
@@ -368,15 +316,6 @@ const RewardsStorePage: React.FC = () => {
         <PageBody>
           {renderContent()}
         </PageBody>
-
-      {/* R14: FAB - mobile: bottom-right, desktop: centered bottom */}
-      {!isMobileMenuOpen && (
-        <Fab
-          onClick={() => setCreateModalOpen(true)}
-          label={t('rewards.createBountyButton')}
-          icon={<Plus size={24} />}
-        />
-      )}
 
       <CreateBountyModal 
         isOpen={isCreateModalOpen} 

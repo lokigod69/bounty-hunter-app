@@ -84,26 +84,9 @@ export function useAssignedContracts() {
           console.warn('useAssignedContracts background refresh failed:', dbError.message);
         }
       } else {
-        // FIXED: Remove double URL generation - proof_url is already a public URL from upload
-        const processedContracts = data?.map(task => {
-          // Validate proof_url if it exists
-          if (task.proof_url) {
-            try {
-              // Basic URL validation
-              const url = new URL(task.proof_url);
-              if (!url.protocol.startsWith('http')) {
-                return { ...task, proof_url: null };
-              }
-              return task;
-            } catch {
-              // Set proof_url to null for invalid URLs to prevent broken links
-              return { ...task, proof_url: null };
-            }
-          }
-          return task;
-        }) || [];
-        
-        setContracts(processedContracts);
+        // Proof references are private Storage paths, not necessarily URLs.
+        // EvidencePanel/useSignedProofUrl owns validation and signing.
+        setContracts(data || []);
         hasLoadedRef.current = true;
         loadedUserIdRef.current = user.id;
       }

@@ -1,185 +1,56 @@
-// src/pages/Onboarding.tsx
-// P2: First-Time Experience wizard - guides new users through setup
-// R35: Streamlined to 3 steps: Choose Mode → Invite Friend → Learn How to Create Missions
-// Removed "Create First Reward" step (requires friends) and "Create First Mission" (self-assign is confusing)
-
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { Gift, Send, CheckCircle2, Share2, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../context/ThemeContext';
-import { ThemeId } from '../theme/theme.types';
-import { PageContainer } from '../components/layout/PageContainer';
-import { PageHeader } from '../components/layout/PageHeader';
-import { PageBody } from '../components/layout/PageBody';
-import { PageState } from '../components/ui';
-import { Check } from 'lucide-react';
+import { useFriends } from '../hooks/useFriends';
+import { useInvite } from '../hooks/useInvite';
 import { markOnboardingCompleted } from '../lib/ftxGate';
-
-// Step components
-import OnboardingStep1Mode from '../components/onboarding/OnboardingStep1Mode';
-import OnboardingStep2Invite from '../components/onboarding/OnboardingStep3Invite'; // Renamed import
-import OnboardingStep3Explainer from '../components/onboarding/OnboardingStep4Mission'; // Will be converted to explainer
-
-type OnboardingStep = 1 | 2 | 3;
-
-interface OnboardingState {
-  themeId: ThemeId | null;
-  invitedUserId: string | null;
-}
+import { PageContainer } from '../components/layout/PageContainer';
+import { PageBody } from '../components/layout/PageBody';
+import { AppButton, PageState } from '../components/ui';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import heroGuild from '../assets/generated/hero-guild.webp';
 
 export default function Onboarding() {
-  // ALL HOOKS AT TOP LEVEL - NO HOOKS BELOW THIS LINE
   const { t } = useTranslation();
-  const {
-    user,
-    profile,
-    authLoading,
-    hasSession,
-  } = useAuth();
+  const { user, profile, authLoading, hasSession } = useAuth();
+  const { friends, loading } = useFriends(profile ? user?.id : undefined);
+  const { shareInviteLink } = useInvite();
   const navigate = useNavigate();
-  const { themeId: effectiveThemeId, setThemeId } = useTheme();
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
-  const [state, setState] = useState<OnboardingState>({
-    themeId: null,
-    invitedUserId: null,
-  });
+  const [sharing, setSharing] = useState(false);
+  if (authLoading) return <PageState state="loading" />;
+  if (!hasSession) return <Navigate to="/login" replace />;
 
-  // NO HOOKS BELOW THIS LINE - only conditional returns and handlers
-
-  // 1. While auth is still initializing, show a generic loading state
-  if (authLoading) {
-    return (
-      <PageContainer>
-        <PageBody>
-          <PageState state="loading" message={t('onboarding.loadingSession')} />
-        </PageBody>
-      </PageContainer>
-    );
-  }
-
-  // 2. No session → go to login
-  if (!hasSession) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Step handlers
-  const handleStep1Complete = (themeId: ThemeId) => {
-    setState(prev => ({ ...prev, themeId }));
-    setCurrentStep(2);
-  };
-
-  const handleStep2Complete = (invitedUserId: string | null) => {
-    setState(prev => ({ ...prev, invitedUserId }));
-    setCurrentStep(3);
-  };
-
-  const handleStep3Complete = () => {
-    // Mark onboarding as completed (localStorage cache + DB profile flag)
+  const finish = () => {
     markOnboardingCompleted(user?.id);
-    // Navigate to Mission Inbox (Dashboard)
-    navigate('/', { replace: true });
+    navigate(friends.length ? '/issued?create=1' : '/friends', { replace: true });
   };
-
-  const handleSkipAll = () => {
-    // Skip all steps - mark onboarding complete and go to dashboard.
-    // Persist the effective theme explicitly: a skipping user never touches the
-    // step-1 card, and an account with no persisted theme must not inherit
-    // whatever stale value the device happens to hold.
-    setThemeId(effectiveThemeId);
-    markOnboardingCompleted(user?.id);
-    navigate('/', { replace: true });
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as OnboardingStep);
-    }
-  };
-
-  // Step titles and descriptions - R35: 3-step flow, i18n'd 2026-07-29.
-  // Keyed by name rather than index so a reordered flow cannot silently pair
-  // step 2's title with step 3's description.
-  const STEP_KEYS = ['chooseWorld', 'invite', 'howItWorks'] as const;
-  const stepKey = STEP_KEYS[currentStep - 1];
-
-  // Render onboarding wizard
-  // Phase 2.6: profile.theme is now a real persisted field (typed on custom Profile).
-  const profileThemeId = profile?.theme as ThemeId | undefined;
-
-  return (
-    <PageContainer>
-      <PageHeader
-        title={t(`onboarding.steps.${stepKey}.title`)}
-        subtitle={t(`onboarding.steps.${stepKey}.description`)}
-      />
-
-      {/* Progress indicator - R35: Now only 3 steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-center gap-2">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-                  step < currentStep
-                    ? 'bg-[var(--mode-accent)] text-[var(--mode-accent-ink)]'
-                    : step === currentStep
-                    ? 'bg-[var(--mode-accent)] text-[var(--mode-accent-ink)] ring-2 ring-[var(--mode-accent)] ring-offset-2 ring-offset-gray-900'
-                    : 'bg-gray-700 text-gray-400'
-                }`}
-              >
-                {step < currentStep ? <Check size={20} /> : step}
-              </div>
-              {step < 3 && (
-                <div
-                  className={`w-12 h-1 mx-1 transition-all ${
-                    step < currentStep ? 'bg-[var(--mode-accent)]' : 'bg-gray-700'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+  return <PageContainer className="max-w-2xl min-h-screen safe-top">
+    <div className="flex justify-end mb-4"><LanguageSwitcher /></div>
+    <PageBody>
+      <div className="intro-hero"><img src={heroGuild} alt="" /><div /></div>
+      <div>
+        <p className="text-sm text-[var(--mode-accent)] mb-2">Bounty Hunter</p>
+        <h1 className="page-heading mb-3">{t('workflow.introTitle')}</h1>
+        <p className="text-white/70 leading-relaxed">{t('workflow.introBody')}</p>
       </div>
-
-      <PageBody>
-        {/* Onboarding is a single-column wizard: cap it at a comfortable reading
-            width on desktop instead of the full page container. */}
-        <div className="mx-auto w-full max-w-2xl">
-        {/* Skip all option */}
-        <div className="mb-4 text-center">
-          <button
-            onClick={handleSkipAll}
-            className="text-meta text-white/50 hover:text-white/70 underline"
-          >
-            {t('onboarding.skipAll')}
-          </button>
-        </div>
-
-        {/* Step content */}
-        {currentStep === 1 && (
-          <OnboardingStep1Mode
-            currentThemeId={state.themeId || profileThemeId || null}
-            onComplete={handleStep1Complete}
-          />
-        )}
-
-        {currentStep === 2 && (
-          <OnboardingStep2Invite
-            onComplete={handleStep2Complete}
-            onSkip={() => handleStep2Complete(null)}
-            onBack={handleBack}
-          />
-        )}
-
-        {currentStep === 3 && (
-          <OnboardingStep3Explainer
-            onComplete={handleStep3Complete}
-            onBack={handleBack}
-          />
-        )}
-        </div>
-      </PageBody>
-    </PageContainer>
-  );
+      <ol className="space-y-5">
+        {[
+          { Icon: Send, title: 'sendTitle', body: 'sendBody' },
+          { Icon: CheckCircle2, title: 'reviewTitle', body: 'reviewBody' },
+          { Icon: Gift, title: 'rewardTitle', body: 'rewardBody' },
+        ].map(({ Icon, title, body }, index) => <li key={title} className="flex gap-4">
+          <span className="flex-shrink-0 mt-1 text-[var(--mode-accent)]"><Icon size={22} aria-hidden="true" /></span>
+          <div><h2 className="font-semibold mb-1">{index + 1}. {t(`workflow.${title}`)}</h2><p className="text-sm text-white/65 leading-relaxed">{t(`workflow.${body}`)}</p></div>
+        </li>)}
+      </ol>
+      <div className="space-y-3 pt-2">
+        <AppButton variant="cta" fullWidth icon={<ArrowRight size={18} />} onClick={finish}>{t('workflow.getStarted')}</AppButton>
+        {!loading && friends.length === 0 && <AppButton variant="ghost" fullWidth loading={sharing} icon={<Share2 size={18} />}
+          onClick={async () => { setSharing(true); try { await shareInviteLink(); } finally { setSharing(false); } }}>{t('invite.inviteSomeone')}</AppButton>}
+        <p className="text-center text-xs text-white/50">{t('workflow.customizeLater')}</p>
+      </div>
+    </PageBody>
+  </PageContainer>;
 }

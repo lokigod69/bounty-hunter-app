@@ -67,20 +67,15 @@ const requiredThemeStringKeys = [
 const extraLocaleThemeKeys = ['label', 'description'] as const;
 
 describe('theme string contract', () => {
-  it('keeps every mode on the same required static string contract', () => {
-    for (const themeId of themeIds) {
-      expect(Object.keys(themesById[themeId].strings).sort()).toEqual(
-        [...requiredThemeStringKeys].sort()
-      );
-    }
-  });
-
-  it('keeps English and German translations aligned with the required theme keys', () => {
+  it('stores product vocabulary once, outside appearance definitions', () => {
+    const productKeys = requiredThemeStringKeys.filter(key => !key.startsWith('rankBand'));
     for (const locale of [en, de]) {
+      expect(Object.keys(locale.product).sort()).toEqual([...productKeys].sort());
       for (const themeId of themeIds) {
-        expect(Object.keys(locale.theme[themeId]).sort()).toEqual(
-          [...requiredThemeStringKeys, ...extraLocaleThemeKeys].sort()
-        );
+        expect(Object.keys(locale.theme[themeId]).sort()).toEqual([
+          ...extraLocaleThemeKeys, 'rankBand0', 'rankBand1', 'rankBand2', 'rankBand3', 'rankBand4',
+        ].sort());
+        expect(themesById[themeId]).not.toHaveProperty('strings');
       }
     }
   });
@@ -131,8 +126,8 @@ describe('mode accent single source of truth (theme/modeAccents.ts)', () => {
 // state must never surface a non-public theme on public pages or for fresh
 // accounts. These guard the shared policy helpers every consumer relies on.
 describe('public theme policy', () => {
-  it('V1 exposes only guild publicly, and the default is public', () => {
-    expect(PUBLIC_THEME_IDS).toEqual(['guild']);
+  it('all three appearances are available without changing the default', () => {
+    expect(PUBLIC_THEME_IDS).toEqual(['guild', 'family', 'couple']);
     expect(PUBLIC_THEME_IDS).toContain(DEFAULT_THEME_ID);
   });
 
@@ -146,8 +141,8 @@ describe('public theme policy', () => {
   it('toPublicThemeId keeps public themes and normalizes everything else to the default', () => {
     expect(toPublicThemeId('guild')).toBe('guild');
     // Gated themes are valid ThemeIds but must not pass through.
-    expect(toPublicThemeId('family')).toBe(DEFAULT_THEME_ID);
-    expect(toPublicThemeId('couple')).toBe(DEFAULT_THEME_ID);
+    expect(toPublicThemeId('family')).toBe('family');
+    expect(toPublicThemeId('couple')).toBe('couple');
     // Garbage and absent values fall back to the default.
     expect(toPublicThemeId(null)).toBe(DEFAULT_THEME_ID);
     expect(toPublicThemeId(undefined)).toBe(DEFAULT_THEME_ID);

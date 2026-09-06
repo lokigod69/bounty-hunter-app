@@ -55,13 +55,4 @@ export interface ThemeStrings {
 
 export interface ThemeDefinition {
   id: ThemeId;
-  // The selector's human-friendly name ("Guild Mode") and its one-line
-  // description are NOT here on purpose: they are user-visible copy, so they
-  // live in i18n under `theme.<id>.label` / `theme.<id>.description` exactly
-  // like every other theme string. Read them with `t()` at the call site.
-  strings: ThemeStrings;
-  // Palette hooks for later:
-  primaryColor?: string; 
-  accentColor?: string;
 }
-

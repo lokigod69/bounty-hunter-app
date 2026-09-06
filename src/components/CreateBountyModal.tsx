@@ -173,10 +173,11 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             {/* R27: Name field with character counter */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-white/70">{t('rewards.createModal.bountyNamePlaceholder')}</label>
+                <label htmlFor="create-reward-name" className="text-sm font-medium text-white/70">{t('rewards.createModal.bountyNamePlaceholder')}</label>
                 <CharacterCounter current={name.length} max={TEXT_LIMITS.rewardName} />
               </div>
               <input
+                id="create-reward-name"
                 type="text"
                 placeholder={t('rewards.createModal.bountyNamePlaceholder')}
                 value={name}
@@ -190,20 +191,22 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             {/* R27: Description field with character counter */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-white/70">{t('rewards.createModal.descriptionPlaceholder')}</label>
+                <label htmlFor="create-reward-description" className="text-sm font-medium text-white/70">{t('rewards.editModal.descriptionPlaceholder')}</label>
                 <CharacterCounter current={description.length} max={TEXT_LIMITS.rewardDescription} />
               </div>
               <textarea
+                id="create-reward-description"
                 placeholder={t('rewards.createModal.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition h-24 text-base"
-                required
                 maxLength={TEXT_LIMITS.rewardDescription}
               />
             </div>
 
+            <label htmlFor="create-reward-cost" className="block text-sm font-medium text-white/70">{t('rewards.createModal.creditCostPlaceholder')}</label>
             <input
+              id="create-reward-cost"
               type="number"
               placeholder={t('rewards.createModal.creditCostPlaceholder')}
               value={creditCost}
@@ -214,8 +217,8 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
             />
 
             {/* R22/R30: Image selection - emoji or upload only */}
-            <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">{t('rewards.imageField.labelOptional')}</label>
+            <details className="optional-details">
+              <summary>{t('rewards.imageField.labelOptional')}</summary>
               <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button type="button" onClick={() => setImageType('emoji')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'emoji' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.createModal.useEmoji')}</button>
                 <button type="button" onClick={() => setImageType('upload')} className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition ${imageType === 'upload' ? 'bg-teal-500 text-black' : 'bg-gray-700 text-white'}`}>{t('rewards.imageField.useUpload')}</button>
@@ -263,7 +266,7 @@ const CreateBountyModal: React.FC<CreateBountyModalProps> = ({ isOpen, onClose, 
                   {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
                 </div>
               )}
-            </div>
+            </details>
           </div>
 
           {/* Sticky footer - always visible on iOS Safari */}

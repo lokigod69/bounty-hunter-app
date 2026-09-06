@@ -3,8 +3,6 @@
 // This page displays a history of archived tasks — a "Contract Ledger" / trophy view.
 
 import React from 'react';
-import { CheckCircle, Coins } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useArchivedContracts } from '../hooks/useArchivedContracts';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeStrings } from '../hooks/useThemeStrings';
@@ -12,7 +10,6 @@ import TaskCard from '../components/TaskCard';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageBody } from '../components/layout/PageBody';
-import { StatsRow } from '../components/layout/StatsRow';
 import { PageState, EmptyState } from '../components/ui';
 import emptyArchive from '../assets/generated/empty-archive.webp';
 
@@ -20,7 +17,6 @@ const ArchivePage: React.FC = () => {
   const { user } = useAuth();
   const { archivedTasks, loading, error, refetch: refetchArchivedTasks } = useArchivedContracts();
   const { strings } = useThemeStrings();
-  const { t } = useTranslation();
 
   if (loading && archivedTasks.length === 0) {
     return (
@@ -44,35 +40,12 @@ const ArchivePage: React.FC = () => {
     );
   }
 
-  const totalCompleted = archivedTasks.length;
-  const creditsEarned = archivedTasks.reduce(
-    (sum, task) =>
-      task.reward_type === 'credit' ? sum + (parseInt(task.reward_text ?? '', 10) || 0) : sum,
-    0
-  );
-
   return (
     <PageContainer>
       <PageHeader title={strings.archiveTitle} subtitle={strings.archiveSubtitle} />
       <PageBody>
         {archivedTasks.length > 0 ? (
           <>
-            <StatsRow
-              stats={[
-                {
-                  icon: <CheckCircle />,
-                  value: totalCompleted,
-                  label: t('contracts.completed'),
-                  iconColor: 'text-green-400',
-                },
-                {
-                  icon: <Coins />,
-                  value: creditsEarned,
-                  label: t('history.creditsEarned'),
-                  iconColor: 'text-yellow-400',
-                },
-              ]}
-            />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
               {archivedTasks.map(task => (
                 <TaskCard

@@ -1,19 +1,3 @@
-// src/components/TaskForm.tsx
-// DESCRIPTION TEXTAREA FIX: Made the description textarea smaller and auto-resizable.
-// Form for creating new tasks and editing existing ones.
-// Applied galactic theme: .glass-card (inherited), .modal-icon-button, themed labels, themed error messages. Input fields use enhanced .input-field.
-// Fixed TypeScript error for taskPayload.reward_text to ensure it's string | undefined.
-// Phase 5B: Updated terminology from 'Task' to 'Contract'. Corrected submit button text and rewardType values.
-// Phase 6 (Credit System UI): Added Contract Type selector, conditional reward inputs, removed redundant rewardType state, and removed unused RewardType import.
-// Phase 7 (Critical Fix): Ensured modal closes only on successful task submission in handleSubmit.
-// Phase 8 (Backend Ready): Updated error handling in handleSubmit to use toast.error with error.message. Refined error typing in catch block.
-// Phase 9 (Proof Required): Added 'proof_required' checkbox and associated logic.
-// Phase 10 (Issued Page Refresh): Added isSubmitting state for loading indicator on submit button.
-// Styling Update: Applied requested styling to credit dropdown, including bg-gray-800 for options (browser compatibility may vary).
-// Z-INDEX FIX: Increased modal z-index to ensure it appears above all other UI elements.
-// PHASE 1 FIX: Enhanced mobile menu coordination and improved modal behavior to prevent UI conflicts.
-// PHASE 3 FIX: Enhanced responsive positioning with improved mobile layouts, better touch targets, and optimized positioning logic.
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -22,7 +6,6 @@ import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
 import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
 import { feedback } from '../utils/feedback';
-import { useTheme } from '../context/ThemeContext'; // R14: For couple mode self-assignment prevention
 import { useThemeStrings } from '../hooks/useThemeStrings';
 import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
@@ -56,25 +39,26 @@ export interface NewTaskData {
 
 interface TaskFormProps {
   userId: string;
+  initialAssignee?: string;
   onClose: () => void;
   onSubmit: (taskData: NewTaskData, taskId?: string) => Promise<void>; // NewTaskData is now locally defined
   editingTask?: Task | null; // Task is now locally defined as BaseTask
 }
 
-export default function TaskForm({ userId, onClose, onSubmit, editingTask }: TaskFormProps) {
+export default function TaskForm({ userId, onClose, onSubmit, editingTask, initialAssignee }: TaskFormProps) {
   const { t } = useTranslation();
-  const { theme } = useTheme(); // R14: For couple mode self-assignment prevention
   const { strings } = useThemeStrings();
   // Phase 2.1: capitalized mode noun (Mission / Chore / Request) for interpolated titles/buttons
   const noun = strings.missionSingular.charAt(0).toUpperCase() + strings.missionSingular.slice(1);
   const { friends, loading } = useFriends(userId);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState(''); // Added description state
-  const [assignedTo, setAssignedTo] = useState('');
-  const [deadline, setDeadline] = useState('');
-  const [contractType, setContractType] = useState<'bounty' | 'credit'>('bounty'); // New state for contract type
-  const [rewardText, setRewardText] = useState(''); // For bounty description or credit amount
-  const [proofRequired, setProofRequired] = useState(false); // New state for proof requirement
+  const [title, setTitle] = useState(editingTask?.title || '');
+  const [description, setDescription] = useState(editingTask?.description || ''); // Added description state
+  const [assignedTo, setAssignedTo] = useState(editingTask?.assigned_to || initialAssignee || '');
+  const [deadline, setDeadline] = useState(editingTask?.deadline?.split('T')[0] || '');
+  const [contractType, setContractType] = useState<'bounty' | 'credit'>(editingTask?.reward_type === 'credit' ? 'credit' : 'bounty'); // New state for contract type
+  const [rewardText, setRewardText] = useState(editingTask?.reward_text || ''); // For bounty description or credit amount
+  const [proofRequired, setProofRequired] = useState(editingTask?.proof_required || false);
+  const [detailsOpen, setDetailsOpen] = useState(Boolean(editingTask?.description || editingTask?.deadline || editingTask?.proof_required));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -99,34 +83,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
     }
   }, [isSelfAssigned, contractType]);
 
-  useEffect(() => {
-    if (editingTask) {
-      setTitle(editingTask.title || '');
-      setDescription(editingTask.description || ''); // Set description from editingTask
-      setAssignedTo(editingTask.assigned_to || '');
-      setDeadline(editingTask.deadline ? editingTask.deadline.split('T')[0] : '');
-      if (editingTask.reward_type === 'credit') {
-        setContractType('credit');
-        setRewardText(editingTask.reward_text || '1'); // Default to '1' if not set for credit type
-      } else {
-        setContractType('bounty');
-        // For 'bounty', reward_type could be 'text', 'items', 'other', or empty if we adapt old tasks
-        // For simplicity now, let's assume 'bounty' contract maps to 'text' or is handled by rewardText only
-        setRewardText(editingTask.reward_text || '');
-        // editingTask.reward_type will be used by the payload logic if it's not 'credit'
-      }
-      setProofRequired(editingTask.proof_required || false);
-    } else {
-      // Reset form for creation mode or if editingTask is cleared
-      setTitle('');
-      setDescription(''); // Reset description
-      setAssignedTo(friends.length === 1 ? friends[0].friend.id : '');
-      setDeadline('');
-      setContractType('bounty'); // Default to bounty for new tasks
-      setRewardText('');
-      setProofRequired(false); // Reset proof required for new tasks
-    }
-  }, [editingTask, friends]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -142,14 +98,8 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
       newErrors.description = `Description must be ${TEXT_LIMITS.missionDescription} characters or less`;
     }
 
-    if (!assignedTo) {
+    if (!assignedTo || (!editingTask && !friends.some(({ friend }) => friend.id === assignedTo))) {
       newErrors.assignedTo = t('taskForm.validation.assigneeRequired');
-    }
-
-    // R14: Prevent self-assignment in couple mode
-    if (theme.id === 'couple' && assignedTo === userId) {
-      newErrors.assignedTo = `In partner mode, ${strings.missionPlural} are meant for your ${strings.crewLabel}.`;
-      toast.error(`You can't assign a ${strings.missionSingular} to yourself in partner mode.`);
     }
 
     if (contractType === 'bounty' && !rewardText.trim()) {
@@ -177,15 +127,15 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     const taskPayload: NewTaskData = {
       created_by: userId, // Add created_by to the payload
       status: (editingTask?.status as TaskStatus) ?? ('pending' as TaskStatus),
-      title,
+      title: title.trim(),
       description: description.trim() || null, // Use description state, allowing null for empty
       assigned_to: assignedTo,
       deadline: deadline || null,
@@ -224,7 +174,7 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
   // Get minimum date for deadline (today)
   const getMinDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
   };
 
   // const rewardTypes array is no longer directly used for the primary selector, but parts might be reused or adapted if old types are still supported elsewhere.
@@ -259,31 +209,6 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             {errors.title && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.title}</p>}
           </div>
 
-          {/* Task Description - R27: Added character counter */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)]">
-                {t('taskForm.descriptionLabel')}
-              </label>
-              <CharacterCounter current={description?.length ?? 0} max={TEXT_LIMITS.missionDescription} />
-            </div>
-            <textarea
-              id="description"
-              value={description ?? ''}
-              onChange={(e) => setDescription(e.target.value)}
-              className={`input-field w-full min-h-[40px] resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : ''}`}
-              placeholder={t('taskForm.descriptionPlaceholder')}
-              rows={1}
-              maxLength={TEXT_LIMITS.missionDescription}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${target.scrollHeight}px`;
-              }}
-            />
-            {errors.description && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.description}</p>}
-          </div>
-          
           {/* Assign To */}
           <div>
             <label htmlFor="assignedTo" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
@@ -322,37 +247,21 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
               </>
             )}
           </div>
-          
-          {/* Deadline */}
-          <div>
-            <label htmlFor="deadline" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
-              <Calendar size={16} className="mr-1" />
-              {t('taskForm.deadlineLabel')}
-            </label>
-            <input
-              type="date"
-              id="deadline"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              min={getMinDate()}
-              className="input-field w-full"
-            />
-          </div>
-          
+
           {/* Contract Type Selector */}
           <div className="mb-4">
             <label htmlFor="contractType" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
               <Award size={16} className="mr-1" />
               {t('taskForm.contractTypeLabel')}
             </label>
-            <select 
+            <select
               id="contractType"
               value={contractType}
               onChange={(e) => {
                 const newContractType = e.target.value as 'bounty' | 'credit';
                 setContractType(newContractType);
                 // Reset rewardText when changing contract type
-                setRewardText(newContractType === 'credit' ? '1' : ''); 
+                setRewardText(newContractType === 'credit' ? '1' : '');
               }}
               className="input-field w-full"
             >
@@ -414,6 +323,51 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             </div>
           )}
 
+          <p className="text-sm text-white/60">{t(contractType === 'credit' ? 'workflow.rewardHintCredits' : 'workflow.rewardHintDirect')}</p>
+          <details className="optional-details" open={detailsOpen} onToggle={event => setDetailsOpen(event.currentTarget.open)}>
+            <summary>{t('workflow.moreDetails')}</summary>
+            <div className="space-y-4 pt-3">
+          {/* Task Description - R27: Added character counter */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)]">
+                {t('taskForm.descriptionLabel')}
+              </label>
+              <CharacterCounter current={description?.length ?? 0} max={TEXT_LIMITS.missionDescription} />
+            </div>
+            <textarea
+              id="description"
+              value={description ?? ''}
+              onChange={(e) => setDescription(e.target.value)}
+              className={`input-field w-full min-h-[40px] resize-none ${errors.description ? 'border-red-500 focus:ring-red-500' : ''}`}
+              placeholder={t('taskForm.descriptionPlaceholder')}
+              rows={1}
+              maxLength={TEXT_LIMITS.missionDescription}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${target.scrollHeight}px`;
+              }}
+            />
+            {errors.description && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.description}</p>}
+          </div>
+
+          {/* Deadline */}
+          <div>
+            <label htmlFor="deadline" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <Calendar size={16} className="mr-1" />
+              {t('taskForm.deadlineLabel')}
+            </label>
+            <input
+              type="date"
+              id="deadline"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              min={getMinDate()}
+              className="input-field w-full"
+            />
+          </div>
+
           {/* Proof Required Checkbox with enhanced mobile touch targets */}
           <div className="flex items-center py-2">
             <input
@@ -428,12 +382,16 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask }: Tas
             </label>
           </div>
 
+            </div>
+          </details>
+
           {/* Enhanced mobile-friendly submit button */}
           <AppButton
             type="submit"
             variant="cta"
             fullWidth
             loading={isSubmitting}
+            disabled={loading || friends.length === 0}
             className="mt-4 sm:mt-2"
           >
             {isSubmitting ? (editingTask ? t('taskForm.submitButton.saving') : t('taskForm.submitButton.creating')) : (editingTask ? t('taskForm.submitButton.saveChanges') : t('taskForm.submitButton.createContract', { noun }))}

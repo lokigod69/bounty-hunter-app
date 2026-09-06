@@ -10,7 +10,7 @@ import { MODE_ACCENT_HEX, MODE_ACCENT_RGB } from './modeAccents';
 // ============================================================================
 
 export type ModalRole = 'assignee' | 'creator' | 'store';
-export type ModalState = 'pending' | 'review' | 'rejected' | 'completed' | 'overdue' | 'archived';
+export type ModalState = 'pending' | 'in_progress' | 'review' | 'rejected' | 'completed' | 'overdue' | 'archived';
 
 // ============================================================================
 // Mode Colors
@@ -59,33 +59,12 @@ export interface RoleConfig {
   headerIcon: 'Target' | 'Stamp' | 'Coins' | 'ListChecks' | 'ClipboardList' | 'Heart' | 'PenSquare' | 'Gift';
 }
 
-// R10: Mode-aware role labels for different contexts
-export const roleConfigByMode: Record<ThemeId, Record<ModalRole, RoleConfig>> = {
-  guild: {
-    assignee: { headerLabel: 'Your mission', headerIcon: 'Target' },
-    creator: { headerLabel: 'Your contract', headerIcon: 'Stamp' },
-    store: { headerLabel: 'Bounty reward', headerIcon: 'Gift' },
-  },
-  family: {
-    assignee: { headerLabel: 'Your task', headerIcon: 'ListChecks' },
-    creator: { headerLabel: 'You set this task', headerIcon: 'ClipboardList' },
-    store: { headerLabel: 'Family reward', headerIcon: 'Gift' },
-  },
-  couple: {
-    assignee: { headerLabel: 'For you', headerIcon: 'Heart' },
-    creator: { headerLabel: 'You set this task', headerIcon: 'ClipboardList' },
-    store: { headerLabel: 'Shared treat', headerIcon: 'Gift' },
-  },
+// Relationship and appearance do not change the meaning of a mission.
+export const roleConfig: Record<ModalRole, RoleConfig> = {
+  assignee: { headerLabel: 'workflow.forYou', headerIcon: 'Target' },
+  creator: { headerLabel: 'workflow.sentByYou', headerIcon: 'Stamp' },
+  store: { headerLabel: 'product.storeTitle', headerIcon: 'Gift' },
 };
-
-// R10: Get role config for a specific mode
-export function getRoleConfig(mode: ThemeId, role: ModalRole): RoleConfig {
-  const forMode = roleConfigByMode[mode] ?? roleConfigByMode.guild;
-  return forMode[role];
-}
-
-// Legacy flat roleConfig for backwards compatibility
-export const roleConfig: Record<ModalRole, RoleConfig> = roleConfigByMode.guild;
 
 // ============================================================================
 // State Configuration
@@ -106,6 +85,9 @@ export const stateConfig: Record<ModalState, StateConfig> = {
     color: '#f59e0b',
     colorRgb: '245, 158, 11',
     hasBorderAccent: false,
+  },
+  in_progress: {
+    labelKey: 'taskStatus.inProgress', icon: 'Clock', color: '#f59e0b', colorRgb: '245, 158, 11', hasBorderAccent: false,
   },
   review: {
     labelKey: 'taskStatus.review',
@@ -181,8 +163,9 @@ export function mapTaskStatusToModalState(
 
   switch (status) {
     case 'pending':
-    case 'in_progress':
       return 'pending';
+    case 'in_progress':
+      return 'in_progress';
     case 'review':
       return 'review';
     case 'completed':

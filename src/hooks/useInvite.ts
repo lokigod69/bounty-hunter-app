@@ -5,14 +5,12 @@
 // - getOrCreateInviteLink(): builds the full /invite/<token> URL for the current user
 // - redeemInvite(token): redeems a token into an accepted friendship
 // - shareInviteLink(): navigator.share with clipboard-copy fallback
-// - useRedeemPendingInvite(): redeems a token stashed pre-login exactly once
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
+import { buildInviteUrl } from '../lib/publicAppUrl';
 
 // localStorage key holding a token captured while the recipient was logged out.
 export const PENDING_INVITE_KEY = 'pending_invite_token';
@@ -41,51 +39,55 @@ export function useInvite() {
       throw new Error(res?.message || t('invite.error'));
     }
 
-    return `${window.location.origin}/invite/${res.token}`;
+    return buildInviteUrl(res.token, window.location.origin, import.meta.env.VITE_PUBLIC_APP_URL);
   }, [t]);
 
   // Redeem a token into an accepted friendship. Never throws - always returns a result.
   const redeemInvite = useCallback(async (token: string): Promise<RedeemResult> => {
-    const { data, error } = await supabase.rpc('redeem_invite' as never, { p_token: token } as never);
+    try {
+      const { data, error } = await supabase.rpc('redeem_invite' as never, { p_token: token } as never);
 
-    if (error) {
-      return { success: false, message: error.message || t('invite.page.error') };
-    }
-
-    const res = data as {
-      success?: boolean;
-      already?: boolean;
-      inviter_id?: string;
-      inviter_name?: string;
-      error?: string;
-      message?: string;
-    } | null;
-
-    if (!res?.success) {
-      let message = res?.message || t('invite.page.error');
-      switch (res?.error) {
-        case 'SELF_INVITE':
-          message = t('invite.page.selfInvite');
-          break;
-        case 'INVALID_INVITE':
-        case 'BAD_TOKEN':
-          message = t('invite.page.invalid');
-          break;
-        case 'NOT_AUTHENTICATED':
-          message = t('invite.page.signInToAccept');
-          break;
-        default:
-          break;
+      if (error) {
+        return { success: false, message: error.message || t('invite.page.error') };
       }
-      return { success: false, message };
+
+      const res = data as {
+        success?: boolean;
+        already?: boolean;
+        inviter_id?: string;
+        inviter_name?: string;
+        error?: string;
+        message?: string;
+      } | null;
+
+      if (!res?.success) {
+        let message = res?.message || t('invite.page.error');
+        switch (res?.error) {
+          case 'SELF_INVITE':
+            message = t('invite.page.selfInvite');
+            break;
+          case 'INVALID_INVITE':
+          case 'BAD_TOKEN':
+            message = t('invite.page.invalid');
+            break;
+          case 'NOT_AUTHENTICATED':
+            message = t('invite.page.signInToAccept');
+            break;
+          default:
+            break;
+        }
+        return { success: false, message };
+      }
+
+      const inviterName = res.inviter_name || undefined;
+      const message = res.already
+        ? t('invite.page.already', { name: inviterName ?? '' })
+        : t('invite.page.success', { name: inviterName ?? '' });
+
+      return { success: true, already: res.already, inviterName, message };
+    } catch {
+      return { success: false, message: t('invite.page.error') };
     }
-
-    const inviterName = res.inviter_name || undefined;
-    const message = res.already
-      ? t('invite.page.already', { name: inviterName ?? '' })
-      : t('invite.page.success', { name: inviterName ?? '' });
-
-    return { success: true, already: res.already, inviterName, message };
   }, [t]);
 
   // Build the link then share it: native share sheet when available, clipboard otherwise.
@@ -122,38 +124,4 @@ export function useInvite() {
   }, [getOrCreateInviteLink, t]);
 
   return { getOrCreateInviteLink, redeemInvite, shareInviteLink };
-}
-
-// Post-login redemption: magic-link/OAuth returns the user to the app origin (not
-// /invite/...), so if a token was stashed while logged out, redeem it here exactly
-// once. Mounted inside the authenticated shell (Layout).
-export function useRedeemPendingInvite(): void {
-  const { user, authLoading } = useAuth();
-  const { redeemInvite } = useInvite();
-  const navigate = useNavigate();
-  const processedRef = useRef(false);
-
-  useEffect(() => {
-    // Wait for auth to settle and require an authenticated user.
-    if (authLoading || !user) return;
-    if (processedRef.current) return;
-
-    const token = localStorage.getItem(PENDING_INVITE_KEY);
-    if (!token) return;
-
-    // Guard against re-running: mark processed and clear the stash immediately so a
-    // re-render (StrictMode double-mount, auth refresh) can't redeem the same token twice.
-    processedRef.current = true;
-    localStorage.removeItem(PENDING_INVITE_KEY);
-
-    (async () => {
-      const result = await redeemInvite(token);
-      if (result.success) {
-        toast.success(result.message);
-        navigate('/friends');
-      } else {
-        toast.error(result.message);
-      }
-    })();
-  }, [user, authLoading, redeemInvite, navigate]);
 }

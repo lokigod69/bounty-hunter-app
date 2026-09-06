@@ -11,13 +11,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { User, Flame } from 'lucide-react';
+import { User, Flame, Gift } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
 import { TaskStatus } from '../types/custom';
 import { useUI } from '../context/UIContext';
 import { BaseCard } from './ui/BaseCard';
 import { Coin } from './visual/Coin';
-import { TypeEmblem } from './visual/TypeEmblem'; // R35: Contract-type gift emblem
 import { useTheme } from '../context/ThemeContext'; // P5: Import useTheme for daily label
 import { useThemeStrings } from '../hooks/useThemeStrings'; // R35: dailyLabel string
 import { getTypeAccentVariant } from '../theme/accentVariants'; // R35: Type-based card accents
@@ -200,11 +199,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
             // R31: Branch on proof_required - if false, skip modal and submit directly.
             : !isCreatorView && (safeStatus === 'in_progress' || safeStatus === 'rejected') && !isArchived
             ? {
-                label: actionLoading
-                  ? 'Submitting...'
-                  : safeStatus === 'rejected'
+                label: safeStatus === 'rejected'
                   ? t('contracts.reject.resubmit')
-                  : 'Complete Task',
+                  : t('contracts.complete'),
                 onClick: async (anchor) => {
                   const proofRequired = task.proof_required === true;
                   if (proofRequired) {
@@ -234,7 +231,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             // Creator in review: Approve button
             : isCreatorView && safeStatus === 'review'
             ? {
-                label: actionLoading ? 'Processing...' : 'Approve',
+                label: t('contracts.approve'),
                 onClick: (anchor) => onApprove && onApprove(id, anchor),
                 loading: actionLoading,
                 variant: 'success',
@@ -254,7 +251,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           // Creator in review: Reject button
           isCreatorView && safeStatus === 'review'
             ? {
-                label: actionLoading ? 'Processing...' : 'Reject',
+                label: t('contracts.reject.confirm'),
                 onClick: () => onReject && onReject(id),
                 loading: actionLoading,
                 variant: 'danger',
@@ -442,25 +439,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <span className="truncate">{actorName}</span>
             </p>
             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-              {/* R30: Reward indicator - coin + amount or emoji */}
-              {reward_text && (
-                <span className="flex items-center gap-1 text-xs">
-                  {reward_type === 'credit' ? (
-                    <Coin size="sm" variant="static" value={parseInt(reward_text, 10) || 0} />
-                  ) : (
-                    // R35: user-picked short emoji still wins; otherwise the mode gift emblem
-                    reward_text.length <= 2 ? (
-                      <span className="text-base" title={reward_text}>
-                        {reward_text}
-                      </span>
-                    ) : (
-                      <TypeEmblem size={32} />
-                    )
-                  )}
-                </span>
-              )}
+              {reward_text && reward_type === 'credit' && <Coin size="sm" variant="static" value={parseInt(reward_text, 10) || 0} />}
             </div>
           </div>
+          {reward_text && reward_type !== 'credit' && <p className="mt-2 flex items-start gap-2 text-sm text-white/75">
+            <Gift size={15} className="mt-0.5 flex-shrink-0 text-[var(--mode-accent)]" aria-hidden="true" />
+            <span className="line-clamp-2 break-words">{reward_text}</span>
+          </p>}
+
         </div>
       </BaseCard>
 

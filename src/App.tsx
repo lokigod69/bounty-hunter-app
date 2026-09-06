@@ -26,6 +26,7 @@ import { Toaster } from 'react-hot-toast';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { useVisualViewport } from './hooks/useVisualViewport';
+import { PENDING_INVITE_KEY } from './hooks/useInvite';
 
 // Protected route component - handles authentication only
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   // Authenticated - render children (profile loading is handled by individual components if needed)
+  const pendingInvite = localStorage.getItem(PENDING_INVITE_KEY);
+  if (pendingInvite) return <Navigate to={`/invite/${encodeURIComponent(pendingInvite)}`} replace />;
   return <>{children}</>;
 }
 

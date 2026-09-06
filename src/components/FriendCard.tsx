@@ -1,11 +1,11 @@
 // src/components/FriendCard.tsx
 // Phase 1: Updated to use BaseCard for consistent styling.
-// R25: Added partner badge and "Set as Partner" action.
 // Card component for displaying friend information.
 
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Profile } from '../types/custom';  // R25: Use custom Profile type
-import { CheckCircle, X, UserX, Trash2, Check, Heart } from 'lucide-react';
+import { X, UserX, Trash2, Check, Plus } from 'lucide-react';
 import { BaseCard } from './ui/BaseCard';
 import { AppButton } from './ui/AppButton';
 
@@ -14,12 +14,10 @@ interface FriendCardProps {
   friendshipId?: string;
   status?: 'accepted' | 'pending';
   isIncoming?: boolean;
-  isPartner?: boolean;  // R25: Whether this friend is the current partner
   onAccept?: (friendshipId: string) => void;
   onReject?: (friendshipId: string) => void;
   onRemove?: (friendshipId: string) => void;
   onCancelSentRequest?: (friendshipId: string) => void;
-  onSetPartner?: (friendId: string) => void;  // R25: Callback to set as partner
 }
 
 export default function FriendCard({
@@ -27,12 +25,10 @@ export default function FriendCard({
   friendshipId,
   status = 'accepted',
   isIncoming = false,
-  isPartner = false,  // R25
   onAccept,
   onReject,
   onRemove,
   onCancelSentRequest,
-  onSetPartner,  // R25
 }: FriendCardProps) {
   const { t } = useTranslation();
 
@@ -102,30 +98,7 @@ export default function FriendCard({
       <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
         {status === 'accepted' && (
           <>
-            {/* R25: Show Partner badge or Set as Partner action */}
-            {/* The mr-2 these three used to carry is now the container's
-                gap-2 — a margin on the last item of a wrapped line is dead
-                space that pushes the line width up for nothing. */}
-            {isPartner ? (
-              <span className="text-teal-400 flex items-center text-sm bg-teal-500/10 px-2 py-1 rounded-full">
-                <Heart size={14} className="mr-1" />
-                {t('friendCard.partnerBadge')}
-              </span>
-            ) : onSetPartner ? (
-              <button
-                onClick={() => onSetPartner(profile.id)}
-                className="text-white/50 hover:text-teal-400 flex items-center text-sm transition-colors"
-                title={t('friendCard.setAsPartner')}
-              >
-                <Heart size={14} className="mr-1 flex-shrink-0" />
-                {t('friendCard.setAsPartner')}
-              </button>
-            ) : (
-              <span className="text-green-400 flex items-center text-sm">
-                <CheckCircle size={16} className="mr-1" />
-                {t('friendCard.friendBadge')}
-              </span>
-            )}
+            <Link to={`/issued?create=1&to=${encodeURIComponent(profile.id)}`} className="inline-flex items-center gap-1 min-h-[44px] text-sm text-[var(--mode-accent)]"><Plus size={16} />{t('workflow.newMission')}</Link>
             {onRemove && friendshipId && (
               <button
                 onClick={() => onRemove(friendshipId)}

@@ -9,10 +9,10 @@ import { Capacitor } from '@capacitor/core';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/custom';  // R25: Use custom Profile type with partner_user_id
-import type { Database } from '../types/database';
 import { ensureProfileForUser } from '../lib/profileBootstrap';
 import toast from 'react-hot-toast';
 import { parseSupabaseAuthCallback } from '../lib/authRedirect';
+import i18n from '../i18n';
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +27,6 @@ interface AuthContextType {
   profileError: Error | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  setPartner: (partnerId: string | null) => Promise<boolean>;  // R25: Set partner for couple mode
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<Error | null>(null);
 
+  const handledAuthUrls = useRef(new Set<string>());
   const ensuringUserIdRef = useRef<string | null>(null);
 
   // Effect 1: Initialize session and set up auth state listener
@@ -89,8 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let listener: PluginListenerHandle | undefined;
     let cancelled = false;
 
-    App.addListener('appUrlOpen', async ({ url }) => {
+    const completeSignIn = async ({ url }: { url: string }) => {
+      if (cancelled || handledAuthUrls.current.has(url)) return;
       const authParams = parseSupabaseAuthCallback(url);
+      if (!authParams.code && !(authParams.accessToken && authParams.refreshToken)) return;
+      // A cold launch may also emit appUrlOpen. Exchange a single-use code once.
+      handledAuthUrls.current.add(url);
 
       try {
         if (authParams.code) {
@@ -104,16 +108,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (error) throw error;
         }
       } catch {
-        // No established imperative i18n pattern exists for this native callback fallback.
-        toast.error('Could not complete sign in. Please try again.');
+        handledAuthUrls.current.delete(url);
+        toast.error(i18n.t('auth.login.unexpectedError'));
       }
-    }).then((handle) => {
+    };
+    App.addListener('appUrlOpen', completeSignIn).then(async (handle) => {
       if (cancelled) {
         handle.remove();
         return;
       }
 
       listener = handle;
+      const launch = await App.getLaunchUrl();
+      if (launch) await completeSignIn(launch);
+    }).catch(() => {
+      if (!cancelled) toast.error(i18n.t('auth.login.unexpectedError'));
     });
 
     return () => {
@@ -229,38 +238,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // R25: Set partner_user_id for couple mode
-  const setPartner = async (partnerId: string | null): Promise<boolean> => {
-    if (!user) {
-      toast.error('You must be logged in to set a partner.');
-      return false;
-    }
-
-    try {
-      const updatePayload = { partner_user_id: partnerId } as unknown as Database['public']['Tables']['profiles']['Update'];
-      const { error } = await supabase
-        .from('profiles')
-        .update(updatePayload)
-        .eq('id', user.id);
-
-      if (error) {
-        toast.error('Failed to set partner. Please try again.');
-        return false;
-      }
-
-      // Update local profile state immediately
-      if (profile) {
-        setProfile({ ...profile, partner_user_id: partnerId });
-      }
-
-      toast.success(partnerId ? 'Partner selected!' : 'Partner cleared.');
-      return true;
-    } catch {
-      toast.error('Failed to set partner. Please try again.');
-      return false;
-    }
-  };
-
   const signOut = async () => {
     try {
       setAuthLoading(true);
@@ -291,7 +268,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profileError,
     signOut,
     refreshProfile,
-    setPartner,  // R25
   };
 
   return (

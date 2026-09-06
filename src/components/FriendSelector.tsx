@@ -1,15 +1,7 @@
-// src/components/FriendSelector.tsx
-// A reusable dropdown component to select from a list of accepted friends.
-// R25: Updated to auto-select partner in couple mode and lock selection.
-
-import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFriends } from '../hooks/useFriends';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../context/ThemeContext';
-import { Heart, AlertCircle } from 'lucide-react';
 import { Spinner } from './ui/Spinner';
-import { avatarFallback } from '../lib/avatar';
 
 interface FriendSelectorProps {
   selectedFriend: string | null;
@@ -18,144 +10,16 @@ interface FriendSelectorProps {
   placeholder?: string;
 }
 
-const FriendSelector: React.FC<FriendSelectorProps> = ({ selectedFriend, setSelectedFriend, className, placeholder }) => {
+/** Every appearance uses the same connected people; selection is always explicit. */
+export default function FriendSelector({ selectedFriend, setSelectedFriend, className = '', placeholder }: FriendSelectorProps) {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, profile } = useAuth();
-  const { theme } = useTheme();
+  const { user } = useAuth();
   const { friends, loading, error } = useFriends(user?.id);
-
-  const acceptedFriends = friends.filter(f => f.status === 'accepted');
-
-  // R25: In couple mode, auto-select partner and lock selection
-  const isCoupleMode = theme.id === 'couple';
-  const partnerId = profile?.partner_user_id;
-  const hasPartnerSet = isCoupleMode && !!partnerId;
-  const partnerInFriends = hasPartnerSet && acceptedFriends.some(f => f.friend?.id === partnerId);
-
-  // R25: Auto-select partner when in couple mode
-  useEffect(() => {
-    if (isCoupleMode && partnerId && partnerInFriends && selectedFriend !== partnerId) {
-      setSelectedFriend(partnerId);
-    }
-  }, [isCoupleMode, partnerId, partnerInFriends, selectedFriend, setSelectedFriend]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const selectedFriendProfile = acceptedFriends.find(f => f.friend.id === selectedFriend)?.friend;
-
-  if (loading) {
-    return (
-      <div className="flex items-center gap-2 text-slate-400">
-        <Spinner size="sm" />
-        <span>{t('friendSelector.loading')}</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-red-500">{t('friendSelector.error')}</div>;
-  }
-
-  // R25: In couple mode, show error if no partner is set
-  if (isCoupleMode && !hasPartnerSet) {
-    return (
-      <div className={`p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3 ${className}`}>
-        <AlertCircle size={20} className="text-amber-400 flex-shrink-0" />
-        <span className="text-amber-200 text-sm">{t('friendSelector.selectPartnerFirst')}</span>
-      </div>
-    );
-  }
-
-  // R25: In couple mode with partner, show locked selection
-  if (isCoupleMode && hasPartnerSet && partnerInFriends) {
-    const partnerProfile = acceptedFriends.find(f => f.friend?.id === partnerId)?.friend;
-    if (partnerProfile) {
-      return (
-        <div className={`p-3 bg-gray-800/80 border border-[var(--mode-accent-muted)] rounded-lg flex items-center gap-3 ${className}`}>
-          <img
-            src={partnerProfile.avatar_url || avatarFallback(partnerProfile.email)}
-            alt={partnerProfile.display_name || t('friendSelector.partnerAlt')}
-            className="w-8 h-8 rounded-full border-2 border-[var(--mode-accent)]"
-          />
-          <span className="font-medium flex-1">{partnerProfile.display_name}</span>
-          <Heart size={16} className="text-[var(--mode-accent)]" />
-        </div>
-      );
-    }
-  }
-
-  return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3 bg-gray-800/80 border border-gray-700 rounded-lg focus:ring-2 focus:ring-[var(--mode-accent)] focus:border-[var(--mode-accent)] outline-none transition flex items-center justify-between"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        {selectedFriendProfile ? (
-          <div className="flex items-center gap-3">
-            <img
-              src={selectedFriendProfile.avatar_url || avatarFallback(selectedFriendProfile.email)}
-              alt={selectedFriendProfile.display_name || t('friendSelector.avatarAlt')}
-              className="w-8 h-8 rounded-full"
-            />
-            <span className="font-medium">{selectedFriendProfile.display_name}</span>
-          </div>
-        ) : (
-          <span className="text-gray-400">{placeholder || t('friendSelector.placeholder')}</span>
-        )}
-        <svg className={`w-5 h-5 text-gray-400 transform transition-transform ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-dropdown w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {acceptedFriends.length > 0 ? (
-            <ul tabIndex={-1} role="listbox" aria-label={t('friendSelector.listLabel')}>
-              {acceptedFriends.map(({ friend }) => {
-                if (!friend) return null;
-                return (
-                  <li
-                    key={friend.id}
-                    onClick={() => {
-                      setSelectedFriend(friend.id);
-                      setIsOpen(false);
-                    }}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-700 cursor-pointer transition-colors"
-                    role="option"
-                    aria-selected={selectedFriend === friend.id}
-                  >
-                    <img
-                      src={friend.avatar_url || avatarFallback(friend.email)}
-                      alt={friend.display_name || t('friendSelector.avatarAlt')}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span className="font-medium">{friend.display_name}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="p-3 text-center text-gray-400">{t('friendSelector.empty')}</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default FriendSelector;
+  if (loading) return <div className="flex items-center gap-2 text-slate-400"><Spinner size="sm" />{t('friendSelector.loading')}</div>;
+  if (error) return <p role="alert" className="text-red-400">{t('friendSelector.error')}</p>;
+  return <select value={selectedFriend || ''} onChange={event => setSelectedFriend(event.target.value)}
+    aria-label={placeholder || t('friendSelector.placeholder')} className={`input-field w-full ${className}`}>
+    <option value="">{friends.length ? (placeholder || t('friendSelector.placeholder')) : t('friendSelector.empty')}</option>
+    {friends.map(({ friend }) => <option key={friend.id} value={friend.id}>{friend.display_name || friend.email}</option>)}
+  </select>;
+}

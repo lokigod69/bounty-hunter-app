@@ -1,170 +1,17 @@
-// src/theme/themes.ts
-// P1: Theme System - Theme definitions for Guild, Family, and Couple modes
+import type { ThemeDefinition, ThemeId } from './theme.types';
 
-import { ThemeDefinition, ThemeId } from './theme.types';
-
-export const guildTheme: ThemeDefinition = {
-  id: 'guild',
-  strings: {
-    appName: 'Bounty Hunter',
-    missionSingular: 'mission',
-    missionPlural: 'missions',
-    crewLabel: 'crew',
-    rewardSingular: 'reward',
-    rewardPlural: 'rewards',
-    tokenSingular: 'credit',
-    tokenPlural: 'credits',
-    inboxTitle: 'Mission Inbox',
-    inboxSubtitle: 'Contracts assigned to you for completion.',
-    friendsTitle: 'Guild',  // R21: Simplified from "Guild Roster"
-    friendsSubtitle: 'Manage your guild members, send invitations, and review pending requests.',
-    friendsTabLabel: 'Guild Members',
-    storeTitle: 'Loot Vault',
-    contractsLabel: 'Contracts',
-    missionsLabel: 'Missions',
-    historyLabel: 'History',
-    issuedPageTitle: 'My Missions',
-    issuedPageSubtitle: 'Missions you\'ve created for others to complete.',
-    sectionDoNowTitle: 'Do this now',
-    sectionWaitingApprovalTitle: 'Waiting for approval',
-    sectionCompletedTitle: 'Recently completed',
-    sectionIssuedSummaryTitle: 'Missions you\'ve issued',
-    storeSubtitle: 'Redeem your credits for epic loot',
-    storeCreditsLabel: 'Your Credits',
-    storeCanAffordLabel: 'You can afford',
-    storeCantAffordLabel: 'Out of reach',
-    storeEmptyTitle: 'No rewards yet',
-    storeEmptyBody: 'Create your first reward to get started.',
-    storeCreateFirstButton: 'Create first reward',
-    dailyLabel: 'Daily mission',
-    streakLabel: 'streak',
-    archiveTitle: 'Completed Contracts',
-    archiveSubtitle: 'Your ledger of fulfilled contracts.',
-    archiveEmptyTitle: 'No contracts completed yet',
-    archiveEmptyBody: 'Finish a mission and it lands here for good.',
-    rankBand0: 'UNSWORN',
-    rankBand1: 'DRIFTER',
-    rankBand2: 'TRACKER',
-    rankBand3: 'IRONMARK',
-    rankBand4: 'THE NAMED',
-  },
-};
-
-export const familyTheme: ThemeDefinition = {
-  id: 'family',
-  strings: {
-    appName: 'Bounty Hunter',
-    missionSingular: 'chore',
-    missionPlural: 'chores',
-    crewLabel: 'family',
-    rewardSingular: 'reward',
-    rewardPlural: 'rewards',
-    tokenSingular: 'credit',  // R24: Unified to 'credits' for consistency
-    tokenPlural: 'credits',
-    inboxTitle: 'Chore Inbox',
-    inboxSubtitle: 'Chores assigned to you for completion.',
-    friendsTitle: 'Family',  // R21: Simplified from "Your Family"
-    friendsSubtitle: 'Manage your family members, send invitations, and review pending requests.',
-    friendsTabLabel: 'Family Members',
-    storeTitle: 'Rewards',   // R21: Simplified from "Reward Store"
-    contractsLabel: 'Chores',
-    missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"
-    historyLabel: 'History',
-    issuedPageTitle: 'My Missions',
-    issuedPageSubtitle: 'Missions you\'ve created for your family to complete.',
-    sectionDoNowTitle: 'Today\'s chores',
-    sectionWaitingApprovalTitle: 'Waiting for approval',
-    sectionCompletedTitle: 'Recently completed',
-    sectionIssuedSummaryTitle: 'Chores you\'ve assigned',
-    storeSubtitle: 'Exchange credits for rewards',  // R24: Changed from 'stars'
-    storeCreditsLabel: 'Your Credits',  // R24: Changed from 'Your Stars'
-    storeCanAffordLabel: 'Within reach',
-    storeCantAffordLabel: 'Keep earning',
-    storeEmptyTitle: 'No rewards yet',
-    storeEmptyBody: 'Add rewards to motivate your family.',
-    storeCreateFirstButton: 'Create first reward',
-    dailyLabel: 'Daily chore',
-    streakLabel: 'streak',
-    archiveTitle: 'Completed Chores',
-    archiveSubtitle: 'A record of everything your family has finished.',
-    archiveEmptyTitle: 'Nothing completed yet',
-    archiveEmptyBody: 'Finish a chore and it will be saved here.',
-    rankBand0: 'NEWCOMER',
-    rankBand1: 'HELPER',
-    rankBand2: 'STEADY HAND',
-    rankBand3: 'KEYSTONE',
-    rankBand4: 'THE HEART',
-  },
-};
-
-export const coupleTheme: ThemeDefinition = {
-  id: 'couple',
-  strings: {
-    appName: 'Bounty Hunter',
-    missionSingular: 'request',
-    missionPlural: 'requests',
-    crewLabel: 'partner',
-    rewardSingular: 'gift',
-    rewardPlural: 'gifts',
-    tokenSingular: 'token',
-    tokenPlural: 'tokens',
-    inboxTitle: 'Request Inbox',
-    inboxSubtitle: 'Requests your partner has sent you.',
-    friendsTitle: 'Partner',  // R21: Simplified from "Your Partner"
-    friendsSubtitle: 'Connect with your partner to share requests and gifts.',
-    friendsTabLabel: 'Partner',
-    storeTitle: 'Gifts',      // R21: Simplified from "Gift Store"
-    contractsLabel: 'Requests',
-    missionsLabel: 'Missions',  // R21: Standardized - Tab 2 is always "Missions"
-    historyLabel: 'History',
-    issuedPageTitle: 'My Missions',
-    issuedPageSubtitle: 'Missions you\'ve created for your partner to complete.',
-    sectionDoNowTitle: 'Assigned to you',
-    sectionWaitingApprovalTitle: 'Waiting for approval',
-    sectionCompletedTitle: 'Recently completed',
-    sectionIssuedSummaryTitle: 'Requests you\'ve made',
-    storeSubtitle: 'Claim gifts with your tokens',
-    storeCreditsLabel: 'Your Tokens',
-    storeCanAffordLabel: 'You can afford',
-    storeCantAffordLabel: 'Keep earning',
-    storeEmptyTitle: 'No gifts yet',
-    storeEmptyBody: 'Create gifts to celebrate your moments together.',
-    storeCreateFirstButton: 'Create first gift',
-    dailyLabel: 'Daily moment',
-    streakLabel: 'streak',
-    archiveTitle: 'Completed Requests',
-    archiveSubtitle: 'A timeline of everything you have done together.',
-    archiveEmptyTitle: 'Nothing completed yet',
-    archiveEmptyBody: 'Complete a request and it will live here.',
-    rankBand0: 'NEW FLAME',
-    rankBand1: 'ADMIRER',
-    rankBand2: 'DEVOTED',
-    rankBand3: 'TRUE HEART',
-    rankBand4: 'THE ONE',
-  },
-};
-
+// Persisted IDs stay compatible with existing profiles. These are appearances,
+// never relationship types or authorization boundaries.
 export const themesById: Record<ThemeId, ThemeDefinition> = {
-  guild: guildTheme,
-  family: familyTheme,
-  couple: coupleTheme,
+  guild: { id: 'guild' },
+  family: { id: 'family' },
+  couple: { id: 'couple' },
 };
-
 export const DEFAULT_THEME_ID: ThemeId = 'guild';
-
-// V1 public gating: themes normal users may end up in. Family/Couple stay in
-// code for internal/dev testing (dev builds of ProfileEditModal expose them),
-// but must never surface from stale device state on public pages or for fresh
-// accounts. Single source of truth — onboarding, profile modal, and the
-// ThemeProvider all consume this list.
-export const PUBLIC_THEME_IDS: ThemeId[] = ['guild'];
-
+export const PUBLIC_THEME_IDS: ThemeId[] = ['guild', 'family', 'couple'];
 export function isThemeId(value: unknown): value is ThemeId {
   return value === 'guild' || value === 'family' || value === 'couple';
 }
-
-// Normalize any stored/persisted value to a theme allowed on public surfaces.
 export function toPublicThemeId(value: unknown): ThemeId {
-  return isThemeId(value) && PUBLIC_THEME_IDS.includes(value) ? value : DEFAULT_THEME_ID;
+  return isThemeId(value) ? value : DEFAULT_THEME_ID;
 }
-

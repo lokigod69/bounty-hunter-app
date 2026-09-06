@@ -26,7 +26,7 @@ import {
   ModalRole,
   ModalState,
   modeColors,
-  getRoleConfig,
+  roleConfig,
   stateConfig,
   getModeStyleVars,
 } from '../../theme/modalTheme';
@@ -207,9 +207,9 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
   if (!isOpen) return null;
 
-  // Get configurations - R10: Use mode-aware getRoleConfig
+  // Appearance and semantic state are independent.
   const modeConfig = modeColors[mode];
-  const roleConf = getRoleConfig(mode, role);
+  const roleConf = roleConfig[role];
   const stateConf = stateConfig[state];
   const RoleIcon = roleIconMap[roleConf.headerIcon];
 
@@ -371,7 +371,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                     textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                   }}
                 >
-                  {roleConf.headerLabel}
+                  {t(roleConf.headerLabel)}
                 </span>
               </div>
 
