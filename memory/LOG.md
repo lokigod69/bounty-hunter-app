@@ -4,7 +4,7 @@
 - Built-in imagegen generated the glass frame; a follow-up edit produced actual alpha after the first RGB output exposed black during compositing. Final 512px WebP is 32,952 bytes. Center/exterior alpha verified; draft excluded from production.
 - Updated index.css, BaseCard/AppButton, TaskCard/RewardCard, MissionsHeader/PageHeader and mission grids. Mandalore heading/live copy, no subtitle, clear reflected edges, darker forms, two desktop mission columns, optional appearance unchanged. Removed obsolete animation/material duplication; 116 net source lines deleted.
 - 340 tests/27 files, clean app TypeScript/build, lint 0 errors/3 known warnings. Browser verified 1280 desktop, 390/360 phone, German/Rose, landscape, focus/hover/Escape and sample creation. Evidence and limitations in design/rounds/round-02/verification/README.md. No browser errors; fixture client warnings retained in evidence.
-- Source commit 03f9323 is independently reversible; design/evidence/memory handoff is separate. Push to main remains authorized and is the final delivery step. No live database/account/security changes. Physical iPhone and accessibility OS preference checks remain for device validation; release/security follows the visual milestone.
+- Source commit 03f9323 is independently reversible; design/evidence/memory handoff is separate. Source and design handoff (a4bd2fb) were pushed to origin/main. No live database/account/security changes. Physical iPhone and accessibility OS preference checks remain for device validation; release/security follows the visual milestone.
 
 ## 2026-09-07 — Material and lettering mockups (round 02; approval pending)
 

@@ -17,7 +17,7 @@ Private missions and rewards between connected accounts. One People list support
 - Dependency audit: 2 moderate React Router package findings remain; reviewed major upgrade is next security work. Compatible patches removed the other reported advisories.
 
 ## Latest milestone — Starlight glass A implemented
-- Michael approved round-02 A on 2026-09-07; B/C remain saved future skins. Source commit 03f9323 contains this reversible visual pass separately from the earlier UX work.
+- Michael approved round-02 A on 2026-09-07; B/C remain saved future skins. Source commit 03f9323 is pushed to main and contains this reversible visual pass separately from the earlier UX work.
 - Real Mandalore headings, no Missions subtitle, transparent reflected controls/cards and credit capsule. One generated 32,952-byte RGBA WebP frame; no skin selector or dependency added. Two desktop mission columns and wrapping phone headers; forms remain darker.
 - Browser checked desktop, 390/360px phones, German/Rose, landscape, focus/Escape and successful in-memory mission creation. Final gates: 340/27 tests, clean app TypeScript/build, lint 0 errors/3 known warnings. See [[../design/rounds/round-02/verification/README]].
 - Next: Michael tries A in the working preview; then resume release/security. No service inputs required to inspect the visual result. Physical iPhone performance and OS contrast/transparency emulation remain unverified.
