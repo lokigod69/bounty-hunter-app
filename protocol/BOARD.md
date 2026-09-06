@@ -1,12 +1,12 @@
 # Bounty Hunter board — 2026-09-07
 
-## Owner involvement
-No action needed for the completed UX changes. Release requires access to Apple/Mac/iPhone, Supabase/hosting, chosen public origin/support contact, and email sender domain. Do not paste credentials into chat.
+## Ready for visual review
+**A — Starlight glass implemented.** Preview: http://127.0.0.1:6077/ (sample data). No setup needed. B — Forged relic and C — Astral lens are preserved future options.
 
 | Workstream | Completed | Next | Status |
 |---|---|---|---|
-| main | One workflow; 3 destinations; optional appearance/details; people shortcuts; invite/proof/native auth fixes; 340 tests pass; browser evidence | Release/security implementation and live/device verification | UX complete; public iOS release blocked |
+| main | Simplified workflow + approved A visual implementation 03f9323; browser/gates pass | Michael tries A, then release/security | Visual milestone ready |
 
-Engineering still owes account deletion, privacy/support/report/block flows, actual push and native invite handoff. These are not merely environment variables. Current live 014/015 state is unverified; July findings need reconciliation and the reviewed backup/runbook process. Mac signing and a real-device pass are still required. See docs/product-simplification/RELEASE_REVIEW.md for evidence and responsibilities.
+One People list and recipient-per-mission workflow remain. One 32,952-byte generated glass image; live Mandalore headings; no skin framework. Evidence/limits: design/rounds/round-02/verification/README.md. Revert 03f9323 to undo only this visual pass.
 
-No production data or SQL changed. Baseline 14c92a0 is preserved for rollback. Previous August release plan and detailed milestones remain in protocol/LOG.md and memory/LOG.md; current action source is NEXT_STEP.md.
+Release backlog: docs/product-simplification/RELEASE_REVIEW.md. Live migration reconciliation, account deletion/privacy/abuse controls, actual push/native invitations, auth/email verification and Mac/iPhone/TestFlight work remain. No database changes were made in this pass.

@@ -1,3 +1,19 @@
+## 2026-09-07 — Approved A implemented, source 03f9323
+
+- Michael selected A, with B/C deferred. Relocked DESIGN_SPEC, preserved round-01 spec and all round-02 mockups/prompts/verdicts.
+- Built-in imagegen generated the glass frame; a follow-up edit produced actual alpha after the first RGB output exposed black during compositing. Final 512px WebP is 32,952 bytes. Center/exterior alpha verified; draft excluded from production.
+- Updated index.css, BaseCard/AppButton, TaskCard/RewardCard, MissionsHeader/PageHeader and mission grids. Mandalore heading/live copy, no subtitle, clear reflected edges, darker forms, two desktop mission columns, optional appearance unchanged. Removed obsolete animation/material duplication; 116 net source lines deleted.
+- 340 tests/27 files, clean app TypeScript/build, lint 0 errors/3 known warnings. Browser verified 1280 desktop, 390/360 phone, German/Rose, landscape, focus/hover/Escape and sample creation. Evidence and limitations in design/rounds/round-02/verification/README.md. No browser errors; fixture client warnings retained in evidence.
+- Source commit 03f9323 is independently reversible; design/evidence/memory handoff is separate. Push to main remains authorized and is the final delivery step. No live database/account/security changes. Physical iPhone and accessibility OS preference checks remain for device validation; release/security follows the visual milestone.
+
+## 2026-09-07 — Material and lettering mockups (round 02; approval pending)
+
+- Michael likes the simplified layout but requested more distinctive assets, characteristic heading font, clearer glass including New mission, and removal of the explanatory Missions subtitle. New explicit order: mockups, user green light, implementation, then release/security.
+- Used design-os and built-in imagegen; generated and directly inspected A Starlight glass, B Forged relic, C Astral lens against his screenshot and the existing coin/logo. Saved images, full prompts, brief, review and pending verdict in design/rounds/round-02. Agent recommendation A is not user approval.
+- No source/runtime/config edits. No production push or database work. Existing app remains ad74f3e; mockup/doc changes remain local pending selection. No tests rerun for this image/document-only work. Prior 340-test runtime verification remains the last code check.
+- Recorded practical boundaries: reusable WebP decoration, real Mandalore font for final glyphs, live localized text and counts; proposed 150 kB incremental-decoration target is unmeasured. Exact font/coin/badge drift in generated images is documented; no production sprites claimed complete.
+- Updated current STATE, DECISIONS, design spec status and protocol gate to prevent implementation before Michael's requested approval.
+
 ## 2026-09-07 — First-principles UX simplification, implementation c8a52c3 pushed
 
 - Michael delegated product/design decisions, implementation and direct push. Clean baseline 14c92a0; no live SQL/data mutations.
@@ -7,7 +23,7 @@
 - Compatible dependency patches; 2 moderate router findings remain for security work. App TypeScript clean, 340 tests/27 files pass, lint 0 errors/3 known warnings, build pass (~352 kB main chunk). Actual browser fixtures exercised desktop/phones/landscape/German, creation/review/onboarding/invite recovery/reward editor/login. Production build excludes fixture markers. No real-device or live auth/Realtime evidence claimed.
 - Files: src pages/components/context/theme/i18n/hooks; new publicAppUrl helper/tests, rendered workflow/native auth tests, tests/ux-preview. Code commit c8a52c3 pushed. Design spec, selected mockup, browser screenshots and release review in design/ and docs/product-simplification/; protocol/memory refreshed separately.
 - Release work still includes account deletion/privacy/abuse controls, actual push/native invite handoff, live 014/015 reconciliation, auth/email verification and Mac signing/device TestFlight. Full ownership split: docs/product-simplification/RELEASE_REVIEW.md. No new image-generation service or unrelated infrastructure added.
-- Prior overgrown STATE archived with a superseded warning. Removed obsolete instructions to paste DB passwords or delete an auth account for UX testing; prior apply/runbook evidence preserved. Source implementation reverted with c8a52c3; selective reversals need a focused patch and gates because shared types/locales changed.
+- Prior overgrown STATE archived with a superseded warning. Removed obsolete instructions to paste DB passwords or delete an auth account for UX testing; prior apply/runbook evidence preserved. Source implementation can be reverted with git revert c8a52c3; selective reversals need a focused patch and gates because shared types/locales changed.
 
 # Session Log
 Newest first. Append-only — entries are never rewritten.

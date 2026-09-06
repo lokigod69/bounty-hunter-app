@@ -253,3 +253,12 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Why:** The underlying model is the same pairwise exchange. Modes made the same task behave differently and implied group/parental permissions that do not exist. Relationship tags do not currently change any useful action. Real shared households/child management are separate future permission work.
 **Related choices:** Direct rewards remain the default; credits remain available. Additional mission details and reward image customization expand on request. Email is primary; Google stays secondary on web and is hidden on native until its full compliant social flow is ready. Native auth gains cold-start handling. No new AI, push placeholder or automation was added: real push/account deletion are explicit release work.
 **Evidence:** docs/product-simplification/RELEASE_REVIEW.md, design/DESIGN_SPEC.md and browser screenshots; baseline 14c92a0. UX changes are reversible without a migration.
+
+## 2026-09-07 — Reopen material/lettering direction, keep the simplified workflow
+**Status:** active review gate; no visual direction locked yet.
+**Decision:** Michael accepts the layout but requests a more distinctive asset-driven surface: characteristic Mandalore headings, no unnecessary Missions subtitle, glass revealing stars, authored frames/button details. He explicitly requests mockups → his green light → implementation → release/security work. This supersedes the earlier autonomous design waiver for this new round and reopens round-01 sans page titles.
+**Why:** Clarity of workflow is good, but the rendered surface feels too conventional. Explore rich reusable decoration without making user content/localized labels image-dependent. Three inspected options in design/rounds/round-02; agent recommends A, user verdict pending. Production app unchanged.
+
+## 2026-09-07 — Lock A, defer alternate skins
+
+Michael: “I think we start with number A.” “Maybe start with one first and then delay the others.” This resolves the round-02 approval gate and supersedes round-01 sans page headings. Implement Starlight glass with actual Mandalore and one reusable 32,952-byte RGBA frame, keeping all dynamic text live. B/C remain design history, not a new skin framework or selector. Clear rest states, stronger interaction reflection, and darker form surfaces balance the authored game material with everyday readability. Source 03f9323 remains separately reversible.

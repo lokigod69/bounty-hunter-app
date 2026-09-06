@@ -16,7 +16,13 @@ Private missions and rewards between connected accounts. One People list support
 - No live SQL/account writes or physical-device checks in this pass. No claim of public iOS readiness.
 - Dependency audit: 2 moderate React Router package findings remain; reviewed major upgrade is next security work. Compatible patches removed the other reported advisories.
 
-## Release blockers / next actions
+## Latest milestone — Starlight glass A implemented
+- Michael approved round-02 A on 2026-09-07; B/C remain saved future skins. Source commit 03f9323 contains this reversible visual pass separately from the earlier UX work.
+- Real Mandalore headings, no Missions subtitle, transparent reflected controls/cards and credit capsule. One generated 32,952-byte RGBA WebP frame; no skin selector or dependency added. Two desktop mission columns and wrapping phone headers; forms remain darker.
+- Browser checked desktop, 390/360px phones, German/Rose, landscape, focus/Escape and successful in-memory mission creation. Final gates: 340/27 tests, clean app TypeScript/build, lint 0 errors/3 known warnings. See [[../design/rounds/round-02/verification/README]].
+- Next: Michael tries A in the working preview; then resume release/security. No service inputs required to inspect the visual result. Physical iPhone performance and OS contrast/transparency emulation remain unverified.
+
+## Release blockers / subsequent actions
 1. Reconcile live 014/015 state. Saved July 30 evidence showed profiles RLS OFF and an empty Realtime publication; proposals were still staged August 3. Current live state is unverified. Use approved access, backup and review under the runbooks; never request a password in chat.
 2. Implement account deletion, privacy/support and appropriate abuse-report/block behavior. Implement actual push delivery; current badges are not push.
 3. Verify auth SMTP/templates/redirects and reward email deployment. Set VITE_PUBLIC_APP_URL for native builds; native share/Universal Links remain work.
@@ -32,6 +38,6 @@ Private missions and rewards between connected accounts. One People list support
 - Existing native bundle is stale until rebuilt/synced on Mac. No Apple archive/upload was performed here.
 
 ## Current handoff
-UX simplification implementation c8a52c3 is committed and pushed to origin/main under Michael's explicit authorization. The separate handoff commit contains the design/verification artifacts and memory update. Current resume instructions: protocol/NEXT_STEP.md. Full evidence, remaining engineering work and human setup: docs/product-simplification/RELEASE_REVIEW.md.
+UX simplification implementation c8a52c3 is committed and pushed to origin/main under Michael's explicit authorization. The separate handoff commit contains the design/verification artifacts and memory update. Starlight source is 03f9323; design/history/evidence and handoff are committed separately. Current resume instructions: protocol/NEXT_STEP.md. Full evidence, remaining engineering work and human setup: docs/product-simplification/RELEASE_REVIEW.md.
 
 Prior overgrown state is preserved, explicitly historical, in [[archive/STATE_2026-08-03]]. Do not treat its obsolete instructions as current.
