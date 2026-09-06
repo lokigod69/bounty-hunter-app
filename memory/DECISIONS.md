@@ -270,7 +270,7 @@ Michael: “I think we start with number A.” “Maybe start with one first and
 **Status:** active. Michael: “let's also do B and C”, “have at it”. This supersedes the earlier deferral and authorizes direct implementation, without another mockup approval gate.
 **Decision:** Starlight / Forged / Astral are optional device-local materials in Profile → Appearance, independent of the existing persisted account palette. B has metal/brass framing; C has angular optical glass. Reuse one small generated frame per skin; retain workflow and semantic text. No DB migration, generalized theme engine or skin-specific screens.
 **Why:** The user wants stronger game aesthetics and reversible choice. Three concrete skins only require a local identifier and material CSS, while appearance must not split people or missions into separate spaces.
-**Readability:** ⚠️ Adjacent numeral placement superseded by round 05 below. Live localized numbers remain; a fixed digit alphabet is unnecessary. Equal action geometry preserves color hierarchy; align evidence/reward tops and bottoms. Brief interaction glints replace unused spinning coins and the perpetual Reject scan.
+**Readability:** ⚠️ Adjacent numeral placement and the decision against digit artwork are superseded by rounds 05/06 below. Accessible localized numbers remain. Equal action geometry preserves color hierarchy; align evidence/reward tops and bottoms. Brief interaction glints replace unused spinning coins and the perpetual Reject scan.
 **Evidence:** 59c29e2 and design/rounds/round-03/verification/README.md. Release/security/iPhone work remains the next milestone.
 
 ## 2026-09-07 — Purpose-made shapes and concurrent release work
@@ -285,8 +285,17 @@ Michael: “I think we start with number A.” “Maybe start with one first and
 
 ## 2026-09-07 — Blank-center coins, shorter choices and explicit collection
 
+⚠️ The blank dark faces and visible live numerals in this decision are superseded by round 06 below. Forms, frame corrections and collection behavior remain active.
+
 **Status:** active; directly requested by Michael and implemented in 278f2e2.
 **Decision:** For / Reward / Details; show Gift/Credits and coin choices as native radios. Retain the native recipient picker for growing contact lists and iOS. Three generated gem/enamel medallions hold live localized amounts inside a blank dark center; this supersedes adjacent amounts without introducing a digit-asset alphabet. Tight panel crops use compensated nine-slice widths on clipped surfaces. The six new WebPs total 157,468 bytes across three skins, a measured extension of the round-04 budget.
 **Why:** The amount has an intentional readable place without fighting the old star engraving; every amount and locale remains representable. Cropping existing margins fixes alignment without redrawing frames for each card size. Short explicit choices reduce reading and remove two dropdowns.
 **Collection:** After explicit server success, refresh balance/collection data and show Collected. Ready to enjoy becomes Used via Mark as used, with Undo; no second debit occurs. The fictional preview implements this flow and repeat/insufficient-funds guards; it is not authorization evidence for production.
 **Scope:** A preview-only top toolbar compares open dialogs across skins. Production retains its existing Profile selector. Source/design is reversible; no SQL/Edge deployment or release sign-off in this follow-up.
+
+## 2026-09-07 — Actual numeral artwork shared across physical tokens
+
+**Status:** active, explicitly requested and implemented in b89bfe8. Michael: "the numbers are also the stylish assets basically", "you can put it in each of those, so there's no black void" and "Let's do it like that."
+**Decision:** Replace the gem/enamel coins with filled brushed-metal faces and overlapping rim tabs. Use one generated ivory-platinum 0–9 alphabet across Starlight/Forged/Astral, retaining the actual glyph aspect ratios and cap height. Locale punctuation and accessible full amounts remain text; failed images/high-contrast mode fall back to visible text. This deliberately supersedes the previous live-only visible numeral choice; do not substitute it again without a new user direction.
+**Why:** The user wants the numerals themselves to be tangible authored material that fits the emblem, rather than an ornamental ring around a black void. Shared digits avoid per-value/per-skin asset duplication. Thirteen WebPs total 122,888 bytes; four old coins (97,982 bytes) are removed. All normal form choices remain 48px; long values grow to 112px after a visual check exposed cramped five-digit amounts.
+**Evidence:** Round-06 generated sources/prompts, mechanical exporter and browser screenshots; 415 tests and normal build/type/lint gates. No workflow or database change.

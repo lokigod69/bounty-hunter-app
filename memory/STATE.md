@@ -10,8 +10,8 @@ Private missions and rewards between connected accounts. One People list support
 - Email-first login; Google secondary on web, native email-only. Cold/warm native auth callbacks handled. Public native invitation origin is set in .env.production.
 
 ## Visual milestone — complete
-- Latest user-authorized refinement is pushed in reversible commit **278f2e2**: For / Reward / Details, Gift/Credits radios and five coin amount choices; shorter copy in all 12 locales.
-- Each skin has a new gem/enamel medallion with localized live numbers inside its blank center. This supersedes adjacent numerals. Long values grow to fit; German 12.500 is verified. Six new coin/tight-panel WebPs add 157,468 bytes across A/B/C.
+- Latest visual refinement is pushed in reversible source/design commit **b89bfe8**. Forms from 278f2e2 retain For / Reward / Details, Gift/Credits radios and five coin choices in 12 locales.
+- Round 06 supersedes fantasy gem rings, dark voids and visible live numerals: three solid brushed-metal tokens have projecting rim tabs; one shared 0–9 raster set supplies bright ivory-platinum numbers. Accessible/localized text, image-error and forced-colors fallbacks remain. All 13 WebPs total 122,888 bytes, replacing 97,982 bytes of old art. Ordinary choices remain 48px; long amounts grow to 112px. German 12.500 is verified across A/B/C. [[../design/rounds/round-06/verification/README]].
 - Tight crops and compensated nine-slice widths align clipped mission/form/reward frames with their surfaces. Existing panel/control/portrait assets, equal review actions and quiet interaction glints remain.
 - Claim refreshes balance readers and opens Collected; Ready to enjoy → Mark as used → Used → Undo. The sample adapter supports one debit (24 → 4), duplicate/insufficient-funds rejection and used/undo. Actual purchases require explicit server success; no live credit operations tested.
 - Preview-only top toolbar compares skins with dialogs open. Phone reward tabs wrap translations with equal widths. Browser proof: desktop, 360/390px, German, keyboard coin selection, mission submission, claim/used/undo. [[../design/rounds/round-05/verification/README]]. Preview: http://127.0.0.1:6078/ (fictional data; reload resets it).
@@ -37,6 +37,6 @@ Private missions and rewards between connected accounts. One People list support
 5. Complete older hardcoded strings/CLDR coverage and local-day streak work after launch blockers. Rotate previously exposed database credential through secure service access.
 
 ## Verification and history
-Current UI gate: 413 tests / 34 files; app TypeScript/build pass; lint 0 errors / 3 existing warnings. Preview code is absent from production JS. Earlier security gates (149 PostgreSQL checks, Deno, audit) are recorded in [[../docs/release/RELEASE_STATUS]] and were not rerun for this UI-only follow-up. No public iOS readiness claim.
+Current UI gate: 415 tests / 34 files; app TypeScript/build pass; lint 0 errors / 3 existing warnings. Final round-06 browser checks cover desktop/360px, A/B/C denominations, German large values, accessibility text and Claim/Used/Undo. Preview code is absent from production JS. Earlier security gates (149 PostgreSQL checks, Deno, audit) are recorded in [[../docs/release/RELEASE_STATUS]] and were not rerun for this UI-only follow-up. No public iOS readiness claim.
 
 Prior source: workflow c8a52c3, A 03f9323, B/C 59c29e2. Proposals 011/012/013 have recorded production applies. July 30 test-data wipe retained profiles/Auth accounts; do not repeat it. Old backups may omit data/ACLs. Historical state: [[archive/STATE_2026-08-03]].

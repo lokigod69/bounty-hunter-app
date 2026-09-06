@@ -1,3 +1,11 @@
+## 2026-09-07 — Shared metal numeral assets and solid tokens · b89bfe8
+
+- Michael rejects the fantasy gem rings/black centers and explicitly requests actual reusable digit artwork. Source/design b89bfe8 is pushed to main, separately reversible. No production SQL/service configuration was changed.
+- Built-in imagegen authored a ten-digit atlas and three filled brushed-metal tokens with rim extensions. Two opaque Forged attempts were rejected; final alpha was verified. Mechanical cropping/resizing exports ten 96px-high digits plus three 256px emblems. Sources/prompts/metrics/browser evidence: design/rounds/round-06/.
+- Coin.tsx composes actual glyph assets with preserved proportions across all skins. Full locale-aware accessible text, image-error fallback and forced-colors text are retained. Ordinary one/two-digit choices remain 48px; larger values get up to 112px. skin-styles.css replaces gem faces and removes obsolete color tokens. Four unused prior coins are deleted; new artwork is 122,888 bytes, a net 24,906-byte increase.
+- Verification: 415 tests / 34 files, TypeScript/build, lint 0 errors/3 known warnings, diff check. Browser desktop and 360px A/B/C choices, keyboard 5→10, no horizontal overflow, 12.500 across skins and accessibility tree, sample Claim 24→4/Collected/Used/Undo. Preview reset to English/Starlight and fresh data. Physical iPhone/screen-reader sessions remain unverified.
+- Release/security prerequisites and staged 016/017/018 are unchanged. No new release-readiness claim. Deployment evidence is kept in docs/release/RELEASE_STATUS.md.
+
 ## 2026-09-07 — Mission form, gem coins and collected rewards · 278f2e2
 
 - Pushed reversible source/design commit 278f2e2 to main. GitHub's Vercel status reports deployment completed successfully (Ev24sVb62eVZCLSnbYeBADRsWyUB).

@@ -2,6 +2,13 @@
 
 2026-09-07. Generated with the built-in image generation tool. Sources are preserved in assets/. Astral and the initial rejected Forged use starlight-source.png as their material/proportion reference. The final Forged prompt and alpha correction attempts are in FORGED_ITERATIONS.md. Production export is mechanical cropping, resizing and WebP encoding only.
 
+## Saved production assets
+
+- `src/assets/generated/credit-starlight.webp`, `credit-forged.webp`, `credit-astral.webp` (256px, real alpha).
+- `src/assets/generated/credit-digit-0.webp` through `credit-digit-9.webp` (ten shared glyphs, each 96px high).
+- Originals: [digits](assets/digits-source.png), [Starlight](assets/starlight-source.png), [Forged](assets/forged-source.png), [Astral](assets/astral-source.png).
+- Exact byte sizes/crop coordinates: [asset-metrics.json](asset-metrics.json). Runtime use: `src/components/visual/Coin.tsx`, `src/theme/skin-styles.css`.
+
 ## Digits
 
 ```text

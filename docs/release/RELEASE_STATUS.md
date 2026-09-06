@@ -2,7 +2,7 @@
 
 The visual shape pass is complete. Security engineering has progressed, but the live backend is **not ready for new users**. The access-control repairs below are prepared source, not deployed protection. Do not infer production safety from the sample preview or passing local tests.
 
-Latest UI follow-up: **278f2e2** is pushed to main; Vercel reports completed deployment `Ev24sVb62eVZCLSnbYeBADRsWyUB`. Hosted /login still returns HTTP 200, CSP and DENY. Short forms, readable skin-specific coins, aligned frames and preview collection are verified in [round 05](../../design/rounds/round-05/verification/README.md). Current UI gates: 413 tests / 34 files, app TypeScript/build, lint 0 errors / 3 existing warnings. No SQL/Edge/live reward changes occurred; the earlier security verification below remains historical evidence for its source pass.
+Latest visual follow-up: **b89bfe8** is pushed to main; Vercel reports completed deployment `5fr5Zo2recsnrBtzsE5bKYhuT2gB`. Hosted /login returns HTTP200/CSP/DENY and serves the matching built script `/assets/index-BngwXnUl.js`. Shared 0–9 metal numeral assets and solid A/B/C tokens replace the gem rings/blank centers; see [round 06](../../design/rounds/round-06/verification/README.md). Forms, aligned frames and collection from 278f2e2 remain. Current UI gates: 415 tests / 34 files, app TypeScript/build, lint 0 errors / 3 existing warnings. No SQL/Edge/live reward changes occurred; the earlier security verification below remains historical evidence for its source pass.
 
 ## Verified services and changes
 
