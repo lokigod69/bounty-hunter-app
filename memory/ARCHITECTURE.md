@@ -1,5 +1,5 @@
 # Architecture
-Last verified: 2026-07-24
+Last verified: 2026-09-07
 
 ## Overview
 Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking directly to Supabase — no separate backend server. Supabase provides Postgres with RLS, magic-link auth, Storage (proof/avatar/reward images), Realtime subscriptions, PL/pgSQL RPCs for anything credit-touching, and Deno Edge Functions for notifications. Frontend deploys to Vercel; a Capacitor iOS shell exists but the web app is primary. Local dev runs on port 6075 (see PORTS.md).
@@ -7,21 +7,21 @@ Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking d
 ## Key components
 | Area | Where | Notes |
 |---|---|---|
-| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v6; Layout owns nav/mobile menu plus persistent seal and payout-ceremony layers |
+| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v6; Layout owns three persistent destinations plus persistent seal and payout-ceremony layers |
 | Pages | `src/pages/` | Dashboard (assigned), IssuedPage (created), Friends, ArchivePage, RewardsStorePage, Login, profile edit |
 | UI primitives | `src/components/ui/`, `src/components/modals/` | AppButton, ConfirmModal, ModalShell, MissionModalShell, EvidencePanel; shared LIFO Escape and focus-trap hooks own dialog mechanics |
 | Domain logic | `src/core/` (contracts, credits, proofs, rewards), `src/domain/` | Pure, vitest-tested; keep Supabase I/O out of here |
 | Data hooks | `src/hooks/` | Contract hooks use stale-while-revalidate; `useSignedProofUrl` exchanges private proof paths; `usePayoutWatcher` baselines then diffs hunter-side review→completed credit transitions |
 | Security tests | `src/security/` | Regression tests for email functions, storage policies, launch quick-fixes |
-| Theming | `src/theme/` | Multiple named themes, `useThemeStrings` for theme-flavored copy |
-| i18n | `src/i18n/locales/{en,de}/{translation,quotes}.json` | Every user-facing string goes through i18next; the daily creed is a dedicated bilingual namespace |
+| Theming | `src/theme/` | Shared product vocabulary; optional Mint/Gold/Rose palettes; theme-specific rank flavor only |
+| i18n | `src/i18n/locales/*/{translation,quotes}.json` | Twelve locales, English eager and others lazy; older hardcoded surfaces remain |
 | Supabase client | `src/lib/supabase.ts` | Needs `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local` |
 | DB schema | `supabase/migrations/` | Through 2026-06-11 (storage buckets/policies); generated types in `src/types/database.ts` |
 | Prod SQL process | `db/proposals/`, `docs/runbooks/` | Numbered proposals with up/down SQL + per-proposal prod runbooks |
 | Edge Functions | `supabase/functions/` | notify-reward-creator and legacy Gmail notifiers (need hardening/removal) |
 
 ## Data flow
-Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; only creator task-content edits remain direct table updates pending Phase B. Assignee acceptance uses the existing `set_task_status` caller (`pending → in_progress`). Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions revalidate contract/friend lists without replacing populated UI. The persistent payout watcher performs its own narrow assigned-task fetch, treats the first result as baseline, and emits `bh:payout` plus `bh:credits-changed` only for later credit transitions from review to completed; header/mobile balance readers refetch from that event. Proof files upload to the private `bounty-proofs` bucket before `submit_proof`; `EvidencePanel` renders text plus a one-hour signed image/video/PDF URL for either participant. On delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS). Proposal 011 is live (2026-07-10) and `database.ts` includes all 5 RPCs natively — no client-side type overlay.
+Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; creation and creator content edits also use the applied proposal-012 RPCs. Assignee acceptance uses the existing `set_task_status` caller (`pending → in_progress`). Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions revalidate contract/friend lists without replacing populated UI. The persistent payout watcher performs its own narrow assigned-task fetch, treats the first result as baseline, and emits `bh:payout` plus `bh:credits-changed` only for later credit transitions from review to completed; header/mobile balance readers refetch from that event. Proof files upload to the private `bounty-proofs` bucket before `submit_proof`; `EvidencePanel` renders text plus a one-hour signed image/video/PDF URL for either participant. On delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS). Proposal 011 is live (2026-07-10) and `database.ts` includes all 5 RPCs natively — no client-side type overlay.
 
 ## External services & dependencies that matter
 - Supabase Cloud project (Postgres, Auth, Storage, Edge Functions) — the entire backend; env vars in `.env.local` from `.env.example`.
@@ -31,6 +31,12 @@ Client hooks query Supabase tables directly under RLS. Task lifecycle transition
 ## Conventions
 - Production SQL: proposal in `db/proposals/` + runbook in `docs/runbooks/`, backup first, Saya review required — never apply directly.
 - Business rules go in `src/core`/`src/domain` (pure, tested), not in hooks/components.
-- All strings i18n'd in both en and de; themes supply flavored strings via `useThemeStrings`.
+- New strings have parity in all twelve locales. `useThemeStrings` combines shared product copy with optional rank flavor.
 - Checks: `npm run build`, `npm run lint`, `npm test` (vitest), `npm audit --omit=dev`.
 - Dev server: `npm run dev -- --host 127.0.0.1 --port 6075`.
+
+## 2026-09-07 workflow boundaries
+
+ProtectedRoute sends a retained invite token to InvitePage before FTXGate. InvitePage owns redemption/retry; tokens are cleared on success or explicit dismissal. Native auth listens for appUrlOpen and reads getLaunchUrl, deduplicating callbacks. The public web origin builder rejects non-shareable native origins. There is no native push/deletion endpoint yet.
+
+The separate tests/ux-preview Vite config injects a fictional in-memory Supabase adapter for UI verification only. Production vite.config.ts does not reference that adapter. No fake credentials/data are shipped in the regular build.

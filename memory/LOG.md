@@ -1,3 +1,14 @@
+## 2026-09-07 — First-principles UX simplification, implementation c8a52c3 pushed
+
+- Michael delegated product/design decisions, implementation and direct push. Clean baseline 14c92a0; no live SQL/data mutations.
+- One People list, recipient per mission, Missions/Rewards/People navigation, optional Mint/Gold/Rose appearance. Deleted the mode wizard, partner-only logic, cursor trail, mobile menu, FABs, redundant stats and duplicate theme vocabulary. Core loop and persisted data stay compatible.
+- Simpler forms and onboarding; native select for reward recipients; mission draft refresh fix; custom rewards visible on cards; accepted work labelled In progress. Reward description optional and image customization collapsed. Removed incorrect archive credit total.
+- Fixed private proof paths being discarded, pending invites being lost or delayed until after onboarding, invitation/profile retry handling and native cold/warm auth deduplication. Email-first login; web Google secondary, native email for now.
+- Compatible dependency patches; 2 moderate router findings remain for security work. App TypeScript clean, 340 tests/27 files pass, lint 0 errors/3 known warnings, build pass (~352 kB main chunk). Actual browser fixtures exercised desktop/phones/landscape/German, creation/review/onboarding/invite recovery/reward editor/login. Production build excludes fixture markers. No real-device or live auth/Realtime evidence claimed.
+- Files: src pages/components/context/theme/i18n/hooks; new publicAppUrl helper/tests, rendered workflow/native auth tests, tests/ux-preview. Code commit c8a52c3 pushed. Design spec, selected mockup, browser screenshots and release review in design/ and docs/product-simplification/; protocol/memory refreshed separately.
+- Release work still includes account deletion/privacy/abuse controls, actual push/native invite handoff, live 014/015 reconciliation, auth/email verification and Mac signing/device TestFlight. Full ownership split: docs/product-simplification/RELEASE_REVIEW.md. No new image-generation service or unrelated infrastructure added.
+- Prior overgrown STATE archived with a superseded warning. Removed obsolete instructions to paste DB passwords or delete an auth account for UX testing; prior apply/runbook evidence preserved. Source implementation reverted with c8a52c3; selective reversals need a focused patch and gates because shared types/locales changed.
+
 # Session Log
 Newest first. Append-only — entries are never rewritten.
 When this file exceeds ~300 lines, move the oldest half to `archive/log-2026.md`.

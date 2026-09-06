@@ -1,6 +1,8 @@
 # iOS Ship Runbook — Phase 5 (TestFlight)
 
-Everything Windows-doable is already done (2026-07-15, this repo):
+⚠️ The July preparation record below is historical. Public release is still blocked on engineering and live/device verification; see `../product-simplification/RELEASE_REVIEW.md` (2026-09-07).
+
+Windows preparation recorded 2026-07-15:
 - `@capacitor/status-bar`, `@capacitor/splash-screen`, `@capacitor/keyboard` installed —
   `capacitor.config.ts` referenced all three but none were installed, so the StatusBar/
   SplashScreen/Keyboard config was silently ignored until now. Podfile lists all 5 plugin pods.
@@ -8,7 +10,7 @@ Everything Windows-doable is already done (2026-07-15, this repo):
   (the stale hand-copied junk — .asd files, marketing PNGs, duplicate wav/aif — is gone;
   marketing originals live in `assets-src/marketing/`).
 - Safe-areas: `viewport-fit=cover` is set (index.html), `.safe-top`/`.safe-bottom`
-  utilities applied to header, mobile menu, modal footers; Fab offsets by
+  utilities applied to header, mobile menu, modal footers; the current bottom navigation offsets by
   `env(safe-area-inset-bottom)`.
 - `bountyhunter://auth/callback` scheme registered in Info.plist (CFBundleURLTypes);
   camera/microphone/photo-library usage strings present.
@@ -47,9 +49,9 @@ npx cap open ios         # opens ios/App/App.xcworkspace in Xcode (NOT the .xcod
 Run on a real device (simulator has no haptics and odd keyboard behavior):
 - [ ] Login: email+password AND magic link. The magic-link email opens
       `bountyhunter://auth/callback` → app must land logged-in (appUrlOpen handler
-      in AuthContext exchanges the code).
+      and getLaunchUrl handlers in AuthContext exchange the code; test both warm and cold starts).
 - [ ] Notch/home-indicator: header not under the status bar, modal footer buttons
-      and Fab clear of the home indicator (safe-area CSS).
+      and bottom navigation clear of the home indicator (safe-area CSS).
 - [ ] Status bar: dark style over the app background (StatusBar plugin now active —
       config: style DARK, overlaysWebView false, #090A0F).
 - [ ] Splash: dark splash, auto-hides (SplashScreen plugin now active).

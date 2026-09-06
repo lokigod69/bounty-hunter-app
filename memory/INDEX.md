@@ -1,7 +1,7 @@
 # Bounty Hunter — Memory Index
-Last updated: 2026-07-07
+Last updated: 2026-09-07
 
-> Bounty Hunter is a private missions-and-rewards web app (React 18/Vite/TypeScript + Supabase) for small trusted groups — family, couples, friend circles. One person creates a mission with a credit reward, another completes it (optionally with photo/video proof), the creator approves, credits land, and credits buy custom rewards from a personal rewards store. The project is in a V1 launch-hardening phase: the core loop works, a large security/refactor pass ("codex refactor pass", June 2026) is done, and an uncommitted UI-primitives consolidation sits in the working tree.
+> Private missions and rewards between connected people. The UX simplification is complete; public iOS release work remains. Read [[STATE]] for current truth; older audit and release notes are historical evidence, not current task instructions.
 
 ## Map
 

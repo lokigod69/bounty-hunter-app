@@ -139,6 +139,7 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Why:** The vendor split delivers the durable win (app-code redeploys no longer bust the whole JS cache). Route-chunking a frequently-redeployed Vercel SPA adds the "stale chunk 404 / Failed to fetch dynamically imported module" failure mode after every deploy, which needs reload-on-chunk-error plumbing to be safe — bad trade for ~40 kB gzip on first load. Revisit only if initial-load metrics become a real complaint (e.g. slow-network mobile).
 
 ## 2026-07-11 — Theme resolution: profile is authoritative, device storage is only a cache, public surfaces are guild-only
+⚠️ superseded in part 2026-09-07: see One product / optional appearance below. Profile authority remains; public palettes and authentication choices have changed.
 **Status:** active
 **Decision:** `profiles.theme` is the authority for a logged-in user's theme; `localStorage.bounty_theme` is a cache. Logged-out pages and accounts with `theme=null` can only render `PUBLIC_THEME_IDS` (V1: guild — single source of truth in `src/theme/themes.ts`, consumed by onboarding, ProfileEditModal, and ThemeProvider; guarded by tests in themes.test.ts + launchQuickFixes.test.ts). Logout/account-switch clears the cache; a fresh account gets normalized to guild (cache + profile write); onboarding Next and Skip both persist explicitly. The per-device onboarding flag (`bounty_onboarding_completed`) stores the completing user's id, not `'true'`.
 **Why:** Michael's live two-browser test surfaced the leak: stale `family` localStorage from an earlier session painted the login page yellow for an invite recipient and leaked family strings into a brand-new account (which also skipped onboarding via the stale flag). Internal family/couple testing stays possible via profile.theme on dev accounts.
@@ -200,6 +201,7 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Why:** Faster path back to a working login than the paused-project restore flow; old data not needed for the current testing phase. **Consequences:** (1) the restored schema is the pre-April-2026 state — the credit-write lockdown (20260412*) and storage-policy codification (20260611*) are NOT in it and must be re-applied along with 20260707* (Michael's go still required); (2) real user data, if ever wanted, exists only in the old paused project; (3) direct DB host is IPv6-only — use the session pooler `aws-1-ap-south-1.pooler.supabase.com:5432`, user `postgres.mvbmpcmexkgfairnthux`; (4) Mumbai region means noticeable latency from Europe — acceptable for testing, revisit before real launch.
 
 ## 2026-07-07 — Canonical noun system: Mission / Chore / Request per mode
+⚠️ superseded 2026-09-07: the same mission/reward vocabulary now applies to every appearance.
 **Status:** active
 **Decision:** Michael approved the recommended noun set. The task object is named by mode via the existing `theme.<mode>.*` i18n mechanism: **Mission** (guild), **Chore** (family), **Request** (couple). Store items are plain **Rewards** everywhere ("Bounty" no longer names store items, including guild's `rewardSingular`). **"Bounty" is reserved for the credit pot attached to a mission.** The hardcoded Contract/Mission/Task mixing in `contracts.*`, `taskForm.*`, `navigation.*` and component-level English (e.g. TaskCard status chips) gets purged and routed through theme strings.
 **Why:** Five names for one entity ("Contract, Mission, Task, Chore, Bounty Contract") plus "bounty" double-booked (store item AND task type) made the app feel random — Phase 2.1 of docs/premium-v1/ROADMAP.md.
@@ -235,6 +237,7 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Why:** App code only ever queried `rewards_store`/`collected_rewards`; the duplicate tables were dead weight from an abandoned public-marketplace idea.
 
 ## ~2025 — Magic link (email OTP) auth instead of Google OAuth
+⚠️ superseded in part 2026-09-07: see One product / optional appearance below. Profile authority remains; public palettes and authentication choices have changed.
 **Status:** active ⚠️ rationale unverified
 **Decision:** Auth is Supabase magic-link/OTP only, despite original requirements mentioning Google OAuth. Later hardened via proposal 005 (auth OTP hardening).
 **Why:** Not documented; presumably simpler setup for a private-group app. Revisit only if login friction becomes a complaint.
@@ -243,3 +246,10 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Status:** active ⚠️ unverified
 **Decision:** Backend tables/RPCs for recurring task templates/instances exist but the frontend feature was never built; it is parked, not planned.
 **Why:** Not documented — inferred from absence of UI and the 2025 audit flagging it as orphaned.
+
+## 2026-09-07 — One product / optional appearance
+**Status:** active. Michael delegated the UX/product choice and direct implementation/push in this session.
+**Decision:** One People list; a recipient per mission/reward; three destinations (Missions, Rewards, People). Family, partner and friend relationships do not select separate modes or dashboards. Existing guild/family/couple IDs are retained as Mint/Gold/Rose appearance choices; remove partner-only recipient locks, alternate task nouns and the mode wizard. Keep optional rank flavor behind profile/progress. No schema or data removal.
+**Why:** The underlying model is the same pairwise exchange. Modes made the same task behave differently and implied group/parental permissions that do not exist. Relationship tags do not currently change any useful action. Real shared households/child management are separate future permission work.
+**Related choices:** Direct rewards remain the default; credits remain available. Additional mission details and reward image customization expand on request. Email is primary; Google stays secondary on web and is hidden on native until its full compliant social flow is ready. Native auth gains cold-start handling. No new AI, push placeholder or automation was added: real push/account deletion are explicit release work.
+**Evidence:** docs/product-simplification/RELEASE_REVIEW.md, design/DESIGN_SPEC.md and browser screenshots; baseline 14c92a0. UX changes are reversible without a migration.

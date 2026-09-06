@@ -1,5 +1,5 @@
 # Protocol — Bounty Hunter
-Mode: 2 Milestone  (set 2026-07-07)
+Mode: 1 Autopilot for the 2026-09-07 product simplification pass (Michael explicitly delegated decisions, implementation, and push to main). Default outside this pass: 2 Milestone.
 Brain: memory/ (Second Brain Protocol) — coordination here, memory there. Resume order: this file → NEXT_STEP.md → memory/INDEX.md + memory/STATE.md → verify → work. Closing ritual: brain save first, then NEXT_STEP → BOARD → LOG → Status Block.
 Definition of v1-done: The app is safely usable by a private group in production — uncommitted work verified and committed; production migration state reconciled and recorded; storage buckets/policies confirmed live; task lifecycle writes moved to server RPCs (or explicitly risk-accepted); legacy notification functions hardened or undeployed; `npm run build`, `npm run lint`, `npm test` all green.
 Decision rights: mode-standard, plus one hard deviation — **production SQL is never applied without a backup and Michael's explicit go**, regardless of mode (see db/proposals/ + docs/runbooks/ process).
