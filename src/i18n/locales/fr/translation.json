@@ -534,6 +534,12 @@
     "appearanceHint": "Change seulement le style. Tes contacts, missions et crédits restent identiques.",
     "progress": "Ta progression",
     "people": "Personnes",
-    "storeHint": "Échange des crédits contre les récompenses proposées par tes contacts."
+    "storeHint": "Échange des crédits contre les récompenses proposées par tes contacts.",
+    "skinHint": "Style sur cet appareil",
+    "skins": {
+      "starlight": "Stellaire",
+      "forged": "Forgé",
+      "astral": "Astral"
+    }
   }
 }

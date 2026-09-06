@@ -6,7 +6,7 @@
 // - danger: destructive actions
 // Styling is delegated to the existing CSS button classes so the look stays consistent.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { feedback } from '../../utils/feedback';
 
@@ -37,6 +37,7 @@ export function AppButton({
   onClick,
   ...props
 }: AppButtonProps) {
+  const [pressCount, setPressCount] = useState(0);
   return (
     <button
       className={cn(
@@ -47,11 +48,13 @@ export function AppButton({
       )}
       disabled={disabled || loading}
       onClick={(e) => {
+        setPressCount((count) => count + 1);
         feedback.tap();
         onClick?.(e);
       }}
       {...props}
     >
+      <span key={pressCount} className="button-glint" data-pressed={pressCount > 0 || undefined} aria-hidden="true" />
       {loading ? (
         <span
           className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"

@@ -186,7 +186,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           {/* Left: Cost */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">Cost:</span>
-            <Coin size="sm" variant="static" value={cost} />
+            <Coin size="sm" value={cost} />
           </div>
 
           {/* Right: Profile avatar showing who it's from/to */}

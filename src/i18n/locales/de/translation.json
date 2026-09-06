@@ -534,6 +534,12 @@
     "appearanceHint": "Ändert nur das Aussehen. Kontakte, Missionen und Credits bleiben gleich.",
     "progress": "Dein Fortschritt",
     "people": "Kontakte",
-    "storeHint": "Gib Credits für Belohnungen aus, die deine Kontakte anbieten."
+    "storeHint": "Gib Credits für Belohnungen aus, die deine Kontakte anbieten.",
+    "skinHint": "Design auf diesem Gerät",
+    "skins": {
+      "starlight": "Sternenlicht",
+      "forged": "Schmiede",
+      "astral": "Astral"
+    }
   }
 }

@@ -4,7 +4,7 @@
 // Profile is authoritative and localStorage is only a cache. All three palettes
 // are public appearance options. Logout clears the previous account cache.
 
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { ThemeId, ThemeDefinition } from '../theme/theme.types';
 import {
@@ -16,11 +16,14 @@ import {
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../types/database';
+import { readSkin, SKIN_STORAGE_KEY, type SkinId } from '../theme/skins';
 
 interface ThemeContextType {
   themeId: ThemeId;
   theme: ThemeDefinition;
   setThemeId: (id: ThemeId) => void;
+  skinId: SkinId;
+  setSkinId: (id: SkinId) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -47,6 +50,15 @@ function persistProfileTheme(userId: string, id: ThemeId) {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
+  // Material is a device preference, independent of the account's accent palette.
+  const [skinId, setSkin] = useState<SkinId>(readSkin);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.skin = skinId;
+  }, [skinId]);
+  const setSkinId = (id: SkinId) => {
+    setSkin(id);
+    try { localStorage.setItem(SKIN_STORAGE_KEY, id); } catch { /* Still usable for this session. */ }
+  };
   // ThemeProvider is mounted inside AuthProvider (see App.tsx), so consuming the
   // auth context here is safe and does not create an import cycle (AuthContext
   // never imports ThemeContext).
@@ -155,6 +167,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     themeId,
     theme,
     setThemeId,
+    skinId,
+    setSkinId,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

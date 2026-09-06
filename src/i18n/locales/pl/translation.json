@@ -534,6 +534,12 @@
     "appearanceHint": "Zmienia tylko styl. Osoby, misje i kredyty pozostają te same.",
     "progress": "Twoje postępy",
     "people": "Osoby",
-    "storeHint": "Wydawaj kredyty na nagrody oferowane przez twoje kontakty."
+    "storeHint": "Wydawaj kredyty na nagrody oferowane przez twoje kontakty.",
+    "skinHint": "Wygląd na tym urządzeniu",
+    "skins": {
+      "starlight": "Blask gwiazd",
+      "forged": "Kuty",
+      "astral": "Astralny"
+    }
   }
 }

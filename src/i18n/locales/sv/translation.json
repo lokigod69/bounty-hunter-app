@@ -534,6 +534,12 @@
     "appearanceHint": "Ändrar bara stilen. Personer, uppdrag och krediter är desamma.",
     "progress": "Dina framsteg",
     "people": "Personer",
-    "storeHint": "Använd krediter för belöningar som dina kontakter erbjuder."
+    "storeHint": "Använd krediter för belöningar som dina kontakter erbjuder.",
+    "skinHint": "Stil på den här enheten",
+    "skins": {
+      "starlight": "Stjärnljus",
+      "forged": "Smidd",
+      "astral": "Astral"
+    }
   }
 }

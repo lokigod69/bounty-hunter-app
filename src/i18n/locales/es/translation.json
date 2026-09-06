@@ -534,6 +534,12 @@
     "appearanceHint": "Solo cambia el aspecto. Tus personas, misiones y créditos siguen igual.",
     "progress": "Tu progreso",
     "people": "Personas",
-    "storeHint": "Canjea créditos por recompensas que ofrecen tus contactos."
+    "storeHint": "Canjea créditos por recompensas que ofrecen tus contactos.",
+    "skinHint": "Estilo en este dispositivo",
+    "skins": {
+      "starlight": "Estelar",
+      "forged": "Forjado",
+      "astral": "Astral"
+    }
   }
 }

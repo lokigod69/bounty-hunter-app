@@ -534,6 +534,12 @@
     "appearanceHint": "Cambia solo lo stile. Persone, missioni e crediti restano gli stessi.",
     "progress": "I tuoi progressi",
     "people": "Persone",
-    "storeHint": "Usa i crediti per le ricompense offerte dai tuoi contatti."
+    "storeHint": "Usa i crediti per le ricompense offerte dai tuoi contatti.",
+    "skinHint": "Stile su questo dispositivo",
+    "skins": {
+      "starlight": "Stellare",
+      "forged": "Forgiato",
+      "astral": "Astrale"
+    }
   }
 }

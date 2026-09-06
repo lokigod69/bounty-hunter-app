@@ -1,0 +1,126 @@
+/* Device-local materials. The selected custom property is the only frame used
+   by the board; settings swatches intentionally preview all three. */
+:root, [data-preview-skin="starlight"] {
+  --surface-frame: url('../assets/generated/starlight-frame-alpha.webp');
+  --frame-slice: 80;
+  --frame-width: 24px;
+  --frame-inset: -6px;
+  --frame-rest: .22;
+  --surface-radius: 20px;
+  --control-radius: 14px;
+}
+:root[data-skin="forged"], [data-preview-skin="forged"] {
+  --surface-frame: url('../assets/generated/forged-frame.webp');
+  --frame-slice: 160;
+  --frame-width: 48px;
+  --frame-inset: -8px;
+  --frame-rest: .88;
+  --surface-radius: 12px;
+  --control-radius: 7px;
+}
+:root[data-skin="astral"], [data-preview-skin="astral"] {
+  --surface-frame: url('../assets/generated/astral-frame.webp');
+  --frame-slice: 95;
+  --frame-width: 28px;
+  --frame-inset: -7px;
+  --frame-rest: .56;
+  --surface-radius: 4px;
+  --control-radius: 4px;
+}
+
+.coin { display: inline-flex; align-items: center; justify-content: center; gap: 8px; max-width: 100%; vertical-align: middle; }
+.coin img { flex: none; pointer-events: none; user-select: none; filter: drop-shadow(0 2px 3px #0006); }
+.coin-amount { color: #f7e4ab; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: anywhere; min-width: 0; }
+.coin-xs, .coin-sm { font-size: 16px; }
+.coin-md { font-size: 24px; }
+.coin-lg { font-size: 32px; gap: 12px; }
+.coin-xl { font-size: 36px; gap: 12px; }
+.mission-dialog .mission-panel { border-radius: var(--surface-radius); }
+.mission-reward { min-height: 160px; }
+.mission-actions { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; gap: 16px; max-width: 420px; margin-inline: auto; }
+.mission-actions > button { min-width: 0; min-height: 48px; padding: 12px 20px; font-size: 14px; line-height: 1.5; font-weight: 600; }
+.mission-actions > button:only-child { width: 100%; max-width: 280px; justify-self: center; }
+@media (max-width: 420px) {
+  .mission-actions { gap: 12px; }
+  .mission-actions > button { font-size: 16px; padding-inline: 14px; }
+}
+
+/* A glint runs once on focus/hover and is retriggered by an actual click.
+   The mask limits light to the rim, keeping the label perfectly clear. */
+.button-glint {
+  position: absolute; inset: -1px; border-radius: inherit; padding: 2px;
+  pointer-events: none; opacity: 0;
+  background: linear-gradient(115deg, transparent 38%, #eaffff 49%, transparent 60%) 100% 0 / 300% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+button:enabled > .button-glint[data-pressed], button:enabled:focus-visible > .button-glint { animation: rim-glint 700ms ease-out; }
+@media (hover: hover) { button:enabled:hover > .button-glint { animation: rim-glint 700ms ease-out; } }
+@keyframes rim-glint {
+  0% { background-position: 100% 0; opacity: 0; }
+  20%, 70% { opacity: .8; }
+  100% { background-position: 0% 0; opacity: 0; }
+}
+
+.skin-choice { min-width: 0; color: #abb8ca; font-size: 12px; padding: 4px 0 8px; border-bottom: 2px solid transparent; }
+.skin-choice:hover { color: white; }
+.skin-choice[aria-pressed="true"] { color: white; border-bottom-color: var(--mode-accent); }
+.skin-swatch { display: flex; position: relative; align-items: center; justify-content: center; height: 66px; margin: 2px 0 10px; background: #08151d; border-radius: var(--surface-radius); }
+.skin-swatch::before { content: ''; position: absolute; inset: -4px; border: 22px solid transparent; border-image: var(--surface-frame) var(--frame-slice) / 22px / 0 stretch; pointer-events: none; }
+.skin-swatch > span { width: 18px; height: 18px; border: 1px solid #bff5eb; border-radius: 50%; box-shadow: 0 0 14px #64fff125; }
+[data-preview-skin="forged"] .skin-swatch { background: linear-gradient(145deg, #282923, #080c0c); }
+[data-preview-skin="forged"] .skin-swatch > span { border-radius: 3px; border-color: #c3a35a; transform: rotate(45deg); }
+[data-preview-skin="astral"] .skin-swatch { background: linear-gradient(135deg, #15343e60, #241f4560); }
+[data-preview-skin="astral"] .skin-swatch > span { width: 30px; height: 12px; transform: rotate(-30deg); border-color: #b3c4ff; }
+
+/* B: hardware around the whole navigation, brushed plaques and inset panels. */
+[data-skin="forged"] body { background: radial-gradient(ellipse at 25% 25%, #162220 0%, #0a1112 50%, #030707 100%); }
+[data-skin="forged"] .app-header, [data-skin="forged"] .bottom-navigation {
+  margin: 12px 16px 4px; padding: 6px 8px; position: relative; border-radius: 12px;
+  background: linear-gradient(175deg, #232926f5, #080e0ef5 60%); border: 1px solid #95815b40;
+  box-shadow: 0 8px 28px #0006, inset 0 1px #e6d6a820;
+}
+[data-skin="forged"] .starlight-card { background-color: #101919c9; background-image: linear-gradient(165deg, #aaa38b0e, transparent 45%); }
+[data-skin="forged"] .page-heading { background-image: linear-gradient(177deg, #fff6dc 12%, #b9b7a6 37%, #f2efdf 44%, #655e4e 49%, #d6d0b8 70%, #f6ecd1 90%); filter: drop-shadow(0 2px #191712) drop-shadow(0 0 10px #d3b88112); letter-spacing: .09em; }
+[data-skin="forged"] .mission-panel { background-color: #19231f !important; border-color: #a38b594d !important; box-shadow: inset 0 2px 8px #0006, 0 1px #ecda9f0a; }
+[data-skin="forged"] .mission-dialog { --modal-bg: #0b1214; }
+[data-skin="forged"] .glass-card[role="dialog"] { background-color: #0b1214; }
+[data-skin="forged"] :is(.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link, .mission-views a, .credit-header-link) { --frame-width: 30px; --frame-inset: -5px; background-color: #101d1de6; }
+[data-skin="forged"] .mission-views { background: #060b0db3; border-color: #a38b5940; border-radius: 10px; }
+[data-skin="forged"] .primary-nav-link-active { background: linear-gradient(0deg, #55ebcd0d, transparent); box-shadow: inset 0 -1px #9cdac870; }
+
+/* C: an optical instrument — cut corners, a floating lens and a quiet orbit. */
+[data-skin="astral"] body { background: radial-gradient(ellipse at 75% 25%, #172039 0%, #071521 45%, #030810 100%); }
+[data-skin="astral"] .app-header, [data-skin="astral"] .bottom-navigation {
+  margin: 14px 20px 4px; padding: 4px 8px; position: relative; border-radius: 4px;
+  background: linear-gradient(120deg, #245a662e, #07111cce 38%, #34305d36);
+  border: 1px solid #95e3f026; box-shadow: inset 0 1px #d7f4ff12, 0 6px 22px #0004;
+}
+[data-skin="astral"] .starlight-card { background: linear-gradient(130deg, #24526718, #070f1b66 40%, #44365e1a); }
+[data-skin="astral"] .page-heading { position: relative; width: fit-content; max-width: 100%; background-image: linear-gradient(160deg, #e1fffa 16%, #8dd5dc 40%, #f3fbff 48%, #a4aedc 67%, #f5e8d2 94%); letter-spacing: .08em; }
+[data-skin="astral"] .page-heading::after { content: ''; position: absolute; pointer-events: none; z-index: -1; inset: 2% -8% 2%; border: 1px solid #9ac7f52e; border-radius: 50%; transform: rotate(-11deg); box-shadow: 0 1px #d1abff0a; }
+[data-skin="astral"] .mission-panel { background-color: #112330a8 !important; border-color: #a4d9f140 !important; box-shadow: inset 0 1px #d7f4ff14; }
+[data-skin="astral"] .mission-views { border-radius: 5px; background: #0a13264d; border-color: #b1d2f52e; }
+
+:is([data-skin="forged"], [data-skin="astral"]) :is(.app-header, .bottom-navigation, .mission-dialog, .glass-card[role="dialog"])::before {
+  content: ''; position: absolute; inset: var(--frame-inset); z-index: 3;
+  border: var(--frame-width) solid transparent;
+  border-image: var(--surface-frame) var(--frame-slice) / var(--frame-width) / 0 stretch;
+  opacity: .85; pointer-events: none;
+}
+:is([data-skin="forged"], [data-skin="astral"]) :is(.mission-dialog, .glass-card[role="dialog"])::before { inset: -5px; }
+:is([data-skin="forged"], [data-skin="astral"]) :is(.mission-dialog, .glass-card[role="dialog"]) { border-radius: var(--surface-radius); }
+@media (max-width: 767px), (max-height: 499px) {
+  :is([data-skin="forged"], [data-skin="astral"]) .app-header { margin: 8px 8px 0; padding: 4px 0; }
+  :is([data-skin="forged"], [data-skin="astral"]) .bottom-navigation { margin: 0 8px 8px; padding: 5px 8px max(6px, env(safe-area-inset-bottom)); }
+  [data-skin="forged"] .app-header, [data-skin="forged"] .bottom-navigation { --frame-width: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  button > .button-glint { animation: none !important; display: none; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  :is([data-skin="forged"], [data-skin="astral"]) :is(.app-header, .bottom-navigation, .mission-dialog, .glass-card[role="dialog"])::before,
+  .page-heading::after, .button-glint { display: none; }
+  [data-skin] .mission-panel { background: #0b1523 !important; border-color: #8398ab !important; }
+}

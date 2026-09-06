@@ -295,7 +295,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={`
-          relative z-modal-content
+          mission-dialog relative z-modal-content
           w-full ${isMobile ? 'modal-h-sheet' : 'max-w-2xl modal-h-panel'}
           ${isMobile ? 'rounded-t-2xl' : 'rounded-2xl'}
           flex flex-col
@@ -442,16 +442,16 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 isMobile || !hasBodyContent
                   ? '1fr'
                   : reward
-                  ? 'minmax(0, 2fr) minmax(180px, auto)'
+                  ? 'minmax(0, 1.6fr) minmax(0, 1fr)'
                   : '1fr',
             }}
           >
             {/* Description Column - max height with scroll when needed */}
             {hasBodyContent && (
-            <div className="flex flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-4">
               {description && (
                 <div
-                  className="flex flex-1 flex-col p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
+                  className="mission-panel flex flex-1 flex-col p-4 rounded-xl bg-white/5 border border-white/10 overflow-y-auto"
                   style={{ maxHeight: isMobile ? '40vh' : '50vh' }}
                 >
                   {/* my-auto, not items-center: when the text is short it sits
@@ -466,7 +466,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
               {/* Custom children content */}
               {hasChildren && (
-                <div className="flex-shrink-0">{children}</div>
+                <div className="flex flex-1 min-w-0 flex-col gap-4">{children}</div>
               )}
             </div>
             )}
@@ -479,11 +479,11 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                     ? 'flex-shrink-0'
                     : hasBodyContent
                     ? 'flex'
-                    : 'mx-auto flex w-full max-w-[240px]'
+                    : 'mx-auto flex w-full max-w-sm'
                 }
               >
                 <div
-                  className="w-full p-4 rounded-xl text-center flex flex-col items-center justify-center gap-2"
+                  className="mission-panel mission-reward w-full min-w-0 p-5 rounded-xl text-center flex flex-col items-center justify-center gap-2"
                   style={{
                     backgroundColor: modeConfig.accentSoft,
                     border: `1px solid ${modeConfig.accentMuted}`,
@@ -495,7 +495,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
 
                   <div className="flex flex-col items-center justify-center w-full py-2">
                     {reward.type === 'credit' ? (
-                      <div className="flex items-center justify-center py-2">
+                      <div className="flex flex-col items-center justify-center gap-2 py-2 max-w-full">
                         <Coin
                           value={
                             typeof reward.value === 'number'
@@ -503,8 +503,8 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                               : parseInt(String(reward.value), 10) || 0
                           }
                           size="lg"
-                          variant="static"
                         />
+                        <span className="text-xs text-white/70">{t('product.storeCreditsLabel')}</span>
                       </div>
                     ) : reward.imageUrl ? (
                       <button
@@ -525,7 +525,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                         </div>
                       </button>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 py-2">
+                      <div className="flex flex-col items-center justify-center gap-3 py-2 w-full">
                         <TypeEmblem size={48} />
                         <span
                           className="text-lg font-semibold break-words max-w-full"
@@ -575,7 +575,7 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
         {/* Footer */}
         <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-white/10 space-y-3 safe-bottom">
           {/* Primary/Secondary Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="mission-actions">
             {primaryAction && (
               <AppButton
                 variant={primaryAction.variant === 'danger' ? 'danger' : 'cta'}
@@ -586,7 +586,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 }}
                 loading={primaryAction.loading}
                 disabled={primaryAction.disabled}
-                className="flex-1 sm:flex-none sm:min-w-[140px]"
               >
                 {primaryAction.loading ? 'Loading...' : primaryAction.label}
               </AppButton>
@@ -602,7 +601,6 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
                 }}
                 loading={secondaryAction.loading}
                 disabled={secondaryAction.disabled}
-                className="flex-1 sm:flex-none sm:min-w-[100px]"
               >
                 {secondaryAction.loading ? 'Loading...' : secondaryAction.label}
               </AppButton>

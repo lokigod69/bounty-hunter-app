@@ -15,7 +15,7 @@ const token = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' })) + '.' + btoa(JS
 const session = { access_token: token, refresh_token: 'offline-preview', expires_at: Math.floor(Date.now() / 1000) + 86400, expires_in: 86400, token_type: 'bearer', user };
 const task = (id, title, creator, recipient, status, extra = {}) => ({
   id, title, created_by: creator, assigned_to: recipient, status, description: null, deadline: null,
-  reward_type: 'credit', reward_text: '5', proof_required: false, proof_type: null, proof_url: null, proof_description: null,
+  reward_type: 'credit', reward_text: scenario === 'skin-stress' ? '12500' : '5', proof_required: false, proof_type: null, proof_url: null, proof_description: null,
   rejection_reason: null, is_archived: false, is_daily: false, created_at: now, updated_at: now,
   completed_at: status === 'completed' ? now : null, ...extra,
 });

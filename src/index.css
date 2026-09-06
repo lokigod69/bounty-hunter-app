@@ -1,3 +1,4 @@
+@import './theme/skin-styles.css';
 ﻿/* src/index.css */
 /* Font system: Mandalore (local) for display/headers, Poppins (loaded via <link> in index.html) for body. */
 
@@ -353,7 +354,7 @@ body::after {
     box-shadow: inset 0 1px 0 rgba(220,240,245,.05), 0 6px 24px rgba(0,0,0,.12);
   }
 
-  .btn-cta, .btn-primary, .btn-secondary {
+  .btn-cta, .btn-primary, .btn-secondary, .btn-danger-galactic {
     @apply relative px-5 py-2.5 rounded-[14px] font-semibold inline-flex items-center justify-center gap-2 min-h-[48px] text-base sm:text-sm;
     transition: background-color 160ms ease, box-shadow 160ms ease, transform 100ms ease;
   }
@@ -364,7 +365,7 @@ body::after {
   }
   .btn-secondary:hover { background: rgba(185,207,221,.1); color: white; }
   .btn-cta:active, .btn-primary:active, .btn-secondary:active { transform: scale(.98); }
-  .btn-cta:disabled, .btn-primary:disabled, .btn-secondary:disabled {
+  .btn-cta:disabled, .btn-primary:disabled, .btn-secondary:disabled, .btn-danger-galactic:disabled {
     opacity: .5;
     cursor: not-allowed;
     transform: none;
@@ -456,52 +457,6 @@ body::after {
     color: var(--metallic-silver);
   }
 
-  /* Galactic Danger Button */
-  .btn-danger-galactic {
-    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
-    background-color: rgba(var(--warning-orange-rgb), 0.15);
-    border: 1px solid rgba(var(--warning-orange-rgb), 0.4);
-    color: var(--warning-orange);
-    text-shadow: 0 0 5px rgba(var(--warning-orange-rgb), 0.5);
-    box-shadow: inset 0 0 5px rgba(var(--warning-orange-rgb), 0.2);
-  }
-
-  .btn-danger-galactic::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--warning-orange), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .btn-danger-galactic:hover, .btn-danger-galactic:focus {
-    background-color: rgba(var(--warning-orange-rgb), 0.25);
-    border-color: var(--warning-orange);
-    color: var(--warning-orange);
-    box-shadow: 
-      0 0 8px var(--warning-orange),
-      0 0 15px rgba(var(--warning-orange-rgb), 0.7),
-      inset 0 0 8px rgba(var(--warning-orange-rgb), 0.3);
-    transform: scale(1.03);
-  }
-
-  .btn-danger-galactic:hover::before {
-    animation: scan-line 2s linear infinite;
-    opacity: 0.8;
-  }
-
-  .btn-danger-galactic:active {
-    background-color: rgba(var(--warning-orange-rgb), 0.3);
-    box-shadow:
-      0 0 5px var(--warning-orange),
-      inset 0 0 10px rgba(var(--warning-orange-rgb), 0.5);
-    transform: scale(0.98);
-  }
-
   /* Press response (Apple-design audit): the pressed state must land within
      ~1 frame of pointer-down. Base transitions stay slow (graceful hover and
      release-settle); only the transition INTO :active is shortened. */
@@ -518,41 +473,6 @@ body::after {
 }
 
 /* === MOBILE & TABLET OPTIMIZATIONS === */
-
-/* R19: Unified coin animations */
-@keyframes coin-subtle-spin {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
-}
-
-@keyframes coin-flip {
-  0% { transform: rotateY(0deg) scale(1); }
-  25% { transform: rotateY(90deg) scale(1.1); }
-  50% { transform: rotateY(180deg) scale(1); }
-  75% { transform: rotateY(270deg) scale(1.1); }
-  100% { transform: rotateY(360deg) scale(1); }
-}
-
-/* R26: 2D-safe animation for coins with text (value/label) - rotateZ keeps face readable */
-@keyframes coin-spin-2d {
-  0% { transform: rotateZ(0deg); }
-  100% { transform: rotateZ(360deg); }
-}
-
-.animate-coin-subtle-spin {
-  animation: coin-subtle-spin 4s linear infinite;
-  transform-style: preserve-3d;
-}
-
-.animate-coin-flip {
-  animation: coin-flip 2s ease-in-out infinite;
-  transform-style: preserve-3d;
-}
-
-/* R26: 2D spin for coins with values - never mirrors text */
-.animate-coin-spin-2d {
-  animation: coin-spin-2d 4s linear infinite;
-}
 
 /* Enhanced mobile responsiveness and touch targets */
 /* PHASE 3 FIX: Mobile-first responsive improvements for better touch interaction */
@@ -1424,19 +1344,8 @@ body::after {
 /* Decorative loops and transform motion off under reduced motion.
    Opacity/color press feedback stays (comprehension), movement goes. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-coin-subtle-spin,
-  .animate-coin-flip,
-  .animate-coin-spin-2d {
-    animation: none;
-  }
-
   .cursor-trail-particle {
     display: none;
-  }
-
-  .btn-danger-galactic:hover::before {
-    animation: none; /* scan-line sweep */
-    opacity: 0;
   }
 
   .btn-primary:hover, .btn-primary:active,
@@ -1476,7 +1385,7 @@ body::after {
 /* The RGBA texture carries reflected light only; nine-slice omits its center.
    Real alpha keeps it clear inside transforms too. No per-card blur or JS.
    Pseudo-elements cannot intercept input; the CSS border is the image fallback. */
-.starlight-card, .btn-cta, .btn-primary, .new-mission-link,
+.starlight-card, .btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link,
 .mission-views a[aria-current="page"], .credit-header-link {
   position: relative;
   background-color: rgba(8,18,29,.22);
@@ -1485,39 +1394,42 @@ body::after {
   box-shadow: inset 0 1px 1px rgba(225,247,249,.08), inset 0 -8px 18px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.035), 0 5px 18px rgba(0,0,0,.15);
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 100ms ease;
 }
-.starlight-card { border-radius: 20px; }
-.starlight-card::before, .btn-cta::before, .btn-primary::before,
+.starlight-card { border-radius: var(--surface-radius); }
+.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link, .mission-views a, .credit-header-link { border-radius: var(--control-radius); }
+.starlight-card::before, .btn-cta::before, .btn-primary::before, .btn-danger-galactic::before,
 .new-mission-link::before, .mission-views a[aria-current="page"]::before,
 .credit-header-link::before {
   content: '';
   position: absolute;
-  inset: -6px;
-  border: 24px solid transparent;
-  border-image: url('./assets/generated/starlight-frame-alpha.webp') 80 / 24px / 0 stretch;
+  inset: var(--frame-inset);
+  border: var(--frame-width) solid transparent;
+  border-image: var(--surface-frame) var(--frame-slice) / var(--frame-width) / 0 stretch;
   pointer-events: none;
-  opacity: .22;
+  opacity: var(--frame-rest);
   transition: opacity 160ms ease;
 }
-.btn-cta, .btn-primary, .new-mission-link {
+.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link {
   color: #c2f4e9;
   color: color-mix(in srgb, var(--mode-accent) 40%, white);
 }
 .btn-cta, .new-mission-link { background-color: rgba(var(--mode-accent-rgb),.07); }
-.btn-cta::before, .new-mission-link::before,
+.btn-cta::before, .btn-danger-galactic::before, .new-mission-link::before,
 .mission-views a[aria-current="page"]::before { opacity: .65; }
 .credit-header-link::before { opacity: .4; }
 .starlight-card:focus-within::before, .starlight-card.starlight-card-interactive:active::before,
-.btn-cta:focus-visible::before, .btn-primary:focus-visible::before,
+.btn-cta:focus-visible::before, .btn-primary:focus-visible::before, .btn-danger-galactic:focus-visible::before,
 .new-mission-link:focus-visible::before, .credit-header-link:focus-visible::before { opacity: 1; }
 @media (hover: hover) {
-  .starlight-card.starlight-card-interactive:hover, .btn-cta:hover, .btn-primary:hover, .new-mission-link:hover {
+  .starlight-card.starlight-card-interactive:hover, .btn-cta:hover, .btn-primary:hover, .btn-danger-galactic:hover, .new-mission-link:hover {
     background-color: rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.055);
     box-shadow: inset 0 1px 1px rgba(225,247,249,.18), inset 0 -10px 20px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.06), 0 0 22px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.08);
   }
-  .starlight-card.starlight-card-interactive:hover::before, .btn-cta:hover::before, .btn-primary:hover::before,
+  .starlight-card.starlight-card-interactive:hover::before, .btn-cta:hover::before, .btn-primary:hover::before, .btn-danger-galactic:hover::before,
   .new-mission-link:hover::before, .credit-header-link:hover::before { opacity: 1; }
 }
-.new-mission-link:active, .mission-views a:active { transform: scale(.985); }
+.btn-danger-galactic:active, .new-mission-link:active, .mission-views a:active { transform: scale(.985); }
+[data-skin] .btn-danger-galactic { --glass-accent-rgb: 255,151,132; color: #ffc0ad; background-color: #6b29222b; }
+button:disabled::before { opacity: .25; }
 :where(a, button, [role="button"]):focus-visible { outline: 2px solid #b9f4e8; outline-offset: 4px; }
 .starlight-card[data-reward-type="credit"] { --glass-accent-rgb: 245,215,110; }
 .starlight-card[data-state="completed"] { --glass-accent-rgb: 110,231,183; }
@@ -1525,10 +1437,11 @@ body::after {
 .starlight-card[data-state="rejected"] { --glass-accent-rgb: 253,186,116; }
 .starlight-card[data-state="archived"] { --glass-accent-rgb: 148,163,184; }
 @media (prefers-reduced-motion: reduce) {
-  .starlight-card, .new-mission-link, .mission-views a { transform: none !important; }
+  .starlight-card, .new-mission-link, .mission-views a,
+  .btn-cta, .btn-primary, .btn-secondary, .btn-danger-galactic { transform: none !important; }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .glass-card, .starlight-card, .btn-cta, .btn-primary, .new-mission-link,
+  .glass-card, .starlight-card, .btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link,
   .mission-views, .mission-views a[aria-current="page"], .credit-header-link,
   .app-header, .bottom-navigation {
     /* User contrast preferences also override inline card tints and hover. */
@@ -1537,14 +1450,14 @@ body::after {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  .starlight-card::before, .btn-cta::before, .btn-primary::before,
+  .starlight-card::before, .btn-cta::before, .btn-primary::before, .btn-danger-galactic::before,
   .new-mission-link::before, .mission-views a[aria-current="page"]::before,
   .credit-header-link::before { display: none; }
-  .page-heading { background: none; -webkit-text-fill-color: currentColor; filter: none; }
+  [data-skin] .page-heading { background: none; -webkit-text-fill-color: currentColor; filter: none; }
 }
 @media (forced-colors: active) {
-  .page-heading { background: none; -webkit-text-fill-color: CanvasText; filter: none; }
-  .starlight-card::before, .btn-cta::before, .btn-primary::before,
+  [data-skin] .page-heading { background: none; -webkit-text-fill-color: CanvasText; filter: none; }
+  .starlight-card::before, .btn-cta::before, .btn-primary::before, .btn-danger-galactic::before,
   .new-mission-link::before, .mission-views a[aria-current="page"]::before,
   .credit-header-link::before { display: none; }
 }

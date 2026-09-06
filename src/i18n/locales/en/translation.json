@@ -534,6 +534,12 @@
     "appearanceHint": "Changes the look only. Your people, missions, and credits stay the same.",
     "progress": "Your progress",
     "people": "People",
-    "storeHint": "Spend credits on rewards your people offer you."
+    "storeHint": "Spend credits on rewards your people offer you.",
+    "skinHint": "Skin on this device",
+    "skins": {
+      "starlight": "Starlight",
+      "forged": "Forged",
+      "astral": "Astral"
+    }
   }
 }

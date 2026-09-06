@@ -218,7 +218,7 @@ const UserCredits: React.FC = () => {
     // survives as an aria-label, so screen readers lose nothing.
     return (
       <div className="credit-badge" role="status" aria-label={t('common.loadingCredits')}>
-        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
+        <Coin size="sm" className="mr-2" />
         <span
           className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
           aria-hidden="true"
@@ -231,7 +231,7 @@ const UserCredits: React.FC = () => {
     // Display 0 credits with an error indicator
     return (
       <div className="credit-badge">
-        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
+        <Coin size="sm" className="mr-2" />
         <span>0</span>
       </div>
     );
@@ -241,7 +241,7 @@ const UserCredits: React.FC = () => {
   if (credits === null && !loading) {
      return (
       <div className="credit-badge">
-        <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
+        <Coin size="sm" className="mr-2" />
         <span>0</span>
       </div>
     );
@@ -257,7 +257,7 @@ const UserCredits: React.FC = () => {
   return (
     <div className="credit-badge">
       {/* Decorative coin with ¢ symbol - balance shown as text */}
-      <Coin size="sm" variant="static" label="¢" showValue={false} className="mr-2" />
+      <Coin size="sm" className="mr-2" />
       <span>{formatCredits(animatedValue)}</span>
     </div>
   );

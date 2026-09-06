@@ -16,6 +16,7 @@ import { ConfirmModal } from './ui/ConfirmModal';
 import { themesById } from '../theme/themes';
 import type { ThemeId } from '../theme/theme.types';
 import { MODE_ACCENT_HEX } from '../theme/modeAccents';
+import { SKIN_IDS } from '../theme/skins';
 import { StandingBlock } from './StandingBlock';
 import { useStanding } from '../hooks/useStanding';
 import { useDailyQuote } from '../hooks/useDailyQuote';
@@ -55,7 +56,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const { t } = useTranslation();
   // R16: Also pull profileLoading to handle first-time profile scenario
   const { user, profile, profileLoading, refreshProfile } = useAuth();
-  const { themeId, setThemeId } = useTheme();
+  const { themeId, setThemeId, skinId, setSkinId } = useTheme();
   const { standing, known } = useStanding();
   const dailyQuote = useDailyQuote(known ? standing.unlockedCreedLines : undefined, user?.id);
   const [signingOut, setSigningOut] = useState(false);
@@ -321,11 +322,29 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
                 <LanguageSwitcher />
               </div>
 
-              {/* Appearance changes colors and rank flavor only. */}
+              {/* Material and accent are appearance choices, independent of recipients. */}
               {modeOptions.length > 1 && (
               <div className="p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium block mb-3">{t('workflow.appearance')}</label>
                 <p className="text-xs text-white/60 mb-3">{t('workflow.appearanceHint')}</p>
+                <fieldset className="mb-5">
+                  <legend className="text-xs text-white/70 mb-3">{t('workflow.skinHint')}</legend>
+                  <div className="grid grid-cols-3 gap-3">
+                    {SKIN_IDS.map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        aria-pressed={skinId === id}
+                        className="skin-choice"
+                        data-preview-skin={id}
+                        onClick={() => { setSkinId(id); feedback.tap('toggleOn'); }}
+                      >
+                        <span className="skin-swatch" aria-hidden="true"><span /></span>
+                        <span>{t(`workflow.skins.${id}`)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
                 <div className="flex bg-gray-900/60 rounded-lg p-1 gap-1">
                   {modeOptions.map((option) => {
                     const Icon = option.icon;

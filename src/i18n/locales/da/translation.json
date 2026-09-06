@@ -534,6 +534,12 @@
     "appearanceHint": "Ændrer kun stilen. Personer, missioner og credits forbliver de samme.",
     "progress": "Dine fremskridt",
     "people": "Personer",
-    "storeHint": "Brug credits på belønninger fra dine kontakter."
+    "storeHint": "Brug credits på belønninger fra dine kontakter.",
+    "skinHint": "Stil på denne enhed",
+    "skins": {
+      "starlight": "Stjernelys",
+      "forged": "Smedet",
+      "astral": "Astral"
+    }
   }
 }

@@ -534,6 +534,12 @@
     "appearanceHint": "Verandert alleen de stijl. Je personen, missies en credits blijven hetzelfde.",
     "progress": "Je voortgang",
     "people": "Personen",
-    "storeHint": "Besteed credits aan beloningen die je contacten aanbieden."
+    "storeHint": "Besteed credits aan beloningen die je contacten aanbieden.",
+    "skinHint": "Stijl op dit apparaat",
+    "skins": {
+      "starlight": "Sterrenlicht",
+      "forged": "Gesmeed",
+      "astral": "Astraal"
+    }
   }
 }

@@ -534,6 +534,12 @@
     "appearanceHint": "Mění jen styl. Lidé, mise a kredity zůstávají stejné.",
     "progress": "Tvůj pokrok",
     "people": "Lidé",
-    "storeHint": "Utrácej kredity za odměny od tvých kontaktů."
+    "storeHint": "Utrácej kredity za odměny od tvých kontaktů.",
+    "skinHint": "Vzhled na tomto zařízení",
+    "skins": {
+      "starlight": "Svit hvězd",
+      "forged": "Kovaný",
+      "astral": "Astrální"
+    }
   }
 }

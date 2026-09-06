@@ -51,7 +51,7 @@ export function EvidencePanel({ task }: EvidencePanelProps) {
   return (
     <section
       aria-label={t('contracts.evidence.title')}
-      className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/5 p-4"
+      className="mission-panel flex-1 min-w-0 space-y-4 rounded-xl border border-white/10 bg-white/5 p-4"
     >
       <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
         {t('contracts.evidence.title')}

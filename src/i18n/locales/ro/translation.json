@@ -534,6 +534,12 @@
     "appearanceHint": "Schimbă doar aspectul. Persoanele, misiunile și creditele rămân aceleași.",
     "progress": "Progresul tău",
     "people": "Persoane",
-    "storeHint": "Folosește credite pentru recompensele oferite de contactele tale."
+    "storeHint": "Folosește credite pentru recompensele oferite de contactele tale.",
+    "skinHint": "Stil pe acest dispozitiv",
+    "skins": {
+      "starlight": "Stelar",
+      "forged": "Forjat",
+      "astral": "Astral"
+    }
   }
 }

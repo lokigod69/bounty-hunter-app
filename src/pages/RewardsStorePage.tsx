@@ -294,7 +294,7 @@ const RewardsStorePage: React.FC = () => {
                   )}
                 </div>
                 {/* R32: Coin with value is now the primary balance display */}
-                <Coin size="lg" variant="static" />
+                <Coin size="lg" />
               </div>
             </BaseCard>
           </div>

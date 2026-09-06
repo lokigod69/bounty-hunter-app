@@ -94,7 +94,7 @@ function PayoutFlight({ flight, onDone }: { flight: Flight; onDone: (id: number)
         data-payout-amount={flight.payout.amount}
         style={{ left: centerX - 12, top: centerY - 12 }}
       >
-        <Coin size="xs" variant="static" label="¢" showValue={false} />
+        <Coin size="xs" />
       </div>
       <div
         ref={ringRef}

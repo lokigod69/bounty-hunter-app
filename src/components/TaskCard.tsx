@@ -313,7 +313,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         aria-label={`View details for task: ${title}`}
       >
         <div
-          className="min-h-[60px] flex flex-col"
+          className="min-h-[96px] flex flex-col"
         >
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">
@@ -390,7 +390,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <span className="truncate">{actorName}</span>
             </p>
             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-              {reward_text && reward_type === 'credit' && <Coin size="sm" variant="static" value={parseInt(reward_text, 10) || 0} />}
+              {reward_text && reward_type === 'credit' && <Coin size="sm" value={parseInt(reward_text, 10) || 0} />}
             </div>
           </div>
           {reward_text && reward_type !== 'credit' && <p className="mt-2 flex items-start gap-2 text-sm text-white/75">
