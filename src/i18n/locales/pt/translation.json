@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "O que é preciso fazer?",
     "descriptionLabel": "Descrição (opcional)",
     "descriptionPlaceholder": "Acrescenta mais detalhes sobre a tarefa...",
-    "assignToLabel": "Atribuir a*",
+    "assignToLabel": "Para*",
     "assignToPlaceholder": "Seleciona um amigo",
     "noFriendsWarning": "Tens de adicionar amigos antes de atribuíres tarefas.",
     "goToFriends": "Ver pessoas",
     "deadlineLabel": "Prazo (opcional)",
-    "contractTypeLabel": "Tipo de recompensa",
-    "rewardTypeDirect": "Recompensa personalizada (presente ou objeto)",
-    "rewardTypeCredit": "Recompensa em créditos (moedas)",
-    "customRewardLabel": "Descrição da recompensa*",
+    "contractTypeLabel": "Recompensa",
+    "rewardTypeDirect": "Presente",
+    "rewardTypeCredit": "Créditos",
+    "customRewardLabel": "Detalhes*",
     "customRewardPlaceholder": "Ex.: pequeno-almoço na cama, noite de cinema",
-    "creditRewardLabel": "Recompensa em créditos*",
+    "creditRewardLabel": "Quantidade",
     "creditOptions": {
       "quickTask": "1 crédito - Tarefa rápida",
       "smallChore": "2 créditos - Tarefa pequena",
@@ -300,13 +300,16 @@
       "deleteButton": "Eliminar recompensa",
       "claimButton": "Reclamar",
       "viewButton": "Ver",
-      "markRedeemed": "Marcar como resgatada",
-      "markRedeemedUndo": "Anular resgate",
-      "redeemedBadge": "Resgatada",
-      "redeemedOn": "Resgatada em {{date}}"
+      "markRedeemed": "Marcar como usada",
+      "markRedeemedUndo": "Desfazer",
+      "redeemedBadge": "Usada",
+      "redeemedOn": "Usada em {{date}}",
+      "readyBadge": "Pronta a desfrutar",
+      "spent": "Gastos",
+      "cost": "Custo"
     },
-    "redeemSuccess": "Recompensa marcada como resgatada.",
-    "redeemUndoSuccess": "Recompensa marcada como não resgatada.",
+    "redeemSuccess": "Recompensa marcada como usada.",
+    "redeemUndoSuccess": "A recompensa pode ser usada novamente.",
     "redeemError": "Não foi possível atualizar a recompensa. Tenta novamente.",
     "createModal": {
       "title": "Criar uma recompensa",
@@ -356,7 +359,8 @@
       "invalidFile": "Tipo de ficheiro inválido. Formatos permitidos: {{formats}}.",
       "fileTooLarge": "O ficheiro é demasiado grande. Tamanho máximo: {{size}} MB.",
       "uploadFailed": "Não foi possível carregar"
-    }
+    },
+    "claimSuccess": "Recompensa recebida. Aproveita!"
   },
   "history": {
     "description": "Consulta o teu histórico de contratos concluídos e expirados.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Nada para fazer agora",
     "inboxEmptyBody": "As missões que te enviarem aparecem aqui. Também podes enviar uma no botão acima.",
     "openPeople": "Ver pessoas",
-    "moreDetails": "Adicionar detalhes, prazo ou prova",
-    "rewardHintDirect": "Entregas esta recompensa quando aprovas a missão.",
-    "rewardHintCredits": "Os créditos são adicionados após aprovação e podem ser usados em Recompensas.",
+    "moreDetails": "Mais opções",
+    "rewardHintDirect": "Entrega o presente ao aprovar.",
+    "rewardHintCredits": "Recebidos após aprovação. Usa-os em Recompensas.",
     "appearance": "Aspeto",
     "appearanceHint": "Muda apenas o aspeto. As pessoas, missões e créditos continuam iguais.",
     "progress": "O teu progresso",
@@ -557,6 +561,8 @@
       "starlight": "Estelar",
       "forged": "Forjado",
       "astral": "Astral"
-    }
+    },
+    "for": "Para",
+    "from": "De"
   }
 }

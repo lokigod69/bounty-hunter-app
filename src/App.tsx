@@ -73,7 +73,7 @@ export default function App() {
           {/* Toasts sit above everything, including the critical overlay layer (99000)
               used by ConfirmModal, so success/loading toasts stay visible during confirms */}
           <Toaster
-            containerStyle={{ zIndex: 99500 }}
+            containerStyle={{ zIndex: 99500, top: 'calc(env(safe-area-inset-top, 0px) + var(--toast-top, 16px))' }}
             toastOptions={{
               duration: 3500,
               style: {

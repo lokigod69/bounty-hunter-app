@@ -7,7 +7,7 @@
     "dev": "npx vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "lint": "eslint .",
-    "test": "vitest run src",
+    "test": "vitest run src tests/ux-preview/rewards.test.ts",
     "preview": "vite preview",
     "dev:preview": "vite --config tests/ux-preview/vite.config.ts"
   },

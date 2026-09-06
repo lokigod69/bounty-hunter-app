@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Hvad skal gøres?",
     "descriptionLabel": "Beskrivelse (valgfri)",
     "descriptionPlaceholder": "Tilføj flere oplysninger om opgaven...",
-    "assignToLabel": "Tildel til*",
+    "assignToLabel": "Til*",
     "assignToPlaceholder": "Vælg en ven",
     "noFriendsWarning": "Du skal først tilføje venner for at kunne tildele opgaver.",
     "goToFriends": "Åbn Personer",
     "deadlineLabel": "Frist (valgfri)",
-    "contractTypeLabel": "Belønningstype",
-    "rewardTypeDirect": "Egen belønning (gave eller genstand)",
-    "rewardTypeCredit": "Kreditbelønning (mønter)",
-    "customRewardLabel": "Beskrivelse af belønning*",
+    "contractTypeLabel": "Belønning",
+    "rewardTypeDirect": "Gave",
+    "rewardTypeCredit": "Credits",
+    "customRewardLabel": "Detaljer*",
     "customRewardPlaceholder": "Fx morgenmad på sengen, filmaften",
-    "creditRewardLabel": "Kreditbelønning*",
+    "creditRewardLabel": "Antal",
     "creditOptions": {
       "quickTask": "1 kredit - Hurtig opgave",
       "smallChore": "2 kreditter - Lille pligt",
@@ -300,13 +300,16 @@
       "deleteButton": "Slet belønning",
       "claimButton": "Kræv",
       "viewButton": "Se",
-      "markRedeemed": "Markér som indløst",
-      "markRedeemedUndo": "Fortryd indløsning",
-      "redeemedBadge": "Indløst",
-      "redeemedOn": "Indløst {{date}}"
+      "markRedeemed": "Markér som brugt",
+      "markRedeemedUndo": "Fortryd",
+      "redeemedBadge": "Brugt",
+      "redeemedOn": "Brugt {{date}}",
+      "readyBadge": "Klar til brug",
+      "spent": "Brugt",
+      "cost": "Pris"
     },
-    "redeemSuccess": "Belønningen er markeret som indløst.",
-    "redeemUndoSuccess": "Belønningen er markeret som ikke indløst.",
+    "redeemSuccess": "Belønning markeret som brugt.",
+    "redeemUndoSuccess": "Belønningen kan bruges igen.",
     "redeemError": "Belønningen kunne ikke opdateres. Prøv igen.",
     "createModal": {
       "title": "Opret en ny belønning",
@@ -356,7 +359,8 @@
       "invalidFile": "Ugyldig filtype. Tilladte formater: {{formats}}.",
       "fileTooLarge": "Filen er for stor. Maksimal størrelse: {{size}} MB.",
       "uploadFailed": "Upload mislykkedes"
-    }
+    },
+    "claimSuccess": "Belønning hentet. God fornøjelse!"
   },
   "history": {
     "description": "Se din historik over fuldførte og udløbne kontrakter.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Intet at lave lige nu",
     "inboxEmptyBody": "Missioner sendt til dig vises her. Du kan også sende en med knappen ovenfor.",
     "openPeople": "Åbn Personer",
-    "moreDetails": "Tilføj detaljer, frist eller bevis",
-    "rewardHintDirect": "Du giver denne belønning, når du godkender missionen.",
-    "rewardHintCredits": "Credits tilføjes efter godkendelse og kan bruges under Belønninger.",
+    "moreDetails": "Flere muligheder",
+    "rewardHintDirect": "Giv gaven, når du godkender.",
+    "rewardHintCredits": "Tildeles ved godkendelse. Brug dem i Belønninger.",
     "appearance": "Udseende",
     "appearanceHint": "Ændrer kun stilen. Personer, missioner og credits forbliver de samme.",
     "progress": "Dine fremskridt",
@@ -557,6 +561,8 @@
       "starlight": "Stjernelys",
       "forged": "Smedet",
       "astral": "Astral"
-    }
+    },
+    "for": "Til",
+    "from": "Fra"
   }
 }

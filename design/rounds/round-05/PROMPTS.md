@@ -1,0 +1,9 @@
+# Coin materials · 2026-09-07
+
+User authorized an iteration of the approved A/B/C direction, with readable numbers inside coins, shorter forms and corrected frame alignment. Numbers remain live localized text in a dark, intentionally blank center; no fixed digit alphabet or denomination limit.
+
+## Imagegen prompt
+
+Create a production UI game currency asset sheet, transparent alpha PNG, wide horizontal canvas. Exactly THREE circular coin medallions in a single evenly spaced row, identical diameter, orthographic dead straight-on view. Each coin fills its own square cell with 5% transparent margin; no shadows outside coin, no background, no labels, no letters, NO NUMBERS. Left coin: refined polished silver with mint crystal inset rim, elegant clean Starlight glass. Middle coin: finely engraved antique gold rim with four small deep red ruby insets, forged treasure artifact. Right coin: precision platinum rim with cyan and amethyst crystal bevels, angular futuristic Astral accents but circular silhouette. Crucial functional design: the inner 65% DIAMETER of EACH coin is a perfectly clean, empty, very dark near-black recessed enamel disk with only extremely subtle edge shading; no central symbol, no star, no ornament, no strong highlights on the inner disk. This blank dark center will hold bright dynamic numbers in the app. All beautiful tiny engravings, gem details and bright material reflections must stay in the narrow outer ring only. Premium crafted fantasy game assets, clean readable silhouettes at 48px, sharp precision material reflections. Keep gem details restrained, no spiky extensions. Three separate complete circles, no overlaps. True transparent background outside circles.
+
+Output: `assets/coins-source.png`. Export with `export-assets.cjs` (Sharp; set SHARP_MODULE if installed outside the project). No painted pixels, generated masks or reconstructed alpha; crop, resize and WebP conversion only.

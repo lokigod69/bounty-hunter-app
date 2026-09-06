@@ -4,7 +4,7 @@
 // P4: Added credits summary, theme-aware labels, and aspirational design.
 // Wave B: Refreshes preserve populated grids; reward claims use debit-appropriate feedback.
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -48,7 +48,7 @@ const RewardsStorePage: React.FC = () => {
     loading: creditsLoading,
     refetch: refetchCredits,
   } = useUserCredits();
-  const { collectedRewards, isLoading: isLoadingCollected, fetchCollectedRewards, markRedeemed } = useCollectedRewards();
+  const { collectedRewards, isLoading: isLoadingCollected, error: collectedError, fetchCollectedRewards, markRedeemed } = useCollectedRewards();
 
   // State for modals
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -59,6 +59,9 @@ const RewardsStorePage: React.FC = () => {
   const [bountyToDelete, setBountyToDelete] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<Tab>('available');
+  const claimingRef = useRef(false);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   // Phase 2.8: track which collected reward is mid-redeem to guard double-clicks
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
@@ -87,16 +90,20 @@ const RewardsStorePage: React.FC = () => {
   };
 
   const handleClaim = async (rewardId: string) => {
-    if (isPurchasing) return;
-
-    const result = await purchaseBounty(rewardId);
-
-    if (result?.success) {
-      feedback.success();
-      // R29: Refetch all affected data after successful claim
-      fetchRewards();        // Remove from available list
-      refetchCredits();      // Update balance display
-      fetchCollectedRewards(); // Update collected tab
+    if (claimingRef.current) return;
+    claimingRef.current = true;
+    setClaimingId(rewardId);
+    try {
+      const result = await purchaseBounty(rewardId);
+      if (result?.success) {
+        feedback.success();
+        await Promise.all([fetchRewards(), refetchCredits(), fetchCollectedRewards()]);
+        setActiveTab('collected');
+        categoriesRef.current?.scrollIntoView({ block: 'start' });
+      }
+    } finally {
+      claimingRef.current = false;
+      setClaimingId(null);
     }
   };
 
@@ -145,12 +152,13 @@ const RewardsStorePage: React.FC = () => {
       return <PageState state="loading" message={t('rewards.loading')} />;
     }
 
-    if (rewardsError) {
+    if (activeTab !== 'collected' && rewardsError) {
       return <PageState state="error" message={rewardsError} onRetry={() => fetchRewards()} />;
     }
 
     // Handle collected tab separately (uses different data source)
     if (activeTab === 'collected') {
+      if (collectedError) return <PageState state="error" message={collectedError} onRetry={fetchCollectedRewards} />;
       if (isLoadingCollected && collectedRewards.length === 0) {
         return <PageState state="loading" message={`Loading collected ${strings.rewardPlural}...`} />;
       }
@@ -239,6 +247,8 @@ const RewardsStorePage: React.FC = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             currentCredits={userCredits ?? 0}
+            isClaiming={claimingId === reward.id}
+            claimDisabled={isPurchasing || claimingId !== null}
           />
         ))}
       </div>
@@ -279,14 +289,6 @@ const RewardsStorePage: React.FC = () => {
                   <span className="text-xs text-white/50 uppercase tracking-wide mb-1">
                     {strings.storeCreditsLabel}
                   </span>
-                  {/* V1: Static gold balance number is the currency identity.
-                      (The old shimmer rendered blank for reduced-motion and
-                      high-contrast users — its overrides never restored a color.) */}
-                  <span className="text-display leading-none credit-gold-text">
-                    {/* The headline balance was the one number on this page
-                        rendered raw, directly above a correctly-formatted one. */}
-                    {fmt.number(userCredits ?? 0)}
-                  </span>
                   {typeof totalEarned === 'number' && (
                     <span className="mt-2 text-xs text-white/45 tabular-nums">
                       {t('rewards.lifetimeEarned')} · {fmt.number(totalEarned)}
@@ -294,14 +296,16 @@ const RewardsStorePage: React.FC = () => {
                   )}
                 </div>
                 {/* R32: Coin with value is now the primary balance display */}
-                <Coin size="lg" />
+                <Coin size="lg" value={userCredits ?? 0} />
               </div>
             </BaseCard>
           </div>
         )}
 
         {/* Tabs */}
+        <div ref={categoriesRef} className="reward-categories">
         <TabBar
+          fullWidth
           tabs={[
             { id: 'available', label: t('rewards.tabs.available') },
             { id: 'created', label: t('rewards.tabs.created') },
@@ -309,9 +313,10 @@ const RewardsStorePage: React.FC = () => {
           ]}
           activeId={activeTab}
           onChange={(id) => setActiveTab(id as Tab)}
-          className="mb-6 sm:mb-8"
+          className="mb-6 sm:mb-8 max-w-xl mx-auto"
           aria-label={t('rewards.tabs.label')}
         />
+        </div>
 
         <PageBody>
           {renderContent()}

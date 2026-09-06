@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "What needs to be done?",
     "descriptionLabel": "Description (Optional)",
     "descriptionPlaceholder": "Add more details about the task...",
-    "assignToLabel": "Assign To*",
+    "assignToLabel": "For*",
     "assignToPlaceholder": "Select a friend",
     "noFriendsWarning": "You need to add friends first to assign tasks.",
     "goToFriends": "Open People",
     "deadlineLabel": "Deadline (Optional)",
-    "contractTypeLabel": "Reward Type",
-    "rewardTypeDirect": "Custom reward (gift or item)",
-    "rewardTypeCredit": "Credit reward (coins)",
-    "customRewardLabel": "Reward description*",
+    "contractTypeLabel": "Reward",
+    "rewardTypeDirect": "Gift",
+    "rewardTypeCredit": "Credits",
+    "customRewardLabel": "Details*",
     "customRewardPlaceholder": "e.g., Breakfast in bed, movie night",
-    "creditRewardLabel": "Credit Reward*",
+    "creditRewardLabel": "Amount",
     "creditOptions": {
       "quickTask": "1 Credit - Quick task",
       "smallChore": "2 Credits - Small chore",
@@ -300,13 +300,16 @@
       "deleteButton": "Delete reward",
       "claimButton": "Claim",
       "viewButton": "View",
-      "markRedeemed": "Mark as redeemed",
-      "markRedeemedUndo": "Undo redeemed",
-      "redeemedBadge": "Redeemed",
-      "redeemedOn": "Redeemed {{date}}"
+      "markRedeemed": "Mark as used",
+      "markRedeemedUndo": "Undo",
+      "redeemedBadge": "Used",
+      "redeemedOn": "Used {{date}}",
+      "readyBadge": "Ready to enjoy",
+      "spent": "Spent",
+      "cost": "Cost"
     },
-    "redeemSuccess": "Reward marked as redeemed.",
-    "redeemUndoSuccess": "Reward marked as not redeemed.",
+    "redeemSuccess": "Reward marked as used.",
+    "redeemUndoSuccess": "Reward is ready to use again.",
     "redeemError": "Couldn't update the reward. Please try again.",
     "createModal": {
       "title": "Create a new reward",
@@ -356,7 +359,8 @@
       "invalidFile": "Invalid file type. Allowed formats: {{formats}}.",
       "fileTooLarge": "File is too large. Maximum size is {{size}}MB.",
       "uploadFailed": "Upload failed"
-    }
+    },
+    "claimSuccess": "Reward collected. Enjoy!"
   },
   "history": {
     "description": "Review your history of completed and expired contracts.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Nothing to do right now",
     "inboxEmptyBody": "Missions sent to you appear here. You can also send a mission from the button above.",
     "openPeople": "Open People",
-    "moreDetails": "Add details, a deadline, or proof",
-    "rewardHintDirect": "You provide this reward when you approve the mission.",
-    "rewardHintCredits": "Credits are added after approval and can be spent in Rewards.",
+    "moreDetails": "More options",
+    "rewardHintDirect": "Give this when you approve.",
+    "rewardHintCredits": "Awarded on approval. Spend them in Rewards.",
     "appearance": "Appearance",
     "appearanceHint": "Changes the look only. Your people, missions, and credits stay the same.",
     "progress": "Your progress",
@@ -557,6 +561,8 @@
       "starlight": "Starlight",
       "forged": "Forged",
       "astral": "Astral"
-    }
+    },
+    "for": "For",
+    "from": "From"
   }
 }

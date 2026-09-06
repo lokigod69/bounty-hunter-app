@@ -1,0 +1,10 @@
+/* Compiled only by the explicitly selected offline-preview Vite config. */
+body { padding-top: 36px; box-sizing: border-box; overflow: hidden; }
+:root { --toast-top: 52px; }
+.h-app { height: 100% !important; min-height: 0; }
+#overlay-root > [data-overlay] { top: 36px; }
+.preview-toolbar { position: fixed; inset: 0 0 auto; height: 36px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 4px; background: #070d12; color: #afbdc9; font: 11px system-ui; z-index: 999999; }
+.preview-toolbar > span { color: #ffdb89; font-size: 9px; margin-right: 8px; }
+.preview-toolbar button { min-width: 56px; height: 32px; border: 1px solid transparent; border-radius: 5px; padding: 4px; }
+.preview-toolbar button[aria-pressed="true"] { color: #e0fff7; background: #b2f1e712; border-color: #b5e5d64d; }
+@media (max-width: 400px) { .preview-toolbar { gap: 2px; } .preview-toolbar > span { max-width: 96px; margin-right: 4px; font-size: 8px; } }

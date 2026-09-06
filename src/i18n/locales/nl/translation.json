@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Wat moet er gebeuren?",
     "descriptionLabel": "Beschrijving (optioneel)",
     "descriptionPlaceholder": "Voeg meer details over de taak toe...",
-    "assignToLabel": "Toewijzen aan*",
+    "assignToLabel": "Voor*",
     "assignToPlaceholder": "Selecteer een vriend",
     "noFriendsWarning": "Je moet eerst vrienden toevoegen om taken toe te wijzen.",
     "goToFriends": "Personen openen",
     "deadlineLabel": "Deadline (optioneel)",
-    "contractTypeLabel": "Type beloning",
-    "rewardTypeDirect": "Eigen beloning (geschenk of voorwerp)",
-    "rewardTypeCredit": "Creditbeloning (munten)",
-    "customRewardLabel": "Beschrijving van beloning*",
+    "contractTypeLabel": "Beloning",
+    "rewardTypeDirect": "Cadeau",
+    "rewardTypeCredit": "Credits",
+    "customRewardLabel": "Details*",
     "customRewardPlaceholder": "Bijv. ontbijt op bed, filmavond",
-    "creditRewardLabel": "Creditbeloning*",
+    "creditRewardLabel": "Aantal",
     "creditOptions": {
       "quickTask": "1 credit - Snelle taak",
       "smallChore": "2 credits - Kleine klus",
@@ -300,13 +300,16 @@
       "deleteButton": "Beloning verwijderen",
       "claimButton": "Opeisen",
       "viewButton": "Bekijken",
-      "markRedeemed": "Markeren als verzilverd",
-      "markRedeemedUndo": "Verzilvering ongedaan maken",
-      "redeemedBadge": "Verzilverd",
-      "redeemedOn": "Verzilverd op {{date}}"
+      "markRedeemed": "Markeer als gebruikt",
+      "markRedeemedUndo": "Ongedaan maken",
+      "redeemedBadge": "Gebruikt",
+      "redeemedOn": "Gebruikt op {{date}}",
+      "readyBadge": "Klaar om te gebruiken",
+      "spent": "Besteed",
+      "cost": "Kosten"
     },
-    "redeemSuccess": "Beloning gemarkeerd als verzilverd.",
-    "redeemUndoSuccess": "Beloning gemarkeerd als niet verzilverd.",
+    "redeemSuccess": "Beloning gemarkeerd als gebruikt.",
+    "redeemUndoSuccess": "De beloning is weer klaar voor gebruik.",
     "redeemError": "De beloning kon niet worden bijgewerkt. Probeer het opnieuw.",
     "createModal": {
       "title": "Nieuwe beloning maken",
@@ -356,7 +359,8 @@
       "invalidFile": "Ongeldig bestandstype. Toegestane formaten: {{formats}}.",
       "fileTooLarge": "Het bestand is te groot. Maximale grootte: {{size}} MB.",
       "uploadFailed": "Uploaden mislukt"
-    }
+    },
+    "claimSuccess": "Beloning ontvangen. Geniet ervan!"
   },
   "history": {
     "description": "Bekijk je geschiedenis van voltooide en verlopen contracten.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Nu niets te doen",
     "inboxEmptyBody": "Missies die je ontvangt verschijnen hier. Je kunt er ook zelf een sturen met de knop hierboven.",
     "openPeople": "Personen openen",
-    "moreDetails": "Details, deadline of bewijs toevoegen",
-    "rewardHintDirect": "Je geeft deze beloning wanneer je de missie goedkeurt.",
-    "rewardHintCredits": "Credits worden na goedkeuring toegevoegd en kun je besteden bij Beloningen.",
+    "moreDetails": "Meer opties",
+    "rewardHintDirect": "Geef dit cadeau na goedkeuring.",
+    "rewardHintCredits": "Toegekend na goedkeuring. Besteed ze bij Beloningen.",
     "appearance": "Uiterlijk",
     "appearanceHint": "Verandert alleen de stijl. Je personen, missies en credits blijven hetzelfde.",
     "progress": "Je voortgang",
@@ -557,6 +561,8 @@
       "starlight": "Sterrenlicht",
       "forged": "Gesmeed",
       "astral": "Astraal"
-    }
+    },
+    "for": "Voor",
+    "from": "Van"
   }
 }

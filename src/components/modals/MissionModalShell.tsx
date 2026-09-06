@@ -225,8 +225,8 @@ export const MissionModalShell: React.FC<MissionModalShellProps> = ({
   // Determine context label based on role
   const contextLabel =
     role === 'creator'
-      ? `Assigned to: ${toUser?.name || 'Unknown'}`
-      : `From: ${fromUser?.name || 'Unknown'}`;
+      ? `${t('workflow.for')}: ${toUser?.name || 'Unknown'}`
+      : `${t('workflow.from')}: ${fromUser?.name || 'Unknown'}`;
   const contextUser = role === 'creator' ? toUser : fromUser;
 
   // R30: DeadlineCountdown - show "Overdue" when past, countdown when active

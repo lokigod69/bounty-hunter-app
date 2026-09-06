@@ -52,6 +52,31 @@ const listeners = new Set();
 const changed = () => queueMicrotask(() => listeners.forEach(callback => callback({ eventType: 'UPDATE' })));
 async function rpc(name, args) {
   if (name === 'get_or_create_invite') return json({ success: true, token: 'sample-invite' });
+  if (name === 'purchase_reward') {
+    const fail = (error, message) => json({ success: false, error, message });
+    if (args.p_collector_id !== me) return fail('FORBIDDEN', 'This reward is not for you.');
+    const reward = tables.rewards_store.find(row => row.id === args.p_reward_id && row.is_active);
+    if (!reward) return fail('REWARD_NOT_FOUND', 'This reward is no longer available.');
+    if (reward.creator_id === me) return fail('SELF_PURCHASE', 'You cannot claim your own reward.');
+    if (reward.assigned_to !== me) return fail('FORBIDDEN', 'This reward is not for you.');
+    if (tables.collected_rewards.some(row => row.reward_id === reward.id && row.collector_id === me)) return fail('ALREADY_COLLECTED', 'You already have this reward.');
+    const credits = tables.user_credits.find(row => row.user_id === me);
+    if (!credits || credits.balance < reward.credit_cost) return fail('INSUFFICIENT_FUNDS', 'Not enough credits.');
+    // One synchronous fixture transaction: repeat clicks cannot spend twice.
+    const collection = { id: crypto.randomUUID(), reward_id: reward.id, collector_id: me, collected_at: new Date().toISOString(), redeemed_at: null };
+    credits.balance -= reward.credit_cost;
+    tables.collected_rewards.push(collection);
+    changed();
+    return json({ success: true, collection_id: collection.id, reward_name: reward.name, new_balance: credits.balance });
+  }
+  if (name === 'mark_reward_redeemed') {
+    const collection = tables.collected_rewards.find(row => row.id === args.p_collection_id && row.collector_id === me);
+    if (!collection) return json({ success: false, error: 'NOT_FOUND', message: 'Reward not found.' });
+    if (typeof args.p_redeemed !== 'boolean') return json({ success: false, error: 'BAD_REQUEST', message: 'Choose a reward status.' });
+    collection.redeemed_at = args.p_redeemed ? new Date().toISOString() : null;
+    changed();
+    return json({ success: true, collection_id: collection.id, redeemed: args.p_redeemed });
+  }
   if (name === 'redeem_invite') {
     if (scenario === 'invite-retry' && inviteAttempts++ === 0) return json({ message: 'Preview: connection interrupted. Try again.' }, 503);
     if (!tables.friendships.length) tables.friendships.push({ id: 'invited', user1_id: me, user2_id: alex, requested_by: alex, status: 'accepted', created_at: now });

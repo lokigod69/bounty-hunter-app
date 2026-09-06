@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
-import { markRewardRedeemed } from './rewards';
+import { markRewardRedeemed, purchaseReward } from './rewards';
 
 // Minimal stub: only the rpc() method is exercised by markRewardRedeemed.
 const makeClient = (rpc: ReturnType<typeof vi.fn>) =>
@@ -47,5 +47,15 @@ describe('markRewardRedeemed', () => {
 
     expect(result.success).toBe(false);
     expect(result.message).toBe('network down');
+  });
+});
+
+describe('purchaseReward confirmation', () => {
+  it.each([null, {}, { message: 'Missing confirmation' }])('does not claim success for an incomplete response: %j', async data => {
+    const client = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'me' } }, error: null }) },
+      rpc: vi.fn().mockResolvedValue({ data, error: null }),
+    } as unknown as SupabaseClient<Database>;
+    expect((await purchaseReward({ rewardId: 'reward', supabaseClient: client })).success).toBe(false);
   });
 });

@@ -218,9 +218,9 @@ const UserCredits: React.FC = () => {
     // survives as an aria-label, so screen readers lose nothing.
     return (
       <div className="credit-badge" role="status" aria-label={t('common.loadingCredits')}>
-        <Coin size="sm" className="mr-2" />
+        <Coin size="sm" />
         <span
-          className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
+          className="absolute left-4 top-4 w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
           aria-hidden="true"
         />
       </div>
@@ -231,8 +231,7 @@ const UserCredits: React.FC = () => {
     // Display 0 credits with an error indicator
     return (
       <div className="credit-badge">
-        <Coin size="sm" className="mr-2" />
-        <span>0</span>
+        <Coin size="sm" value={0} />
       </div>
     );
   }
@@ -241,24 +240,14 @@ const UserCredits: React.FC = () => {
   if (credits === null && !loading) {
      return (
       <div className="credit-badge">
-        <Coin size="sm" className="mr-2" />
-        <span>0</span>
+        <Coin size="sm" value={0} />
       </div>
     );
   }
 
-  // Format credits for compact display (1.2k for 1200, etc.)
-  const formatCredits = (value: number): string => {
-    if (value >= 10000) return `${(value / 1000).toFixed(0)}k`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
-    return value.toLocaleString();
-  };
-
   return (
     <div className="credit-badge">
-      {/* Decorative coin with ¢ symbol - balance shown as text */}
-      <Coin size="sm" className="mr-2" />
-      <span>{formatCredits(animatedValue)}</span>
+      <Coin size="sm" value={animatedValue} />
     </div>
   );
 };

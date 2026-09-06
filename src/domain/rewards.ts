@@ -120,16 +120,16 @@ export async function purchaseReward(params: PurchaseRewardParams): Promise<Purc
     new_balance?: number;
   } | null;
 
-  if (rpcResponse && rpcResponse.success === false) {
+  if (!rpcResponse || rpcResponse.success !== true) {
     // Map specific error codes to user-friendly messages
-    let message = rpcResponse.message || 'Purchase failed.';
-    if (rpcResponse.error === 'INSUFFICIENT_FUNDS') {
+    let message = rpcResponse?.message || 'Purchase failed.';
+    if (rpcResponse?.error === 'INSUFFICIENT_FUNDS') {
       message = 'Not enough credits for this reward.';
-    } else if (rpcResponse.error === 'ALREADY_COLLECTED') {
+    } else if (rpcResponse?.error === 'ALREADY_COLLECTED') {
       message = 'You already have this reward!';
-    } else if (rpcResponse.error === 'SELF_PURCHASE') {
+    } else if (rpcResponse?.error === 'SELF_PURCHASE') {
       message = 'You cannot purchase your own reward.';
-    } else if (rpcResponse.error === 'REWARD_NOT_FOUND') {
+    } else if (rpcResponse?.error === 'REWARD_NOT_FOUND') {
       message = 'This reward is no longer available.';
     }
 

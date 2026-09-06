@@ -250,17 +250,17 @@
     "contractTitlePlaceholder": "Was muss getan werden?",
     "descriptionLabel": "Beschreibung (Optional)",
     "descriptionPlaceholder": "Füge weitere Details zur Aufgabe hinzu...",
-    "assignToLabel": "Zuweisen an*",
+    "assignToLabel": "Für*",
     "assignToPlaceholder": "Wähle einen Freund",
     "noFriendsWarning": "Du musst zuerst Freunde hinzufügen, um Aufgaben zuzuweisen.",
     "goToFriends": "Kontakte öffnen",
     "deadlineLabel": "Frist (Optional)",
-    "contractTypeLabel": "Belohnungstyp",
-    "rewardTypeDirect": "Individuelle Belohnung (Geschenk oder Gegenstand)",
-    "rewardTypeCredit": "Credit-Belohnung (Münzen)",
-    "customRewardLabel": "Belohnungsbeschreibung*",
+    "contractTypeLabel": "Belohnung",
+    "rewardTypeDirect": "Geschenk",
+    "rewardTypeCredit": "Credits",
+    "customRewardLabel": "Details*",
     "customRewardPlaceholder": "z. B. Frühstück im Bett, Filmabend",
-    "creditRewardLabel": "Credit-Belohnung*",
+    "creditRewardLabel": "Betrag",
     "creditOptions": {
       "quickTask": "1 Credit - Schnelle Aufgabe",
       "smallChore": "2 Credits - Kleine Aufgabe",
@@ -313,13 +313,16 @@
       "deleteButton": "Belohnung löschen",
       "claimButton": "Einfordern",
       "viewButton": "Ansehen",
-      "markRedeemed": "Als eingelöst markieren",
-      "markRedeemedUndo": "Einlösung rückgängig",
-      "redeemedBadge": "Eingelöst",
-      "redeemedOn": "Eingelöst am {{date}}"
+      "markRedeemed": "Als genutzt markieren",
+      "markRedeemedUndo": "Rückgängig",
+      "redeemedBadge": "Genutzt",
+      "redeemedOn": "Genutzt am {{date}}",
+      "readyBadge": "Bereit zum Einlösen",
+      "spent": "Ausgegeben",
+      "cost": "Kosten"
     },
-    "redeemSuccess": "Belohnung als eingelöst markiert.",
-    "redeemUndoSuccess": "Belohnung als nicht eingelöst markiert.",
+    "redeemSuccess": "Belohnung als genutzt markiert.",
+    "redeemUndoSuccess": "Belohnung ist wieder nutzbar.",
     "redeemError": "Belohnung konnte nicht aktualisiert werden. Bitte versuche es erneut.",
     "createModal": {
       "title": "Neue Belohnung erstellen",
@@ -369,7 +372,8 @@
       "invalidFile": "Ungültiger Dateityp. Erlaubte Formate: {{formats}}.",
       "fileTooLarge": "Die Datei ist zu groß. Maximale Größe: {{size}} MB.",
       "uploadFailed": "Hochladen fehlgeschlagen"
-    }
+    },
+    "claimSuccess": "Belohnung erhalten. Viel Spaß!"
   },
   "languageSwitcher": {
     "language": "Sprache",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Gerade nichts zu tun",
     "inboxEmptyBody": "An dich gesendete Missionen erscheinen hier. Oben kannst du selbst eine Mission senden.",
     "openPeople": "Kontakte öffnen",
-    "moreDetails": "Details, Frist oder Nachweis hinzufügen",
-    "rewardHintDirect": "Du gibst diese Belohnung, wenn du die Mission bestätigst.",
-    "rewardHintCredits": "Credits werden nach der Bestätigung gutgeschrieben und können für Belohnungen ausgegeben werden.",
+    "moreDetails": "Mehr Optionen",
+    "rewardHintDirect": "Gib das Geschenk nach deiner Freigabe.",
+    "rewardHintCredits": "Credits gibt es nach der Freigabe. Gib sie für Belohnungen aus.",
     "appearance": "Aussehen",
     "appearanceHint": "Ändert nur das Aussehen. Kontakte, Missionen und Credits bleiben gleich.",
     "progress": "Dein Fortschritt",
@@ -557,6 +561,8 @@
       "starlight": "Sternenlicht",
       "forged": "Schmiede",
       "astral": "Astral"
-    }
+    },
+    "for": "Für",
+    "from": "Von"
   }
 }

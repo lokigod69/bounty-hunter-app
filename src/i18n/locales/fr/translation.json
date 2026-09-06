@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Que faut-il faire ?",
     "descriptionLabel": "Description (facultative)",
     "descriptionPlaceholder": "Ajoute des détails sur la tâche...",
-    "assignToLabel": "Attribuer à*",
+    "assignToLabel": "Pour*",
     "assignToPlaceholder": "Sélectionne un ami",
     "noFriendsWarning": "Tu dois d'abord ajouter des amis pour attribuer des tâches.",
     "goToFriends": "Voir les personnes",
     "deadlineLabel": "Échéance (facultative)",
-    "contractTypeLabel": "Type de récompense",
-    "rewardTypeDirect": "Récompense personnalisée (cadeau ou objet)",
-    "rewardTypeCredit": "Récompense en crédits (pièces)",
-    "customRewardLabel": "Description de la récompense*",
+    "contractTypeLabel": "Récompense",
+    "rewardTypeDirect": "Cadeau",
+    "rewardTypeCredit": "Crédits",
+    "customRewardLabel": "Détails*",
     "customRewardPlaceholder": "Ex. : petit-déjeuner au lit, soirée ciné",
-    "creditRewardLabel": "Récompense en crédits*",
+    "creditRewardLabel": "Montant",
     "creditOptions": {
       "quickTask": "1 crédit - Tâche rapide",
       "smallChore": "2 crédits - Petite corvée",
@@ -300,13 +300,16 @@
       "deleteButton": "Supprimer la récompense",
       "claimButton": "Réclamer",
       "viewButton": "Voir",
-      "markRedeemed": "Marquer comme remise",
-      "markRedeemedUndo": "Annuler la remise",
-      "redeemedBadge": "Remise",
-      "redeemedOn": "Remise le {{date}}"
+      "markRedeemed": "Marquer comme utilisée",
+      "markRedeemedUndo": "Annuler",
+      "redeemedBadge": "Utilisée",
+      "redeemedOn": "Utilisée le {{date}}",
+      "readyBadge": "Prête à savourer",
+      "spent": "Dépensés",
+      "cost": "Coût"
     },
-    "redeemSuccess": "Récompense marquée comme remise.",
-    "redeemUndoSuccess": "Récompense marquée comme non remise.",
+    "redeemSuccess": "Récompense marquée comme utilisée.",
+    "redeemUndoSuccess": "La récompense est à nouveau utilisable.",
     "redeemError": "Impossible de mettre à jour la récompense. Réessaie.",
     "createModal": {
       "title": "Créer une récompense",
@@ -356,7 +359,8 @@
       "invalidFile": "Type de fichier invalide. Formats autorisés : {{formats}}.",
       "fileTooLarge": "Le fichier est trop volumineux. Taille maximale : {{size}} Mo.",
       "uploadFailed": "Échec du téléversement"
-    }
+    },
+    "claimSuccess": "Récompense obtenue. Profite bien !"
   },
   "history": {
     "description": "Consulte l'historique de tes contrats accomplis et expirés.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Rien à faire pour le moment",
     "inboxEmptyBody": "Les missions qu’on t’envoie apparaissent ici. Tu peux aussi en envoyer une avec le bouton ci-dessus.",
     "openPeople": "Voir les personnes",
-    "moreDetails": "Ajouter des détails, une échéance ou une preuve",
-    "rewardHintDirect": "Tu offres cette récompense quand tu approuves la mission.",
-    "rewardHintCredits": "Les crédits sont ajoutés après approbation et s’utilisent dans Récompenses.",
+    "moreDetails": "Plus d’options",
+    "rewardHintDirect": "Offre ce cadeau après validation.",
+    "rewardHintCredits": "Reçus après validation. À dépenser dans Récompenses.",
     "appearance": "Apparence",
     "appearanceHint": "Change seulement le style. Tes contacts, missions et crédits restent identiques.",
     "progress": "Ta progression",
@@ -557,6 +561,8 @@
       "starlight": "Stellaire",
       "forged": "Forgé",
       "astral": "Astral"
-    }
+    },
+    "for": "Pour",
+    "from": "De"
   }
 }

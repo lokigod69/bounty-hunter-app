@@ -55,6 +55,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useLayoutEffect(() => {
     document.documentElement.dataset.skin = skinId;
   }, [skinId]);
+  useEffect(() => {
+    const syncSkin = (event: StorageEvent) => {
+      if (event.key === SKIN_STORAGE_KEY) setSkin(readSkin());
+    };
+    window.addEventListener('storage', syncSkin);
+    return () => window.removeEventListener('storage', syncSkin);
+  }, []);
   const setSkinId = (id: SkinId) => {
     setSkin(id);
     try { localStorage.setItem(SKIN_STORAGE_KEY, id); } catch { /* Still usable for this session. */ }

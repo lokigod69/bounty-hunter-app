@@ -50,9 +50,11 @@ interface RewardCardProps {
   redeemedAt?: string | null;
   onMarkRedeemed?: (redeemed: boolean) => void;
   isRedeeming?: boolean;
+  isClaiming?: boolean;
+  claimDisabled?: boolean;
 }
 
-const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0, collectedAt, redeemedAt, onMarkRedeemed, isRedeeming = false }) => {
+const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit, onDelete, currentCredits = 0, collectedAt, redeemedAt, onMarkRedeemed, isRedeeming = false, isClaiming = false, claimDisabled = false }) => {
   const { t } = useTranslation();
   const { themeId } = useTheme();
   const { strings } = useThemeStrings();
@@ -152,9 +154,13 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
         data-reward-type="credit"
       >
         {/* R26: Top area - Image/emoji - always square aspect ratio */}
-        <div className="aspect-square">
+        <div className="aspect-square reward-art">
           {renderImageOrEmoji()}
         </div>
+        {view === 'collected' && <div className="reward-ready" data-used={!!redeemedAt}>
+          {redeemedAt ? <Check size={18} aria-hidden="true" /> : <Gift size={18} aria-hidden="true" />}
+          {t(redeemedAt ? 'rewards.rewardCard.redeemedBadge' : 'rewards.rewardCard.readyBadge')}
+        </div>}
       
       {/* Middle - Title and description - mobile optimized padding */}
       <div className="p-3 sm:p-4 md:p-5 flex-grow flex flex-col min-h-0">
@@ -185,14 +191,14 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
         <div className="flex items-center justify-between gap-2">
           {/* Left: Cost */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">Cost:</span>
+            <span className="text-xs sm:text-sm text-white/60 whitespace-nowrap">{t(view === 'collected' ? 'rewards.rewardCard.spent' : 'rewards.rewardCard.cost')}</span>
             <Coin size="sm" value={cost} />
           </div>
 
           {/* Right: Profile avatar showing who it's from/to */}
           {(view === 'available' || view === 'collected') && reward.creator_profile && (
-            <div className="flex items-center gap-1.5" title={`From: ${reward.creator_profile.display_name || 'Unknown'}`}>
-              <span className="text-xs text-white/50">From:</span>
+            <div className="flex items-center gap-1.5" title={reward.creator_profile.display_name || ''}>
+              <span className="text-xs text-white/50">{t('workflow.from')}</span>
               <div className="w-6 h-6 rounded-full overflow-hidden border border-teal-500/50 flex-shrink-0">
                 <img
                   src={reward.creator_profile.avatar_url || avatarFallback(reward.creator_profile.display_name)}
@@ -244,9 +250,6 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
           <div className="text-center space-y-2">
             {redeemedAt ? (
               <>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/50">
-                  <Check size={12} /> {t('rewards.rewardCard.redeemedBadge')}
-                </span>
                 <p className="text-xs text-white/50">
                   {/* toLocaleDateString(undefined, …) is the DEVICE locale, not
                       the app's: German copy rendered "Mar 3, 2026" on an en-US
@@ -257,9 +260,6 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
               </>
             ) : (
               <>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/50">
-                  ✓ Collected
-                </span>
                 <p className="text-xs text-white/50">{fmt.date(collectedAt)}</p>
               </>
             )}
@@ -319,7 +319,8 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
             variant="cta"
             fullWidth
             onClick={() => onAction?.(id)}
-            disabled={view !== 'available' || !onAction || !canAfford}
+            loading={isClaiming}
+            disabled={view !== 'available' || !onAction || !canAfford || claimDisabled}
           >
             {view === 'available' ? (canAfford ? t('rewards.rewardCard.claimButton') : strings.storeCantAffordLabel) : t('rewards.rewardCard.viewButton')}
           </AppButton>

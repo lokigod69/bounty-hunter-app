@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Co trzeba zrobić?",
     "descriptionLabel": "Opis (opcjonalnie)",
     "descriptionPlaceholder": "Dodaj więcej szczegółów zadania...",
-    "assignToLabel": "Przypisz do*",
+    "assignToLabel": "Dla*",
     "assignToPlaceholder": "Wybierz znajomą osobę",
     "noFriendsWarning": "Najpierw dodaj znajomych, aby przydzielać zadania.",
     "goToFriends": "Otwórz Osoby",
     "deadlineLabel": "Termin (opcjonalnie)",
-    "contractTypeLabel": "Rodzaj nagrody",
-    "rewardTypeDirect": "Własna nagroda (prezent lub przedmiot)",
-    "rewardTypeCredit": "Nagroda w kredytach (monety)",
-    "customRewardLabel": "Opis nagrody*",
+    "contractTypeLabel": "Nagroda",
+    "rewardTypeDirect": "Prezent",
+    "rewardTypeCredit": "Kredyty",
+    "customRewardLabel": "Szczegóły*",
     "customRewardPlaceholder": "Np. śniadanie do łóżka, wieczór filmowy",
-    "creditRewardLabel": "Nagroda w kredytach*",
+    "creditRewardLabel": "Liczba",
     "creditOptions": {
       "quickTask": "1 kredyt - Szybkie zadanie",
       "smallChore": "2 kredyty - Mały obowiązek",
@@ -300,13 +300,16 @@
       "deleteButton": "Usuń nagrodę",
       "claimButton": "Odbierz",
       "viewButton": "Zobacz",
-      "markRedeemed": "Oznacz jako zrealizowaną",
-      "markRedeemedUndo": "Cofnij realizację",
-      "redeemedBadge": "Zrealizowana",
-      "redeemedOn": "Zrealizowano {{date}}"
+      "markRedeemed": "Oznacz jako wykorzystaną",
+      "markRedeemedUndo": "Cofnij",
+      "redeemedBadge": "Wykorzystana",
+      "redeemedOn": "Wykorzystana {{date}}",
+      "readyBadge": "Gotowa do wykorzystania",
+      "spent": "Wydano",
+      "cost": "Koszt"
     },
-    "redeemSuccess": "Nagroda oznaczona jako zrealizowana.",
-    "redeemUndoSuccess": "Nagroda oznaczona jako niezrealizowana.",
+    "redeemSuccess": "Nagroda oznaczona jako wykorzystana.",
+    "redeemUndoSuccess": "Nagroda znów jest gotowa do wykorzystania.",
     "redeemError": "Nie udało się zaktualizować nagrody. Spróbuj ponownie.",
     "createModal": {
       "title": "Utwórz nową nagrodę",
@@ -356,7 +359,8 @@
       "invalidFile": "Nieprawidłowy typ pliku. Dozwolone formaty: {{formats}}.",
       "fileTooLarge": "Plik jest za duży. Maksymalny rozmiar: {{size}} MB.",
       "uploadFailed": "Przesyłanie nie powiodło się"
-    }
+    },
+    "claimSuccess": "Nagroda odebrana!"
   },
   "history": {
     "description": "Przejrzyj historię ukończonych i wygasłych kontraktów.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Na razie nic do zrobienia",
     "inboxEmptyBody": "Otrzymane misje pojawią się tutaj. Możesz też wysłać misję przyciskiem powyżej.",
     "openPeople": "Otwórz Osoby",
-    "moreDetails": "Dodaj szczegóły, termin lub dowód",
-    "rewardHintDirect": "Przekazujesz tę nagrodę po zatwierdzeniu misji.",
-    "rewardHintCredits": "Kredyty są dodawane po zatwierdzeniu i można je wydawać w Nagrodach.",
+    "moreDetails": "Więcej opcji",
+    "rewardHintDirect": "Wręcz prezent po zatwierdzeniu.",
+    "rewardHintCredits": "Przyznawane po zatwierdzeniu. Wydaj je w Nagrodach.",
     "appearance": "Wygląd",
     "appearanceHint": "Zmienia tylko styl. Osoby, misje i kredyty pozostają te same.",
     "progress": "Twoje postępy",
@@ -557,6 +561,8 @@
       "starlight": "Blask gwiazd",
       "forged": "Kuty",
       "astral": "Astralny"
-    }
+    },
+    "for": "Dla",
+    "from": "Od"
   }
 }

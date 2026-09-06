@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Cosa bisogna fare?",
     "descriptionLabel": "Descrizione (facoltativa)",
     "descriptionPlaceholder": "Aggiungi altri dettagli sull'incarico...",
-    "assignToLabel": "Assegna a*",
+    "assignToLabel": "Per*",
     "assignToPlaceholder": "Seleziona un amico",
     "noFriendsWarning": "Devi prima aggiungere amici per poter assegnare incarichi.",
     "goToFriends": "Apri Persone",
     "deadlineLabel": "Scadenza (facoltativa)",
-    "contractTypeLabel": "Tipo di ricompensa",
-    "rewardTypeDirect": "Ricompensa personalizzata (regalo o oggetto)",
-    "rewardTypeCredit": "Ricompensa in crediti (monete)",
-    "customRewardLabel": "Descrizione della ricompensa*",
+    "contractTypeLabel": "Ricompensa",
+    "rewardTypeDirect": "Regalo",
+    "rewardTypeCredit": "Crediti",
+    "customRewardLabel": "Dettagli*",
     "customRewardPlaceholder": "Es. colazione a letto, serata film",
-    "creditRewardLabel": "Ricompensa in crediti*",
+    "creditRewardLabel": "Quantità",
     "creditOptions": {
       "quickTask": "1 credito - Incarico rapido",
       "smallChore": "2 crediti - Piccola faccenda",
@@ -300,13 +300,16 @@
       "deleteButton": "Elimina ricompensa",
       "claimButton": "Riscatta",
       "viewButton": "Vedi",
-      "markRedeemed": "Segna come riscattata",
-      "markRedeemedUndo": "Annulla riscatto",
-      "redeemedBadge": "Riscattata",
-      "redeemedOn": "Riscattata il {{date}}"
+      "markRedeemed": "Segna come usata",
+      "markRedeemedUndo": "Annulla",
+      "redeemedBadge": "Usata",
+      "redeemedOn": "Usata il {{date}}",
+      "readyBadge": "Pronta da goderti",
+      "spent": "Spesi",
+      "cost": "Costo"
     },
-    "redeemSuccess": "Ricompensa segnata come riscattata.",
-    "redeemUndoSuccess": "Ricompensa segnata come non riscattata.",
+    "redeemSuccess": "Ricompensa segnata come usata.",
+    "redeemUndoSuccess": "La ricompensa è di nuovo disponibile.",
     "redeemError": "Impossibile aggiornare la ricompensa. Riprova.",
     "createModal": {
       "title": "Crea una ricompensa",
@@ -356,7 +359,8 @@
       "invalidFile": "Tipo di file non valido. Formati consentiti: {{formats}}.",
       "fileTooLarge": "Il file è troppo grande. Dimensione massima: {{size}} MB.",
       "uploadFailed": "Caricamento non riuscito"
-    }
+    },
+    "claimSuccess": "Ricompensa ottenuta!"
   },
   "history": {
     "description": "Consulta la cronologia dei tuoi contratti completati e scaduti.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Niente da fare per ora",
     "inboxEmptyBody": "Le missioni che ti inviano appaiono qui. Puoi anche inviarne una con il pulsante in alto.",
     "openPeople": "Apri Persone",
-    "moreDetails": "Aggiungi dettagli, scadenza o prova",
-    "rewardHintDirect": "Offri questa ricompensa quando approvi la missione.",
-    "rewardHintCredits": "I crediti vengono aggiunti dopo l’approvazione e si possono usare in Ricompense.",
+    "moreDetails": "Altre opzioni",
+    "rewardHintDirect": "Consegna il regalo quando approvi.",
+    "rewardHintCredits": "Assegnati dopo l’approvazione. Spendili in Ricompense.",
     "appearance": "Aspetto",
     "appearanceHint": "Cambia solo lo stile. Persone, missioni e crediti restano gli stessi.",
     "progress": "I tuoi progressi",
@@ -557,6 +561,8 @@
       "starlight": "Stellare",
       "forged": "Forgiato",
       "astral": "Astrale"
-    }
+    },
+    "for": "Per",
+    "from": "Da"
   }
 }

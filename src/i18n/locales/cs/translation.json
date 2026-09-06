@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Co je třeba udělat?",
     "descriptionLabel": "Popis (volitelné)",
     "descriptionPlaceholder": "Přidej další podrobnosti o úkolu...",
-    "assignToLabel": "Přidělit komu*",
+    "assignToLabel": "Pro*",
     "assignToPlaceholder": "Vyber přítele",
     "noFriendsWarning": "Nejprve musíš přidat přátele, aby šlo přidělovat úkoly.",
     "goToFriends": "Otevřít Lidé",
     "deadlineLabel": "Termín (volitelné)",
-    "contractTypeLabel": "Typ odměny",
-    "rewardTypeDirect": "Vlastní odměna (dárek nebo předmět)",
-    "rewardTypeCredit": "Odměna v kreditech (mince)",
-    "customRewardLabel": "Popis odměny*",
+    "contractTypeLabel": "Odměna",
+    "rewardTypeDirect": "Dárek",
+    "rewardTypeCredit": "Kredity",
+    "customRewardLabel": "Podrobnosti*",
     "customRewardPlaceholder": "Např. snídaně do postele, filmový večer",
-    "creditRewardLabel": "Odměna v kreditech*",
+    "creditRewardLabel": "Počet",
     "creditOptions": {
       "quickTask": "1 kredit - Rychlý úkol",
       "smallChore": "2 kredity - Malá povinnost",
@@ -300,13 +300,16 @@
       "deleteButton": "Odstranit odměnu",
       "claimButton": "Vyzvednout",
       "viewButton": "Zobrazit",
-      "markRedeemed": "Označit jako uplatněnou",
-      "markRedeemedUndo": "Vrátit uplatnění",
-      "redeemedBadge": "Uplatněno",
-      "redeemedOn": "Uplatněno {{date}}"
+      "markRedeemed": "Označit jako využitou",
+      "markRedeemedUndo": "Vrátit zpět",
+      "redeemedBadge": "Využita",
+      "redeemedOn": "Využita {{date}}",
+      "readyBadge": "Připravena k využití",
+      "spent": "Utraceno",
+      "cost": "Cena"
     },
-    "redeemSuccess": "Odměna byla označena jako uplatněná.",
-    "redeemUndoSuccess": "Odměna byla označena jako neuplatněná.",
+    "redeemSuccess": "Odměna označena jako využitá.",
+    "redeemUndoSuccess": "Odměna je znovu připravena k využití.",
     "redeemError": "Odměnu se nepodařilo aktualizovat. Zkus to znovu.",
     "createModal": {
       "title": "Vytvořit novou odměnu",
@@ -356,7 +359,8 @@
       "invalidFile": "Neplatný typ souboru. Povolené formáty: {{formats}}.",
       "fileTooLarge": "Soubor je příliš velký. Maximální velikost: {{size}} MB.",
       "uploadFailed": "Nahrávání se nezdařilo"
-    }
+    },
+    "claimSuccess": "Odměna vyzvednuta. Užij si ji!"
   },
   "history": {
     "description": "Prohlédni si historii dokončených a prošlých kontraktů.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Teď není co dělat",
     "inboxEmptyBody": "Mise, které ti někdo pošle, se objeví tady. Tlačítkem nahoře můžeš také nějakou poslat.",
     "openPeople": "Otevřít Lidé",
-    "moreDetails": "Přidat podrobnosti, termín nebo důkaz",
-    "rewardHintDirect": "Tuto odměnu předáš při schválení mise.",
-    "rewardHintCredits": "Kredity se přidají po schválení a lze je utratit v Odměnách.",
+    "moreDetails": "Další možnosti",
+    "rewardHintDirect": "Předej dárek po schválení.",
+    "rewardHintCredits": "Přiděleny po schválení. Utrať je v Odměnách.",
     "appearance": "Vzhled",
     "appearanceHint": "Mění jen styl. Lidé, mise a kredity zůstávají stejné.",
     "progress": "Tvůj pokrok",
@@ -557,6 +561,8 @@
       "starlight": "Svit hvězd",
       "forged": "Kovaný",
       "astral": "Astrální"
-    }
+    },
+    "for": "Pro",
+    "from": "Od"
   }
 }

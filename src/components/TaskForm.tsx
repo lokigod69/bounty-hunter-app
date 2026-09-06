@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Calendar, Award, Users } from 'lucide-react';
+import { Calendar, Gift, Coins, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFriends } from '../hooks/useFriends';
 import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
@@ -11,6 +11,7 @@ import { TEXT_LIMITS, isWithinLimit } from '../config/textLimits';
 import { CharacterCounter } from './ui/CharacterCounter';
 import { AppButton } from './ui/AppButton';
 import { ModalShell } from './ui/ModalShell';
+import { Coin } from './visual/Coin';
 import type { Database } from '../types/database';
 import type { TaskStatus } from '../pages/IssuedPage'; // Import TaskStatus if needed for NewTaskData
 
@@ -248,38 +249,25 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask, initi
             )}
           </div>
 
-          {/* Contract Type Selector */}
-          <div className="mb-4">
-            <label htmlFor="contractType" className="flex items-center text-sm font-medium text-[var(--text-secondary)] mb-1">
-              <Award size={16} className="mr-1" />
-              {t('taskForm.contractTypeLabel')}
-            </label>
-            <select
-              id="contractType"
-              value={contractType}
-              onChange={(e) => {
-                const newContractType = e.target.value as 'bounty' | 'credit';
-                setContractType(newContractType);
-                // Reset rewardText when changing contract type
-                setRewardText(newContractType === 'credit' ? '1' : '');
-              }}
-              className="input-field w-full"
-            >
-              <option value="bounty">{t('taskForm.rewardTypeDirect')}</option>
-              {/* 013: a credit reward cannot pay its own creator, so do not
-                  offer it when the assignee is you. Rendered conditionally
-                  rather than `disabled` because a disabled <option> is still
-                  announced by screen readers as a choice that exists. */}
-              {!isSelfAssigned && (
-                <option value="credit">{t('taskForm.rewardTypeCredit')}</option>
-              )}
-            </select>
+          <fieldset>
+            <legend className="text-sm font-medium text-[var(--text-secondary)] mb-2">{t('taskForm.contractTypeLabel')}</legend>
+            <div className="reward-type-options">
+              {(['bounty', 'credit'] as const).filter(type => type !== 'credit' || !isSelfAssigned).map(type => (
+                <label className="reward-option" key={type}>
+                  <input type="radio" name="contractType" value={type} checked={contractType === type}
+                    onChange={() => { setContractType(type); setRewardText(type === 'credit' ? '1' : ''); }} />
+                  <span>{type === 'bounty' ? <Gift size={20} aria-hidden="true" /> : <Coins size={20} aria-hidden="true" />}
+                    {t(type === 'bounty' ? 'taskForm.rewardTypeDirect' : 'taskForm.rewardTypeCredit')}
+                  </span>
+                </label>
+              ))}
+            </div>
             {isSelfAssigned && (
               <p className="text-[var(--text-secondary)] text-xs mt-1">
                 {t('taskForm.validation.selfAssignedCredit')}
               </p>
             )}
-          </div>
+          </fieldset>
 
           {/* Conditional Reward Inputs based on Contract Type - R27: Added character counter */}
           {contractType === 'bounty' ? (
@@ -302,25 +290,18 @@ export default function TaskForm({ userId, onClose, onSubmit, editingTask, initi
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
             </div>
           ) : (
-            <div>
-              <label htmlFor="rewardTextCredit" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                {t('taskForm.creditRewardLabel')}
-              </label>
-              <select
-                id="rewardTextCredit"
-                value={rewardText} // rewardText will store the credit amount as string
-                onChange={(e) => setRewardText(e.target.value)}
-                className={`input-field w-full ${errors.rewardText ? 'border-red-500 focus:ring-red-500' : ''}`}
-              >
-                {/* Note: Styling <option> tags with background colors has limited cross-browser support. The select box itself is styled. */}
-                <option className="bg-gray-800 text-white" value="1">{t('taskForm.creditOptions.quickTask')}</option>
-                <option className="bg-gray-800 text-white" value="2">{t('taskForm.creditOptions.smallChore')}</option>
-                <option className="bg-gray-800 text-white" value="3">{t('taskForm.creditOptions.mediumTask')}</option>
-                <option className="bg-gray-800 text-white" value="5">{t('taskForm.creditOptions.largeTask')}</option>
-                <option className="bg-gray-800 text-white" value="10">{t('taskForm.creditOptions.majorTask')}</option>
-              </select>
+            <fieldset>
+              <legend className="text-sm font-medium text-[var(--text-secondary)] mb-2">{t('taskForm.creditRewardLabel')}</legend>
+              <div className="credit-options">
+                {[...new Set(['1', '2', '3', '5', '10', ...(editingTask?.reward_type === 'credit' && editingTask.reward_text ? [editingTask.reward_text] : [])])].map(amount => (
+                  <label key={amount} className="reward-option credit-option" style={amount.length > 2 ? { gridColumn: 'span 2' } : undefined}>
+                    <input type="radio" name="rewardTextCredit" value={amount} checked={rewardText === amount} onChange={() => setRewardText(amount)} aria-label={`${amount} ${Number(amount) === 1 ? strings.tokenSingular : strings.tokenPlural}`} />
+                    <span><Coin value={Number(amount)} size="sm" /></span>
+                  </label>
+                ))}
+              </div>
               {errors.rewardText && <p className="text-[var(--warning-orange)] text-xs mt-1">{errors.rewardText}</p>}
-            </div>
+            </fieldset>
           )}
 
           <p className="text-sm text-white/60">{t(contractType === 'credit' ? 'workflow.rewardHintCredits' : 'workflow.rewardHintDirect')}</p>

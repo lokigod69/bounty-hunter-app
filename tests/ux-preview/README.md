@@ -12,4 +12,6 @@ The real app components use fictional Michael/Alex/Sam data through a dev-only S
 
 Supports the displayed mission lifecycle and profile/people UI operations; it does not emulate authorization, Storage, push delivery or real multi-client Realtime. Those require the live/device checks in the release report. This config is not used by `npm run build`.
 
+The top preview toolbar switches Starlight / Forged / Astral while a dialog stays open. It is compiled only by this preview config. The sample reward can be claimed for 20 of the 24 credits: it moves to Collected, where Mark as used and Undo work. Reload resets the sample balance and collection. These fixture operations are covered by `npm test`; they are not a replacement for real Supabase authorization checks.
+
 For stable compiled assets after dependency updates, build with `npx vite build --config tests/ux-preview/vite.config.ts --outDir node_modules/.ux-preview-dist`, then serve with `npx vite preview --outDir node_modules/.ux-preview-dist --host 127.0.0.1 --port 6077`.

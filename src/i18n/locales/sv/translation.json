@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "Vad behöver göras?",
     "descriptionLabel": "Beskrivning (valfritt)",
     "descriptionPlaceholder": "Lägg till fler detaljer om uppgiften...",
-    "assignToLabel": "Tilldela till*",
+    "assignToLabel": "Till*",
     "assignToPlaceholder": "Välj en vän",
     "noFriendsWarning": "Du måste först lägga till vänner för att kunna tilldela uppgifter.",
     "goToFriends": "Öppna Personer",
     "deadlineLabel": "Tidsfrist (valfritt)",
-    "contractTypeLabel": "Typ av belöning",
-    "rewardTypeDirect": "Egen belöning (gåva eller föremål)",
-    "rewardTypeCredit": "Kreditbelöning (mynt)",
-    "customRewardLabel": "Beskrivning av belöning*",
+    "contractTypeLabel": "Belöning",
+    "rewardTypeDirect": "Gåva",
+    "rewardTypeCredit": "Krediter",
+    "customRewardLabel": "Detaljer*",
     "customRewardPlaceholder": "T.ex. frukost på sängen, filmkväll",
-    "creditRewardLabel": "Kreditbelöning*",
+    "creditRewardLabel": "Antal",
     "creditOptions": {
       "quickTask": "1 kredit - Snabb uppgift",
       "smallChore": "2 krediter - Liten syssla",
@@ -300,13 +300,16 @@
       "deleteButton": "Ta bort belöning",
       "claimButton": "Hämta",
       "viewButton": "Visa",
-      "markRedeemed": "Markera som inlöst",
-      "markRedeemedUndo": "Ångra inlösen",
-      "redeemedBadge": "Inlöst",
-      "redeemedOn": "Inlöst {{date}}"
+      "markRedeemed": "Markera som använd",
+      "markRedeemedUndo": "Ångra",
+      "redeemedBadge": "Använd",
+      "redeemedOn": "Använd {{date}}",
+      "readyBadge": "Redo att använda",
+      "spent": "Spenderat",
+      "cost": "Kostnad"
     },
-    "redeemSuccess": "Belöningen har markerats som inlöst.",
-    "redeemUndoSuccess": "Belöningen har markerats som inte inlöst.",
+    "redeemSuccess": "Belöningen är markerad som använd.",
+    "redeemUndoSuccess": "Belöningen kan användas igen.",
     "redeemError": "Det gick inte att uppdatera belöningen. Försök igen.",
     "createModal": {
       "title": "Skapa en ny belöning",
@@ -356,7 +359,8 @@
       "invalidFile": "Ogiltig filtyp. Tillåtna format: {{formats}}.",
       "fileTooLarge": "Filen är för stor. Maximal storlek: {{size}} MB.",
       "uploadFailed": "Uppladdningen misslyckades"
-    }
+    },
+    "claimSuccess": "Belöning hämtad. Njut!"
   },
   "history": {
     "description": "Se din historik över slutförda och utgångna kontrakt.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Inget att göra just nu",
     "inboxEmptyBody": "Uppdrag som skickas till dig visas här. Du kan också skicka ett med knappen ovan.",
     "openPeople": "Öppna Personer",
-    "moreDetails": "Lägg till detaljer, deadline eller bevis",
-    "rewardHintDirect": "Du ger den här belöningen när du godkänner uppdraget.",
-    "rewardHintCredits": "Krediter läggs till efter godkännande och kan användas under Belöningar.",
+    "moreDetails": "Fler alternativ",
+    "rewardHintDirect": "Ge gåvan när du godkänner.",
+    "rewardHintCredits": "Tilldelas vid godkännande. Använd dem i Belöningar.",
     "appearance": "Utseende",
     "appearanceHint": "Ändrar bara stilen. Personer, uppdrag och krediter är desamma.",
     "progress": "Dina framsteg",
@@ -557,6 +561,8 @@
       "starlight": "Stjärnljus",
       "forged": "Smidd",
       "astral": "Astral"
-    }
+    },
+    "for": "Till",
+    "from": "Från"
   }
 }

@@ -237,17 +237,17 @@
     "contractTitlePlaceholder": "¿Qué hay que hacer?",
     "descriptionLabel": "Descripción (opcional)",
     "descriptionPlaceholder": "Añade más detalles sobre la tarea...",
-    "assignToLabel": "Asignar a*",
+    "assignToLabel": "Para*",
     "assignToPlaceholder": "Selecciona a un amigo",
     "noFriendsWarning": "Primero debes añadir amigos para asignar tareas.",
     "goToFriends": "Ver personas",
     "deadlineLabel": "Fecha límite (opcional)",
-    "contractTypeLabel": "Tipo de recompensa",
-    "rewardTypeDirect": "Recompensa personalizada (regalo u objeto)",
-    "rewardTypeCredit": "Recompensa en créditos (monedas)",
-    "customRewardLabel": "Descripción de la recompensa*",
+    "contractTypeLabel": "Recompensa",
+    "rewardTypeDirect": "Regalo",
+    "rewardTypeCredit": "Créditos",
+    "customRewardLabel": "Detalles*",
     "customRewardPlaceholder": "Ej.: desayuno en la cama, noche de cine",
-    "creditRewardLabel": "Recompensa en créditos*",
+    "creditRewardLabel": "Cantidad",
     "creditOptions": {
       "quickTask": "1 crédito - Tarea rápida",
       "smallChore": "2 créditos - Tarea pequeña",
@@ -300,13 +300,16 @@
       "deleteButton": "Eliminar recompensa",
       "claimButton": "Reclamar",
       "viewButton": "Ver",
-      "markRedeemed": "Marcar como canjeada",
-      "markRedeemedUndo": "Deshacer canje",
-      "redeemedBadge": "Canjeada",
-      "redeemedOn": "Canjeada el {{date}}"
+      "markRedeemed": "Marcar como usada",
+      "markRedeemedUndo": "Deshacer",
+      "redeemedBadge": "Usada",
+      "redeemedOn": "Usada el {{date}}",
+      "readyBadge": "Lista para disfrutar",
+      "spent": "Gastados",
+      "cost": "Coste"
     },
-    "redeemSuccess": "Recompensa marcada como canjeada.",
-    "redeemUndoSuccess": "Recompensa marcada como no canjeada.",
+    "redeemSuccess": "Recompensa marcada como usada.",
+    "redeemUndoSuccess": "La recompensa se puede usar de nuevo.",
     "redeemError": "No se ha podido actualizar la recompensa. Inténtalo de nuevo.",
     "createModal": {
       "title": "Crear una recompensa",
@@ -356,7 +359,8 @@
       "invalidFile": "Tipo de archivo no válido. Formatos permitidos: {{formats}}.",
       "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: {{size}} MB.",
       "uploadFailed": "No se pudo subir"
-    }
+    },
+    "claimSuccess": "¡Recompensa obtenida!"
   },
   "history": {
     "description": "Consulta tu historial de contratos completados y vencidos.",
@@ -544,9 +548,9 @@
     "inboxEmpty": "Nada pendiente ahora",
     "inboxEmptyBody": "Las misiones que te envíen aparecerán aquí. También puedes enviar una con el botón de arriba.",
     "openPeople": "Ver personas",
-    "moreDetails": "Añadir detalles, fecha límite o prueba",
-    "rewardHintDirect": "Entregas esta recompensa cuando apruebas la misión.",
-    "rewardHintCredits": "Los créditos se añaden tras la aprobación y se pueden canjear en Recompensas.",
+    "moreDetails": "Más opciones",
+    "rewardHintDirect": "Entrega el regalo al aprobar.",
+    "rewardHintCredits": "Se reciben al aprobar. Úsalos en Recompensas.",
     "appearance": "Aspecto",
     "appearanceHint": "Solo cambia el aspecto. Tus personas, misiones y créditos siguen igual.",
     "progress": "Tu progreso",
@@ -557,6 +561,8 @@
       "starlight": "Estelar",
       "forged": "Forjado",
       "astral": "Astral"
-    }
+    },
+    "for": "Para",
+    "from": "De"
   }
 }
