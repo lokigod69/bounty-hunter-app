@@ -510,7 +510,7 @@ export default function IssuedPage() {
                   { title: t('contracts.completed'), tasks: completedMissions, accent: 'success' as const },
                 ].filter(section => section.tasks.length > 0).map(section => <section key={section.title} className="space-y-4">
                   <SectionHeader title={section.title} count={section.tasks.length} accent={section.accent} />
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+                  <div className="grid grid-cols-1 md:grid-cols-2 spacing-grid">
                     {section.tasks.map(task => <TaskCard key={task.id} task={task} isCreatorView={true}
                       onStatusUpdate={() => {}} onApprove={handleApprove} onReject={() => handleReject(task.id)}
                       onProofUpload={handleProofUpload} uploadProgress={0} onDeleteTaskRequest={handleDeleteTaskRequest}

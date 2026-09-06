@@ -12,7 +12,7 @@ export function MissionsHeader({ onCreate }: { onCreate?: () => void }) {
   const { pathname } = useLocation();
   const { reviewCount, rejectedCount } = useActionCounts();
   return <>
-    <PageHeader title={strings.missionsLabel} subtitle={pathname === '/issued' ? strings.issuedPageSubtitle : strings.inboxSubtitle}
+    <PageHeader title={strings.missionsLabel}
       actions={<Link to="/archive" className="inline-flex items-center gap-2 min-h-[44px] text-sm text-white/65 hover:text-white"><History size={16} />{strings.historyLabel}</Link>} />
     <div className="flex flex-wrap items-center gap-3 mb-6">
       <nav aria-label={t('workflow.missionViews')} className="mission-views flex-1">

@@ -32,7 +32,7 @@ export function BaseCard({
   ...props 
 }: BaseCardProps) {
   const variantClasses = {
-    glass: 'glass-card',
+    glass: 'glass-card starlight-card',
     solid: 'bg-gray-800/90 border border-gray-700/50 rounded-xl',
     bordered: 'bg-transparent border border-gray-700/30 rounded-xl',
   };
@@ -41,8 +41,8 @@ export function BaseCard({
     <div
       className={cn(
         variantClasses[variant],
-        'transition-all duration-300 ease-in-out',
-        hover && 'hover:shadow-lg',
+        'transition-shadow duration-200',
+        hover && 'starlight-card-interactive',
         'spacing-card',
         className
       )}

@@ -46,7 +46,7 @@ const ArchivePage: React.FC = () => {
       <PageBody>
         {archivedTasks.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 spacing-grid">
               {archivedTasks.map(task => (
                 <TaskCard
                   key={task.id}

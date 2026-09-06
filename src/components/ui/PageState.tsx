@@ -20,7 +20,7 @@ export function PageState({ state, message, onRetry, retryLabel }: PageStateProp
 
   if (state === 'loading') {
     return (
-      <BaseCard>
+      <BaseCard hover={false}>
         <div className="text-center py-12">
           <Spinner size="lg" className="mx-auto mb-4" />
           <p className="text-body text-white/70">{message ?? t('common.loading')}</p>

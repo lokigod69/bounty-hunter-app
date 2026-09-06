@@ -16,7 +16,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, illustration, title, body, children, className }: EmptyStateProps) {
   return (
-    <BaseCard className={cn('text-center', className)}>
+    <BaseCard hover={false} className={cn('text-center', className)}>
       <div className="py-8 px-2 flex flex-col items-center">
         {illustration ? (
           <img

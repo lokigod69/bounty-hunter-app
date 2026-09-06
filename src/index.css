@@ -23,28 +23,35 @@ button, [role="button"], a, img {
 }
 @tailwind utilities;
 
-/* The shared workflow: readable headings, visible navigation, optional detail. */
+/* Starlight glass — approved round 02. Display lettering stays live/localized. */
 .page-heading {
-  font-family: var(--font-body);
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
-  font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.035em;
+  font-family: 'Mandalore', var(--font-body);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   margin-bottom: 0.5rem;
   overflow-wrap: anywhere;
+  color: #dce6e8;
+  background: linear-gradient(170deg, #f2f7f7 12%, #b1c5cb 36%, #edf6f5 43%, #7f959e 48%, #bcced1 72%, #effaf7 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 #4d646a) drop-shadow(0 0 12px rgba(155,233,223,.12));
 }
-.app-header { background: rgba(8, 14, 28, 0.96); border-bottom: 1px solid rgba(255,255,255,0.07); }
-.credit-header-link { display: flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 12px; background: rgba(255,255,255,0.05); }
+.app-header { background: rgba(3,8,16,.82); border-bottom: 1px solid rgba(197,222,231,.1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.credit-header-link { display: flex; align-items: center; min-height: 44px; padding: 2px 10px; border-radius: 14px; --glass-accent-rgb: 245,215,110; }
 .primary-nav-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; color: #a9b2c4; font-size: 14px; border-radius: 12px; }
-.primary-nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
+.primary-nav-link:hover { background: rgba(255,255,255,.04); color: white; }
 .primary-nav-link-active { color: var(--mode-accent); }
 .nav-count { position: absolute; left: 14px; top: -7px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 10px; background: var(--mode-accent); color: var(--mode-accent-ink); font-size: 10px; line-height: 17px; text-align: center; font-weight: 700; }
-.bottom-navigation { display: flex; flex-shrink: 0; align-items: stretch; justify-content: space-around; padding: 4px 8px max(6px, env(safe-area-inset-bottom)); background: #0e1728; border-top: 1px solid rgba(255,255,255,0.12); z-index: 20; }
+.bottom-navigation { display: flex; flex-shrink: 0; align-items: stretch; justify-content: space-around; padding: 4px 8px max(6px, env(safe-area-inset-bottom)); background: rgba(5,12,22,.94); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid rgba(197,222,231,.16); z-index: 20; }
 .bottom-navigation .primary-nav-link { flex: 1; min-width: 0; flex-direction: column; gap: 4px; padding: 8px 4px; font-size: 12px; }
-.mission-views { display: flex; min-width: min(100%, 230px); padding: 4px; gap: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; }
-.mission-views a { display: flex; align-items: center; justify-content: center; flex: 1; text-align: center; min-height: 44px; padding: 8px 10px; font-size: 14px; border-radius: 10px; color: #b5bdcd; }
-.mission-views a[aria-current="page"] { background: var(--mode-accent); color: var(--mode-accent-ink); font-weight: 600; }
-.new-mission-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 10px 14px; border-radius: 12px; background: var(--mode-accent); color: var(--mode-accent-ink); font-size: 14px; font-weight: 600; }
+.mission-views { display: flex; min-width: min(100%, 230px); padding: 4px; gap: 4px; background: rgba(6,14,24,.25); border: 1px solid rgba(197,222,231,.16); border-radius: 18px; }
+.mission-views a { display: flex; align-items: center; justify-content: center; flex: 1; text-align: center; min-height: 44px; padding: 8px 10px; font-size: 14px; border-radius: 14px; color: #b5bdcd; }
+.mission-views a[aria-current="page"] { color: #c2f4e9; color: color-mix(in srgb, var(--mode-accent) 40%, white); font-weight: 600; }
+.new-mission-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 10px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; }
 .optional-details { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 8px; }
 .optional-details > summary { cursor: pointer; min-height: 44px; padding: 12px 0; color: #b5bdcd; font-size: 14px; }
 .optional-details > summary:hover { color: white; }
@@ -69,6 +76,8 @@ html, body {
 .main-content {
   position: relative;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(175,200,215,.28) transparent;
 }
 
 /* Prevent bounce on iOS/Android */
@@ -187,17 +196,6 @@ p {
   }
 }
 
-@keyframes laser-pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(4);
-    opacity: 0;
-  }
-}
-
 @keyframes fade-out-trail {
   0% {
     opacity: 1;
@@ -268,14 +266,11 @@ p {
 }
 
 body {
-  /* background-color: var(--primary-bg); -- Replaced by radial-gradient */
-  background-image: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-  /* The linear-gradient grid lines are removed in favor of the radial gradient */
-  /* background-size: 20px 20px; -- Not needed for radial gradient as much, but can be kept if desired for other layers */
+  background: radial-gradient(ellipse at 45% 100%, #0b1520 0%, #060d17 60%, #030810 100%);
   color: var(--text-primary);
   font-family: var(--font-body);
-  @apply min-h-screen; /* Retain min-h-screen from original Tailwind utility */
-  overflow-x: hidden; /* Prevent horizontal scroll if stars go too wide */
+  @apply min-h-screen;
+  overflow-x: hidden;
 }
 
 /* THE REGISTER Wave 0: the starfield. The radial-gradient ground above was the
@@ -334,9 +329,8 @@ body::after {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, #ffd700, #ffed4e);
-    color: #000;
+    padding: 4px 2px;
+    color: #f5d76e;
     font-weight: bold;
     font-size: 14px;
     border-radius: 20px;
@@ -349,159 +343,31 @@ body::after {
 }
 
 @layer components {
-  /* backdrop-filter removed from the card system: every card carried its own
-     blur layer (12 cards = 12 compositing layers re-blurring on every scroll
-     frame). Blur belongs to the few full-bleed surfaces that earn it (modals,
-     header, mobile menu). Over a near-black starfield the visual diff of
-     dropping it here is near-imperceptible. */
+  /* Quiet glass also serves forms/dialogs. Only BaseCard gets the artwork. */
+  .glass-card[role="dialog"] { background-color: rgba(8,17,29,.96); }
+
   .glass-card {
-    @apply rounded-2xl transition-all duration-300 ease-in-out;
-    background-color: rgba(var(--accent-blue-rgb), 0.07);
-    border: 1px solid rgba(var(--accent-blue-rgb), 0.4);
-    box-shadow: 
-      0 0 10px rgba(var(--accent-blue-rgb), 0.15),
-      inset 0 0 6px rgba(var(--accent-blue-rgb), 0.1);
+    @apply rounded-2xl;
+    background-color: rgba(8,17,29,.5);
+    border: 1px solid rgba(197,222,231,.18);
+    box-shadow: inset 0 1px 0 rgba(220,240,245,.05), 0 6px 24px rgba(0,0,0,.12);
   }
 
-  .glass-card:hover {
-    background-color: rgba(var(--accent-blue-rgb), 0.1);
-    border-color: rgba(var(--accent-blue-rgb), 0.6);
-    box-shadow: 
-      0 0 15px rgba(var(--accent-blue-rgb), 0.3),
-      inset 0 0 8px rgba(var(--accent-blue-rgb), 0.15);
+  .btn-cta, .btn-primary, .btn-secondary {
+    @apply relative px-5 py-2.5 rounded-[14px] font-semibold inline-flex items-center justify-center gap-2 min-h-[48px] text-base sm:text-sm;
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 100ms ease;
   }
-  
-  .btn-primary {
-    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out; /* overflow-hidden removed */
-    overflow: visible; /* Added for ::after pseudo-element visibility */
-    background-color: rgba(var(--accent-blue-rgb), 0.15);
-    border: 1px solid rgba(var(--accent-blue-rgb), 0.4);
-    color: var(--accent-cyan);
-    text-shadow: 0 0 5px rgba(var(--accent-cyan-rgb, 100, 255, 218), 0.7); /* Added --accent-cyan-rgb */
-    box-shadow: inset 0 0 5px rgba(var(--accent-blue-rgb), 0.2);
-  }
-
-  .btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .btn-primary:hover, .btn-primary:focus {
-    background-color: rgba(var(--accent-blue-rgb), 0.25);
-    border-color: var(--accent-blue);
-    color: var(--accent-cyan);
-    box-shadow: 
-      0 0 8px var(--accent-blue),
-      0 0 15px rgba(var(--accent-blue-rgb), 0.7),
-      inset 0 0 8px rgba(var(--accent-blue-rgb), 0.3);
-    transform: scale(1.03); /* Subtle scale */
-  }
-
-  .btn-primary:hover::before {
-    animation: scan-line 2s linear infinite;
-    opacity: 0.8;
-  }
-
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle, rgba(0, 255, 255, 0.8), transparent);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .btn-primary:active::after {
-    animation: laser-pulse 0.3s ease-out;
-  }
-
-  .btn-primary:active {
-    background-color: rgba(var(--accent-blue-rgb), 0.3);
-    box-shadow: 
-      0 0 5px var(--accent-blue),
-      inset 0 0 10px rgba(var(--accent-blue-rgb), 0.5);
-    transform: scale(0.98);
-  }
-  
   .btn-secondary {
-    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out overflow-hidden;
-    background-color: rgba(var(--metallic-silver-rgb), 0.1);
-    border: 1px solid rgba(var(--metallic-silver-rgb), 0.3);
-    color: var(--text-secondary);
-    box-shadow: inset 0 0 5px rgba(var(--metallic-silver-rgb), 0.1);
+    background: rgba(185,207,221,.04);
+    border: 1px solid rgba(197,222,231,.22);
+    color: #c2cdd8;
   }
-
-  .btn-secondary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(var(--metallic-silver-rgb), 0.7), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .btn-secondary:hover, .btn-secondary:focus {
-    background-color: rgba(var(--metallic-silver-rgb), 0.15);
-    border-color: rgba(var(--metallic-silver-rgb), 0.6);
-    color: var(--text-primary);
-    box-shadow: 
-      0 0 8px rgba(var(--metallic-silver-rgb), 0.3),
-      0 0 15px rgba(var(--metallic-silver-rgb), 0.2),
-      inset 0 0 8px rgba(var(--metallic-silver-rgb), 0.2);
-    transform: scale(1.03);
-  }
-
-  .btn-secondary:hover::before {
-    animation: scan-line 2.5s linear infinite; /* Slightly slower for secondary */
-    opacity: 0.7;
-  }
-
-  .btn-secondary:active {
-    background-color: rgba(var(--metallic-silver-rgb), 0.2);
-    box-shadow: 
-      0 0 5px rgba(var(--metallic-silver-rgb), 0.2),
-      inset 0 0 10px rgba(var(--metallic-silver-rgb), 0.3);
-    transform: scale(0.98);
-  }
-  
-  /* CTA button — the single primary action per screen (solid mode accent). */
-  .btn-cta {
-    @apply relative px-5 py-2.5 rounded-lg font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm;
-    background-color: var(--mode-accent);
-    color: var(--mode-accent-ink);
-    box-shadow: 0 4px 14px rgba(var(--mode-accent-rgb), 0.35);
-  }
-
-  .btn-cta:hover, .btn-cta:focus {
-    filter: brightness(1.06);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(var(--mode-accent-rgb), 0.45);
-  }
-
-  .btn-cta:active {
-    transform: translateY(0) scale(0.98);
-  }
-
-  .btn-cta:disabled {
-    opacity: 0.5;
+  .btn-secondary:hover { background: rgba(185,207,221,.1); color: white; }
+  .btn-cta:active, .btn-primary:active, .btn-secondary:active { transform: scale(.98); }
+  .btn-cta:disabled, .btn-primary:disabled, .btn-secondary:disabled {
+    opacity: .5;
     cursor: not-allowed;
-    filter: grayscale(0.25);
     transform: none;
-    box-shadow: none;
   }
 
   .input-field {
@@ -700,7 +566,7 @@ body::after {
 
 /* Mobile-optimized button heights */
 .btn-primary, .btn-secondary {
-  @apply min-h-[48px] sm:min-h-[40px];
+  @apply min-h-[48px] sm:min-h-[44px];
   @apply text-base sm:text-sm;
   @apply py-3 sm:py-2;
 }
@@ -1568,15 +1434,9 @@ body::after {
     display: none;
   }
 
-  .btn-primary:hover::before,
-  .btn-secondary:hover::before,
   .btn-danger-galactic:hover::before {
     animation: none; /* scan-line sweep */
     opacity: 0;
-  }
-
-  .btn-primary:active::after {
-    animation: none; /* laser pulse */
   }
 
   .btn-primary:hover, .btn-primary:active,
@@ -1612,3 +1472,79 @@ body::after {
 
 /* Form and settings titles must remain readable at phone sizes. */
 [role="dialog"] h2 { font-family: var(--font-body); letter-spacing: -0.02em; line-height: 1.3; }
+
+/* The RGBA texture carries reflected light only; nine-slice omits its center.
+   Real alpha keeps it clear inside transforms too. No per-card blur or JS.
+   Pseudo-elements cannot intercept input; the CSS border is the image fallback. */
+.starlight-card, .btn-cta, .btn-primary, .new-mission-link,
+.mission-views a[aria-current="page"], .credit-header-link {
+  position: relative;
+  background-color: rgba(8,18,29,.22);
+  background-image: linear-gradient(145deg, rgba(205,238,240,.055), transparent 35%, transparent 70%, rgba(157,223,222,.035));
+  border: 1px solid rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.22);
+  box-shadow: inset 0 1px 1px rgba(225,247,249,.08), inset 0 -8px 18px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.035), 0 5px 18px rgba(0,0,0,.15);
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 100ms ease;
+}
+.starlight-card { border-radius: 20px; }
+.starlight-card::before, .btn-cta::before, .btn-primary::before,
+.new-mission-link::before, .mission-views a[aria-current="page"]::before,
+.credit-header-link::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 24px solid transparent;
+  border-image: url('./assets/generated/starlight-frame-alpha.webp') 80 / 24px / 0 stretch;
+  pointer-events: none;
+  opacity: .22;
+  transition: opacity 160ms ease;
+}
+.btn-cta, .btn-primary, .new-mission-link {
+  color: #c2f4e9;
+  color: color-mix(in srgb, var(--mode-accent) 40%, white);
+}
+.btn-cta, .new-mission-link { background-color: rgba(var(--mode-accent-rgb),.07); }
+.btn-cta::before, .new-mission-link::before,
+.mission-views a[aria-current="page"]::before { opacity: .65; }
+.credit-header-link::before { opacity: .4; }
+.starlight-card:focus-within::before, .starlight-card.starlight-card-interactive:active::before,
+.btn-cta:focus-visible::before, .btn-primary:focus-visible::before,
+.new-mission-link:focus-visible::before, .credit-header-link:focus-visible::before { opacity: 1; }
+@media (hover: hover) {
+  .starlight-card.starlight-card-interactive:hover, .btn-cta:hover, .btn-primary:hover, .new-mission-link:hover {
+    background-color: rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.055);
+    box-shadow: inset 0 1px 1px rgba(225,247,249,.18), inset 0 -10px 20px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.06), 0 0 22px rgba(var(--glass-accent-rgb, var(--mode-accent-rgb)),.08);
+  }
+  .starlight-card.starlight-card-interactive:hover::before, .btn-cta:hover::before, .btn-primary:hover::before,
+  .new-mission-link:hover::before, .credit-header-link:hover::before { opacity: 1; }
+}
+.new-mission-link:active, .mission-views a:active { transform: scale(.985); }
+:where(a, button, [role="button"]):focus-visible { outline: 2px solid #b9f4e8; outline-offset: 4px; }
+.starlight-card[data-reward-type="credit"] { --glass-accent-rgb: 245,215,110; }
+.starlight-card[data-state="completed"] { --glass-accent-rgb: 110,231,183; }
+.starlight-card[data-state="review"] { --glass-accent-rgb: 245,215,110; }
+.starlight-card[data-state="rejected"] { --glass-accent-rgb: 253,186,116; }
+.starlight-card[data-state="archived"] { --glass-accent-rgb: 148,163,184; }
+@media (prefers-reduced-motion: reduce) {
+  .starlight-card, .new-mission-link, .mission-views a { transform: none !important; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass-card, .starlight-card, .btn-cta, .btn-primary, .new-mission-link,
+  .mission-views, .mission-views a[aria-current="page"], .credit-header-link,
+  .app-header, .bottom-navigation {
+    /* User contrast preferences also override inline card tints and hover. */
+    background: #0b1523 !important;
+    border-color: #8398ab !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .starlight-card::before, .btn-cta::before, .btn-primary::before,
+  .new-mission-link::before, .mission-views a[aria-current="page"]::before,
+  .credit-header-link::before { display: none; }
+  .page-heading { background: none; -webkit-text-fill-color: currentColor; filter: none; }
+}
+@media (forced-colors: active) {
+  .page-heading { background: none; -webkit-text-fill-color: CanvasText; filter: none; }
+  .starlight-card::before, .btn-cta::before, .btn-primary::before,
+  .new-mission-link::before, .mission-views a[aria-current="page"]::before,
+  .credit-header-link::before { display: none; }
+}

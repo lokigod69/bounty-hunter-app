@@ -1,8 +1,8 @@
 // src/components/ui/AppButton.tsx
 // Unified button with a clear visual hierarchy across the app.
-// - cta: solid mode-accent fill, the single primary action on a screen
-// - secondary: glowing ghost (legacy .btn-primary look)
-// - ghost: quiet silver ghost (legacy .btn-secondary look)
+// - cta: reflected crystal rim and accent tint, the primary action
+// - secondary: quieter glass rim
+// - ghost: quiet silver outline
 // - danger: destructive actions
 // Styling is delegated to the existing CSS button classes so the look stays consistent.
 

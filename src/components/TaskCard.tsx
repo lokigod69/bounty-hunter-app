@@ -1,12 +1,5 @@
-// src/components/TaskCard.tsx
-// REFACTOR: Implemented modal-based expansion system to fix layout bugs.
-// Expanded card now renders as a fixed-position overlay, separate from grid/flex flow.
-// FONT FIX: Applied Futura font (via inline styles) to card titles, descriptions, and status text.
-// CRITICAL FIX: Uses React Portal (createPortal) for tooltips and modals.
-// UI REFINEMENT: Consolidated status display at the bottom of the expanded card modal.
-// DATA FIX: Uses task.creator.display_name and task.assignee.display_name.
-// R35: Type-based card accent (gold=credit / mode=gift), TypeEmblem indicator, daily badge.
-// Wave B: Pending contracts can be accepted; dossier evidence renders text and private media.
+// Mission summary opens a separate accessible detail dialog.
+// Reward/status accents stay on the rim and status chip; content stays live.
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -140,24 +133,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
   const actorName: string = isCreatorView ? (assignee?.display_name ?? 'N/A') : (creator?.display_name ?? 'N/A');
 
-  // R28: Mode-aware card backgrounds with accent borders from accentVariants
-  // Archived/completed/review have specific colors, pending uses mode accent
-  const collapsedCardBgColor = isArchived
-    ? 'bg-slate-800/60 border-slate-600/40 hover:border-slate-500'
-    : safeStatus === 'completed'
-    ? 'bg-slate-900/50 border-green-500/40 hover:border-green-400'
-    : safeStatus === 'review'
-    ? 'bg-slate-900/50 border-yellow-500/40 hover:border-yellow-400'
-    : 'bg-slate-900/50'; // Pending/other - border applied via style prop
-
-  // R28: Title colors - pending uses neutral white (accent is on border/chip), others stay semantic
-  const titleColorClass = isArchived
-    ? 'text-slate-500'
-    : safeStatus === 'completed'
-    ? 'text-green-400'
-    : safeStatus === 'review'
-    ? 'text-yellow-400'
-    : 'text-white/90'; // R28: Pending/other - neutral white, accent shows on border/chip
+  // Reward/status tint belongs to the rim; text keeps a calm, readable hierarchy.
+  const titleColorClass = isArchived ? 'text-slate-400' : 'text-white/90';
 
   return (
     <>
@@ -314,15 +291,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {/* R28: Apply mode-aware accent border for pending tasks */}
       <BaseCard
         variant="glass"
-        className={`relative cursor-pointer overflow-visible touch-manipulation motion-safe:active:scale-[0.99] active:duration-100 ${collapsedCardBgColor} p-4 sm:p-5`}
-        style={
-          !isArchived && (safeStatus === 'pending' || safeStatus === 'in_progress')
-            ? {
-                borderColor: accentVariant.borderColor,
-                boxShadow: `0 0 8px ${accentVariant.glowColor}`,
-              }
-            : undefined
-        }
+        className={`relative cursor-pointer overflow-visible touch-manipulation motion-safe:active:scale-[0.99] active:duration-100 p-4 sm:p-5`}
+        data-reward-type={derivedRewardType}
+        data-state={isArchived ? 'archived' : safeStatus}
         hover={true}
         onClick={(e) => {
           e.preventDefault();
@@ -346,28 +317,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
           {/* Top row: Status chip + Title + Deadline */}
           <div className="flex justify-between items-start gap-2 mb-2">
-            {/* flex-wrap, and a real basis on the title further down.
-                Both badges are `whitespace-nowrap flex-shrink-0` and the
-                countdown column is flex-shrink-0, so the h3 was the only box in
-                this row with both flex-shrink:1 and min-width:0 — flexbox
-                resolved the ENTIRE deficit against it and min-w-0 put its floor
-                at zero. line-clamp-2 compiles to overflow:hidden, so a
-                zero-width title renders nothing at all: no ellipsis, no
-                overflow, no clue that a title exists.
-
-                German is where it crosses zero. "Zurückgesendet" (112px) +
-                "Täglicher Moment" (139px) + two 8px gaps = 268px of nowrap
-                badges. The content box is 296px on a 360px phone and 264px in
-                the desktop lg:grid-cols-3 grid ((1024-64-48)/3 = 304px card,
-                sm:p-5) — subtract the row gap and a 69px countdown and the
-                title was owed -48px and -80px respectively. English lands at
-                176px and merely looks cramped, which is why this read as a
-                German bug. Polish is worse than German again at 289px.
-
-                Not fixed with a breakpoint, and that is the point: the
-                narrowest task card in the app is a DESKTOP one (264px), 32px
-                narrower than a 360px phone's, so an xs:/sm: fix would have
-                closed the report and left the desktop grid broken. */}
+            {/* Wrap badges before they squeeze the title; long translations need
+                a real minimum title width, independent of viewport breakpoints. */}
             <div className="flex-1 min-w-0 flex flex-wrap items-start gap-2">
               {/* R28: Status chip - mode-aware styling for pending */}
               <span
