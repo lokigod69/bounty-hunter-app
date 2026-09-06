@@ -27,7 +27,7 @@ References inspected: rounds/round-02/B-01.png and C-01.png. Supersedes the earl
 - C / Astral lens: ink #040A13, angular optical crystal, narrow cyan #7CFFF0 / violet #BAA4FF / warm gold #FFD791 prismatic catches. Authored chamfered frame, floating framed header and delicate orbital line around the page heading. Distinct angular shapes and glass depth, without permanent star flare or moving space background.
 - All skins: fixed frame corners scale through nine-slice, content stays fluid. No card-size-specific images, screenshot backdrops or runtime drawing engine. The palette remains independent. Main text/nav hierarchy and existing page rhythm persist.
 - Dialogs: aligned evidence/reward columns, with more width for the report, one column on phones. Common top/bottom edges; center a single reward within a useful-width panel. Approve/Reject share height, width and typography; danger color still signals rejection.
-- Credits: ⚠️ adjacent-numeral treatment superseded by round 05 below. Keep live localized text and no generated digit alphabet.
+- Credits: ⚠️ adjacent-numeral treatment and the no-digit-artwork rule are superseded by rounds 05/06 below. Accessible localized amounts remain live.
 - Interaction: short light sweep on intent/press, no perpetual animation. Keyboard equivalent and reduced-motion fallbacks; preserve disabled/loading and focus-trap behavior.
 - Target each skin's reusable decoration below 100 kB. Load only the selected material. Static thumbnails may use the already-loaded preview textures in the settings screen. Measure final bytes; real iPhone rendering remains unverified.
 
@@ -39,4 +39,12 @@ Round 04 supersedes the one-frame-for-everything material rule. Keep the origina
 
 ## 2026-09-07 — readable medallions and reward flow
 
+⚠️ The blank dark faces and visible live numerals below are superseded by round 06. Forms, frame corrections and collection behavior remain current.
+
 Round 05 puts live localized amounts into deliberately blank dark centers in three new coin materials. The header uses the coin itself as its control, removing its redundant surrounding plaque. Clipped dialogs/reward cards use tight versions of the existing panels, with compensated nine-slice widths. Six new assets total 157,468 bytes across A/B/C; this supersedes the earlier total-decoration budget as a measured user-authorized extension. Form choices are Gift / Credits and five coin amounts; labels are For / Reward / Details. Collected rewards have explicit Ready/Used states with Undo. Phone reward tabs have equal widths and allow translated labels to wrap. See rounds/round-05/VERDICTS.md and verification/README.md. No new product skin selector: the top comparison toolbar exists only in the sample preview.
+
+## 2026-09-07 — shared authored numerals and solid metal tokens
+
+Michael explicitly rejects the fantasy gem rings/black void and requests actual reusable 0–9 artwork across all skins. Round 06 is a direct refinement of the locked skins. Starlight uses silver/mint titanium, Forged tungsten/brass, Astral silver with cyan/violet catches. Each has a solid brushed face and short overlapping rim tabs extending outside its silhouette. Ten bright ivory-platinum raster digits share a frontal bevel, cap height and material. Their generated proportions are preserved; locale grouping punctuation stays live. Accessible full text, image-failure text and forced-colors text remain available. This is a deliberate exception to live-only display typography, limited to credit amounts.
+
+Three 256px emblem WebPs plus ten 96px-high glyph WebPs total 122,888 bytes. Remove the four unreferenced prior coin assets (97,982 bytes); net artwork increase is 24,906 bytes. No per-value/per-skin numeral duplicates, runtime image generator or new dependency. One/two-digit small tokens remain 48px, larger amounts grow up to 112px. All surfaces use the shared Coin component, including valueless loading/ceremony tokens. Source prompts, mechanical exporter and browser evidence are in rounds/round-06/.

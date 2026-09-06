@@ -1,0 +1,209 @@
+{
+  "emblems": {
+    "starlight": {
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -94,
+      "trimOffsetTop": -73,
+      "hasAlpha": true,
+      "size": 24730
+    },
+    "forged": {
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -111,
+      "trimOffsetTop": -32,
+      "hasAlpha": true,
+      "size": 24048
+    },
+    "astral": {
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -84,
+      "trimOffsetTop": -60,
+      "hasAlpha": true,
+      "size": 26480
+    }
+  },
+  "digits": {
+    "0": {
+      "cell": {
+        "left": 0,
+        "top": 0,
+        "width": 397,
+        "height": 397
+      },
+      "format": "webp",
+      "width": 89,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -73,
+      "trimOffsetTop": -41,
+      "hasAlpha": true,
+      "size": 4108
+    },
+    "1": {
+      "cell": {
+        "left": 397,
+        "top": 0,
+        "width": 396,
+        "height": 397
+      },
+      "format": "webp",
+      "width": 71,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -91,
+      "trimOffsetTop": -42,
+      "hasAlpha": true,
+      "size": 3638
+    },
+    "2": {
+      "cell": {
+        "left": 793,
+        "top": 0,
+        "width": 397,
+        "height": 397
+      },
+      "format": "webp",
+      "width": 91,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -43,
+      "trimOffsetTop": -41,
+      "hasAlpha": true,
+      "size": 5168
+    },
+    "3": {
+      "cell": {
+        "left": 1190,
+        "top": 0,
+        "width": 396,
+        "height": 397
+      },
+      "format": "webp",
+      "width": 91,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -28,
+      "trimOffsetTop": -41,
+      "hasAlpha": true,
+      "size": 5326
+    },
+    "4": {
+      "cell": {
+        "left": 1586,
+        "top": 0,
+        "width": 397,
+        "height": 397
+      },
+      "format": "webp",
+      "width": 96,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -11,
+      "trimOffsetTop": -41,
+      "hasAlpha": true,
+      "size": 4440
+    },
+    "5": {
+      "cell": {
+        "left": 0,
+        "top": 397,
+        "width": 397,
+        "height": 396
+      },
+      "format": "webp",
+      "width": 92,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -67,
+      "trimOffsetTop": -23,
+      "hasAlpha": true,
+      "size": 5306
+    },
+    "6": {
+      "cell": {
+        "left": 397,
+        "top": 397,
+        "width": 396,
+        "height": 396
+      },
+      "format": "webp",
+      "width": 91,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -54,
+      "trimOffsetTop": -22,
+      "hasAlpha": true,
+      "size": 4972
+    },
+    "7": {
+      "cell": {
+        "left": 793,
+        "top": 397,
+        "width": 397,
+        "height": 396
+      },
+      "format": "webp",
+      "width": 92,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -43,
+      "trimOffsetTop": -23,
+      "hasAlpha": true,
+      "size": 4312
+    },
+    "8": {
+      "cell": {
+        "left": 1190,
+        "top": 397,
+        "width": 396,
+        "height": 396
+      },
+      "format": "webp",
+      "width": 92,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -26,
+      "trimOffsetTop": -21,
+      "hasAlpha": true,
+      "size": 5166
+    },
+    "9": {
+      "cell": {
+        "left": 1586,
+        "top": 397,
+        "width": 397,
+        "height": 396
+      },
+      "format": "webp",
+      "width": 91,
+      "height": 96,
+      "channels": 4,
+      "premultiplied": true,
+      "trimOffsetLeft": -26,
+      "trimOffsetTop": -23,
+      "hasAlpha": true,
+      "size": 5194
+    }
+  }
+}
