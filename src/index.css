@@ -1401,8 +1401,11 @@ body::after {
 .credit-header-link::before {
   content: '';
   position: absolute;
+  z-index: 2;
   inset: var(--frame-inset);
-  border: var(--frame-width) solid transparent;
+  border-style: solid;
+  border-color: transparent;
+  border-width: var(--frame-width);
   border-image: var(--surface-frame) var(--frame-slice) / var(--frame-width) / 0 stretch;
   pointer-events: none;
   opacity: var(--frame-rest);

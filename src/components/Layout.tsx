@@ -63,7 +63,7 @@ export default function Layout() {
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2 min-w-0 mr-auto">
             <img src={logo} alt={t('layout.logoAlt')} className="h-9 w-9 flex-shrink-0" />
-            <span className="app-title text-base text-white hidden sm:inline min-w-0 truncate">{strings.appName}</span>
+            <span className="app-title app-wordmark text-base text-white hidden sm:inline whitespace-nowrap">{strings.appName}</span>
           </Link>
           <nav aria-label={t('workflow.navigation')} className="hidden nav:flex items-center gap-2">{navigation}</nav>
           <Link to="/rewards-store" data-credit-anchor="header" className="credit-header-link"
@@ -71,7 +71,7 @@ export default function Layout() {
             <UserCredits />
           </Link>
           <button type="button" onClick={() => setProfileOpen(true)}
-            aria-label={t('workflow.profile')} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-white/10">
+            aria-label={t('workflow.profile')} className="profile-trigger avatar-ring min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-white/10">
             <img src={profile?.avatar_url || avatarFallback(displayName)} alt="" className="w-9 h-9 rounded-full object-cover border border-white/20" />
           </button>
         </div>

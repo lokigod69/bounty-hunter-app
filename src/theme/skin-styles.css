@@ -2,6 +2,8 @@
    by the board; settings swatches intentionally preview all three. */
 :root, [data-preview-skin="starlight"] {
   --surface-frame: url('../assets/generated/starlight-frame-alpha.webp');
+  --control-frame: url('../assets/generated/starlight-control-frame.webp');
+  --avatar-ring: url('../assets/generated/starlight-avatar-ring.webp');
   --frame-slice: 80;
   --frame-width: 24px;
   --frame-inset: -6px;
@@ -11,6 +13,8 @@
 }
 :root[data-skin="forged"], [data-preview-skin="forged"] {
   --surface-frame: url('../assets/generated/forged-frame.webp');
+  --control-frame: url('../assets/generated/forged-control-frame.webp');
+  --avatar-ring: url('../assets/generated/forged-avatar-ring.webp');
   --frame-slice: 160;
   --frame-width: 48px;
   --frame-inset: -8px;
@@ -20,6 +24,8 @@
 }
 :root[data-skin="astral"], [data-preview-skin="astral"] {
   --surface-frame: url('../assets/generated/astral-frame.webp');
+  --control-frame: url('../assets/generated/astral-control-frame.webp');
+  --avatar-ring: url('../assets/generated/astral-avatar-ring.webp');
   --frame-slice: 95;
   --frame-width: 28px;
   --frame-inset: -7px;
@@ -86,7 +92,7 @@ button:enabled > .button-glint[data-pressed], button:enabled:focus-visible > .bu
 [data-skin="forged"] .mission-panel { background-color: #19231f !important; border-color: #a38b594d !important; box-shadow: inset 0 2px 8px #0006, 0 1px #ecda9f0a; }
 [data-skin="forged"] .mission-dialog { --modal-bg: #0b1214; }
 [data-skin="forged"] .glass-card[role="dialog"] { background-color: #0b1214; }
-[data-skin="forged"] :is(.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link, .mission-views a, .credit-header-link) { --frame-width: 30px; --frame-inset: -5px; background-color: #101d1de6; }
+[data-skin="forged"] :is(.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link, .mission-views a, .credit-header-link) { background-color: #101d1de6; }
 [data-skin="forged"] .mission-views { background: #060b0db3; border-color: #a38b5940; border-radius: 10px; }
 [data-skin="forged"] .primary-nav-link-active { background: linear-gradient(0deg, #55ebcd0d, transparent); box-shadow: inset 0 -1px #9cdac870; }
 
@@ -119,8 +125,25 @@ button:enabled > .button-glint[data-pressed], button:enabled:focus-visible > .bu
 @media (prefers-reduced-motion: reduce) {
   button > .button-glint { animation: none !important; display: none; }
 }
+
+/* Controls have their own wide source. Corner slices scale uniformly; only
+   straight edge strips extend, and the image center is never painted. */
+:root :is(.btn-cta, .btn-primary, .btn-danger-galactic, .new-mission-link, .mission-views a, .credit-header-link) {
+  --surface-frame: var(--control-frame);
+  --frame-slice: 60 100;
+  --frame-width: 18px 30px;
+  --frame-inset: -3px;
+}
+.avatar-ring { position: relative; display: inline-flex; flex: none; border-radius: 50%; }
+.avatar-ring::after { content: ''; position: absolute; inset: -5px; background: var(--avatar-ring) center / contain no-repeat; pointer-events: none; }
+.profile-trigger.avatar-ring::after { inset: 0; }
+.reward-card { --frame-inset: 0px; isolation: isolate; }
+/* At middle desktop widths, use the complete emblem rather than a cut word. */
+@media (min-width: 768px) and (max-width: 1079px) and (min-height: 500px) {
+  .app-header .app-wordmark { display: none; }
+}
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
   :is([data-skin="forged"], [data-skin="astral"]) :is(.app-header, .bottom-navigation, .mission-dialog, .glass-card[role="dialog"])::before,
-  .page-heading::after, .button-glint { display: none; }
+  .page-heading::after, .button-glint, .avatar-ring::after { display: none; }
   [data-skin] .mission-panel { background: #0b1523 !important; border-color: #8398ab !important; }
 }

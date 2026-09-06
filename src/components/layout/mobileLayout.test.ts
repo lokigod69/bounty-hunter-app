@@ -133,11 +133,12 @@ describe('the header wordmark cannot paint over the mobile control cluster', () 
   it('the wordmark is hidden until there is width for it', () => {
     // The wordmark needs a 507px viewport at text-2xl (40 + 8 + 215.7 + 211 +
     // 32px of gutter). No phone in portrait clears that at any readable size,
-    // so below sm only the mark renders; truncate is the backstop above it.
+    // so below sm only the mark renders. The approved shape pass hides the
+    // wordmark at compact desktop widths too, instead of truncating the brand;
+    // that CSS cascade is verified in round-04's real 960px browser capture.
     const span = /<span className="(app-title[^"]*)"/.exec(layout)?.[1] ?? '';
     expect(span).toMatch(/\bhidden\b/);
     expect(span).toMatch(/\bsm:inline\b/);
-    expect(span).toMatch(/\btruncate\b/);
   });
 
   it('the credit pill never renders a sentence', () => {

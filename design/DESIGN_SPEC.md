@@ -32,3 +32,7 @@ References inspected: rounds/round-02/B-01.png and C-01.png. Supersedes the earl
 - Target each skin's reusable decoration below 100 kB. Load only the selected material. Static thumbnails may use the already-loaded preview textures in the settings screen. Measure final bytes; real iPhone rendering remains unverified.
 
 Implemented in 59c29e2. B 29,520 bytes; C 20,438 bytes. Proof and implementation details: rounds/round-03/verification/README.md.
+
+## 2026-09-07 — authored controls and circular portraits
+
+Round 04 supersedes the one-frame-for-everything material rule. Keep the original nine-slice panel for square/wide/tall content, use a separate shallow control frame for actions/tabs/balance, and a uniformly scaled circular ring for portraits. Six new WebPs add 129,108 bytes; all three complete decoration sets remain below 100 kB each. The main panel corner art is preserved at every aspect ratio, not squeezed into a rectangle. No per-card-size variants, new settings, animation loop or rasterized text. See rounds/round-04/VERDICTS.md and its browser evidence.

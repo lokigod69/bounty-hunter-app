@@ -231,6 +231,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       <div className="p-4 sm:p-6 overflow-y-auto flex-grow">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col items-center space-y-3">
+              <div className="avatar-ring">
               {avatarPreview ? (
                 <img 
                   src={avatarPreview} 
@@ -240,6 +241,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               ) : (
                 <UserCircle size={80} className="text-white/30" />
               )}
+              </div>
               <FileUpload onFileSelect={handleFileSelect} accept="image/png, image/jpeg, image/gif">
                 <div className="btn-secondary cursor-pointer text-sm">
                   <UploadCloud size={16} className="inline mr-1" /> {t('profile.changeAvatar')}

@@ -61,7 +61,7 @@ export default function FriendCard({
     // to think of.
     <BaseCard variant="glass" className="flex flex-wrap items-center gap-x-4 gap-y-3">
       {/* Avatar */}
-      <div className="flex-shrink-0">
+      <div className="avatar-ring">
         {profile.avatar_url ? (
           <div className="w-12 h-12 rounded-full overflow-hidden">
             <img

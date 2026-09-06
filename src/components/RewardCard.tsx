@@ -148,7 +148,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, view, onAction, onEdit,
       {/* R27: Apply subtle accent border glow based on mode */}
       <BaseCard
         variant="glass"
-        className={`overflow-hidden flex flex-col h-full p-0 transition-all duration-200 touch-manipulation ${!canAfford && view === 'available' ? 'opacity-75' : 'motion-safe:active:scale-[0.99] active:duration-100'}`}
+        className={`reward-card overflow-hidden flex flex-col h-full p-0 transition-all duration-200 touch-manipulation ${!canAfford && view === 'available' ? 'opacity-75' : 'motion-safe:active:scale-[0.99] active:duration-100'}`}
         data-reward-type="credit"
       >
         {/* R26: Top area - Image/emoji - always square aspect ratio */}
