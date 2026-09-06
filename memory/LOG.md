@@ -1,3 +1,11 @@
+## 2026-09-07 — B/C skins and dialog polish, source 59c29e2
+
+- Michael explicitly requested B/C implementation and delegated visual refinements; release/security/iPhone work stays next.
+- Added device-local skin selection in ThemeContext/ProfileEditModal, localized in 12 languages; skin-styles.css holds material tokens, generated nine-slice frames and one-shot rim light. B/C final RGBA WebPs total 49,958 bytes; original art/prompts under design/rounds/round-03/assets.
+- Simplified Coin and all callers to adjacent live amounts; removed unused animation/overlay code. MissionModalShell/EvidencePanel align panels and equalize actions; TaskCard has consistent minimum content height. Fixed the new mobile navigation frame's 2px outer scroll.
+- Verified 345 tests/29 files, app TypeScript/build, lint 0 errors/3 existing warnings, clean diff. Browser desktop/390/360, A/B/C persistence, German large values, Accept/Approve/Reject and keyboard glint; screenshots and limits in round-03/verification. No browser errors. No live data/service/native changes.
+- Source is independently reversible at 59c29e2; design/evidence/memory handoff is separate. User can select A immediately without undoing shared readability/layout fixes.
+
 ## 2026-09-07 — Approved A implemented, source 03f9323
 
 - Michael selected A, with B/C deferred. Relocked DESIGN_SPEC, preserved round-01 spec and all round-02 mockups/prompts/verdicts.

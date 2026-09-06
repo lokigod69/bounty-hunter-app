@@ -13,7 +13,7 @@ Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking d
 | Domain logic | `src/core/` (contracts, credits, proofs, rewards), `src/domain/` | Pure, vitest-tested; keep Supabase I/O out of here |
 | Data hooks | `src/hooks/` | Contract hooks use stale-while-revalidate; `useSignedProofUrl` exchanges private proof paths; `usePayoutWatcher` baselines then diffs hunter-side review→completed credit transitions |
 | Security tests | `src/security/` | Regression tests for email functions, storage policies, launch quick-fixes |
-| Theming | `src/theme/` | Shared product vocabulary; optional Mint/Gold/Rose palettes; theme-specific rank flavor only |
+| Theming | `src/theme/`, `src/context/ThemeContext.tsx` | Shared vocabulary; account Mint/Gold/Rose palette plus independent device-local Starlight/Forged/Astral skin; rank flavor only |
 | i18n | `src/i18n/locales/*/{translation,quotes}.json` | Twelve locales, English eager and others lazy; older hardcoded surfaces remain |
 | Supabase client | `src/lib/supabase.ts` | Needs `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local` |
 | DB schema | `supabase/migrations/` | Through 2026-06-11 (storage buckets/policies); generated types in `src/types/database.ts` |
@@ -40,3 +40,7 @@ Client hooks query Supabase tables directly under RLS. Task lifecycle transition
 ProtectedRoute sends a retained invite token to InvitePage before FTXGate. InvitePage owns redemption/retry; tokens are cleared on success or explicit dismissal. Native auth listens for appUrlOpen and reads getLaunchUrl, deduplicating callbacks. The public web origin builder rejects non-shareable native origins. There is no native push/deletion endpoint yet.
 
 The separate tests/ux-preview Vite config injects a fictional in-memory Supabase adapter for UI verification only. Production vite.config.ts does not reference that adapter. No fake credentials/data are shipped in the regular build.
+
+## 2026-09-07 visual materials
+
+ThemeContext exposes skinId/setSkinId separately from the persisted account theme. The validated bounty_skin localStorage preference sets html[data-skin] before paint. src/theme/skin-styles.css defines three materials and references one generated WebP per finish; index.css applies the shared frame variables. Profile swatches preview all three. Coin contains a decorative image plus a localized numeric span; AppButton keys a decorative span per press to restart one short CSS rim glint without timers. No new backend fields or runtime dependencies.

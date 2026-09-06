@@ -11,16 +11,18 @@ Private missions and rewards between connected accounts. One People list support
 - Email-first login; web Google is secondary, native email-only for now. Cold/warm native auth callbacks are handled. Public HTTPS origin is required for native invitation links.
 
 ## Latest verification
-- App TypeScript: clean. Tests: 340 / 27 files pass. Lint: 0 errors, 3 existing Fast Refresh warnings. Production build: passes; main chunk ~352 kB.
+- App TypeScript: clean. Tests: 345 / 29 files pass. Lint: 0 errors, 3 existing Fast Refresh warnings. Production build: passes; main chunk 351.15 kB.
 - Local browser fixture verified desktop, 390/360px phones, landscape, German, appearance changes, preselected creation, approval, first-run and invite recovery. See [[../docs/product-simplification/RELEASE_REVIEW]].
 - No live SQL/account writes or physical-device checks in this pass. No claim of public iOS readiness.
 - Dependency audit: 2 moderate React Router package findings remain; reviewed major upgrade is next security work. Compatible patches removed the other reported advisories.
 
-## Latest milestone — Starlight glass A implemented
-- Michael approved round-02 A on 2026-09-07; B/C remain saved future skins. Source commit 03f9323 is pushed to main and contains this reversible visual pass separately from the earlier UX work.
-- Real Mandalore headings, no Missions subtitle, transparent reflected controls/cards and credit capsule. One generated 32,952-byte RGBA WebP frame; no skin selector or dependency added. Two desktop mission columns and wrapping phone headers; forms remain darker.
-- Browser checked desktop, 390/360px phones, German/Rose, landscape, focus/Escape and successful in-memory mission creation. Final gates: 340/27 tests, clean app TypeScript/build, lint 0 errors/3 known warnings. See [[../design/rounds/round-02/verification/README]].
-- Next: Michael tries A in the working preview; then resume release/security. No service inputs required to inspect the visual result. Physical iPhone performance and OS contrast/transparency emulation remain unverified.
+## Latest milestone — A/B/C skins and dialog polish
+- Michael approved B/C on 2026-09-07. Source 59c29e2 is independently reversible from A (03f9323) and the workflow pass (c8a52c3).
+- Avatar → Appearance offers Starlight, Forged and Astral. Skin is device-local, independent of the Mint/Gold/Rose account palette. A remains the unsaved default; changing skin never changes recipients or missions.
+- B metal/brass and C angular optical frames cover navigation, cards, dialogs and controls. Two true-alpha WebPs total 49,958 bytes. Live Mandalore/Poppins and all twelve translations remain; no new dependency or DB setting.
+- Credits display beside the coin in readable live numerals; unused spin/overlay code removed. Evidence/reward panels align, action pairs share sizing, mission card minimum heights agree, and button rims glint once on hover/focus/press.
+- 345/29 tests, clean app types/build, lint 0 errors/3 known warnings. Browser: A/B/C, reload, 1280 desktop, 390/360 phones, German 12.500 credits, keyboard feedback and in-memory Accept/Approve/Reject. See [[../design/rounds/round-03/verification/README]].
+- Next: Michael tries the skins; release/security/iPhone work follows. No owner inputs needed for this visual review. Physical iPhone and OS accessibility preference emulation remain unverified.
 
 ## Release blockers / subsequent actions
 1. Reconcile live 014/015 state. Saved July 30 evidence showed profiles RLS OFF and an empty Realtime publication; proposals were still staged August 3. Current live state is unverified. Use approved access, backup and review under the runbooks; never request a password in chat.
@@ -38,6 +40,6 @@ Private missions and rewards between connected accounts. One People list support
 - Existing native bundle is stale until rebuilt/synced on Mac. No Apple archive/upload was performed here.
 
 ## Current handoff
-UX simplification implementation c8a52c3 is committed and pushed to origin/main under Michael's explicit authorization. The separate handoff commit contains the design/verification artifacts and memory update. Starlight source is 03f9323; design/history/evidence and handoff are committed separately. Current resume instructions: protocol/NEXT_STEP.md. Full evidence, remaining engineering work and human setup: docs/product-simplification/RELEASE_REVIEW.md.
+UX simplification implementation c8a52c3 is committed and pushed to origin/main under Michael's explicit authorization. The separate handoff commit contains the design/verification artifacts and memory update. Starlight source is 03f9323; A/B/C and dialog polish source is 59c29e2. Design/history/evidence and handoff are committed separately. Current resume instructions: protocol/NEXT_STEP.md. Full evidence, remaining engineering work and human setup: docs/product-simplification/RELEASE_REVIEW.md.
 
 Prior overgrown state is preserved, explicitly historical, in [[archive/STATE_2026-08-03]]. Do not treat its obsolete instructions as current.

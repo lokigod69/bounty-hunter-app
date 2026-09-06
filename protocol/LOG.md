@@ -46,3 +46,5 @@
 
 2026-09-07 — A approved and implemented as 03f9323; one 32,952-byte RGBA frame, live Mandalore headings, clearer surfaces/two-column missions. 340/27 tests, app types/build pass, lint 0 errors/3 known warnings. Browser desktop/phone/German/landscape/hover/focus/create checked; design evidence and memory saved. B/C deferred; release/security next.
 2026-09-07 — Pushed source 03f9323 and design handoff a4bd2fb to origin/main. Replaced the German phone evidence image after discovering the first capture showed its loading state; verified the replacement visually. No runtime changes after the final gates.
+
+2026-09-07 — B/C explicitly approved and implemented as 59c29e2, independently reversible. Device-local skins, two RGBA WebPs (49,958 bytes), adjacent localized credit amounts, aligned panels/equal actions, one-shot rim glints. 345/29 tests, app types/build pass; lint 0 errors/3 known warnings. Browser desktop/390/360, German 12.500, reload/A fallback, keyboard feedback, Accept/Approve/Reject; no errors. Source and design/evidence handoff prepared for main. Release/security/iPhone work deferred to next milestone.

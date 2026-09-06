@@ -1,5 +1,5 @@
 # Protocol — Bounty Hunter
-Mode: 2 Milestone. A — Starlight glass approved 2026-09-07; implement and verify autonomously. B/C parked for later. Michael reviews the working visual milestone before the subsequent release/security pass.
+Mode: 2 Milestone. A/B/C visual skins and dialog polish approved 2026-09-07; implement and verify autonomously. Release/security/iPhone testing follows the visual work.
 Brain: memory/ (Second Brain Protocol) — coordination here, memory there. Resume order: this file → NEXT_STEP.md → memory/INDEX.md + memory/STATE.md → verify → work. Closing ritual: brain save first, then NEXT_STEP → BOARD → LOG → Status Block.
 Definition of v1-done: The app is safely usable by a private group in production — uncommitted work verified and committed; production migration state reconciled and recorded; storage buckets/policies confirmed live; task lifecycle writes moved to server RPCs (or explicitly risk-accepted); legacy notification functions hardened or undeployed; `npm run build`, `npm run lint`, `npm test` all green.
 Decision rights: mode-standard, plus one hard deviation — **production SQL is never applied without a backup and Michael's explicit go**, regardless of mode (see db/proposals/ + docs/runbooks/ process).

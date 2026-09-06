@@ -255,10 +255,20 @@ Entries below dated before 2026-07-07 are ⚠️ reconstructed from git history,
 **Evidence:** docs/product-simplification/RELEASE_REVIEW.md, design/DESIGN_SPEC.md and browser screenshots; baseline 14c92a0. UX changes are reversible without a migration.
 
 ## 2026-09-07 — Reopen material/lettering direction, keep the simplified workflow
-**Status:** active review gate; no visual direction locked yet.
+**Status:** superseded by the A lock and subsequent B/C approval below.
 **Decision:** Michael accepts the layout but requests a more distinctive asset-driven surface: characteristic Mandalore headings, no unnecessary Missions subtitle, glass revealing stars, authored frames/button details. He explicitly requests mockups → his green light → implementation → release/security work. This supersedes the earlier autonomous design waiver for this new round and reopens round-01 sans page titles.
 **Why:** Clarity of workflow is good, but the rendered surface feels too conventional. Explore rich reusable decoration without making user content/localized labels image-dependent. Three inspected options in design/rounds/round-02; agent recommends A, user verdict pending. Production app unchanged.
 
 ## 2026-09-07 — Lock A, defer alternate skins
 
+⚠️ Deferral superseded by the subsequent B/C approval below; A remains available.
+
 Michael: “I think we start with number A.” “Maybe start with one first and then delay the others.” This resolves the round-02 approval gate and supersedes round-01 sans page headings. Implement Starlight glass with actual Mandalore and one reusable 32,952-byte RGBA frame, keeping all dynamic text live. B/C remain design history, not a new skin framework or selector. Clear rest states, stronger interaction reflection, and darker form surfaces balance the authored game material with everyday readability. Source 03f9323 remains separately reversible.
+
+## 2026-09-07 — Add B/C as device skins; separate artwork from credit amounts
+
+**Status:** active. Michael: “let's also do B and C”, “have at it”. This supersedes the earlier deferral and authorizes direct implementation, without another mockup approval gate.
+**Decision:** Starlight / Forged / Astral are optional device-local materials in Profile → Appearance, independent of the existing persisted account palette. B has metal/brass framing; C has angular optical glass. Reuse one small generated frame per skin; retain workflow and semantic text. No DB migration, generalized theme engine or skin-specific screens.
+**Why:** The user wants stronger game aesthetics and reversible choice. Three concrete skins only require a local identifier and material CSS, while appearance must not split people or missions into separate spaces.
+**Readability:** Keep denomination-free coin artwork with live adjacent localized numerals. A ten-digit asset alphabet would complicate multi-digit values and still fight the engraving. Equal action geometry preserves color hierarchy; align evidence/reward tops and bottoms. Brief interaction glints replace unused spinning coins and the perpetual Reject scan.
+**Evidence:** 59c29e2 and design/rounds/round-03/verification/README.md. Release/security/iPhone work remains the next milestone.

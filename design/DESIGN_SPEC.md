@@ -1,6 +1,6 @@
-# Bounty Hunter — Starlight glass
+# Bounty Hunter — visual skins
 
-Locked 2026-09-07 by Michael. Reference: rounds/round-02/A-01.png, inspected directly. Supersedes round 01 material and page-heading treatment; workflow remains intact.
+Locked 2026-09-07 by Michael. A established the contract below; the approved B/C extension supersedes its earlier deferral and adds the device skin selector. All three round-02 references were inspected directly. The simplified workflow remains intact.
 
 ## Contract
 - Atmosphere: near-black #030810, midnight #0B1520, static distant stars visible through card centers. Mint #9BE9DF reflected light; existing Mint/Gold/Rose accent choices remain.
@@ -14,7 +14,21 @@ Locked 2026-09-07 by Michael. Reference: rounds/round-02/A-01.png, inspected dir
 
 ## Practical deviations from the generated reference
 - Use the real Mandalore font rather than rasterized/generated letterforms. All translations and user content remain selectable live text.
-- Reuse a neutral glass texture through nine-slice borders; accent coloring is restrained CSS. No entire-screen raster, individual word images, permanent star flares, or extra skin selector.
+- Reuse each material through nine-slice borders; accent coloring is restrained CSS. No entire-screen raster, individual word images or permanent star flares.
 - Keep existing compact header and responsive mobile bottom navigation, not the image's wide desktop-only composition. Existing dialogs remain intentionally opaque enough to read.
-- B (Forged relic) and C (Astral lens) are preserved as possible later skins, not implemented now.
+- The initial B/C deferral is superseded by the approved extension below.
 - Target <=150 kB incremental decoration. Record measured production asset bytes and browser evidence after implementation; physical iPhone performance cannot be established on Windows.
+
+## 2026-09-07 — B/C approved as additional skins
+
+References inspected: rounds/round-02/B-01.png and C-01.png. Supersedes the earlier deferral of B/C. A remains the default for existing devices; a compact visual selector in Profile > Appearance adds B/C as opt-in, device-local finishes independent of Mint/Gold/Rose. No data model or workflow changes.
+
+- B / Forged relic: blackened graphite #111514, small brass #A88C50 catches, brushed platinum #D9DCD6, teal light inset rails. Authored bevelled metal nine-slice frames on mission/reward/person cards and action controls; the same metal framing joins header and bottom navigation. Squared/chamfered silhouettes, 16–24px frame regions, restrained inner illumination. Larger heading treatment in actual Mandalore. No baked text, extra decorative badges or physical screws repeated behind content.
+- C / Astral lens: ink #040A13, angular optical crystal, narrow cyan #7CFFF0 / violet #BAA4FF / warm gold #FFD791 prismatic catches. Authored chamfered frame, floating framed header and delicate orbital line around the page heading. Distinct angular shapes and glass depth, without permanent star flare or moving space background.
+- All skins: fixed frame corners scale through nine-slice, content stays fluid. No card-size-specific images, screenshot backdrops or runtime drawing engine. The palette remains independent. Main text/nav hierarchy and existing page rhythm persist.
+- Dialogs: aligned evidence/reward columns, with more width for the report, one column on phones. Common top/bottom edges; center a single reward within a useful-width panel. Approve/Reject share height, width and typography; danger color still signals rejection.
+- Credits: coin remains artwork; its value becomes adjacent high-contrast live tabular numerals with a credits label in the dialog. No arbitrary maximum or generated digit alphabet.
+- Interaction: short light sweep on intent/press, no perpetual animation. Keyboard equivalent and reduced-motion fallbacks; preserve disabled/loading and focus-trap behavior.
+- Target each skin's reusable decoration below 100 kB. Load only the selected material. Static thumbnails may use the already-loaded preview textures in the settings screen. Measure final bytes; real iPhone rendering remains unverified.
+
+Implemented in 59c29e2. B 29,520 bytes; C 20,438 bytes. Proof and implementation details: rounds/round-03/verification/README.md.
