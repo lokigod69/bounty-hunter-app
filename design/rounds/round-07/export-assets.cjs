@@ -1,0 +1,3 @@
+const fs=require('node:fs/promises'),path=require('node:path');
+const sharp=require(process.env.SHARP_MODULE || 'sharp');
+(async()=>{const metrics={};for(const skin of ['forged','astral']){const file=path.join(__dirname,'assets',skin+'-source.png');if(!(await sharp(file).metadata()).hasAlpha)throw Error('Real alpha required');metrics[skin]=await sharp(file).trim().resize(256,256,{fit:'contain',background:'#00000000'}).webp({quality:88,effort:6}).toFile(path.resolve(__dirname,'../../../src/assets/generated/credit-'+skin+'.webp'));}await fs.writeFile(path.join(__dirname,'asset-metrics.json'),JSON.stringify(metrics,null,2)+'\n');console.log(metrics);})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,0 +1,24 @@
+{
+  "forged": {
+    "format": "webp",
+    "width": 256,
+    "height": 256,
+    "channels": 4,
+    "premultiplied": true,
+    "trimOffsetLeft": -1,
+    "trimOffsetTop": 0,
+    "hasAlpha": true,
+    "size": 28678
+  },
+  "astral": {
+    "format": "webp",
+    "width": 256,
+    "height": 256,
+    "channels": 4,
+    "premultiplied": true,
+    "trimOffsetLeft": -48,
+    "trimOffsetTop": -45,
+    "hasAlpha": true,
+    "size": 27184
+  }
+}
