@@ -2,12 +2,12 @@
 Last verified: 2026-09-07
 
 ## Overview
-Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking directly to Supabase — no separate backend server. Supabase provides Postgres with RLS, magic-link auth, Storage (proof/avatar/reward images), Realtime subscriptions, PL/pgSQL RPCs for anything credit-touching, and Deno Edge Functions for notifications. Frontend deploys to Vercel; a Capacitor iOS shell exists but the web app is primary. Local dev runs on port 6075 (see PORTS.md).
+Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v7) talking directly to Supabase — no separate backend server. Supabase provides Postgres with RLS, email auth, Storage (proof/avatar/reward images), Realtime subscriptions, PL/pgSQL RPCs for anything credit-touching, and Deno Edge Functions. Current live gaps and staged repairs are in STATE.md. Frontend deploys to Vercel; a Capacitor iOS shell exists but the web app is primary. Local dev runs on port 6075 (see PORTS.md).
 
 ## Key components
 | Area | Where | Notes |
 |---|---|---|
-| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v6; Layout owns three persistent destinations plus persistent seal and payout-ceremony layers |
+| Routing/shell | `src/App.tsx`, `src/components/Layout.tsx` | React Router v7; Layout owns three persistent destinations plus persistent seal and payout-ceremony layers |
 | Pages | `src/pages/` | Dashboard (assigned), IssuedPage (created), Friends, ArchivePage, RewardsStorePage, Login, profile edit |
 | UI primitives | `src/components/ui/`, `src/components/modals/` | AppButton, ConfirmModal, ModalShell, MissionModalShell, EvidencePanel; shared LIFO Escape and focus-trap hooks own dialog mechanics |
 | Domain logic | `src/core/` (contracts, credits, proofs, rewards), `src/domain/` | Pure, vitest-tested; keep Supabase I/O out of here |
@@ -18,7 +18,7 @@ Single-page React 18 app (Vite, TypeScript, Tailwind, React Router v6) talking d
 | Supabase client | `src/lib/supabase.ts` | Needs `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local` |
 | DB schema | `supabase/migrations/` | Through 2026-06-11 (storage buckets/policies); generated types in `src/types/database.ts` |
 | Prod SQL process | `db/proposals/`, `docs/runbooks/` | Numbered proposals with up/down SQL + per-proposal prod runbooks |
-| Edge Functions | `supabase/functions/` | notify-reward-creator and legacy Gmail notifiers (need hardening/removal) |
+| Edge Functions | `supabase/functions/` | Hardened notify-reward-creator and staged delete-account; legacy Gmail stubs fail closed. Live inventory currently empty. |
 
 ## Data flow
 Client hooks query Supabase tables directly under RLS. Task lifecycle transitions (submit/reject/start-stop/archive/delete, plus existing approval) go through Postgres RPCs; creation and creator content edits also use the applied proposal-012 RPCs. Assignee acceptance uses the existing `set_task_status` caller (`pending → in_progress`). Credit changes and reward purchases also go through RPCs. Realtime `postgres_changes` subscriptions revalidate contract/friend lists without replacing populated UI. The persistent payout watcher performs its own narrow assigned-task fetch, treats the first result as baseline, and emits `bh:payout` plus `bh:credits-changed` only for later credit transitions from review to completed; header/mobile balance readers refetch from that event. Proof files upload to the private `bounty-proofs` bucket before `submit_proof`; `EvidencePanel` renders text plus a one-hour signed image/video/PDF URL for either participant. On delete the client removes the Storage object BEFORE `delete_task` (the bucket's delete policy joins the tasks row, so post-delete removal always fails RLS). Proposal 011 is live (2026-07-10) and `database.ts` includes all 5 RPCs natively — no client-side type overlay.
@@ -37,10 +37,16 @@ Client hooks query Supabase tables directly under RLS. Task lifecycle transition
 
 ## 2026-09-07 workflow boundaries
 
-ProtectedRoute sends a retained invite token to InvitePage before FTXGate. InvitePage owns redemption/retry; tokens are cleared on success or explicit dismissal. Native auth listens for appUrlOpen and reads getLaunchUrl, deduplicating callbacks. The public web origin builder rejects non-shareable native origins. There is no native push/deletion endpoint yet.
+ProtectedRoute sends a retained invite token to InvitePage before FTXGate. InvitePage owns redemption/retry; tokens are cleared on success or explicit dismissal. Native auth listens for appUrlOpen and reads getLaunchUrl, deduplicating callbacks. The public web origin builder rejects non-shareable native origins. Native push remains unimplemented; account deletion is staged as described below.
 
 The separate tests/ux-preview Vite config injects a fictional in-memory Supabase adapter for UI verification only. Production vite.config.ts does not reference that adapter. No fake credentials/data are shipped in the regular build.
 
 ## 2026-09-07 visual materials
 
-ThemeContext exposes skinId/setSkinId separately from the persisted account theme. The validated bounty_skin localStorage preference sets html[data-skin] before paint. src/theme/skin-styles.css defines three materials and references one generated WebP per finish; index.css applies the shared frame variables. Profile swatches preview all three. Coin contains a decorative image plus a localized numeric span; AppButton keys a decorative span per press to restart one short CSS rim glint without timers. No new backend fields or runtime dependencies.
+ThemeContext exposes skinId/setSkinId separately from the persisted account theme. The validated bounty_skin localStorage preference sets html[data-skin] before paint. src/theme/skin-styles.css defines three materials with panel/control/ring WebPs per finish; index.css applies shared nine-slice variables, while circular rings scale uniformly. Profile swatches preview all three. Coin contains a decorative image plus a localized numeric span; AppButton keys a decorative span per press to restart one short CSS rim glint without timers. No new backend fields or runtime dependencies for artwork.
+
+## 2026-09-07 staged security boundaries
+
+Proposals 016/017 tighten existing profile/task/Storage/friendship and reward-purchase authority without a client RPC rewrite. The client omits privileged bootstrap fields and checks affected rows for direct connection changes. Production response headers live in vercel.json; compiled sample verification shares that policy. The build command checks tsconfig.app.json before Vite.
+
+AccountDeletionPanel is gated by VITE_ACCOUNT_DELETION_ENABLED. Its helper retains a random operation receipt, never a password/token. The delete-account Edge handler verifies the caller and actual recent Auth session; service-only proposal-018 functions maintain a private progress record and freeze related writes. Storage bytes are removed through Storage APIs before relational cleanup and final Auth deletion. Completion is checked, and a separate opaque receipt can confirm a lost successful response without authorizing another deletion. Deploy/enable only after ordered runbook and real service checks. No endpoint or SQL repair is live yet.

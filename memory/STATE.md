@@ -5,41 +5,37 @@ Last verified: 2026-09-07
 Private missions and rewards between connected accounts. One People list supports partners, relatives and friends together; each mission has one sender and recipient. No household/child permission model exists.
 
 - Navigation: Missions (For you / Sent by you + History), Rewards, People. Profile/settings behind the avatar.
-- Mint / Gold / Rose are appearance choices; persisted IDs guild/family/couple remain compatible. They do not limit recipients or create separate spaces.
-- Single introduction; invite redemption precedes onboarding. Mission description/deadline/proof rules and reward image customization are optional.
-- Core RPC lifecycle, credits, proof privacy and existing rewards remain. Private proof paths no longer get discarded by the received-mission loader.
-- Email-first login; web Google is secondary, native email-only for now. Cold/warm native auth callbacks are handled. Public HTTPS origin is required for native invitation links.
+- Mint / Gold / Rose are account palettes (compatible guild/family/couple IDs), not relationship modes. Device-local Starlight / Forged / Astral skins are independent.
+- Optional mission details/proofs/reward artwork expand on request. Credits, core RPC lifecycle and private proof loading remain.
+- Email-first login; Google secondary on web, native email-only. Cold/warm native auth callbacks handled. Public native invitation origin is set in .env.production.
 
-## Latest verification
-- App TypeScript: clean. Tests: 345 / 29 files pass. Lint: 0 errors, 3 existing Fast Refresh warnings. Production build: passes; main chunk 351.15 kB.
-- Local browser fixture verified desktop, 390/360px phones, landscape, German, appearance changes, preselected creation, approval, first-run and invite recovery. See [[../docs/product-simplification/RELEASE_REVIEW]].
-- No live SQL/account writes or physical-device checks in this pass. No claim of public iOS readiness.
-- Dependency audit: 2 moderate React Router package findings remain; reviewed major upgrade is next security work. Compatible patches removed the other reported advisories.
+## Visual milestone — complete
+- Michael authorized shape coverage for A/B/C and concurrent release/security work. Separate reversible artwork commit cdc1570 adds six control/ring WebPs (129,108 bytes); each complete panel/control/ring set is below 100 kB.
+- Panel corners use nine-slice: square, wide and tall surfaces keep corner proportions. Dedicated shallow controls and true circular portrait rings fill the shape gaps. Reward image frames remain visible; compact desktop header avoids a cut wordmark.
+- Matching review actions, adjacent live credit numerals, brief interaction glints and accessibility fallbacks remain. No extra appearance setting or animation loop.
+- Browser proof: A desktop; B square/tall rewards, phone People and 960px header; C phone mission and German 360px review. Sample Accept works; skin survives reload. [[../design/rounds/round-04/verification/README]]. Preview: http://127.0.0.1:6078/ (fictional data).
 
-## Latest milestone — A/B/C skins and dialog polish
-- Michael approved B/C on 2026-09-07. Source 59c29e2 is pushed to main and independently reversible from A (03f9323) and the workflow pass (c8a52c3).
-- Avatar → Appearance offers Starlight, Forged and Astral. Skin is device-local, independent of the Mint/Gold/Rose account palette. A remains the unsaved default; changing skin never changes recipients or missions.
-- B metal/brass and C angular optical frames cover navigation, cards, dialogs and controls. Two true-alpha WebPs total 49,958 bytes. Live Mandalore/Poppins and all twelve translations remain; no new dependency or DB setting.
-- Credits display beside the coin in readable live numerals; unused spin/overlay code removed. Evidence/reward panels align, action pairs share sizing, mission card minimum heights agree, and button rims glint once on hover/focus/press.
-- 345/29 tests, clean app types/build, lint 0 errors/3 known warnings. Browser: A/B/C, reload, 1280 desktop, 390/360 phones, German 12.500 credits, keyboard feedback and in-memory Accept/Approve/Reject. See [[../design/rounds/round-03/verification/README]].
-- Next: Michael tries the skins; release/security/iPhone work follows. No owner inputs needed for this visual review. Physical iPhone and OS accessibility preference emulation remain unverified.
+## Security/release — prepared repairs, live blockers remain
+- Current read-only live metadata confirms profiles RLS OFF, broad profile/role grants, role-derived task admin bypass, overlapping permissive Storage policies, weak friendship consent and empty Realtime publication. Saved [[../docs/release/live-safety-snapshot.json]] and targeted [[../docs/release/live-functions.json]]. No exploit, production SQL mutation, live account deletion or email send performed.
+- 016 replaces staged 014/015 intent: profile/role/email restrictions, removal of direct task/admin bypass, narrow Storage policies, Realtime membership. Client bootstrap no longer inserts role.
+- 017 enforces friendship consent, immutable endpoints and connected mission recipients; includes the discovered reward-purchase recipient boundary. Client reject/remove/cancel now require an affected row before success. New mission error copy has 12-locale parity.
+- 018 stages recent-auth self-deletion, progress receipt/write freeze, Storage API removal and ordered relational/Auth cleanup. Profile disclosure and retry UI are implemented/tested in 12 locales but hidden until VITE_ACCOUNT_DELETION_ENABLED=true after verified deployment.
+- Router 7.18.3 removes the remaining audit findings; build now enforces app TypeScript. Hardened reward notifier verifies Auth-owned recipient, bounded requests/retries and generic errors. Browser response headers are in vercel.json and verified in the compiled fixture.
+- No SQL proposal or Edge Function was deployed. No fresh backup exists. Supabase CLI DB initialization hit postgres/cli_login_postgres membership conflict; read-only dashboard SQL worked. Do not mutate privileged roles to bypass this. Production requires verified backup plus Michael's exact review/go.
 
-## Release blockers / subsequent actions
-1. Reconcile live 014/015 state. Saved July 30 evidence showed profiles RLS OFF and an empty Realtime publication; proposals were still staged August 3. Current live state is unverified. Use approved access, backup and review under the runbooks; never request a password in chat.
-2. Implement account deletion, privacy/support and appropriate abuse-report/block behavior. Implement actual push delivery; current badges are not push.
-3. Verify auth SMTP/templates/redirects and reward email deployment. Set VITE_PUBLIC_APP_URL for native builds; native share/Universal Links remain work.
-4. Rebuild and sync on Mac, configure Apple Team, verify on iPhone, then internal TestFlight. Signing/APNs/service access and operator contact details require the owner.
-5. Finish older hardcoded strings/CLDR formatter coverage and the local-day streak issue after launch blockers.
+## Live service configuration
+- Added/verified Supabase redirect URLs bountyhunter://auth/callback and https://www.bountyhunter.xyz/login; site URL remains root HTTPS. These are the only live settings changed in this pass.
+- Resend domain bountyhunter.xyz is verified. Supabase custom SMTP is absent; CLI Edge Functions inventory is empty. Mail, image generation, daily routines and deletion are not live services.
+- Vercel bounty-hunter-app uses Node 22.x and www.bountyhunter.xyz. Native source remains unbuilt/unverified on Mac/iPhone. No Apple archive/upload, APNs delivery or physical-device testing occurred.
 
-## Durable prior evidence
-- Proposals 011, 012 and 013 have recorded production applies; task creation/content edits/lifecycle are RPC-authoritative. 013 prevents credit self-awarding. See docs/runbooks/PROD_RUNBOOK_013.md and predecessors.
-- July 30 test-data wipe completed, profiles/auth accounts retained. Do not repeat or delete accounts as a prerequisite for UX testing.
-- Old backups before July 30 may contain auth.users only; verify coverage before trusting them. scripts/prod backup validation was corrected then.
-- Database credential entered earlier transcripts; rotation was reopened for taking users. Use secure access and rotation during release work, not another transcript copy.
-- Sound defaults OFF, haptics ON. Proof supports text/private image/video/PDF under existing validation and RLS. Physical-device behavior remains unverified.
-- Existing native bundle is stale until rebuilt/synced on Mac. No Apple archive/upload was performed here.
+## Next actions
+1. Follow [[../docs/release/RELEASE_STATUS]] and runbooks 016/017/018: secure backup access, exact review/go, ordered apply and real Supabase HTTP/Storage/Auth checks. Do not apply old 014/015 rollback files.
+2. Configure SMTP and the hardened notifier through secure service tools; obtain an explicitly authorized delivery-test recipient. No secret belongs in chat or a VITE_ variable.
+3. Finish bounded contact lookup/email privacy, effective blocking/reporting and public privacy/support pages. Operator name/support address and Apple enrollment/team/Mac/iPhone details were requested; answer pending.
+4. Implement actual push/token delivery; rebuild/sync/sign on Mac, test native auth/invites/proofs/notifications on iPhone and internal TestFlight. Current badges/Realtime are not push.
+5. Complete older hardcoded strings/CLDR coverage and local-day streak work after launch blockers. Rotate previously exposed database credential through secure service access.
 
-## Current handoff
-UX simplification implementation c8a52c3 is committed and pushed to origin/main under Michael's explicit authorization. The separate handoff commit contains the design/verification artifacts and memory update. Starlight source is 03f9323; A/B/C and dialog polish source is 59c29e2. Design/history/evidence and handoff are committed separately. Current resume instructions: protocol/NEXT_STEP.md. Full evidence, remaining engineering work and human setup: docs/product-simplification/RELEASE_REVIEW.md.
+## Verification and history
+Final gate results and release/source commits are recorded in protocol/NEXT_STEP.md and [[../docs/release/RELEASE_STATUS]]. Local DB checks are real PostgreSQL 18 tests, not proof of deployed PostgreSQL 17/Supabase behavior. No public iOS readiness claim.
 
-Prior overgrown state is preserved, explicitly historical, in [[archive/STATE_2026-08-03]]. Do not treat its obsolete instructions as current.
+Prior source: workflow c8a52c3, A 03f9323, B/C 59c29e2. Proposals 011/012/013 have recorded production applies. July 30 test-data wipe retained profiles/Auth accounts; do not repeat it. Old backups may omit data/ACLs. Historical state: [[archive/STATE_2026-08-03]].

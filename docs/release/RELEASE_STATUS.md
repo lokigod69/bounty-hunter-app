@@ -13,7 +13,7 @@ The visual shape pass is complete. Security engineering has progressed, but the 
 | Native invitation origin | `.env.production` now supplies public `VITE_PUBLIC_APP_URL=https://bountyhunter.xyz`. Deployment-specific env overrides still need checking when packaging native builds. |
 | Auth email | Supabase custom SMTP is not configured. Resend dashboard confirms `bountyhunter.xyz` is verified; do not redo its DNS setup. No mail was sent. |
 | Edge Functions | Authenticated CLI returned an empty inventory. Reward mail, image generation, daily routines and account deletion are not deployed services. No Resend sender secret was configured in this pass. |
-| Web response policy | CSP, framing protection, nosniff, no-referrer and restricted browser capabilities are configured in `vercel.json`. The compiled fixture returns these headers and works under them; verify the production response after deployment. |
+| Web response policy | CSP, framing protection, nosniff, no-referrer and restricted browser capabilities are configured in `vercel.json`. The compiled fixture works under them. After push, the production /login response returned HTTP 200 and the expected CSP/DENY/nosniff/no-referrer headers; the hosted login rendered in the browser. |
 | Dependencies | React Router upgraded to 7.18.3. Build now enforces app TypeScript before Vite. `npm audit` returned zero vulnerabilities at this pass; this does not establish database safety. |
 
 ## Reviewed deployment sequence
@@ -45,6 +45,8 @@ The visual shape pass is complete. Security engineering has progressed, but the 
 - `npm run build`: app TypeScript and production build pass; primary app chunk 352.71 kB. A separate feature-enabled sample build also compiled; the 390px disclosure renders without overflow and the destructive button stays disabled before acknowledgement. [Screenshot](verification/deletion-confirmation-390.png). No destructive browser action was submitted.
 - `npm run lint`: no errors; three existing Fast Refresh warnings. `npm audit --json`: zero vulnerabilities. Both actual Edge entrypoints pass `deno check`; root deno.lock preserves the checked remote dependency resolution.
 - 016/017: 111 real PostgreSQL checks (62 profile/Storage and 49 consent/purchase). 018: 38 checks including actual concurrent lock orderings, uppercase proof paths, service uploads, shared-history retention and schema/FK drift. These are isolated local databases, not production probes.
-- Browser headers were read from the compiled fixture response, and desktop/phone flows worked under that CSP. Hosted response verification follows source push.
+- Browser headers were read from the compiled fixture and hosted /login response; desktop/phone sample flows worked under that CSP. No hosted login, account mutation or delivery test was submitted.
+
+Source commits: visual **cdc1570**, security/release engineering **138f2f4**, both pushed to origin/main. Vercel production deployment `dpl_HKWzvFctDtABwGwopsLqRVUZ29xF` is Ready and aliases `www.bountyhunter.xyz`; deployment URL `https://bounty-hunter-gbrvjyoh0-lokigod69s-projects.vercel.app`. This deploys frontend changes and stores the reviewed SQL/Edge source in Git; it does not execute those SQL proposals or deploy Edge Functions.
 
 Evidence: [security review](2026-09-07-security-review.md), [visual verification](../../design/rounds/round-04/verification/README.md), per-proposal runbooks and `tests/security-db/`. Local database tests use PostgreSQL 18, so deployment still needs the PostgreSQL 17 and Supabase HTTP/Storage checks in the runbooks.

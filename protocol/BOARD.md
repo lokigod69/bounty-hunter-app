@@ -1,13 +1,11 @@
 # Bounty Hunter board — 2026-09-07
 
-## Ready to try
-
-**All three skins are implemented.** Preview: http://127.0.0.1:6077/ (sample data), avatar → Appearance. B — Forged is open; A — Starlight and C — Astral are immediately selectable. No setup needed.
-
 | Workstream | Completed | Next | Status |
-|---|---|---|---|
-| main | A/B/C skins, readable credit values, aligned panels/actions and short rim glints (59c29e2); browser/gates pass | User tries skins, then release/security/iPhone work | Visual milestone ready |
+| --- | --- | --- | --- |
+| main / visual | A/B/C panel, control and circular portrait coverage; mobile/German/browser proof; source cdc1570 | User tries sample preview 6078 | Complete and deployed |
+| main / security | Source 138f2f4: client/header/dependency/email fixes; tested 016/017/018 access and deletion proposals | Verified backup, explicit SQL review/go, ordered hosted smoke checks | Backend staged, not applied |
+| main / release | Auth callback allowlist repaired; public native invitation origin; Resend/SMTP/function inventory; hosted build checked | Operator/support/Apple inputs, remaining privacy/abuse/push engineering and Mac/iPhone/TestFlight | Not release-ready |
 
-Source 59c29e2 is independently reversible; selecting A keeps the shared readability/layout fixes. Two new frame assets total 49,958 bytes. 345 tests/29 files, clean types/build, 0 lint errors/3 existing warnings. Evidence: design/rounds/round-03/verification/README.md.
+407 tests/33 files, app TypeScript/build, Deno and zero-vulnerability audit pass; lint 0 errors/3 existing warnings. 149 real local PostgreSQL checks. Vercel production deployment dpl_HKWzvFctDtABwGwopsLqRVUZ29xF is Ready. Source and staged backend must not be confused with live protection.
 
-Release backlog: docs/product-simplification/RELEASE_REVIEW.md. Live migration reconciliation, account deletion/privacy/abuse controls, actual push/native invitations, auth/email verification and Mac/iPhone/TestFlight work remain. No database or service configuration changed in this pass.
+Current handoff: NEXT_STEP.md. Detailed evidence/owner actions: ../docs/release/RELEASE_STATUS.md. Artwork can be reverted independently; SQL review/backup gates remain. Account-deletion UI is hidden until verified backend rollout.
