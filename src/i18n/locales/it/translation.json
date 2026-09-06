@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Elimina account",
+    "description": "Elimina definitivamente account, profilo, file, crediti e contatti. L'operazione è irreversibile.",
+    "sharedData": "Le missioni che ti coinvolgono e i premi che hai creato scompaiono anche per le altre persone. I loro saldi restano invariati.",
+    "acknowledge": "Comprendo che il mio account e le missioni condivise verranno eliminati definitivamente.",
+    "password": "Password attuale",
+    "confirm": "Elimina il mio account",
+    "deleting": "Eliminazione…",
+    "retry": "Continua eliminazione",
+    "passwordError": "Controlla la password. Se usi Google, esci e accedi di nuovo prima di riprovare.",
+    "reauth_required": "Accedi di nuovo per confermare, poi torna qui.",
+    "deletion_in_progress": "L'eliminazione è iniziata su un altro dispositivo. Continua lì o contatta l'assistenza.",
+    "retry_required": "L'eliminazione non è confermata. L'account potrebbe essere bloccato durante la pulizia. Tieni aperta questa pagina e riprova.",
+    "unavailable": "L'eliminazione dell'account non è al momento disponibile. Riprova più tardi.",
+    "deleted": "Il tuo account è stato eliminato."
+  },
   "auth": {
     "signIn": "Accedi",
     "signOut": "Esci",
@@ -433,6 +449,7 @@
     "unknownUser": "Utente sconosciuto"
   },
   "taskErrors": {
+    "recipientNotConnected": "La richiesta di contatto deve essere accettata prima di poter inviare una missione a questa persona.",
     "notAuthenticated": "Devi aver effettuato l'accesso per {{action}}.",
     "actions": {
       "archive": "archiviare questa attività",

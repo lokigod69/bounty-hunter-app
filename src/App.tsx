@@ -92,7 +92,7 @@ export default function App() {
               error: { iconTheme: { primary: '#ef4444', secondary: '#ffffff' } },
             }}
           />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />

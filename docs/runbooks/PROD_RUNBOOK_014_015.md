@@ -1,5 +1,10 @@
 # PROD Runbook 014 + 015 — Two pieces of live-database drift
 
+> **Superseded for release 2026-09-07 by [016](PROD_RUNBOOK_016.md).** Live
+> metadata reconfirmed both defects and also found writable profile roles plus
+> permissive legacy Storage policies. 014 alone does not close those paths.
+> The historical steps below are retained for context, not the current apply plan.
+
 **Date**: WRITTEN 2026-07-30 — **NEITHER APPLIED. Both need Michael's explicit go.**
 **Found by**: the first session with production DB access, by inspecting the live
 database rather than the repo. Neither defect is visible in `supabase/migrations/`,
@@ -36,8 +41,9 @@ validation checks.
 `anon` and `authenticated` both hold `DELETE, INSERT, SELECT, TRUNCATE, UPDATE`.
 
 The anon key is public by design — it ships inside the deployed JS bundle. So as
-things stand, **anyone who reads that key out of the bundle can update, delete or
-truncate every row in `profiles`.**
+things stand, anonymous API callers have unrestricted profile DML privileges.
+TRUNCATE is separately granted at SQL level; it is not a PostgREST table endpoint
+and RLS does not govern it. Proposal 016 revokes surplus privileges explicitly.
 
 It reads as an oversight rather than a decision, because every neighbour is correct:
 

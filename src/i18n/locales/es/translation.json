@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Eliminar cuenta",
+    "description": "Elimina permanentemente tu cuenta, perfil, archivos, créditos y contactos. No se puede deshacer.",
+    "sharedData": "Las misiones en las que participas y las recompensas que creaste también desaparecen para otras personas. Sus saldos de créditos no cambian.",
+    "acknowledge": "Entiendo que mi cuenta y las misiones compartidas se eliminarán permanentemente.",
+    "password": "Contraseña actual",
+    "confirm": "Eliminar mi cuenta",
+    "deleting": "Eliminando…",
+    "retry": "Continuar eliminación",
+    "passwordError": "Comprueba tu contraseña. Si usas Google, cierra sesión y vuelve a iniciarla antes de reintentar.",
+    "reauth_required": "Vuelve a iniciar sesión para confirmar y regresa aquí.",
+    "deletion_in_progress": "La eliminación ya comenzó en otro dispositivo. Continúa allí o contacta con soporte.",
+    "retry_required": "La eliminación no está confirmada. Tu cuenta puede estar bloqueada durante la limpieza. Mantén esta página y reintenta.",
+    "unavailable": "La eliminación de cuentas no está disponible temporalmente. Inténtalo más tarde.",
+    "deleted": "Tu cuenta se ha eliminado."
+  },
   "auth": {
     "signIn": "Iniciar sesión",
     "signOut": "Cerrar sesión",
@@ -433,6 +449,7 @@
     "unknownUser": "Usuario desconocido"
   },
   "taskErrors": {
+    "recipientNotConnected": "La solicitud de contacto debe estar aceptada antes de que puedas enviarle una misión a esta persona.",
     "notAuthenticated": "Tienes que iniciar sesión para {{action}}.",
     "actions": {
       "archive": "archivar esta tarea",

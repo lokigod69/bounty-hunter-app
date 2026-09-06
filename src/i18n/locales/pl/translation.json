@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Usuń konto",
+    "description": "Trwale usuń konto, profil, pliki, kredyty i kontakty. Tej czynności nie można cofnąć.",
+    "sharedData": "Misje z twoim udziałem i utworzone przez ciebie nagrody znikną też u innych osób. Ich salda kredytów pozostaną bez zmian.",
+    "acknowledge": "Rozumiem, że moje konto i wspólne misje zostaną trwale usunięte.",
+    "password": "Aktualne hasło",
+    "confirm": "Usuń moje konto",
+    "deleting": "Usuwanie…",
+    "retry": "Kontynuuj usuwanie",
+    "passwordError": "Sprawdź hasło. Jeśli używasz Google, wyloguj się i zaloguj ponownie przed kolejną próbą.",
+    "reauth_required": "Zaloguj się ponownie, aby potwierdzić, i wróć tutaj.",
+    "deletion_in_progress": "Usuwanie rozpoczęto na innym urządzeniu. Kontynuuj tam lub skontaktuj się z pomocą.",
+    "retry_required": "Usunięcie nie zostało potwierdzone. Konto może być zablokowane podczas porządkowania danych. Zostaw tę stronę i spróbuj ponownie.",
+    "unavailable": "Usuwanie konta jest chwilowo niedostępne. Spróbuj później.",
+    "deleted": "Twoje konto zostało usunięte."
+  },
   "auth": {
     "signIn": "Zaloguj się",
     "signOut": "Wyloguj się",
@@ -433,6 +449,7 @@
     "unknownUser": "Nieznany użytkownik"
   },
   "taskErrors": {
+    "recipientNotConnected": "Zaproszenie do kontaktów musi zostać zaakceptowane, zanim wyślesz tej osobie misję.",
     "notAuthenticated": "Musisz się zalogować, aby {{action}}.",
     "actions": {
       "archive": "zarchiwizować to zadanie",

@@ -1,4 +1,5 @@
 -- db/proposals/014_profiles_rls.up.sql
+-- Superseded for release 2026-09-07 by proposal 016; retained as historical SQL.
 -- Turn on row-level security for public.profiles.
 --
 -- FOUND 2026-07-30 by inspecting the live database directly (first session with
@@ -7,8 +8,9 @@
 -- DELETE, INSERT, SELECT, TRUNCATE and UPDATE on the table.
 --
 -- The anon key is public by design: it ships inside the deployed JS bundle.
--- With RLS off, anyone who reads that key out of the bundle can UPDATE, DELETE
--- or TRUNCATE every row in profiles. Nothing in the app authorises that; the
+-- With RLS off, anonymous API callers can UPDATE or DELETE profiles.
+-- TRUNCATE is a SQL grant, not a PostgREST table endpoint. Nothing authorises
+-- these anonymous profile writes; the
 -- policies to prevent it were written and never activated.
 --
 -- Compare the neighbours, which is what makes this look like an oversight
@@ -52,7 +54,7 @@ COMMIT;
 
 -- Deliberately NOT done here, so this stays a one-line reversible change:
 --   * Revoking the surplus DELETE/TRUNCATE grants from anon/authenticated.
---     With RLS on they are unreachable, so this is defence in depth rather
---     than a fix, and it belongs in its own proposal.
+--     CORRECTION 2026-09-07: RLS does not apply to TRUNCATE. Proposal 016
+--     explicitly revokes surplus grants as well as protecting role writes.
 --   * FORCE ROW LEVEL SECURITY. Not wanted: the table owner needs to bypass
 --     RLS for maintenance and for the wipe script.

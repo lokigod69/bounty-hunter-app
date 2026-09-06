@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Smazat účet",
+    "description": "Trvale smažeš účet, profil, nahrané soubory, kredity a kontakty. Tuto akci nelze vrátit.",
+    "sharedData": "Mise, kterých se účastníš, a odměny, které jsi vytvořil, zmizí i ostatním. Jejich zůstatky kreditů se nezmění.",
+    "acknowledge": "Rozumím, že můj účet a sdílené mise budou trvale smazány.",
+    "password": "Aktuální heslo",
+    "confirm": "Smazat můj účet",
+    "deleting": "Mazání…",
+    "retry": "Pokračovat v mazání",
+    "passwordError": "Zkontroluj heslo. Pokud používáš Google, odhlas se a znovu přihlas před dalším pokusem.",
+    "reauth_required": "Pro potvrzení se znovu přihlas a vrať se sem.",
+    "deletion_in_progress": "Mazání začalo na jiném zařízení. Pokračuj tam nebo kontaktuj podporu.",
+    "retry_required": "Smazání není potvrzeno. Účet může být během úklidu uzamčen. Nech tuto stránku otevřenou a zkus to znovu.",
+    "unavailable": "Mazání účtu je dočasně nedostupné. Zkus to později.",
+    "deleted": "Tvůj účet byl smazán."
+  },
   "auth": {
     "signIn": "Přihlásit se",
     "signOut": "Odhlásit se",
@@ -433,6 +449,7 @@
     "unknownUser": "Neznámý uživatel"
   },
   "taskErrors": {
+    "recipientNotConnected": "Žádost o kontakt musí být přijata, než této osobě můžeš poslat misi.",
     "notAuthenticated": "Bez přihlášení nelze {{action}}.",
     "actions": {
       "archive": "archivovat tento úkol",

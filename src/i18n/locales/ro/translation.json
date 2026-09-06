@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Șterge contul",
+    "description": "Șterge definitiv contul, profilul, fișierele, creditele și conexiunile. Acțiunea nu poate fi anulată.",
+    "sharedData": "Misiunile în care participi și recompensele create de tine dispar și pentru ceilalți. Soldurile lor rămân neschimbate.",
+    "acknowledge": "Înțeleg că acest cont și misiunile comune vor fi șterse definitiv.",
+    "password": "Parola actuală",
+    "confirm": "Șterge contul meu",
+    "deleting": "Se șterge…",
+    "retry": "Continuă ștergerea",
+    "passwordError": "Verifică parola. Dacă folosești Google, deconectează-te și autentifică-te din nou înainte să reîncerci.",
+    "reauth_required": "Autentifică-te din nou pentru confirmare, apoi revino aici.",
+    "deletion_in_progress": "Ștergerea a început pe alt dispozitiv. Continuă acolo sau contactează asistența.",
+    "retry_required": "Ștergerea nu este confirmată. Contul poate fi blocat în timpul curățării. Păstrează această pagină și reîncearcă.",
+    "unavailable": "Ștergerea contului nu este disponibilă momentan. Încearcă mai târziu.",
+    "deleted": "Contul tău a fost șters."
+  },
   "auth": {
     "signIn": "Conectează-te",
     "signOut": "Deconectează-te",
@@ -433,6 +449,7 @@
     "unknownUser": "Utilizator necunoscut"
   },
   "taskErrors": {
+    "recipientNotConnected": "Cererea de conectare trebuie acceptată înainte să poți trimite o misiune acestei persoane.",
     "notAuthenticated": "Trebuie să fii autentificat ca să {{action}}.",
     "actions": {
       "archive": "arhivezi această sarcină",

@@ -46,6 +46,7 @@ const CODES = [
   'not_participant', 'wrong_status', 'proof_required', 'invalid_proof_type',
   'status_not_allowed', 'title_required', 'invalid_field',
   'self_assigned_credit_reward',
+  'recipient_not_connected',
 ] as const;
 
 describe('task lifecycle error copy', () => {

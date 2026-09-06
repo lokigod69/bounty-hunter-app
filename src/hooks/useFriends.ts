@@ -266,6 +266,7 @@ export function useFriends(userId: string | undefined) {
   const respondToFriendRequest = async (friendshipId: string, accept: boolean) => {
     try {
       setError(null);
+      if (!userId) throw new Error('User not authenticated');
 
       if (accept) {
         // Accept the request
@@ -279,22 +280,24 @@ export function useFriends(userId: string | undefined) {
         if (error) throw error;
         if (userId) await fetchFriendships(userId); // Re-fetch after successful update
         notifyFriendshipsChanged();
-        return data;
+        return Boolean(data);
       } else {
         // Reject by deleting the request
         const { error } = await supabase
           .from('friendships')
           .delete()
-          .eq('id', friendshipId);
+          .eq('id', friendshipId)
+          .select('id')
+          .single();
 
         if (error) throw error;
         if (userId) await fetchFriendships(userId); // Re-fetch after successful delete
         notifyFriendshipsChanged();
-        return null;
+        return true;
       }
     } catch (error) {
       setError((error as Error).message ?? null);
-      return null;
+      return false;
     }
   };
 
@@ -312,7 +315,9 @@ export function useFriends(userId: string | undefined) {
         .delete()
         .eq('id', friendshipId)
         .eq('requested_by', userId) // Ensure the current user is the sender
-        .eq('status', 'pending'); // Ensure the request is still pending
+        .eq('status', 'pending')
+        .select('id')
+        .single(); // Zero affected rows is a failure, including an RLS denial.
 
       if (deleteError) throw deleteError;
 
@@ -329,11 +334,14 @@ export function useFriends(userId: string | undefined) {
   const removeFriend = async (friendshipId: string) => {
     try {
       setError(null);
+      if (!userId) throw new Error('User not authenticated');
 
       const { error } = await supabase
         .from('friendships')
         .delete()
-        .eq('id', friendshipId);
+        .eq('id', friendshipId)
+        .select('id')
+        .single();
 
       if (error) throw error;
       if (userId) {

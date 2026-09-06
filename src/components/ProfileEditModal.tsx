@@ -22,6 +22,7 @@ import { useStanding } from '../hooks/useStanding';
 import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from './layout/PageQuote';
 import { clearOnboardingFlag } from '../lib/ftxGate';
+import { AccountDeletionPanel } from './AccountDeletionPanel';
 
 
 interface ProfileEditModalProps {
@@ -60,6 +61,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const { standing, known } = useStanding();
   const dailyQuote = useDailyQuote(known ? standing.unlockedCreedLines : undefined, user?.id);
   const [signingOut, setSigningOut] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const handleSignOut = async () => {
     setSigningOut(true);
     const { error } = await supabase.auth.signOut();
@@ -221,7 +223,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   };
 
   return (
-    <ModalShell isOpen={isOpen} onClose={onClose} name="ProfileEditModal" labelledBy="profileedit-title">
+    <ModalShell isOpen={isOpen} onClose={() => { if (!deletingAccount) onClose(); }} name="ProfileEditModal" labelledBy="profileedit-title">
       {/* Modal Header with enhanced mobile touch targets */}
       <div className="flex items-center justify-center p-3 sm:p-4 border-b border-gray-700/50 flex-shrink-0">
         <h2 id="profileedit-title" className="text-lg sm:text-xl font-bold text-center">{t('workflow.profile')}</h2>
@@ -230,6 +232,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
       {/* Modal Body (Scrollable) with enhanced mobile spacing */}
       <div className="p-4 sm:p-6 overflow-y-auto flex-grow">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <fieldset disabled={deletingAccount} className="space-y-6 min-w-0">
             <div className="flex flex-col items-center space-y-3">
               <div className="avatar-ring">
               {avatarPreview ? (
@@ -407,8 +410,18 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
             <AppButton type="submit" variant="cta" fullWidth loading={isUploading} className="mt-6">
               {isUploading ? t('profile.saving') : t('profile.save')}
             </AppButton>
+            </fieldset>
           </form>
-          <AppButton type="button" variant="ghost" fullWidth className="mt-4" loading={signingOut} icon={<LogOut size={18} />} onClick={handleSignOut}>{t('auth.signOut')}</AppButton>
+          <AppButton type="button" variant="ghost" fullWidth className="mt-4" loading={signingOut} disabled={deletingAccount} icon={<LogOut size={18} />} onClick={handleSignOut}>{t('auth.signOut')}</AppButton>
+          {import.meta.env.VITE_ACCOUNT_DELETION_ENABLED === 'true' && user && (
+            <AccountDeletionPanel userId={user.id} onBusyChange={setDeletingAccount} onDeleted={async () => {
+              // The server has confirmed Auth absence before local session cleanup.
+              await supabase.auth.signOut({ scope: 'local' });
+              toast.success(t('accountDeletion.deleted'));
+              onClose();
+              navigate('/login', { replace: true });
+            }} />
+          )}
       </div>
 
       <ConfirmModal

@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Delete account",
+    "description": "Permanently delete your account, profile, uploads, credits and connections. This cannot be undone.",
+    "sharedData": "Missions involving you and rewards you created are also removed from other people's views. Their credit balances remain unchanged.",
+    "acknowledge": "I understand that this permanently deletes my account and shared missions.",
+    "password": "Current password",
+    "confirm": "Delete my account",
+    "deleting": "Deleting…",
+    "retry": "Continue deletion",
+    "passwordError": "Check your password and try again. If you use Google, sign out and sign in again before retrying.",
+    "reauth_required": "Sign in again to confirm this request, then return here.",
+    "deletion_in_progress": "Deletion has already started on another device. Continue there or contact support.",
+    "retry_required": "Deletion has not been confirmed. Your account may be locked while cleanup finishes. Keep this page and try again.",
+    "unavailable": "Account deletion is temporarily unavailable. Please try again later.",
+    "deleted": "Your account has been deleted."
+  },
   "auth": {
     "signIn": "Sign In",
     "signOut": "Sign Out",
@@ -433,6 +449,7 @@
     "unknownUser": "Unknown user"
   },
   "taskErrors": {
+    "recipientNotConnected": "Your connection with this person must be accepted before you can send them a mission.",
     "notAuthenticated": "You must be logged in to {{action}}.",
     "actions": {
       "archive": "archive this task",

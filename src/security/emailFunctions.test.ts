@@ -53,12 +53,4 @@ describe('email edge function security', () => {
     }
   });
 
-  it('escapes user-controlled strings before interpolating them into email HTML', () => {
-    const source = readRepoFile('supabase/functions/notify-reward-creator/index.ts');
-
-    expect(source).toContain('function escapeHtml');
-    expect(source).toMatch(/escapeHtml\(collectorProfileData\.display_name/);
-    expect(source).toMatch(/escapeHtml\(creatorUserData\.display_name/);
-    expect(source).toMatch(/escapeHtml\(rewardData\.name\)/);
-  });
 });

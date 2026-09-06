@@ -25,7 +25,8 @@ export type TaskLifecycleRpcErrorCode =
   // Proposal 013: create_task/update_task refuse a credit reward whose
   // assignee is the caller. approve_task does not use this code — it completes
   // the contract and reports credited=false instead (see ApproveTaskResult).
-  | 'self_assigned_credit_reward';
+  | 'self_assigned_credit_reward'
+  | 'recipient_not_connected';
 
 export type TaskLifecycleRpcResult = {
   success?: boolean;

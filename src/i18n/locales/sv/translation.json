@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Radera konto",
+    "description": "Radera ditt konto, din profil, uppladdningar, krediter och kontakter permanent. Det går inte att ångra.",
+    "sharedData": "Uppdrag som berör dig och belöningar du skapat försvinner också för andra. Deras kreditsaldon ändras inte.",
+    "acknowledge": "Jag förstår att mitt konto och delade uppdrag raderas permanent.",
+    "password": "Nuvarande lösenord",
+    "confirm": "Radera mitt konto",
+    "deleting": "Raderar…",
+    "retry": "Fortsätt radering",
+    "passwordError": "Kontrollera lösenordet. Om du använder Google, logga ut och in igen innan du försöker på nytt.",
+    "reauth_required": "Logga in igen för att bekräfta och återvänd hit.",
+    "deletion_in_progress": "Raderingen har startat på en annan enhet. Fortsätt där eller kontakta support.",
+    "retry_required": "Raderingen är inte bekräftad. Kontot kan vara låst under rensningen. Behåll sidan och försök igen.",
+    "unavailable": "Kontoradering är tillfälligt otillgänglig. Försök senare.",
+    "deleted": "Ditt konto har raderats."
+  },
   "auth": {
     "signIn": "Logga in",
     "signOut": "Logga ut",
@@ -433,6 +449,7 @@
     "unknownUser": "Okänd användare"
   },
   "taskErrors": {
+    "recipientNotConnected": "Kontaktförfrågan måste godkännas innan du kan skicka ett uppdrag till personen.",
     "notAuthenticated": "Du måste vara inloggad för att {{action}}.",
     "actions": {
       "archive": "arkivera den här uppgiften",

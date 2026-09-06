@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Account verwijderen",
+    "description": "Verwijder je account, profiel, uploads, credits en contacten definitief. Dit kan niet ongedaan worden gemaakt.",
+    "sharedData": "Missies waarbij je betrokken bent en beloningen die je maakte verdwijnen ook bij anderen. Hun creditsaldo blijft gelijk.",
+    "acknowledge": "Ik begrijp dat mijn account en gedeelde missies definitief worden verwijderd.",
+    "password": "Huidig wachtwoord",
+    "confirm": "Mijn account verwijderen",
+    "deleting": "Verwijderen…",
+    "retry": "Verwijdering voortzetten",
+    "passwordError": "Controleer je wachtwoord. Gebruik je Google, log dan uit en opnieuw in voordat je het opnieuw probeert.",
+    "reauth_required": "Log opnieuw in ter bevestiging en kom hier terug.",
+    "deletion_in_progress": "De verwijdering is op een ander apparaat begonnen. Ga daar verder of neem contact op met ondersteuning.",
+    "retry_required": "De verwijdering is niet bevestigd. Je account kan tijdens het opruimen geblokkeerd zijn. Houd deze pagina open en probeer opnieuw.",
+    "unavailable": "Accountverwijdering is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
+    "deleted": "Je account is verwijderd."
+  },
   "auth": {
     "signIn": "Inloggen",
     "signOut": "Uitloggen",
@@ -433,6 +449,7 @@
     "unknownUser": "Onbekende gebruiker"
   },
   "taskErrors": {
+    "recipientNotConnected": "Het contactverzoek moet zijn geaccepteerd voordat je deze persoon een missie kunt sturen.",
     "notAuthenticated": "Je moet ingelogd zijn om {{action}}.",
     "actions": {
       "archive": "deze taak te archiveren",

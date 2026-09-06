@@ -28,6 +28,7 @@ const CODE_KEYS: Record<string, string> = {
   status_not_allowed: 'taskErrors.statusNotAllowed',
   title_required: 'taskErrors.titleRequired',
   invalid_field: 'taskErrors.invalidField',
+  recipient_not_connected: 'taskErrors.recipientNotConnected',
   // Proposal 013. Shares the key TaskForm's inline validation already uses, so
   // the client-side check and the server refusal cannot drift apart.
   self_assigned_credit_reward: 'taskForm.validation.selfAssignedCredit',

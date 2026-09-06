@@ -1,0 +1,1170 @@
+{
+  "checked_at": "2026-09-06T19:04:22.081217+00:00",
+  "tables": [
+    {
+      "schema": "public",
+      "name": "collected_rewards",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "credit_transactions",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "daily_mission_streaks",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "friendships",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "invites",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "profiles",
+      "rls": false,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "rewards_store",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "tasks",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "public",
+      "name": "user_credits",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "buckets",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "buckets_analytics",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "buckets_vectors",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "migrations",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "objects",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "s3_multipart_uploads",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "s3_multipart_uploads_parts",
+      "rls": true,
+      "force_rls": false
+    },
+    {
+      "schema": "storage",
+      "name": "vector_indexes",
+      "rls": true,
+      "force_rls": false
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "collected_rewards",
+      "policyname": "Users can view own collected rewards",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = collector_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "collected_rewards",
+      "policyname": "collected_rewards_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(collector_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "daily_mission_streaks",
+      "policyname": "Users can read streaks for their contracts",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = daily_mission_streaks.contract_id) AND ((tasks.assigned_to = auth.uid()) OR (tasks.created_by = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "daily_mission_streaks",
+      "policyname": "Users can update streaks for assigned contracts",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = daily_mission_streaks.contract_id) AND (tasks.assigned_to = auth.uid()))))",
+      "with_check": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = daily_mission_streaks.contract_id) AND (tasks.assigned_to = auth.uid())))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "friendships",
+      "policyname": "Create friendships",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = requested_by)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "friendships",
+      "policyname": "Update friendships",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() = user1_id) OR (auth.uid() = user2_id))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "friendships",
+      "policyname": "Users can delete own friend requests",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((auth.uid() = requested_by) AND (status = 'pending'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "friendships",
+      "policyname": "View friendships",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user1_id) OR (auth.uid() = user2_id))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invites",
+      "policyname": "Invites: owner can insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = inviter_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invites",
+      "policyname": "Invites: owner can update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = inviter_id)",
+      "with_check": "(auth.uid() = inviter_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invites",
+      "policyname": "Invites: owner can view",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = inviter_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Public profiles",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Update own profile",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can insert their own profile",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can update their own profile",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rewards_store",
+      "policyname": "rewards_store_select_private",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((creator_id = auth.uid()) OR (assigned_to = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "policyname": "Admins full access",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "(auth.uid() IN ( SELECT profiles.id\n FROM profiles\n WHERE (profiles.role = 'admin'::text)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "policyname": "Users can view assigned tasks",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = assigned_to)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "policyname": "View tasks",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = created_by) OR (auth.uid() = assigned_to))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_credits",
+      "policyname": "Users can view own credits",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((auth.uid())::text = (user_id)::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Allow authenticated uploads rp0r5_0",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(bucket_id = 'bounty-proofs'::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Allow public viewing rp0r5_0",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "anon"
+      ],
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'bounty-proofs'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Public Read Access 1oj01fe_0",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "User Update 1oj01fe_0",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "User Upload 1oj01fe_0",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((storage.foldername(name))[1] = (auth.uid())::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "auth delete reward images",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "(bucket_id = 'reward-images'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "auth insert reward images",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(bucket_id = 'reward-images'::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "auth update reward images",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(bucket_id = 'reward-images'::text)",
+      "with_check": "(bucket_id = 'reward-images'::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "avatar owner can delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "avatar owner can update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "avatar owner can upload",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "avatars are public",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "bounty proofs assignee can update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'bounty-proofs'::text) AND ((storage.foldername(name))[1] = 'proofs'::text) AND ((storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = ((storage.foldername(objects.name))[2])::uuid) AND (tasks.assigned_to = auth.uid())))))",
+      "with_check": "((bucket_id = 'bounty-proofs'::text) AND ((storage.foldername(name))[1] = 'proofs'::text) AND ((storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = ((storage.foldername(objects.name))[2])::uuid) AND (tasks.assigned_to = auth.uid())))))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "bounty proofs assignee can upload",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'bounty-proofs'::text) AND ((storage.foldername(name))[1] = 'proofs'::text) AND ((storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = ((storage.foldername(objects.name))[2])::uuid) AND (tasks.assigned_to = auth.uid())))))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "bounty proofs participants can delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'bounty-proofs'::text) AND ((storage.foldername(name))[1] = 'proofs'::text) AND ((storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = ((storage.foldername(objects.name))[2])::uuid) AND ((tasks.assigned_to = auth.uid()) OR (tasks.created_by = auth.uid()))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "bounty proofs participants can read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'bounty-proofs'::text) AND ((storage.foldername(name))[1] = 'proofs'::text) AND ((storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) AND (EXISTS ( SELECT 1\n FROM tasks\n WHERE ((tasks.id = ((storage.foldername(objects.name))[2])::uuid) AND ((tasks.assigned_to = auth.uid()) OR (tasks.created_by = auth.uid()))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "public read reward images",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'reward-images'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "reward image creator can delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'reward-images'::text) AND ((storage.foldername(name))[1] = 'rewards'::text) AND ((storage.foldername(name))[2] = (auth.uid())::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "reward image creator can update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'reward-images'::text) AND ((storage.foldername(name))[1] = 'rewards'::text) AND ((storage.foldername(name))[2] = (auth.uid())::text))",
+      "with_check": "((bucket_id = 'reward-images'::text) AND ((storage.foldername(name))[1] = 'rewards'::text) AND ((storage.foldername(name))[2] = (auth.uid())::text))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "reward image creator can upload",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'reward-images'::text) AND ((storage.foldername(name))[1] = 'rewards'::text) AND ((storage.foldername(name))[2] = (auth.uid())::text))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "reward images are public",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'reward-images'::text)",
+      "with_check": null
+    }
+  ],
+  "profile_grants": [
+    {
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "privilege_type": "TRIGGER"
+    }
+  ],
+  "profile_column_grants": [
+    {
+      "grantee": "anon",
+      "column_name": "avatar_url",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "avatar_url",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "avatar_url",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "avatar_url",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "created_at",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "created_at",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "created_at",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "created_at",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "display_name",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "display_name",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "display_name",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "display_name",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "email",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "email",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "email",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "email",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "id",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "id",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "id",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "id",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "onboarding_completed",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "onboarding_completed",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "onboarding_completed",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "onboarding_completed",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "partner_user_id",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "partner_user_id",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "partner_user_id",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "partner_user_id",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "role",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "role",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "role",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "role",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "theme",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "theme",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "theme",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "column_name": "theme",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "avatar_url",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "avatar_url",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "avatar_url",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "avatar_url",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "created_at",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "created_at",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "created_at",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "created_at",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "display_name",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "display_name",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "display_name",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "display_name",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "email",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "email",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "email",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "email",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "id",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "id",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "id",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "id",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "onboarding_completed",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "onboarding_completed",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "onboarding_completed",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "onboarding_completed",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "partner_user_id",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "partner_user_id",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "partner_user_id",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "partner_user_id",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "role",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "role",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "role",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "role",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "theme",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "theme",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "theme",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "column_name": "theme",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "profile_triggers": null,
+  "publication": null,
+  "buckets": [
+    {
+      "id": "avatars",
+      "public": true,
+      "file_size_limit": 5242880,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp"
+      ]
+    },
+    {
+      "id": "bounty-proofs",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "video/mp4",
+        "video/quicktime",
+        "video/webm",
+        "application/pdf"
+      ]
+    },
+    {
+      "id": "reward-images",
+      "public": true,
+      "file_size_limit": 5242880,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp"
+      ]
+    }
+  ],
+  "foreign_keys": [
+    {
+      "child": "collected_rewards",
+      "conname": "collected_rewards_collector_id_fkey",
+      "parent": "auth.users",
+      "definition": "FOREIGN KEY (collector_id) REFERENCES auth.users(id)"
+    },
+    {
+      "child": "collected_rewards",
+      "conname": "collected_rewards_reward_id_fkey",
+      "parent": "rewards_store",
+      "definition": "FOREIGN KEY (reward_id) REFERENCES rewards_store(id)"
+    },
+    {
+      "child": "credit_transactions",
+      "conname": "credit_transactions_task_id_fkey",
+      "parent": "tasks",
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)"
+    },
+    {
+      "child": "credit_transactions",
+      "conname": "credit_transactions_user_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id)"
+    },
+    {
+      "child": "daily_mission_streaks",
+      "conname": "daily_mission_streaks_contract_id_fkey",
+      "parent": "tasks",
+      "definition": "FOREIGN KEY (contract_id) REFERENCES tasks(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "daily_mission_streaks",
+      "conname": "daily_mission_streaks_user_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "friendships",
+      "conname": "friendships_requested_by_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (requested_by) REFERENCES profiles(id)"
+    },
+    {
+      "child": "friendships",
+      "conname": "friendships_user1_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (user1_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "friendships",
+      "conname": "friendships_user2_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (user2_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "invites",
+      "conname": "invites_inviter_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (inviter_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "profiles",
+      "conname": "profiles_id_fkey",
+      "parent": "auth.users",
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id)"
+    },
+    {
+      "child": "profiles",
+      "conname": "profiles_partner_fk",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (partner_user_id) REFERENCES profiles(id) ON DELETE SET NULL"
+    },
+    {
+      "child": "rewards_store",
+      "conname": "rewards_store_assigned_to_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (assigned_to) REFERENCES profiles(id)"
+    },
+    {
+      "child": "rewards_store",
+      "conname": "rewards_store_creator_id_fkey",
+      "parent": "auth.users",
+      "definition": "FOREIGN KEY (creator_id) REFERENCES auth.users(id)"
+    },
+    {
+      "child": "tasks",
+      "conname": "tasks_assigned_to_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "tasks",
+      "conname": "tasks_created_by_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "user_credits",
+      "conname": "user_credits_user_id_fkey",
+      "parent": "profiles",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id)"
+    }
+  ]
+}

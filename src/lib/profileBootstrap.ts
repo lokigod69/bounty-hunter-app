@@ -54,7 +54,6 @@ export async function ensureProfileForUser(
       email: user.email || '',
       display_name: baseName,
       avatar_url: null, // R15: Intentionally null - placeholders are for rendering only
-      role: null,
     };
 
     const { data: inserted, error: insertError } = await supabase

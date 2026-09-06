@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Konto löschen",
+    "description": "Dein Konto, Profil, deine Uploads, Credits und Kontakte werden endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "sharedData": "Missionen mit dir und von dir erstellte Belohnungen verschwinden auch bei anderen. Die Credit-Guthaben dieser Personen bleiben unverändert.",
+    "acknowledge": "Ich verstehe, dass mein Konto und gemeinsame Missionen endgültig gelöscht werden.",
+    "password": "Aktuelles Passwort",
+    "confirm": "Mein Konto löschen",
+    "deleting": "Wird gelöscht…",
+    "retry": "Löschung fortsetzen",
+    "passwordError": "Prüfe dein Passwort. Bei Google-Anmeldung melde dich ab und erneut an, bevor du es noch einmal versuchst.",
+    "reauth_required": "Melde dich zur Bestätigung erneut an und kehre dann hierher zurück.",
+    "deletion_in_progress": "Die Löschung wurde auf einem anderen Gerät gestartet. Setze sie dort fort oder kontaktiere den Support.",
+    "retry_required": "Die Löschung ist noch nicht bestätigt. Dein Konto kann während der Bereinigung gesperrt sein. Lass diese Seite offen und versuche es erneut.",
+    "unavailable": "Das Konto kann gerade nicht gelöscht werden. Bitte versuche es später erneut.",
+    "deleted": "Dein Konto wurde gelöscht."
+  },
   "auth": {
     "signIn": "Anmelden",
     "signOut": "Abmelden",
@@ -433,6 +449,7 @@
     "unknownUser": "Unbekannte Person"
   },
   "taskErrors": {
+    "recipientNotConnected": "Eure Kontaktanfrage muss angenommen sein, bevor du dieser Person eine Mission senden kannst.",
     "notAuthenticated": "Du musst angemeldet sein, um {{action}}.",
     "actions": {
       "archive": "diese Aufgabe zu archivieren",

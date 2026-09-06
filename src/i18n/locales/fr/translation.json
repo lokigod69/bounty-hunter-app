@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Supprimer le compte",
+    "description": "Supprime définitivement ton compte, profil, fichiers, crédits et contacts. Cette action est irréversible.",
+    "sharedData": "Les missions qui te concernent et les récompenses que tu as créées disparaissent aussi pour les autres. Leurs soldes de crédits restent inchangés.",
+    "acknowledge": "Je comprends que mon compte et les missions partagées seront supprimés définitivement.",
+    "password": "Mot de passe actuel",
+    "confirm": "Supprimer mon compte",
+    "deleting": "Suppression…",
+    "retry": "Continuer la suppression",
+    "passwordError": "Vérifie ton mot de passe. Si tu utilises Google, déconnecte-toi et reconnecte-toi avant de réessayer.",
+    "reauth_required": "Reconnecte-toi pour confirmer, puis reviens ici.",
+    "deletion_in_progress": "La suppression a commencé sur un autre appareil. Continue là-bas ou contacte l'assistance.",
+    "retry_required": "La suppression n'est pas confirmée. Ton compte peut être bloqué pendant le nettoyage. Garde cette page et réessaie.",
+    "unavailable": "La suppression du compte est temporairement indisponible. Réessaie plus tard.",
+    "deleted": "Ton compte a été supprimé."
+  },
   "auth": {
     "signIn": "Se connecter",
     "signOut": "Se déconnecter",
@@ -433,6 +449,7 @@
     "unknownUser": "Utilisateur inconnu"
   },
   "taskErrors": {
+    "recipientNotConnected": "La demande de contact doit être acceptée avant de pouvoir envoyer une mission à cette personne.",
     "notAuthenticated": "Tu dois être connecté pour {{action}}.",
     "actions": {
       "archive": "archiver cette tâche",

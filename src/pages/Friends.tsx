@@ -186,8 +186,7 @@ export default function Friends() {
   };
 
   const handleAcceptRequest = async (friendshipId: string) => {
-    await respondToFriendRequest(friendshipId, true);
-    feedback.success();
+    if (await respondToFriendRequest(friendshipId, true)) feedback.success();
   };
 
   const handleRejectRequest = async (friendshipId: string) => {

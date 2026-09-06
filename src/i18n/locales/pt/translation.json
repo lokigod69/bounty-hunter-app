@@ -1,4 +1,20 @@
 {
+  "accountDeletion": {
+    "title": "Eliminar conta",
+    "description": "Elimina permanentemente a tua conta, perfil, ficheiros, créditos e contactos. Não é possível anular.",
+    "sharedData": "As missões em que participas e as recompensas que criaste também desaparecem para outras pessoas. Os seus saldos não mudam.",
+    "acknowledge": "Compreendo que a minha conta e as missões partilhadas serão eliminadas permanentemente.",
+    "password": "Palavra-passe atual",
+    "confirm": "Eliminar a minha conta",
+    "deleting": "A eliminar…",
+    "retry": "Continuar eliminação",
+    "passwordError": "Verifica a palavra-passe. Se usas Google, termina e volta a iniciar sessão antes de tentar novamente.",
+    "reauth_required": "Inicia sessão novamente para confirmar e volta aqui.",
+    "deletion_in_progress": "A eliminação já começou noutro dispositivo. Continua lá ou contacta o suporte.",
+    "retry_required": "A eliminação não está confirmada. A conta pode ficar bloqueada durante a limpeza. Mantém esta página e tenta novamente.",
+    "unavailable": "A eliminação de contas está temporariamente indisponível. Tenta mais tarde.",
+    "deleted": "A tua conta foi eliminada."
+  },
   "auth": {
     "signIn": "Iniciar sessão",
     "signOut": "Terminar sessão",
@@ -433,6 +449,7 @@
     "unknownUser": "Utilizador desconhecido"
   },
   "taskErrors": {
+    "recipientNotConnected": "O pedido de contacto tem de ser aceite antes de poderes enviar uma missão a esta pessoa.",
     "notAuthenticated": "Tens de iniciar sessão para {{action}}.",
     "actions": {
       "archive": "arquivar esta tarefa",
