@@ -43,7 +43,9 @@ The separate tests/ux-preview Vite config injects a fictional in-memory Supabase
 
 ## 2026-09-07 visual materials
 
-ThemeContext exposes skinId/setSkinId separately from the persisted account theme. The validated bounty_skin localStorage preference sets html[data-skin] before paint. src/theme/skin-styles.css defines three materials with panel/control/ring WebPs per finish; index.css applies shared nine-slice variables, while circular rings scale uniformly. Profile swatches preview all three. Coin contains a decorative image plus a localized numeric span; AppButton keys a decorative span per press to restart one short CSS rim glint without timers. No new backend fields or runtime dependencies for artwork.
+ThemeContext exposes skinId/setSkinId separately from the persisted account theme. The validated bounty_skin localStorage preference sets html[data-skin] before paint and synchronizes through storage events. src/theme/skin-styles.css defines panel/control/ring/coin WebPs per finish; clipped dialogs/reward cards use tight panel crops with compensated nine-slice regions. Profile swatches preview all three. Coin centers a localized numeric span over an intentionally blank enamel disk (decorative, valueless ceremony coins retain their prior art). AppButton keys a decorative span per press to restart one short CSS rim glint without timers. No new backend fields or runtime dependencies for artwork.
+
+Round 05: TaskForm uses native reward/amount radios; supported extra edit denominations are retained. RewardsStorePage waits for purchase/refresh then shows Collected with ready/used states. usePurchaseBounty synchronously guards repeats and broadcasts bh:credits-changed after explicit server success. The preview config alone adds a comparison toolbar and in-memory purchase/used operations, covered by the regular test command; ordinary builds exclude both.
 
 ## 2026-09-07 staged security boundaries
 

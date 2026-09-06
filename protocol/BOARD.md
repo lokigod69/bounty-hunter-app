@@ -2,10 +2,10 @@
 
 | Workstream | Completed | Next | Status |
 | --- | --- | --- | --- |
-| main / visual | A/B/C panel, control and circular portrait coverage; mobile/German/browser proof; source cdc1570 | User tries sample preview 6078 | Complete and deployed |
-| main / security | Source 138f2f4: client/header/dependency/email fixes; tested 016/017/018 access and deletion proposals | Verified backup, explicit SQL review/go, ordered hosted smoke checks | Backend staged, not applied |
-| main / release | Auth callback allowlist repaired; public native invitation origin; Resend/SMTP/function inventory; hosted build checked | Operator/support/Apple inputs, remaining privacy/abuse/push engineering and Mac/iPhone/TestFlight | Not release-ready |
+| main / visual | Source 278f2e2: short forms, gem coins, aligned clipped frames, working preview Claim/Used/Undo and skin comparison | User tries sample preview 6078 | Pushed; Vercel deployment completed |
+| main / security | Source 138f2f4: tested client/service changes and SQL 016/017/018 | Verified backup, explicit SQL review/go, ordered hosted checks | Backend staged, not applied |
+| main / release | Native/www auth callbacks configured; service inventory and hosting checked | Operator/support/Apple inputs; privacy/abuse/push engineering, Mac/iPhone/TestFlight | Not release-ready |
 
-407 tests/33 files, app TypeScript/build, Deno and zero-vulnerability audit pass; lint 0 errors/3 existing warnings. 149 real local PostgreSQL checks. Vercel production deployment dpl_HKWzvFctDtABwGwopsLqRVUZ29xF is Ready. Source and staged backend must not be confused with live protection.
+Current UI gates: 413 tests / 34 files; app TypeScript/build pass; lint 0 errors / 3 existing warnings; no preview code in production JS. Browser desktop/360/390, German, coin keyboard selection, submission and collection verified. Source 278f2e2 Vercel deployment completed; hosted /login HTTP 200 with CSP and DENY checked.
 
-Current handoff: NEXT_STEP.md. Detailed evidence/owner actions: ../docs/release/RELEASE_STATUS.md. Artwork can be reverted independently; SQL review/backup gates remain. Account-deletion UI is hidden until verified backend rollout.
+Earlier security pass: 149 isolated PostgreSQL checks, Deno and audit passed. They do not establish live protection. Account deletion remains hidden until verified backend rollout. Details/owner prerequisites: ../docs/release/RELEASE_STATUS.md. Current handoff: NEXT_STEP.md.

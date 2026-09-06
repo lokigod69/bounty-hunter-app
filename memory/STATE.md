@@ -10,10 +10,11 @@ Private missions and rewards between connected accounts. One People list support
 - Email-first login; Google secondary on web, native email-only. Cold/warm native auth callbacks handled. Public native invitation origin is set in .env.production.
 
 ## Visual milestone — complete
-- Michael authorized shape coverage for A/B/C and concurrent release/security work. Separate reversible artwork commit cdc1570 adds six control/ring WebPs (129,108 bytes); each complete panel/control/ring set is below 100 kB.
-- Panel corners use nine-slice: square, wide and tall surfaces keep corner proportions. Dedicated shallow controls and true circular portrait rings fill the shape gaps. Reward image frames remain visible; compact desktop header avoids a cut wordmark.
-- Matching review actions, adjacent live credit numerals, brief interaction glints and accessibility fallbacks remain. No extra appearance setting or animation loop.
-- Browser proof: A desktop; B square/tall rewards, phone People and 960px header; C phone mission and German 360px review. Sample Accept works; skin survives reload. [[../design/rounds/round-04/verification/README]]. Preview: http://127.0.0.1:6078/ (fictional data).
+- Latest user-authorized refinement is pushed in reversible commit **278f2e2**: For / Reward / Details, Gift/Credits radios and five coin amount choices; shorter copy in all 12 locales.
+- Each skin has a new gem/enamel medallion with localized live numbers inside its blank center. This supersedes adjacent numerals. Long values grow to fit; German 12.500 is verified. Six new coin/tight-panel WebPs add 157,468 bytes across A/B/C.
+- Tight crops and compensated nine-slice widths align clipped mission/form/reward frames with their surfaces. Existing panel/control/portrait assets, equal review actions and quiet interaction glints remain.
+- Claim refreshes balance readers and opens Collected; Ready to enjoy → Mark as used → Used → Undo. The sample adapter supports one debit (24 → 4), duplicate/insufficient-funds rejection and used/undo. Actual purchases require explicit server success; no live credit operations tested.
+- Preview-only top toolbar compares skins with dialogs open. Phone reward tabs wrap translations with equal widths. Browser proof: desktop, 360/390px, German, keyboard coin selection, mission submission, claim/used/undo. [[../design/rounds/round-05/verification/README]]. Preview: http://127.0.0.1:6078/ (fictional data; reload resets it).
 
 ## Security/release — prepared repairs, live blockers remain
 - Current read-only live metadata confirms profiles RLS OFF, broad profile/role grants, role-derived task admin bypass, overlapping permissive Storage policies, weak friendship consent and empty Realtime publication. Saved [[../docs/release/live-safety-snapshot.json]] and targeted [[../docs/release/live-functions.json]]. No exploit, production SQL mutation, live account deletion or email send performed.
@@ -36,6 +37,6 @@ Private missions and rewards between connected accounts. One People list support
 5. Complete older hardcoded strings/CLDR coverage and local-day streak work after launch blockers. Rotate previously exposed database credential through secure service access.
 
 ## Verification and history
-Final gate results and release/source commits are recorded in protocol/NEXT_STEP.md and [[../docs/release/RELEASE_STATUS]]. Local DB checks are real PostgreSQL 18 tests, not proof of deployed PostgreSQL 17/Supabase behavior. No public iOS readiness claim.
+Current UI gate: 413 tests / 34 files; app TypeScript/build pass; lint 0 errors / 3 existing warnings. Preview code is absent from production JS. Earlier security gates (149 PostgreSQL checks, Deno, audit) are recorded in [[../docs/release/RELEASE_STATUS]] and were not rerun for this UI-only follow-up. No public iOS readiness claim.
 
 Prior source: workflow c8a52c3, A 03f9323, B/C 59c29e2. Proposals 011/012/013 have recorded production applies. July 30 test-data wipe retained profiles/Auth accounts; do not repeat it. Old backups may omit data/ACLs. Historical state: [[archive/STATE_2026-08-03]].

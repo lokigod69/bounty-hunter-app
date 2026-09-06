@@ -2,6 +2,8 @@
 
 The visual shape pass is complete. Security engineering has progressed, but the live backend is **not ready for new users**. The access-control repairs below are prepared source, not deployed protection. Do not infer production safety from the sample preview or passing local tests.
 
+Latest UI follow-up: **278f2e2** is pushed to main; Vercel reports completed deployment `Ev24sVb62eVZCLSnbYeBADRsWyUB`. Hosted /login still returns HTTP 200, CSP and DENY. Short forms, readable skin-specific coins, aligned frames and preview collection are verified in [round 05](../../design/rounds/round-05/verification/README.md). Current UI gates: 413 tests / 34 files, app TypeScript/build, lint 0 errors / 3 existing warnings. No SQL/Edge/live reward changes occurred; the earlier security verification below remains historical evidence for its source pass.
+
 ## Verified services and changes
 
 | Area | Current evidence / action |
@@ -39,7 +41,7 @@ The visual shape pass is complete. Security engineering has progressed, but the 
 - Secure backup-capable database access and explicit review/go for the exact production SQL after backup verification. The standing rule is: “production SQL is never applied without a backup and Michael's explicit go”. General authorization to work on release did not remove that requirement.
 - Apple signing/APNs access and a designated delivery-test recipient. Existing signed-in Supabase, Vercel and Resend access is sufficient to provision a domain-limited sender credential during the ordered rollout; that is engineering work after the database repair, not a request for the owner to copy a key. No password needs to be pasted into chat.
 
-## Final local verification
+## Security-pass local verification (source 138f2f4)
 
 - `npm test`: 407 tests / 33 files pass. Five deletion-screen interaction cases cover acknowledgement, old-session rejection, failure visibility, retry identity and duplicate submission; 29 handler/helper cases cover authorization, bounded inputs, cleanup failure and post-Auth receipt recovery.
 - `npm run build`: app TypeScript and production build pass; primary app chunk 352.71 kB. A separate feature-enabled sample build also compiled; the 390px disclosure renders without overflow and the destructive button stays disabled before acknowledgement. [Screenshot](verification/deletion-confirmation-390.png). No destructive browser action was submitted.

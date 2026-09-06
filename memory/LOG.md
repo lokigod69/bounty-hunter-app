@@ -1,3 +1,12 @@
+## 2026-09-07 — Mission form, gem coins and collected rewards · 278f2e2
+
+- Pushed reversible source/design commit 278f2e2 to main. GitHub's Vercel status reports deployment completed successfully (Ev24sVb62eVZCLSnbYeBADRsWyUB).
+- Replaced reward/amount selects with Gift/Credits radios and five coin choices; shortened For/Reward/Details and hint copy in 12 locales. A submitted sample mission preserved the keyboard-selected 5 credits. Existing custom edit values/self-credit validation remain.
+- Imagegen authored three blank-center gem coins; live localized numerals sit inside. Cropped tight versions of existing panel art and compensated slice widths fix clipped Astral/form/reward edge alignment. Six WebPs add 157,468 bytes; archived source, prompt/export script and screenshots in design/rounds/round-05/.
+- Completed offline purchase_reward and mark_reward_redeemed: 24 → 4, Collected/Ready/Used/Undo, duplicates and insufficient funds rejected. The client requires explicit RPC success, prevents repeat submissions, refreshes the phone header balance and opens Collected. Added visible collected-load errors. Equal-width wrapping tabs fix clipped German phone labels.
+- Preview-only skin toolbar preserves open dialog/claim state; real app settings remain under Profile. Skin preferences sync across tabs; preview/toolbar strings absent from production JS. Preview restored to English/Starlight with fresh sample data.
+- Verification: 413 tests / 34 files; app TypeScript/build pass; lint 0 errors / 3 existing warnings; clean diff. Browser desktop/360/390, German 12.500, native radio keyboard selection, create, claim, used/undo, A/B/C frames. No production SQL/Edge deployment, live credit mutation, mail or physical iPhone tests. Existing release/security gates and owner prerequisites remain.
+
 ## 2026-09-07 — Shape coverage and release/security engineering
 
 - Michael authorized additional shapes across A/B/C and concurrent release/security. Visual commit cdc1570 and security/release source 138f2f4 are pushed to main; Vercel production deployment dpl_HKWzvFctDtABwGwopsLqRVUZ29xF is Ready. Hosted /login renders and returns the expected CSP, framing, nosniff and referrer headers.
