@@ -1,0 +1,37 @@
+Verified schema/ACL backup: D:\CODING\bounty-hunter-app\supabase\backups\schema_acl_20260907_195121_589.backup
+Applying reviewed SQL: db/proposals/017_connection_consent.up.sql
+SET
+BEGIN
+SET
+SET
+DO
+ALTER TABLE
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+psql:db/proposals/017_connection_consent.up.sql:28: NOTICE:  policy "friendships_participant_read" for relation "public.friendships" does not exist, skipping
+DROP POLICY
+psql:db/proposals/017_connection_consent.up.sql:29: NOTICE:  policy "friendships_request_insert" for relation "public.friendships" does not exist, skipping
+DROP POLICY
+DROP POLICY
+psql:db/proposals/017_connection_consent.up.sql:30: NOTICE:  policy "friendships_recipient_accept" for relation "public.friendships" does not exist, skipping
+psql:db/proposals/017_connection_consent.up.sql:31: NOTICE:  policy "friendships_participant_delete" for relation "public.friendships" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+REVOKE
+GRANT
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+psql:db/proposals/017_connection_consent.up.sql:355: NOTICE:  017 assertions passed
+DO
+NOTIFY
+COMMIT
+SQL completed. Run matching validation and hosted authorization checks.

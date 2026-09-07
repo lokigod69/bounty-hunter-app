@@ -1,0 +1,17 @@
+# CLI connection repair — 2026-09-07
+
+Michael delegated technical review and authorized the remaining rollout. This replaces the historical named Saya/human-review gate; the backup and validation safeguard remains.
+
+Supabase CLI 2.53.6 and 2.116.0 both fail before a dump with `0LP01`: `postgres` is a member of `cli_login_postgres`, so granting the opposite direction creates a cycle. A fresh read-only dashboard query confirms PostgreSQL 17.6 and the automatic role-creator grant: ADMIN true, INHERIT/SET false, grantor `supabase_admin`. The CLI role is NOLOGIN, has no elevated attributes, no active sessions, no settings/comments, no object/ACL dependencies, and exactly this one membership (including grants made by it).
+
+Supabase documents this exact cloning issue and recommends dropping the broken role, then allowing the CLI to recreate it as `supabase_admin`: [official troubleshooting](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore#cli_login_postgres-role-issues-after-cloning). An independent agent reviewed the role snapshot and this remedy against PostgreSQL 17 role rules. Merely revoking the automatic creator grant is not the supported repair.
+
+Before changing it, complete nonsecret role/membership/dependency metadata was saved in ignored `supabase/backups/role-membership-before.json` and `cli-role-preflight.json`. These are a backup of this narrowly scoped configuration, not a replacement for the subsequent application schema/ACL dump. [Guarded repair](../../scripts/prod/repair_cli_role.sql) checks those conditions again and performs ordinary `DROP ROLE` only. Any failure stops the repair; never add `DROP OWNED`, ownership reassignment, extra grants or a password reset to force success.
+
+Recovery is the provider's normal CLI login-role creation. Do not recreate the faulty role as tenant `postgres`, which reproduces PostgreSQL's automatic reverse grant. If provider recreation fails, retain the snapshot and use supported password-based access or provider support; application roles, tables, user records and Storage bytes are unchanged by this repair. Take and verify a real schema/ACL backup before proposals 016–019.
+
+Execution: guarded repair succeeded, returning `broken_cli_role_removed=true`. The CLI recreated its role and supplied a temporary connection. Pooler startup `PGOPTIONS` did not switch roles, so backup/apply explicitly use `--role postgres` / same-connection `SET ROLE postgres`; manifests now bind the selected role as well as the login identity.
+
+Fresh archive `schema_acl_20260907_195121_589.backup` (SHA-256 `3ED359C249567F3DB4D919C6920BF5A805CB0606B12D9594BEFE43B1CA3C67A6`) has 268 TOC entries and preserves actual public/storage definitions, owners, policies and ACLs. It was restored successfully into isolated PostgreSQL 18; fresh bucket configuration and fixture Auth/extensions supplied its external dependencies. All four migrations and validations then passed against that restored schema. No application records or Storage bytes were copied. See [rehearsal record](verification/rollout-rehearsal.json).
+
+Following the successful rehearsal and fresh live preflight (zero mismatched profile emails/malformed friendships), 016 → 017 → 018 → 019 were applied on hosted PostgreSQL 17.6 and each metadata validation passed. The per-proposal rollout records/logs are in verification/. HTTP/Auth/Storage acceptance is recorded separately; schema validation is not an end-to-end sign-off.

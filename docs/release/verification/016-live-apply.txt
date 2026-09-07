@@ -1,0 +1,67 @@
+Verified schema/ACL backup: D:\CODING\bounty-hunter-app\supabase\backups\schema_acl_20260907_195121_589.backup
+Applying reviewed SQL: db/proposals/016_profile_storage_repair.up.sql
+SET
+BEGIN
+SET
+SET
+DO
+ALTER TABLE
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+psql:db/proposals/016_profile_storage_repair.up.sql:52: NOTICE:  policy "profiles_authenticated_read" for relation "public.profiles" does not exist, skipping
+DROP POLICY
+DROP POLICY
+psql:db/proposals/016_profile_storage_repair.up.sql:53: NOTICE:  policy "profiles_self_insert" for relation "public.profiles" does not exist, skipping
+psql:db/proposals/016_profile_storage_repair.up.sql:54: NOTICE:  policy "profiles_self_update" for relation "public.profiles" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+REVOKE
+DO
+GRANT
+GRANT
+DROP POLICY
+REVOKE
+GRANT
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+DO
+psql:db/proposals/016_profile_storage_repair.up.sql:346: NOTICE:  016 assertions passed
+DO
+NOTIFY
+COMMIT
+SQL completed. Run matching validation and hosted authorization checks.

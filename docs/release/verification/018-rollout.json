@@ -1,0 +1,11 @@
+{
+  "proposal": "018_account_deletion",
+  "verifiedAt": "2026-09-07T11:57:21.6346755+00:00",
+  "project": "mvbmpcmexkgfairnthux",
+  "backup": "schema_acl_20260907_195121_589.backup",
+  "backupSha256": "3ED359C249567F3DB4D919C6920BF5A805CB0606B12D9594BEFE43B1CA3C67A6",
+  "apply": "complete",
+  "metadataValidation": "passed",
+  "httpChecks": "passed",
+  "httpEvidence": "hosted-acceptance.json"
+}

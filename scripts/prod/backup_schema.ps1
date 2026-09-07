@@ -3,6 +3,7 @@ param(
   [int]$DbPort = 5432,
   [string]$DbUser = 'postgres.mvbmpcmexkgfairnthux',
   [string]$DbName = 'postgres',
+  [string]$DbRole = '',
   [switch]$NoPrompt,
   [string]$OutputDirectory = (Join-Path $PSScriptRoot '../../supabase/backups')
 )
@@ -30,12 +31,17 @@ try {
   $dumpCommand = (Get-Command pg_dump -ErrorAction Stop).Source
   # Preserve owners, grants and policies. The old --no-privileges erased the
   # permissions these releases repair. No Auth rows or Storage bytes are dumped.
-  & $dumpCommand --host $DbHost --port $DbPort --username $DbUser --dbname $DbName --no-password --format=custom --schema-only --schema=public --schema=storage --schema=bounty_private --quote-all-identifiers --file $archivePath
+  $roleArguments = @()
+  if ($DbRole) {
+    if ($DbRole -notmatch '^[a-zA-Z_][a-zA-Z0-9_]*$') { throw 'Invalid database role.' }
+    $roleArguments = @('--role', $DbRole)
+  }
+  & $dumpCommand --host $DbHost --port $DbPort --username $DbUser --dbname $DbName @roleArguments --no-password --format=custom --schema-only --schema=public --schema=storage --schema=bounty_private --quote-all-identifiers --file $archivePath
   if ($LASTEXITCODE -ne 0) { throw 'Schema/ACL dump failed. No verified backup was recorded.' }
   Assert-SchemaArchive -ArchivePath $archivePath
   [ordered]@{
     version = 1; kind = 'schema-acl'; createdAt = [DateTimeOffset]::UtcNow.ToString('o')
-    host = $DbHost; port = $DbPort; user = $DbUser; database = $DbName
+    host = $DbHost; port = $DbPort; user = $DbUser; database = $DbName; role = $DbRole
     schemas = @('public', 'storage', 'bounty_private'); archive = [IO.Path]::GetFileName($archivePath)
     sha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
   } | ConvertTo-Json | Set-Content -LiteralPath $manifestPath -Encoding utf8

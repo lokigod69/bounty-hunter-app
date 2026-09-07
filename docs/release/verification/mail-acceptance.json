@@ -1,0 +1,101 @@
+{
+  "project": "mvbmpcmexkgfairnthux",
+  "run": "f2b8a69c-c8f7-4845-b728-5ffee55ae96d",
+  "mailSimulator": true,
+  "startedAt": "2026-09-07T12:26:53.495Z",
+  "checks": [
+    {
+      "name": "real confirmed Auth sessions and safe profile bootstrap",
+      "passed": true
+    },
+    {
+      "name": "anonymous/private profile reads and role writes denied",
+      "passed": true
+    },
+    {
+      "name": "recipient consent cannot be self-approved or endpoint-rewritten",
+      "passed": true
+    },
+    {
+      "name": "mission lifecycle authorizes the correct actor",
+      "passed": true
+    },
+    {
+      "name": "private proof upload/download works only for mission participants",
+      "passed": true
+    },
+    {
+      "name": "approval credits once and duplicate approval cannot pay again",
+      "passed": true
+    },
+    {
+      "name": "purchase debits once; collected reward supports used and undo",
+      "passed": true
+    },
+    {
+      "name": "Auth SMTP and reward notifier accept the provider simulation sink; forged collector denied",
+      "passed": true
+    },
+    {
+      "name": "lookup is literal, bounded and private reports are not exposed",
+      "passed": true
+    },
+    {
+      "name": "block hides content both ways and rejects saved invitation and proof access",
+      "passed": true
+    },
+    {
+      "name": "deletion endpoint denies anonymous and forged credentials",
+      "passed": true
+    },
+    {
+      "name": "account deletion removes Storage, shared content and Auth; preserves counterpart balance",
+      "passed": true
+    }
+  ],
+  "cleanup": [
+    {
+      "account": "5ffee55ae96d@resend.dev",
+      "removed": true
+    },
+    {
+      "account": "b@example.invalid",
+      "removed": true
+    },
+    {
+      "account": "c@example.invalid",
+      "removed": true
+    }
+  ],
+  "simulatorRecipient": "delivered+release-f2b8a69c-c8f7-4845-b728-5ffee55ae96d@resend.dev",
+  "providerIdempotencyKey": "reward-collected/42a5b689-708b-43f1-a88c-e7dfac3437d9",
+  "storageBlock": [
+    {
+      "cachedStatus": 200,
+      "cachedCf": "HIT",
+      "cacheControl": "public, max-age=3600",
+      "freshStatus": 400,
+      "freshCf": "BYPASS"
+    },
+    {
+      "cachedStatus": 200,
+      "cachedCf": "HIT",
+      "cacheControl": "public, max-age=3600",
+      "freshStatus": 400,
+      "freshCf": "BYPASS"
+    }
+  ],
+  "retention": {
+    "remainingBalance": 2,
+    "clientLedger": [],
+    "serviceLedger": [
+      {
+        "id": "5e8ecc0e-75f2-40d4-b54b-8028c1d480cb",
+        "amount": -3,
+        "task_id": null
+      }
+    ]
+  },
+  "finishedAt": "2026-09-07T12:27:34.781Z",
+  "passed": true
+}

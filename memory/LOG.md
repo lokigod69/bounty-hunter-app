@@ -1,3 +1,10 @@
+## 2026-09-07 — Live security rollout in progress
+
+- Michael explicitly delegated technical review and authorized all remaining release work; prior named reviewer/go gate is superseded.
+- Guarded official CLI-role repair succeeded after metadata backup, independent review and eight PostgreSQL checks. Verified actual schema/ACL backup and restore rehearsal succeeded. 016–019 are LIVE and each hosted validator passed; delete-account deployed.
+- Initial real API checks passed Auth/profile restrictions/consent/private proofs/lifecycle/credit purchase. Fixture naming mismatch stopped lookup assertions; all disposable accounts deleted successfully. Corrected final run passed all hosted checks. SMTP and reward notification simulation also passed; all disposable accounts removed. Evidence: docs/release/live-rollout-2026-09-07.md and verification/hosted-acceptance.json.
+- Source work remains uncommitted. SMTP, native push, support/privacy and Apple build/delivery work continue; owner facts pending.
+
 ## 2026-09-07 — Private contact safety, guarded backups and distinct rims · 95b2e83 / fa34d0d
 
 - Both reversible commits are pushed to main; Vercel 69zXVkBvAkmQ98NmSHAFfxWoyXZJ completed. Hosted /login returned HTTP200, expected CSP/DENY/nosniff/no-referrer and local index-DUrEiTNB.js. No production SQL, Edge deployment, successful live block/report/deletion or mail send occurred.

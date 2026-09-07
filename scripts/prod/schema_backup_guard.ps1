@@ -17,11 +17,12 @@ function Assert-SchemaBackup {
     [Parameter(Mandatory)][string]$DbHost,
     [Parameter(Mandatory)][int]$DbPort,
     [Parameter(Mandatory)][string]$DbUser,
-    [Parameter(Mandatory)][string]$DbName
+    [Parameter(Mandatory)][string]$DbName,
+    [string]$DbRole = ''
   )
   $manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
   if ($manifest.version -ne 1 -or $manifest.kind -ne 'schema-acl') { throw 'Unsupported backup manifest.' }
-  if ($manifest.host -ne $DbHost -or $manifest.port -ne $DbPort -or $manifest.user -ne $DbUser -or $manifest.database -ne $DbName) { throw 'Backup belongs to a different database target.' }
+  if ($manifest.host -ne $DbHost -or $manifest.port -ne $DbPort -or $manifest.user -ne $DbUser -or $manifest.database -ne $DbName -or [string]$manifest.role -ne $DbRole) { throw 'Backup belongs to a different database target or role.' }
   $age = [DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($manifest.createdAt)
   if ($age.TotalHours -gt 24 -or $age.TotalMinutes -lt -1) { throw 'Backup is stale or has a future timestamp.' }
   if (($manifest.schemas -join ',') -ne 'public,storage,bounty_private') { throw 'Backup schema scope is incomplete.' }

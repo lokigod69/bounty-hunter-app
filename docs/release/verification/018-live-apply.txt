@@ -1,0 +1,56 @@
+Verified schema/ACL backup: D:\CODING\bounty-hunter-app\supabase\backups\schema_acl_20260907_195121_589.backup
+Applying reviewed SQL: db/proposals/018_account_deletion.up.sql
+SET
+BEGIN
+SET
+SET
+DO
+CREATE SCHEMA
+REVOKE
+GRANT
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.profiles" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.profiles" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.tasks" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.tasks" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.friendships" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.friendships" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.invites" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.invites" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.rewards_store" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.rewards_store" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.collected_rewards" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.collected_rewards" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.credit_transactions" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.credit_transactions" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.daily_mission_streaks" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.daily_mission_streaks" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  trigger "account_deletion_guard" for relation "public.user_credits" does not exist, skipping
+psql:db/proposals/018_account_deletion.up.sql:128: NOTICE:  policy "account_active_actor" for relation "public.user_credits" does not exist, skipping
+DO
+psql:db/proposals/018_account_deletion.up.sql:129: NOTICE:  trigger "account_deletion_guard" for relation "storage.objects" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+psql:db/proposals/018_account_deletion.up.sql:132: NOTICE:  policy "account_active_actor" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+NOTIFY
+COMMIT
+SQL completed. Run matching validation and hosted authorization checks.

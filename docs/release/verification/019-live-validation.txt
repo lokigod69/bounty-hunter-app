@@ -1,0 +1,9 @@
+SET
+BEGIN
+ assert_deletion_schema
+------------------------
+
+(1 row)
+
+DO
+COMMIT

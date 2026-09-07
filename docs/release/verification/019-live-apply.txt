@@ -1,0 +1,83 @@
+Verified schema/ACL backup: D:\CODING\bounty-hunter-app\supabase\backups\schema_acl_20260907_195121_589.backup
+Applying reviewed SQL: db/proposals/019_contact_safety.up.sql
+SET
+BEGIN
+SET
+SET
+ assert_deletion_schema
+------------------------
+
+(1 row)
+
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+DO
+psql:db/proposals/019_contact_safety.up.sql:44: NOTICE:  trigger "account_deletion_guard" for relation "bounty_private.user_blocks" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:44: NOTICE:  trigger "account_deletion_guard" for relation "bounty_private.safety_budgets" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:44: NOTICE:  trigger "account_deletion_guard" for relation "bounty_private.user_reports" does not exist, skipping
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+DO
+GRANT
+DO
+DROP POLICY
+CREATE POLICY
+psql:db/proposals/019_contact_safety.up.sql:89: NOTICE:  policy "profiles_contact_visibility" for relation "public.profiles" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+psql:db/proposals/019_contact_safety.up.sql:182: NOTICE:  policy "unblocked_content" for relation "public.tasks" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:db/proposals/019_contact_safety.up.sql:184: NOTICE:  policy "unblocked_content" for relation "public.rewards_store" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:db/proposals/019_contact_safety.up.sql:186: NOTICE:  policy "unblocked_content" for relation "public.collected_rewards" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+psql:db/proposals/019_contact_safety.up.sql:188: NOTICE:  policy "unblocked_content" for relation "storage.objects" does not exist, skipping
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.tasks" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.friendships" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.rewards_store" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.collected_rewards" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.credit_transactions" does not exist, skipping
+psql:db/proposals/019_contact_safety.up.sql:244: NOTICE:  trigger "blocked_interaction_guard" for relation "public.daily_mission_streaks" does not exist, skipping
+DO
+DROP TRIGGER
+psql:db/proposals/019_contact_safety.up.sql:245: NOTICE:  trigger "blocked_interaction_guard" for relation "storage.objects" does not exist, skipping
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+DO
+ assert_deletion_schema
+------------------------
+
+(1 row)
+
+NOTIFY
+COMMIT
+SQL completed. Run matching validation and hosted authorization checks.

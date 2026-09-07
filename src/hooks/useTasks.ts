@@ -615,7 +615,9 @@ export function useTasks(user: User | null, client: SupabaseClient = supabase) {
       const { error: uploadError } = await client.storage
         .from('bounty-proofs') // Ensure this bucket exists and has correct policies
         .upload(filePath, file, {
-          cacheControl: '3600',
+          // Proof access can change when a contact blocks or deletes an account.
+          // Avoid extending cached access to newly uploaded private evidence.
+          cacheControl: '0',
           upsert: true, 
           contentType: file.type,
           // Android optimization: smaller chunk size for better reliability

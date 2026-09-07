@@ -21,6 +21,7 @@ export function checkBackup({ root, scratch, port, sql }) {
     $targetArgs=@{ManifestPath=${quote(manifest)};DbHost='127.0.0.1';DbPort=${port};DbUser='postgres';DbName='postgres'}
     $archive=Assert-SchemaBackup @targetArgs
     function ExpectFailure([scriptblock]$action) { $failed=$false; try { & $action } catch { $failed=$true }; if (-not $failed) { throw 'Expected guard refusal' } }
+    ExpectFailure { Assert-SchemaBackup @targetArgs -DbRole service_role }
     $original=Get-Content -LiteralPath ${quote(manifest)} -Raw
     $record=$original|ConvertFrom-Json
     $record.host='different-target'; $record|ConvertTo-Json|Set-Content -LiteralPath ${quote(manifest)}

@@ -1,0 +1,94 @@
+{
+  "project": "mvbmpcmexkgfairnthux",
+  "run": "4a4ba81f-3a48-4a7d-8b32-3dfb4c75db3f",
+  "startedAt": "2026-09-07T12:14:40.145Z",
+  "checks": [
+    {
+      "name": "real confirmed Auth sessions and safe profile bootstrap",
+      "passed": true
+    },
+    {
+      "name": "anonymous/private profile reads and role writes denied",
+      "passed": true
+    },
+    {
+      "name": "recipient consent cannot be self-approved or endpoint-rewritten",
+      "passed": true
+    },
+    {
+      "name": "mission lifecycle authorizes the correct actor",
+      "passed": true
+    },
+    {
+      "name": "private proof upload/download works only for mission participants",
+      "passed": true
+    },
+    {
+      "name": "approval credits once and duplicate approval cannot pay again",
+      "passed": true
+    },
+    {
+      "name": "purchase debits once; collected reward supports used and undo",
+      "passed": true
+    },
+    {
+      "name": "lookup is literal, bounded and private reports are not exposed",
+      "passed": true
+    },
+    {
+      "name": "block hides content both ways and rejects saved invitation and proof access",
+      "passed": true
+    },
+    {
+      "name": "deletion endpoint denies anonymous and forged credentials",
+      "passed": true
+    },
+    {
+      "name": "account deletion removes Storage, shared content and Auth; preserves counterpart balance",
+      "passed": true
+    }
+  ],
+  "cleanup": [
+    {
+      "account": "a@example.invalid",
+      "removed": true
+    },
+    {
+      "account": "b@example.invalid",
+      "removed": true
+    },
+    {
+      "account": "c@example.invalid",
+      "removed": true
+    }
+  ],
+  "storageBlock": [
+    {
+      "cachedStatus": 200,
+      "cachedCf": "HIT",
+      "cacheControl": "public, max-age=3600",
+      "freshStatus": 400,
+      "freshCf": "BYPASS"
+    },
+    {
+      "cachedStatus": 200,
+      "cachedCf": "HIT",
+      "cacheControl": "public, max-age=3600",
+      "freshStatus": 400,
+      "freshCf": "BYPASS"
+    }
+  ],
+  "retention": {
+    "remainingBalance": 2,
+    "clientLedger": [],
+    "serviceLedger": [
+      {
+        "id": "167fd914-c2a0-43c8-97fb-e0ff5fbc2997",
+        "amount": -3,
+        "task_id": null
+      }
+    ]
+  },
+  "finishedAt": "2026-09-07T12:15:08.276Z",
+  "passed": true
+}
