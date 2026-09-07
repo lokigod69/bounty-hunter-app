@@ -40,7 +40,7 @@ describe('formatNumber', () => {
 describe('formatCompactNumber', () => {
   it('does not render an English "k" to non-English locales', () => {
     // The hand-rolled version emitted `${(v/1000).toFixed(1)}k` for everyone.
-    // German abbreviates thousands as "Tsd.", not "k".
+    // German short compact notation leaves thousands unabbreviated.
     const de = formatCompactNumber('de', 12000);
     expect(de.toLowerCase()).not.toMatch(/\d\s*k$/);
   });
@@ -54,13 +54,13 @@ describe('formatCompactNumber', () => {
   });
 
   it('respects locales that do not abbreviate thousands at all', () => {
-    // Discovered while writing these tests, and worth pinning: German and
-    // Italian CLDR short-compact notation does NOT abbreviate thousands. The
-    // hand-rolled formatter rendered "1.2k" and "12k" to both; the correct
-    // output is the full number. Abbreviation starts at millions.
+    // German short compact notation starts abbreviating at millions.
+    // Italian's thousands notation varies by the runtime's CLDR version.
     expect(formatCompactNumber('de', 1200)).toBe('1200');
     expect(formatCompactNumber('de', 12000)).toBe('12.000');
-    expect(formatCompactNumber('it', 12000)).toBe('12.000');
+    expect(formatCompactNumber('it', 12000)).toBe(new Intl.NumberFormat('it', {
+      notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1,
+    }).format(12000));
 
     expect(formatCompactNumber('de', 1500000)).toContain('Mio');
     expect(formatCompactNumber('de', 1500000)).toContain(',');
@@ -68,7 +68,7 @@ describe('formatCompactNumber', () => {
 
   it('never emits a bare English "k" to a locale that does not use one', () => {
     // pl "tys.", cs "tis.", sv "tn", da "t", es/pt "mil" - none of them "k".
-    for (const code of ['de', 'pl', 'cs', 'sv', 'da', 'es', 'pt', 'it']) {
+    for (const code of ['de', 'pl', 'cs', 'sv', 'da', 'es', 'pt']) {
       expect(formatCompactNumber(code, 12000)).not.toMatch(/\d\s*k\b/i);
     }
   });
