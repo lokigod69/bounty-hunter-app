@@ -1,10 +1,16 @@
 {
   "project": "mvbmpcmexkgfairnthux",
-  "run": "4a4ba81f-3a48-4a7d-8b32-3dfb4c75db3f",
-  "startedAt": "2026-09-07T12:14:40.145Z",
+  "run": "ca5149bc-335b-4b69-9460-8a3b73d631ae",
+  "mailSimulator": false,
+  "pushDormant": true,
+  "startedAt": "2026-09-07T13:14:04.819Z",
   "checks": [
     {
       "name": "real confirmed Auth sessions and safe profile bootstrap",
+      "passed": true
+    },
+    {
+      "name": "native push remains dormant and dispatch is service-only",
       "passed": true
     },
     {
@@ -83,12 +89,12 @@
     "clientLedger": [],
     "serviceLedger": [
       {
-        "id": "167fd914-c2a0-43c8-97fb-e0ff5fbc2997",
+        "id": "e0c9492b-a1f8-4963-8f2c-ff0194155716",
         "amount": -3,
         "task_id": null
       }
     ]
   },
-  "finishedAt": "2026-09-07T12:15:08.276Z",
+  "finishedAt": "2026-09-07T13:14:33.407Z",
   "passed": true
 }

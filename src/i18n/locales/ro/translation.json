@@ -584,5 +584,15 @@
     "unsafe_content": "Conținut periculos",
     "spam": "Spam",
     "other": "Altul"
+  },
+  "push": {
+    "title": "Notificări",
+    "off": "Dezactivate pe acest dispozitiv.",
+    "working": "Se conectează…",
+    "on": "Activate pentru acest cont.",
+    "denied": "Permite notificările în configurările iPhone.",
+    "error": "Notificările nu au putut fi actualizate. Încearcă din nou.",
+    "enable": "Activează",
+    "disable": "Dezactivează"
   }
 }

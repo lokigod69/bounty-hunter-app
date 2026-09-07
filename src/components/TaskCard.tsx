@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 import { User, Flame, Gift } from 'lucide-react';
 import { AssignedContract } from '../hooks/useAssignedContracts';
@@ -113,10 +114,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const [internalActionLoading, setInternalActionLoading] = useState(false);
   const actionLoading = internalActionLoading || !!externalActionLoading;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchParams,setSearchParams]=useSearchParams();
+  useEffect(()=>{
+    // Only cards obtained through the authenticated, RLS-scoped list can open.
+    if(searchParams.get('mission')===task.id)setIsExpanded(true);
+  },[searchParams,task.id]);
 
   // R9: Simplified handleClose - MissionModalShell handles its own animation
   const handleClose = () => {
     setIsExpanded(false);
+    if(searchParams.get('mission')===task.id){
+      const next=new URLSearchParams(searchParams);next.delete('mission');setSearchParams(next,{replace:true});
+    }
     clearLayer();
   };
 

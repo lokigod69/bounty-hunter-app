@@ -584,5 +584,15 @@
     "unsafe_content": "Onveilige inhoud",
     "spam": "Spam",
     "other": "Anders"
+  },
+  "push": {
+    "title": "Meldingen",
+    "off": "Uit op dit apparaat.",
+    "working": "Verbinden…",
+    "on": "Aan voor dit account.",
+    "denied": "Sta meldingen toe in de iPhone-instellingen.",
+    "error": "Meldingen konden niet worden bijgewerkt. Probeer opnieuw.",
+    "enable": "Inschakelen",
+    "disable": "Uitschakelen"
   }
 }

@@ -16,7 +16,7 @@ import { useUI } from '../context/UIContext';
 import { AppButton, EmptyState, PageState, SectionHeader } from '../components/ui';
 import { updateMissionStatus, uploadProof, submitForReviewNoProof, archiveMission } from '../domain/missions';
 import { translateTaskLifecycleErrorObject } from '../i18n/taskLifecycleErrors';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useSearchParams } from 'react-router-dom';
 import emptyMissions from '../assets/generated/empty-missions.webp';
 
 export default function Dashboard() {
@@ -26,6 +26,8 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { strings } = useThemeStrings();
   const navigate = useNavigate();
+  const [searchParams]=useSearchParams();
+  const requestedMission=searchParams.get('mission');
 
   const handleDeleteTaskRequest = () => {
     // Assignees should not be able to delete tasks created by others
@@ -234,7 +236,7 @@ export default function Dashboard() {
         const completedB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
         return completedB - completedA;
       });
-    const completed = allCompleted.slice(0, 10); // Show only the 10 most recent cards.
+    const completed = allCompleted.filter((task,index)=>index<10 || task.id===requestedMission);
 
     return {
       doNowMissions: doNow,
@@ -242,7 +244,7 @@ export default function Dashboard() {
       completedMissions: completed,
       completedMissionCount: allCompleted.length,
     };
-  }, [assignedContracts]);
+  }, [assignedContracts,requestedMission]);
 
   if (loading && assignedContracts.length === 0) {
     return (

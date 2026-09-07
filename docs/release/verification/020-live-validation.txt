@@ -1,0 +1,14 @@
+SET
+BEGIN
+ assert_deletion_schema
+------------------------
+
+(1 row)
+
+DO
+                                                       result
+---------------------------------------------------------------------------------------------------------------------
+ 020 dormant settings, privacy/execute grants, authoritative event triggers and complete deletion inventory verified
+(1 row)
+
+COMMIT

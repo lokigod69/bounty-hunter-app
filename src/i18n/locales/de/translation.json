@@ -584,5 +584,15 @@
     "unsafe_content": "Gefährliche Inhalte",
     "spam": "Spam",
     "other": "Sonstiges"
+  },
+  "push": {
+    "title": "Mitteilungen",
+    "off": "Auf diesem Gerät aus.",
+    "working": "Verbindung wird hergestellt…",
+    "on": "Für dieses Konto an.",
+    "denied": "Erlaube Mitteilungen in den iPhone-Einstellungen.",
+    "error": "Mitteilungen konnten nicht aktualisiert werden. Versuche es erneut.",
+    "enable": "Einschalten",
+    "disable": "Ausschalten"
   }
 }

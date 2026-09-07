@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-09-07T13:03:16.294Z",
+  "archive": "schema_acl_20260907_210156_964.backup",
+  "sha256": "CD8966A6752C82E0359BD53584A914701331C3B0697423B3E2CA9B6BCB11F0C6",
+  "sourcePostgres": "17.6",
+  "localPostgres": "18.0",
+  "policiesRestored": 45,
+  "bucketConfigsRestored": 3,
+  "migrations": [
+    "020_native_push"
+  ],
+  "externalFixtures": [
+    "auth.users",
+    "auth.sessions",
+    "auth.uid/jwt/role/email",
+    "extensions.uuid-ossp/pgcrypto",
+    "Supabase roles",
+    "empty Realtime publication"
+  ],
+  "applicationRowsCopied": false
+}

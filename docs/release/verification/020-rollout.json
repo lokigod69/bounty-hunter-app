@@ -1,0 +1,16 @@
+{
+  "proposal": "020_native_push",
+  "verifiedAt": "2026-09-07T13:17:56.946Z",
+  "project": "mvbmpcmexkgfairnthux",
+  "sourceSha256": "ec9848879e80a5770a96c8225bef66ce51c0aa378f4934d5f91ca78939b8793e",
+  "backup": "schema_acl_20260907_210156_964.backup",
+  "backupSha256": "CD8966A6752C82E0359BD53584A914701331C3B0697423B3E2CA9B6BCB11F0C6",
+  "apply": "complete",
+  "metadataValidation": "passed",
+  "hostedDormantAcceptance": "passed",
+  "httpEvidence": "hosted-acceptance.json",
+  "databaseEnabled": false,
+  "clientEnabled": false,
+  "appleDeliveryVerified": false,
+  "schedulerInstalled": false
+}

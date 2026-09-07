@@ -584,5 +584,15 @@
     "unsafe_content": "Unsafe content",
     "spam": "Spam",
     "other": "Other"
+  },
+  "push": {
+    "title": "Notifications",
+    "off": "Off on this device.",
+    "working": "Connecting…",
+    "on": "On for this account.",
+    "denied": "Allow notifications in iPhone Settings to turn them on.",
+    "error": "Could not update notifications. Try again.",
+    "enable": "Turn on",
+    "disable": "Turn off"
   }
 }

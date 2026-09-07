@@ -5,6 +5,7 @@
 // Wave B: Refreshes preserve populated grids; reward claims use debit-appropriate feedback.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { CONTENT_REFRESH_EVENT } from '../lib/nativePush';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -77,6 +78,12 @@ const RewardsStorePage: React.FC = () => {
     fetchRewards();
     fetchCollectedRewards(); // Always fetch so we can exclude from Available
   }, [fetchRewards, fetchCollectedRewards]);
+  useEffect(()=>{
+    const refresh=()=>{void fetchRewards();void fetchCollectedRewards();void refetchCredits();};
+    window.addEventListener(CONTENT_REFRESH_EVENT,refresh);
+    window.addEventListener('online',refresh);
+    return()=>{window.removeEventListener(CONTENT_REFRESH_EVENT,refresh);window.removeEventListener('online',refresh);};
+  },[fetchRewards,fetchCollectedRewards,refetchCredits]);
 
   // Set of already-collected reward IDs to exclude from Available
   const collectedRewardIds = useMemo(() => {

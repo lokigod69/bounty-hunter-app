@@ -13,6 +13,7 @@ import { ensureProfileForUser } from '../lib/profileBootstrap';
 import toast from 'react-hot-toast';
 import { parseSupabaseAuthCallback } from '../lib/authRedirect';
 import i18n from '../i18n';
+import { stopNativePush,clearNativeNotifications } from '../lib/nativePush';
 
 interface AuthContextType {
   user: User | null;
@@ -242,10 +243,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setAuthLoading(true);
       setError(null);
+      await stopNativePush();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      await clearNativeNotifications();
     } catch (error) {
       setError((error as Error).message);
+      throw error;
     } finally {
       setAuthLoading(false);
     }

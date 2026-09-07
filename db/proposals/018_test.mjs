@@ -8,8 +8,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const include019 = process.argv.slice(2).includes('--include-019');
-assert(process.argv.slice(2).every(arg => arg === '--include-019'), 'Only --include-019 accepted; no database input');
+const include020 = process.argv.slice(2).includes('--include-020');
+const include019 = include020 || process.argv.slice(2).includes('--include-019');
+assert(process.argv.slice(2).every(arg => ['--include-019','--include-020'].includes(arg)), 'Only local suite flags accepted; no database input');
 const scratchParent = path.join(root, 'node_modules');
 const scratch = path.join(scratchParent, `.security-db-018-${process.pid}`);
 const dataDir = path.join(scratch, 'data');
@@ -132,6 +133,10 @@ try {
   if (include019) {
     const { run019 } = await import('../../tests/security-db/019-cases.mjs');
     await run019({ sql, read, check, as, truth, denied, q, user, task, reward, sid, op, port, root, scratch });
+  }
+  if (include020) {
+    const { run020 } = await import('../../tests/security-db/020-cases.mjs');
+    await run020({ sql, read, check, as, truth, denied, q, user, task, reward, sid, op });
   }
   sql(`BEGIN; ${as()} SELECT ${begin()}; COMMIT;`);
   sql(`UPDATE auth.sessions SET created_at=now()-interval '1 hour' WHERE id='${sid(1)}';`);

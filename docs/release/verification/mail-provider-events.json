@@ -1,0 +1,13 @@
+{
+  "verifiedAt": "2026-09-07",
+  "source": "Authenticated Resend delivery dashboard, DOM table rows",
+  "recipient": "delivered+release-f2b8a69c-c8f7-4845-b728-5ffee55ae96d@resend.dev",
+  "simulationOnly": true,
+  "matchingRows": 2,
+  "events": [
+    {"subject": "Your sign-in link", "status": "Delivered"},
+    {"subject": "A Bounty Hunter reward was collected", "status": "Delivered"}
+  ],
+  "repeatedNotifierInvocation": "No duplicate matching reward email row",
+  "limitation": "Provider simulation; no claim that a human inbox received these emails"
+}

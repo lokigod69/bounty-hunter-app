@@ -9,7 +9,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
-assert.equal(process.argv.length,3,'Supply only the local backup manifest');
+const pushOnly=process.argv[3]==='--push';
+assert(process.argv.length===(pushOnly?4:3),'Supply the local backup manifest and optional --push');
 const manifestPath=realpathSync(process.argv[2]);
 assert(manifestPath.startsWith(realpathSync(path.join(root,'supabase/backups'))+path.sep));
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8').replace(/^\uFEFF/,''));
@@ -53,7 +54,7 @@ try {
     SELECT id,name,public,file_size_limit,allowed_mime_types FROM jsonb_to_recordset('${JSON.stringify(buckets).replaceAll("'","''")}'::jsonb)
     AS b(id text,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
   const before=sql(`SELECT count(*) FROM pg_policies WHERE schemaname IN('public','storage');`).trim();
-  const migrations=['016_profile_storage_repair','017_connection_consent','018_account_deletion','019_contact_safety'];
+  const migrations=pushOnly?['020_native_push']:['016_profile_storage_repair','017_connection_consent','018_account_deletion','019_contact_safety'];
   for(const name of migrations) {
     sql(readFileSync(path.join(root,`db/proposals/${name}.up.sql`),'utf8'));
     sql(readFileSync(path.join(root,`db/proposals/${name.slice(0,3)}_validation.sql`),'utf8'));
@@ -62,7 +63,7 @@ try {
   sql('SELECT bounty_private.assert_deletion_schema();');
   const report={verifiedAt:new Date().toISOString(),archive:manifest.archive,sha256:manifest.sha256,sourcePostgres:'17.6',localPostgres:sql("SHOW server_version;").trim(),policiesRestored:Number(before),bucketConfigsRestored:buckets.length,migrations,externalFixtures:['auth.users','auth.sessions','auth.uid/jwt/role/email','extensions.uuid-ossp/pgcrypto','Supabase roles','empty Realtime publication'],applicationRowsCopied:false};
   mkdirSync(path.join(root,'docs/release/verification'),{recursive:true});
-  writeFileSync(path.join(root,'docs/release/verification/rollout-rehearsal.json'),JSON.stringify(report,null,2)+'\n');
+  writeFileSync(path.join(root,`docs/release/verification/${pushOnly?'push':'rollout'}-rehearsal.json`),JSON.stringify(report,null,2)+'\n');
 } finally {
   if(started) run('pg_ctl',['-D',path.join(scratch,'data'),'-m','immediate','-w','stop']);
   assert(scratch.startsWith(path.join(root,'node_modules')+path.sep) && path.basename(scratch).startsWith('.rehearse-backup-'));

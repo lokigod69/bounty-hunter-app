@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 const project = 'mvbmpcmexkgfairnthux';
 const url = `https://${project}.supabase.co`;
 const testMail = process.argv.includes('--test-mail-simulator');
+const testPushDormant = process.argv.includes('--test-push-dormant');
 if (!process.argv.includes('--run-disposable-accounts')) throw new Error('Use --run-disposable-accounts to run hosted acceptance.');
 const cli = spawnSync(process.platform === 'win32' ? 'supabase.exe' : 'supabase',
   ['projects', 'api-keys', '--project-ref', project, '--dns-resolver', 'https', '--output', 'json'], { encoding: 'utf8', windowsHide: true });
@@ -23,7 +24,7 @@ const admin = createClient(url, service, options);
 const anonymous = createClient(url, anon, options);
 const run = randomUUID();
 const users = [];
-const report = { project, run, mailSimulator: testMail, startedAt: new Date().toISOString(), checks: [], cleanup: [] };
+const report = { project, run, mailSimulator: testMail, pushDormant: testPushDormant, startedAt: new Date().toISOString(), checks: [], cleanup: [] };
 await mkdir('supabase/backups', { recursive: true });
 async function save() {
   await writeFile(`supabase/backups/acceptance-${run}.json`, JSON.stringify({ run, users: users.map(({ id, email, operation }) => ({ id, email, operation })) }, null, 2));
@@ -68,6 +69,17 @@ let failure;
 try {
   let a, b, c;
   await check('real confirmed Auth sessions and safe profile bootstrap', async () => { a = await account('a'); b = await account('b'); c = await account('c'); });
+  if (testPushDormant) await check('native push remains dormant and dispatch is service-only', async () => {
+    const args = { p_installation: randomUUID(), p_token: 'a'.repeat(64), p_environment: 'production' };
+    assert((await anonymous.rpc('register_push_device', args)).error);
+    const registration = await a.client.rpc('register_push_device', args);
+    assert.equal(registration.error?.message, 'push_unavailable');
+    assert((await a.client.rpc('claim_push_deliveries')).error);
+    assert((await anonymous.rpc('claim_push_deliveries')).error);
+    assert((await a.client.schema('bounty_private').from('push_devices').select('*')).error);
+    assert.deepEqual(ok(await admin.rpc('claim_push_deliveries')), []);
+    ok(await a.client.rpc('revoke_push_device', { p_installation: args.p_installation }));
+  });
   await check('anonymous/private profile reads and role writes denied', async () => {
     denied(await anonymous.from('profiles').select('id'));
     denied(await a.client.from('profiles').select('*'));

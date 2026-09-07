@@ -27,6 +27,7 @@ import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { useVisualViewport } from './hooks/useVisualViewport';
 import { PENDING_INVITE_KEY } from './hooks/useInvite';
+import { NativePushBridge } from './components/NativePushBridge';
 
 // Protected route component - handles authentication only
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -93,6 +94,7 @@ export default function App() {
             }}
           />
     <BrowserRouter>
+            <NativePushBridge />
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />

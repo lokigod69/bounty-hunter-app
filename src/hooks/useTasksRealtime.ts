@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
 import { debounce } from '../lib/debounce';
+import { CONTENT_REFRESH_EVENT } from '../lib/nativePush';
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
 
@@ -70,6 +71,8 @@ export function useTasksRealtime(
     }
 
     const scheduleRefetch = debounce(() => onChangeRef.current(), REFETCH_DEBOUNCE_MS);
+    window.addEventListener(CONTENT_REFRESH_EVENT,scheduleRefetch);
+    window.addEventListener('online',scheduleRefetch);
     const channelName = `tasks-realtime:${hookName}:${userId}:${++channelSeq}`;
 
     try {
@@ -96,6 +99,8 @@ export function useTasksRealtime(
 
     return () => {
       scheduleRefetch.cancel();
+      window.removeEventListener(CONTENT_REFRESH_EVENT,scheduleRefetch);
+      window.removeEventListener('online',scheduleRefetch);
       if (channelRef.current) {
         try {
           channelRef.current.unsubscribe();

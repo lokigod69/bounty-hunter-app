@@ -584,5 +584,15 @@
     "unsafe_content": "Nebezpečný obsah",
     "spam": "Spam",
     "other": "Jiné"
+  },
+  "push": {
+    "title": "Oznámení",
+    "off": "Na tomto zařízení vypnuto.",
+    "working": "Připojování…",
+    "on": "Pro tento účet zapnuto.",
+    "denied": "Povol oznámení v nastavení iPhonu.",
+    "error": "Oznámení se nepodařilo změnit. Zkus to znovu.",
+    "enable": "Zapnout",
+    "disable": "Vypnout"
   }
 }

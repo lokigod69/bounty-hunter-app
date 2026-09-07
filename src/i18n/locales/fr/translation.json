@@ -584,5 +584,15 @@
     "unsafe_content": "Contenu dangereux",
     "spam": "Spam",
     "other": "Autre"
+  },
+  "push": {
+    "title": "Notifications",
+    "off": "Désactivées sur cet appareil.",
+    "working": "Connexion…",
+    "on": "Activées pour ce compte.",
+    "denied": "Autorisez les notifications dans les réglages de l’iPhone.",
+    "error": "Impossible de modifier les notifications. Réessayez.",
+    "enable": "Activer",
+    "disable": "Désactiver"
   }
 }

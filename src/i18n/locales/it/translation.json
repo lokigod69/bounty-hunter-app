@@ -584,5 +584,15 @@
     "unsafe_content": "Contenuti pericolosi",
     "spam": "Spam",
     "other": "Altro"
+  },
+  "push": {
+    "title": "Notifiche",
+    "off": "Disattivate su questo dispositivo.",
+    "working": "Connessione…",
+    "on": "Attivate per questo account.",
+    "denied": "Consenti le notifiche nelle Impostazioni di iPhone.",
+    "error": "Impossibile aggiornare le notifiche. Riprova.",
+    "enable": "Attiva",
+    "disable": "Disattiva"
   }
 }

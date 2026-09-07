@@ -584,5 +584,15 @@
     "unsafe_content": "Farligt indhold",
     "spam": "Spam",
     "other": "Andet"
+  },
+  "push": {
+    "title": "Notifikationer",
+    "off": "Fra på denne enhed.",
+    "working": "Opretter forbindelse…",
+    "on": "Til for denne konto.",
+    "denied": "Tillad notifikationer i iPhone-indstillingerne.",
+    "error": "Notifikationerne kunne ikke ændres. Prøv igen.",
+    "enable": "Slå til",
+    "disable": "Slå fra"
   }
 }

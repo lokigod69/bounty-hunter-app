@@ -584,5 +584,15 @@
     "unsafe_content": "Farligt innehåll",
     "spam": "Skräppost",
     "other": "Annat"
+  },
+  "push": {
+    "title": "Notiser",
+    "off": "Av på den här enheten.",
+    "working": "Ansluter…",
+    "on": "På för det här kontot.",
+    "denied": "Tillåt notiser i iPhone-inställningarna.",
+    "error": "Det gick inte att ändra notiserna. Försök igen.",
+    "enable": "Slå på",
+    "disable": "Stäng av"
   }
 }

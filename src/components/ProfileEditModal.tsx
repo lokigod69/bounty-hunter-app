@@ -24,6 +24,8 @@ import { useDailyQuote } from '../hooks/useDailyQuote';
 import { PageQuote } from './layout/PageQuote';
 import { clearOnboardingFlag } from '../lib/ftxGate';
 import { AccountDeletionPanel } from './AccountDeletionPanel';
+import { NativePushSettings } from './NativePushSettings';
+import { clearNativeNotifications } from '../lib/nativePush';
 
 
 interface ProfileEditModalProps {
@@ -57,7 +59,7 @@ function deriveDisplayNameFromEmail(email: string | undefined): string {
 export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const { t } = useTranslation();
   // R16: Also pull profileLoading to handle first-time profile scenario
-  const { user, profile, profileLoading, refreshProfile } = useAuth();
+  const { user, profile, profileLoading, refreshProfile, signOut } = useAuth();
   const { themeId, setThemeId, skinId, setSkinId } = useTheme();
   const { standing, known } = useStanding();
   const dailyQuote = useDailyQuote(known ? standing.unlockedCreedLines : undefined, user?.id);
@@ -65,8 +67,8 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
   const [deletingAccount, setDeletingAccount] = useState(false);
   const handleSignOut = async () => {
     setSigningOut(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) { toast.error(error.message); setSigningOut(false); return; }
+    try {await signOut();}
+    catch {toast.error(t('auth.login.unexpectedError'));setSigningOut(false);return;}
     onClose();
     navigate('/login', { replace: true });
   };
@@ -320,6 +322,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
               </div>
 
               {/* Language Switcher */}
+              <NativePushSettings />
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                 <label className="text-sm font-medium">{t('profile.language')}</label>
                 <LanguageSwitcher />
@@ -414,6 +417,7 @@ export default function ProfileEditModal({ isOpen, onClose }: ProfileEditModalPr
           {import.meta.env.VITE_ACCOUNT_DELETION_ENABLED === 'true' && user && (
             <AccountDeletionPanel userId={user.id} onBusyChange={setDeletingAccount} onDeleted={async () => {
               // The server has confirmed Auth absence before local session cleanup.
+              await clearNativeNotifications();
               await supabase.auth.signOut({ scope: 'local' });
               toast.success(t('accountDeletion.deleted'));
               onClose();

@@ -584,5 +584,15 @@
     "unsafe_content": "Niebezpieczne treści",
     "spam": "Spam",
     "other": "Inne"
+  },
+  "push": {
+    "title": "Powiadomienia",
+    "off": "Wyłączone na tym urządzeniu.",
+    "working": "Łączenie…",
+    "on": "Włączone dla tego konta.",
+    "denied": "Zezwól na powiadomienia w ustawieniach iPhone’a.",
+    "error": "Nie udało się zmienić powiadomień. Spróbuj ponownie.",
+    "enable": "Włącz",
+    "disable": "Wyłącz"
   }
 }
